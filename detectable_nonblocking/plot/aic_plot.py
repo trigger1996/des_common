@@ -19,7 +19,7 @@ def _fmt_set(S):
 
 
 def _info_state_of(bcc, node):
-    """Return the BTS information-state represented by a BCC microstate."""
+    """Return the BTS information-state represented by an IC_BTS microstate."""
     if hasattr(bcc, "information_state_of"):
         return bcc.information_state_of(node)
     legacy_accessor = getattr(bcc, "ma" + "cro_of", None)
@@ -146,7 +146,7 @@ def get_bts_layout(T: BTS, layout="kk", scale=4.0, yz_separation=2.5):
 
 
 # ============================================================
-# BCC layout helpers
+# IC_BTS layout helpers
 # ============================================================
 
 def get_bcc_information_layout(
@@ -161,7 +161,7 @@ def get_bcc_information_layout(
 ):
     """
     Compute a layout on the BTS information-state graph, and use it as the
-    center layout for the corresponding BCC microstate groups.
+    center layout for the corresponding IC_BTS microstate groups.
     """
     T = bcc.base
     Y_nodes = list(T.y_states())

@@ -113,8 +113,14 @@ class DESPlant(nx.MultiDiGraph):
     def ctrl_to_str(self, ctrl_set: Iterable[str]) -> str:
         ctrl_set = set(ctrl_set)
         if not ctrl_set:
-            return "{uc}"
-        return "{" + ",".join(sorted(ctrl_set) + ["uc"]) + "}"
+            return "{}"
+        return "{" + ",".join(sorted(ctrl_set)) + "}"
+
+    def gamma_to_str(self, ctrl_set: Iterable[str]) -> str:
+        gamma = self.Euc | set(ctrl_set)
+        if not gamma:
+            return "{}"
+        return "{" + ",".join(sorted(gamma)) + "}"
 
     # -------------------------
     # Paper operators on RAW information states

@@ -69,7 +69,7 @@ def prune_deadlock_branches(
     """Prune closed deadlock and backward-losing belief branches.
 
     This is intentionally a separate module so the existing exploration code can
-    keep constructing I-BTS fragments while pruning is applied as an additional
+    keep constructing limited-lookahead fragments while pruning is applied as an additional
     fixed-point pass.
     """
 

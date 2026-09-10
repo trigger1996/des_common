@@ -13,11 +13,11 @@ def _sorted_nodes(nodes):
     return sorted(nodes, key=str)
 
 
-class BCC(nx.MultiDiGraph):
+class IC_BTS(nx.MultiDiGraph):
     """
-    Bipartite Cognitive Controller associated with a BTS.
+    Inter-connected bipartite transition system associated with a BTS.
 
-    BCC microstates are represented as
+    IC_BTS microstates are represented as
         ("Y", y, x) and ("Z", z, x),
     where y or z is a BTS information-state node and x is a plant state.
 
@@ -25,7 +25,7 @@ class BCC(nx.MultiDiGraph):
       - information state: the Y- or Z-state node of the BTS;
       - potentially feasible Z-state: no reachable Z-internal deadlock/livelock;
       - cognitively live Y-state: all its Y-microstates can reach a common
-        cognitively certifiable target through the currently retained BCC.
+        cognitively certifiable target through the currently retained IC_BTS.
 
     The public report keys keep the caller-facing structure used by existing
     plotting and example scripts, while the new method names use information-
@@ -37,7 +37,7 @@ class BCC(nx.MultiDiGraph):
         incoming_graph_data=None,
         bts: BTS = None,
         mark_y_micro: bool = False,
-        name: str = "BCC",
+        name: str = "IC_BTS",
         **attr,
     ):
         super().__init__(incoming_graph_data, **attr)
@@ -189,7 +189,7 @@ class BCC(nx.MultiDiGraph):
     # for debugging
     def bcc_observation_micro_edges_of_z(self, zn):
         """
-        Return all BCC micro-level observable edges generated from a Z information-state.
+        Return all IC_BTS micro-level observable edges generated from a Z information-state.
         """
         out = []
         for u, v, d in self.edges(data=True):
@@ -620,7 +620,7 @@ class BCC(nx.MultiDiGraph):
         4. If no certifiable target remains, report no solution.
         """
         if self.base is None:
-            return self._empty_report(None, "BCC has no base BTS", include_special_case=include_special_case)
+            return self._empty_report(None, "IC_BTS has no base BTS", include_special_case=include_special_case)
 
         T = self.base.restrict_to_reachable()
         if T.y0 is None or T.y0 not in T:
@@ -878,16 +878,16 @@ class BCC(nx.MultiDiGraph):
 # ---------------------------------------------------------------------
 # Runtime compatibility aliases for existing example/plotting scripts.
 # ---------------------------------------------------------------------
-setattr(BCC, _LEGACY_INFO_KEY + "_of", BCC.information_state_of)
+setattr(IC_BTS, _LEGACY_INFO_KEY + "_of", IC_BTS.information_state_of)
 setattr(
-    BCC,
+    IC_BTS,
     "solve_legal_illegal_" + _LEGACY_INFO_KEY + "_states",
-    BCC.solve_legal_illegal_information_states,
+    IC_BTS.solve_legal_illegal_information_states,
 )
 setattr(
-    BCC,
+    IC_BTS,
     "print_legal_illegal_" + _LEGACY_INFO_KEY + "_report",
-    BCC.print_legal_illegal_information_state_report,
+    IC_BTS.print_legal_illegal_information_state_report,
 )
 
 
@@ -895,4 +895,4 @@ setattr(
 # Compatibility wrapper
 # ---------------------------------------------------------------------
 def build_bcc_4_cnb(T: BTS, mark_y_micro: bool = True):
-    return BCC(bts=T, mark_y_micro=mark_y_micro)
+    return IC_BTS(bts=T, mark_y_micro=mark_y_micro)

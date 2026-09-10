@@ -59,6 +59,7 @@ class DESExample:
     dfa: DFA
     layout: dict[State, tuple[float, float]]
     description: str
+    lookahead_limit: int = 3
     source_name: str | None = None
     original_dfa: DFA | None = None
     original_layout: dict[State, tuple[float, float]] | None = None

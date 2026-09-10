@@ -38,7 +38,7 @@ def get_bcc_macro_layout(
 ):
     """
     Compute a macro-layout on the base BTS, then use it as the center of each
-    macro group in the BCC figure.
+    macro group in the IC_BTS figure.
 
     Parameters
     ----------
@@ -290,14 +290,14 @@ def draw_directed_edge(
         txt.set_path_effects([pe.withStroke(linewidth=0.8, foreground="white")])
 
 # ============================================================
-# Main BCC-CNB drawing function
+# Main IC_BTS-CNB drawing function
 # ============================================================
 
 def draw_bcc_cnb(
     bcc,
     report=None,
     filename=None,
-    title="BCC-CNB",
+    title="IC_BTS-CNB",
     layout="hybrid_kk",
     figsize=(12.8, 7.2),     # 适合 1920×1080
     dpi=360,
@@ -322,7 +322,7 @@ def draw_bcc_cnb(
     show=True,
 ):
     """
-    Draw the BCC with CNB-related highlighting.
+    Draw the IC_BTS with CNB-related highlighting.
 
     Color / semantbcc:
       - Y macro group: blue-ish

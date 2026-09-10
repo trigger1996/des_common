@@ -41,6 +41,7 @@ def build_partial_observation_example(
             f"Observable events: {sorted(observable)}. "
             "States are belief sets after unobservable closure."
         ),
+        lookahead_limit=base.lookahead_limit,
         source_name=base.name,
         original_dfa=observed_plant,
         original_layout=base.layout,
