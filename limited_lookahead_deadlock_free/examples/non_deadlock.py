@@ -23,23 +23,24 @@ def build_small_cycle_example() -> DESExample:
     #   overall_connection.gif has 9 frames:
     #   0000 initial, 0001-0007 discovered transitions, 0008 fixed point.
     #   ll_bts.gif uses the local lookahead limit configured below.
-    states = frozenset({"q_0", "q_1", "q_2", "q_3", "q_4"})
-    controllable = frozenset({"a", "b", "u"})
-    uncontrollable = frozenset()
+    states = frozenset({"q_0", "q_1", "q_2", "q_3", "q_4", "q_5"})
+    controllable = frozenset({"a", "b", "o1"})
+    uncontrollable = frozenset({"o2", "u"})
     transitions = {
-        ("q_0", "a"): "q_1",
-        ("q_1", "a"): "q_2",
-        ("q_2", "u"): "q_0",
-        ("q_1", "b"): "q_3",
-        ("q_3", "a"): "q_4",
-        ("q_4", "u"): "q_1",
+        ("q_0", "o2"): "q_1",
+        ("q_1", "b"): "q_2",
+        ("q_2", "a"): "q_0",
+        ("q_1", "o1"): "q_3",
+        ("q_3", "o1"): "q_4",
+        ("q_3", "b"): "q_1",
+        ("q_4", "u"): "q_5",
     }
     dfa = DFA(
         states=states,
         initial="q_0",
         events=controllable | uncontrollable,
         controllable=controllable,
-        observable=controllable | uncontrollable,
+        observable=frozenset({"o1", "o2"}),
         transitions=transitions,
     )
     layout = {
@@ -48,12 +49,16 @@ def build_small_cycle_example() -> DESExample:
         "q_2": (4.4, 0.0),
         "q_3": (2.2, -2.0),
         "q_4": (4.4, -2.0),
+        "q_5": (6.6, -1.0),
     }
     return DESExample(
         name="example1_symbolic_cycles_full",
         dfa=dfa,
         layout=layout,
-        description="Symbolic full-observation DFA. All states are non-deadlock and two cycles share q_1.",
+        description=(
+            "Symbolic component DFA. Events o1 and o2 are observable; a, b, and u are "
+            "unobservable. Events a, b, and o1 are controllable; o2 and u are uncontrollable."
+        ),
         lookahead_limit=2,
     )
 
@@ -61,10 +66,11 @@ def build_small_cycle_example() -> DESExample:
 def build_nested_cycle_deadlock_example() -> DESExample:
     # example2_nested_cycles_deadlock_full_partial_observation:
     #   This case is used only through its partial-observation version.
-    #   Event o is the only observable event; a, b, and u are hidden.
-    states = frozenset(f"q_{index}" for index in range(14))
-    controllable = frozenset({"a", "b", "o"})
-    uncontrollable = frozenset({"u"})
+    #   Events o1 and o2 are observable; a, b, and u are hidden. Event o1 is
+    #   uncontrollable, whereas o2 is controllable.
+    states = frozenset(f"q_{index}" for index in range(15))
+    controllable = frozenset({"a", "b", "o2"})
+    uncontrollable = frozenset({"o1", "u"})
     transitions = {
         ("q_0", "a"): "q_1",
         ("q_1", "a"): "q_2",
@@ -73,29 +79,30 @@ def build_nested_cycle_deadlock_example() -> DESExample:
         ("q_2", "b"): "q_4",
         ("q_4", "a"): "q_5",
         ("q_5", "u"): "q_2",
-        ("q_3", "o"): "q_6",
+        ("q_3", "o1"): "q_6",
         ("q_6", "a"): "q_7",
         ("q_7", "u"): "q_6",
         # q_4 and q_5 can appear in the same unobservable tail. The same
-        # observation o sends them to q_8 and q_11, whose hidden reaches merge.
-        ("q_4", "o"): "q_8",
-        ("q_5", "o"): "q_11",
+        # observation o1 sends them to q_8 and q_11, whose hidden reaches merge.
+        ("q_4", "o1"): "q_8",
+        ("q_5", "o1"): "q_11",
         ("q_8", "u"): "q_9",
         ("q_9", "a"): "q_10",
         ("q_10", "u"): "q_8",
         ("q_8", "b"): "q_11",
+        ("q_8", "o2"): "q_14",
         ("q_11", "u"): "q_8",
         ("q_7", "b"): "q_12",
         ("q_10", "b"): "q_13",
-        ("q_11", "o"): "q_6",
-        ("q_10", "o"): "q_6",
+        ("q_11", "o1"): "q_6",
+        ("q_10", "o1"): "q_6",
     }
     dfa = DFA(
         states=states,
         initial="q_0",
         events=controllable | uncontrollable,
         controllable=controllable,
-        observable=frozenset({"o"}),
+        observable=frozenset({"o1", "o2"}),
         transitions=transitions,
     )
     layout = {
@@ -113,19 +120,20 @@ def build_nested_cycle_deadlock_example() -> DESExample:
         "q_11": (12.0, -0.8),
         "q_12": (14.0, -0.8),
         "q_13": (12.0, -3.6),
+        "q_14": (8.0, -5.4),
     }
     return DESExample(
         name="example2_nested_cycles_deadlock_full",
         dfa=dfa,
         layout=layout,
         description=(
-            "Complex symbolic DFA with deadlocks q_12 and q_13, an outer cycle "
+            "Complex symbolic DFA with deadlocks q_12, q_13, and q_14, an outer cycle "
             "q_1-q_2-q_3, a nested cycle q_2-q_4-q_5, and deeper cycles q_6-q_7 "
             "and q_8-q_9-q_10. Under partial observation, q_4 and q_5 may share "
-            "one unobservable tail; the same observable event o reaches q_8 and "
+            "one unobservable tail; the same observable event o1 reaches q_8 and "
             "q_11, whose unobservable reaches merge."
         ),
-        lookahead_limit=6,
+        lookahead_limit=5,
     )
 
 
@@ -248,11 +256,11 @@ def all_examples() -> list[DESExample]:
 
     example1_partial = build_partial_observation_example(
         example1,
-        observable=frozenset({"a", "b"}),
+        observable=frozenset({"o1", "o2"}),
     )
     example2_partial = build_partial_observation_example(
         example2,
-        observable=frozenset({"o"}),
+        observable=frozenset({"o1", "o2"}),
     )
     example3_partial = build_partial_observation_example(
         example3,

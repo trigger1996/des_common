@@ -61,11 +61,18 @@ def admissible_control_patterns(plant: DFA) -> tuple[ControlPattern, ...]:
 
 
 def post_leq(plant: DFA, seeds: Belief, horizon: int) -> frozenset[State]:
+    """Return the local window with the initial belief as layer one.
+
+    A horizon of ``u`` contains paths with fewer than ``u`` events.  Thus a
+    state first reached after exactly ``u`` events is outside the window.  This
+    is the LL-BTS convention used for the D -> O -> D construction: an
+    observable transition at the boundary cannot create a successor D-state.
+    """
     reached: set[State] = set(seeds)
     queue: deque[tuple[State, int]] = deque((state, 0) for state in seeds)
     while queue:
         state, depth = queue.popleft()
-        if depth >= horizon:
+        if depth >= horizon - 1:
             continue
         for _event, target in plant.enabled(state):
             if target in reached:

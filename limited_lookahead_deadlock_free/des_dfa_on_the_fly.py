@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import deque
+from functools import cache
 import json
 import os
 from pathlib import Path
@@ -8,6 +9,8 @@ import shutil
 import stat
 from time import perf_counter
 
+import matplotlib
+matplotlib.use("Agg")  # File-rendering runner; no interactive GUI is required.
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation, PillowWriter
 
@@ -92,7 +95,6 @@ def render_example(example: DESExample, output_dir: Path) -> None:
         print(f"overall connection animation written to: {overall_connection_output.resolve()}")
     elif example.name == "example3_possible_deadlock_full_partial_observation":
         online_dir = example_dir / "ll_bts_online_finals"
-        _clean_case3_legacy_ll_bts_outputs(example_dir)
         snapshots = _make_physical_ll_bts_snapshots(example, example_dir)
         _write_ll_bts_step_outputs(example, ll_bts_step_dir, snapshots)
         _save_ll_bts_snapshots_gif(snapshots, ll_bts_output, example.name)
@@ -130,10 +132,6 @@ def render_example(example: DESExample, output_dir: Path) -> None:
     print(f"file description written to: {description_output.resolve()}")
 
 
-def _clean_case3_legacy_ll_bts_outputs(example_dir: Path) -> None:
-    _clean_legacy_render_outputs(example_dir)
-
-
 def _clean_legacy_render_outputs(example_dir: Path) -> None:
     for name in (
         "synthesis.gif",
@@ -147,7 +145,6 @@ def _clean_legacy_render_outputs(example_dir: Path) -> None:
         if path.exists():
             path.unlink()
     for pattern in (
-        "*分支选择记忆.json",
         "synthesis_frames*",
         "overall_connection_frames*",
         "ll_bts_synthesis_frames*",
@@ -204,10 +201,29 @@ def _write_ll_bts_step_outputs(
     )
 
 
+def _write_ll_bts_branch_artifacts(
+    example: DESExample,
+    branch_dir: Path,
+    snapshots: list[BeliefStateSynthesisSnapshot],
+) -> None:
+    """Write the frames, animation, and final image for one physical branch."""
+    _write_ll_bts_step_outputs(example, branch_dir, snapshots)
+    _save_ll_bts_snapshots_gif(snapshots, branch_dir / "ll_bts.gif", example.name)
+    _save_ll_bts_snapshot_png(snapshots[-1], branch_dir / "ll_bts_final.png", example.name)
+
+
 def _write_ll_bts_branch_outputs(example: DESExample, output_dir: Path) -> int:
     plant = example.original_dfa
     if plant is None:
         return 0
+
+    # Physical branch-choice memory is deliberately outside the LL-BTS core.
+    # It only selects which retained physical O->D successor is visualized on
+    # repeated runs; Algorithm 1 construction and Algorithm 2 pruning do not
+    # read or depend on this file. Keep it next to ll_bts/ so clearing rendered
+    # branch folders does not erase the memory.
+    memory_path = output_dir.parent / "物理分支选择记忆.json"
+    branch_memory = _read_branch_memory(memory_path)
 
     _clear_output_dir(output_dir)
     horizon = example.lookahead_limit
@@ -217,11 +233,9 @@ def _write_ll_bts_branch_outputs(example: DESExample, output_dir: Path) -> int:
     candidates = _initial_physical_successor_candidates(plant, horizon)
 
     if not candidates:
-        snapshots = _physical_ll_bts_snapshots(plant, horizon, {})
+        snapshots = _physical_ll_bts_snapshots(plant, horizon, branch_memory)
         branch_dir = output_dir / "branch_001"
-        _write_ll_bts_step_outputs(example, branch_dir, snapshots)
-        _save_ll_bts_snapshots_gif(snapshots, branch_dir / "ll_bts.gif", example.name)
-        _save_ll_bts_snapshot_png(snapshots[-1], branch_dir / "ll_bts_final.png", example.name)
+        _write_ll_bts_branch_artifacts(example, branch_dir, snapshots)
         (branch_dir / "branch_info.txt").write_text(
             "No initial physical successor candidate was available.\n",
             encoding="utf-8",
@@ -239,6 +253,7 @@ def _write_ll_bts_branch_outputs(example: DESExample, output_dir: Path) -> int:
             + "\n",
             encoding="utf-8",
         )
+        _write_branch_memory(memory_path, branch_memory)
         return 1
 
     index_lines = [
@@ -255,12 +270,10 @@ def _write_ll_bts_branch_outputs(example: DESExample, output_dir: Path) -> int:
         snapshots = _physical_ll_bts_snapshots(
             plant,
             horizon,
-            {},
+            branch_memory,
             forced_choices={initial_label: index - 1},
         )
-        _write_ll_bts_step_outputs(example, branch_dir, snapshots)
-        _save_ll_bts_snapshots_gif(snapshots, branch_dir / "ll_bts.gif", example.name)
-        _save_ll_bts_snapshot_png(snapshots[-1], branch_dir / "ll_bts_final.png", example.name)
+        _write_ll_bts_branch_artifacts(example, branch_dir, snapshots)
         branch_info = "\n".join(
             [
                 f"branch: {branch_name}",
@@ -278,6 +291,7 @@ def _write_ll_bts_branch_outputs(example: DESExample, output_dir: Path) -> int:
         )
 
     (output_dir / "index.txt").write_text("\n".join(index_lines) + "\n", encoding="utf-8")
+    _write_branch_memory(memory_path, branch_memory)
     return len(candidates)
 
 
@@ -287,13 +301,29 @@ def _initial_physical_successor_candidates(
 ) -> list[tuple[str, str, str, DecisionState]]:
     lookahead_states = post_leq(plant, frozenset({plant.initial}), horizon)
     patterns = admissible_control_patterns(plant)
+    controllable_unobservable = plant.controllable & plant.unobservable
+    enabled_observable_by_pattern = {
+        pattern: frozenset((pattern | plant.uncontrollable) & plant.observable)
+        for pattern in patterns
+    }
+
+    @cache
+    def cached_ur(estimate, hidden_choice):
+        return controlled_unobservable_reach(
+            plant, estimate, hidden_choice, lookahead_states
+        )
+
+    @cache
+    def cached_nx(estimate, event):
+        return observable_next(plant, estimate, event, lookahead_states)
+
     initial: DecisionState = (plant.initial, frozenset({plant.initial}))
     candidates: list[tuple[str, str, str, DecisionState]] = []
     seen: set[tuple[str, str, str]] = set()
 
     for pattern in patterns:
-        observation_estimate = controlled_unobservable_reach(
-            plant, initial[1], pattern, lookahead_states
+        observation_estimate = cached_ur(
+            initial[1], frozenset(pattern & controllable_unobservable)
         )
         observation: ObservationState = (observation_estimate, pattern)
         if _observation_tag(plant, observation, lookahead_states) == "N":
@@ -302,10 +332,8 @@ def _initial_physical_successor_candidates(
             continue
         observation_label = observation_state_label(plant, observation, lookahead_states)
 
-        for event in sorted(plant.observable & _enabled_events(plant, pattern)):
-            successor_estimate = observable_next(
-                plant, observation_estimate, event, lookahead_states
-            )
+        for event in sorted(enabled_observable_by_pattern[pattern]):
+            successor_estimate = cached_nx(observation_estimate, event)
             if not successor_estimate:
                 continue
             for successor_root in sorted(successor_estimate):
@@ -336,10 +364,7 @@ def _make_physical_ll_bts_snapshots(
     memory_path = example_dir / "物理分支选择记忆.json"
     memory = _read_branch_memory(memory_path)
     snapshots = _physical_ll_bts_snapshots(plant, example.lookahead_limit, memory)
-    memory_path.write_text(
-        json.dumps(memory, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    _write_branch_memory(memory_path, memory)
     return snapshots
 
 
@@ -349,11 +374,19 @@ def _physical_ll_bts_snapshots(
     branch_memory: dict[str, int],
     forced_choices: dict[str, int] | None = None,
 ) -> list[BeliefStateSynthesisSnapshot]:
-    lookahead_states = post_leq(plant, frozenset({plant.initial}), horizon)
+    # A physical arrival starts a fresh online LL-BTS solve.  The previous
+    # information estimate is not carried into the next solve: after arriving
+    # physically at q, its initial decision state is D(q,{q}) and its local
+    # window is x_L(q) = Post_{<u}({q}).
     patterns = admissible_control_patterns(plant)
-    initial: DecisionState = (plant.initial, frozenset({plant.initial}))
-    current: DecisionState | None = initial
-    expanded: set[DecisionState] = set()
+    controllable_unobservable = plant.controllable & plant.unobservable
+    enabled_observable_by_pattern = {
+        pattern: frozenset((pattern | plant.uncontrollable) & plant.observable)
+        for pattern in patterns
+    }
+
+    current_root: str | None = plant.initial
+    visited_roots: set[str] = set()
     snapshots: list[BeliefStateSynthesisSnapshot] = []
     recent_stages: deque[tuple[frozenset[str], frozenset[tuple[str, str, str, str]]]] = deque(maxlen=2)
     all_nodes: set[str] = set()
@@ -364,6 +397,7 @@ def _physical_ll_bts_snapshots(
         current_decision: DecisionState | None,
         nodes: set[str],
         edges: set[tuple[str, str, str, str]],
+        lookahead_states: frozenset[str],
     ) -> None:
         show_history = len(snapshots) < 5
         faded_nodes = (
@@ -386,6 +420,20 @@ def _physical_ll_bts_snapshots(
             if show_history
             else frozenset()
         )
+        # Preserve the raw NX graph for display, but assess consistency only
+        # after removing concrete bad nodes and their incident transitions.
+        bad_nodes = {node for node in nodes
+                     if _ll_bts_node_tag(plant, node, lookahead_states) == "N"}
+        retained_edges = {edge for edge in edges
+                          if edge[0] not in bad_nodes and edge[1] not in bad_nodes}
+        inconsistent_nodes = _physical_inconsistent_nodes(
+            plant, nodes - bad_nodes, retained_edges,
+            lookahead_states=lookahead_states,
+            expanded_decisions={
+                decision_state_label(plant, (root, frozenset({root})), lookahead_states)
+                for root in visited_roots
+            },
+        )
         snapshot = BeliefStateSynthesisSnapshot(
             title=title,
             known_nodes=frozenset(nodes),
@@ -405,7 +453,8 @@ def _physical_ll_bts_snapshots(
             unknown=frozenset(
                 node
                 for node in nodes
-                if _ll_bts_node_tag(plant, node, lookahead_states) == "I"
+                if node in inconsistent_nodes
+                and _ll_bts_node_tag(plant, node, lookahead_states) != "N"
             ),
             closed_beliefs=frozenset(nodes),
             raw_beliefs=frozenset(),
@@ -419,19 +468,28 @@ def _physical_ll_bts_snapshots(
         snapshots.append(snapshot)
         recent_stages.append((frozenset(nodes), frozenset(edges)))
 
-    initial_label = decision_state_label(plant, initial, lookahead_states)
+    initial_window = post_leq(plant, frozenset({plant.initial}), horizon)
+    initial: DecisionState = (plant.initial, frozenset({plant.initial}))
+    initial_label = decision_state_label(plant, initial, initial_window)
     capture(
-        f"stage 0: initialize physical LL-BTS run; u={horizon}; |x_L|={len(lookahead_states)}",
+        f"stage 0: initialize physical LL-BTS solve at q={plant.initial}; u={horizon}; |x_L|={len(initial_window)}",
         initial,
         {initial_label},
         set(),
+        initial_window,
     )
 
     stage = 0
-    while current is not None and current not in expanded:
+    last_window = initial_window
+    while current_root is not None and current_root not in visited_roots:
+        # Recompute x_L at every physical arrival, then reset the estimate to
+        # the known physical state before constructing this round's LL-BTS.
+        lookahead_states = post_leq(plant, frozenset({current_root}), horizon)
+        last_window = lookahead_states
+        current: DecisionState = (current_root, frozenset({current_root}))
         if _decision_tag(plant, current, lookahead_states) == "N":
             break
-        expanded.add(current)
+        visited_roots.add(current_root)
         decision_label = decision_state_label(plant, current, lookahead_states)
         nodes = {decision_label}
         edges: set[tuple[str, str, str, str]] = set()
@@ -442,31 +500,36 @@ def _physical_ll_bts_snapshots(
 
         for pattern in patterns:
             observation_estimate = controlled_unobservable_reach(
-                plant, current[1], pattern, lookahead_states
+                plant, current[1], frozenset(pattern & controllable_unobservable),
+                lookahead_states,
             )
             observation: ObservationState = (observation_estimate, pattern)
             observation_label = observation_state_label(plant, observation, lookahead_states)
             nodes.add(observation_label)
             observation_count += 1
-            edges.add((decision_label, observation_label, _pattern_label(pattern), "control"))
+            edges.add((decision_label, observation_label, _pattern_label(_enabled_events(plant, pattern)), "control"))
 
-            if _observation_tag(plant, observation, lookahead_states) == "N":
+            is_bad = _observation_tag(plant, observation, lookahead_states) == "N"
+            is_inconsistent = _is_inconsistent_observation(plant, observation)
+            if is_bad:
                 bad_observations += 1
-                continue
-            if _is_inconsistent_observation(plant, observation):
+            if is_inconsistent:
                 inconsistent_observations += 1
-                continue
 
-            for event in sorted(plant.observable & _enabled_events(plant, pattern)):
+            for event in sorted(enabled_observable_by_pattern[pattern]):
                 successor_estimate = observable_next(
-                    plant, observation_estimate, event, lookahead_states
+                    plant, observation_estimate, event, lookahead_states,
                 )
                 if not successor_estimate:
                     continue
                 for successor_root in sorted(successor_estimate):
                     successor: DecisionState = (successor_root, successor_estimate)
                     successor_label = decision_state_label(plant, successor, lookahead_states)
-                    candidates.append((observation_label, successor_label, event, successor))
+                    nodes.add(successor_label)
+                    edges.add((observation_label, successor_label, event, "observable"))
+                    if (not is_bad and not is_inconsistent
+                            and _decision_tag(plant, successor, lookahead_states) != "N"):
+                        candidates.append((observation_label, successor_label, event, successor))
 
         selected = _choose_physical_successor(
             decision_label,
@@ -480,23 +543,28 @@ def _physical_ll_bts_snapshots(
             edges.add((observation_label, successor_label, event, "observable"))
             nodes.add(successor_label)
             selected_label = successor_label
-            current = successor if _decision_tag(plant, successor, lookahead_states) != "N" else None
+            # The O -> D edge retains its information estimate for this round,
+            # while the next physical solve restarts from the selected actual
+            # root with singleton estimate {root}.
+            current_root = successor[0]
         else:
-            current = None
+            current_root = None
 
         all_nodes.update(nodes)
         all_edges.update(edges)
         stage += 1
         capture(
             (
-                f"stage {stage}: expand {decision_label}; observations={observation_count}, "
+                f"stage {stage}: solve from physical q={current[0]}; {decision_label}; "
+                f"u={horizon}; |x_L|={len(lookahead_states)}; observations={observation_count}, "
                 f"physical successor candidates={len(candidates)}, selected={selected_label}, "
                 f"bad observations={bad_observations}, "
                 f"inconsistent observations={inconsistent_observations}"
             ),
-            current if current is not None else None,
+            ((current_root, frozenset({current_root})) if current_root is not None else None),
             nodes,
             edges,
+            lookahead_states,
         )
 
     if all_nodes:
@@ -505,6 +573,7 @@ def _physical_ll_bts_snapshots(
             None,
             all_nodes,
             all_edges,
+            last_window,
         )
     return snapshots
 
@@ -531,9 +600,24 @@ def _read_branch_memory(memory_path: Path) -> dict[str, int]:
         return {}
     try:
         data = json.loads(memory_path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, OSError, TypeError, ValueError):
         return {}
-    return {str(key): int(value) for key, value in data.items()}
+    if not isinstance(data, dict):
+        return {}
+    memory: dict[str, int] = {}
+    for key, value in data.items():
+        try:
+            memory[str(key)] = int(value)
+        except (TypeError, ValueError):
+            continue
+    return memory
+
+
+def _write_branch_memory(memory_path: Path, memory: dict[str, int]) -> None:
+    memory_path.write_text(
+        json.dumps(memory, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
 
 def _ll_bts_node_tag(plant, node: str, lookahead_states: frozenset[str]) -> str:
@@ -550,10 +634,49 @@ def _ll_bts_node_tag(plant, node: str, lookahead_states: frozenset[str]) -> str:
             _parse_state_set(f"{estimate_text}}}"),
             _parse_state_set(f"{{{pattern_text}"),
         )
+        tag = _observation_tag(plant, observation, lookahead_states)
+        # Concrete deadlocks also satisfy the inconsistency predicate, but
+        # must retain the bad-state classification used during synthesis.
+        if tag == "N":
+            return tag
         if _is_inconsistent_observation(plant, observation):
             return "I"
-        return _observation_tag(plant, observation, lookahead_states)
+        return tag
     return "U"
+
+
+def _physical_inconsistent_nodes(plant, nodes, edges, *, lookahead_states,
+                                 expanded_decisions=None) -> set[str]:
+    """Apply the O-completeness and D-choice consistency definitions.
+
+    O requires all permitted observable NX successors *inside x_L* to be
+    represented. D requires at least one retained D -> O choice. A locally
+    disabled plant transition alone is neither kind of inconsistency.
+    """
+    control_sources = {source for source, _target, _event, kind in edges if kind == "control"}
+    represented = {(source, event) for source, _target, event, kind in edges if kind == "observable"}
+    inconsistent: set[str] = set()
+    for node in nodes:
+        if node.startswith("D("):
+            if (expanded_decisions is None or node in expanded_decisions) and node not in control_sources:
+                inconsistent.add(node)
+            continue
+        if not node.startswith("O(") or "},{" not in node:
+            continue
+        body = node[2:-1]
+        estimate_text, pattern_text = body.split("},{", 1)
+        estimate = _parse_state_set(f"{estimate_text}}}")
+        pattern = _parse_state_set(f"{{{pattern_text}")
+        required = {
+            event
+            for state in estimate
+            for event, target in plant.enabled(state)
+            if (event in _enabled_events(plant, pattern)
+                and event in plant.observable and target in lookahead_states)
+        }
+        if not required.issubset({event for source, event in represented if source == node}):
+            inconsistent.add(node)
+    return inconsistent
 
 
 def _parse_state_set(text: str) -> frozenset[str]:

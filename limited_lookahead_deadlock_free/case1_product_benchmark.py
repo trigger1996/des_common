@@ -1,69 +1,169 @@
 from __future__ import annotations
 
 import argparse
+import json
+from dataclasses import asdict
 from pathlib import Path
+from time import perf_counter
 
+import matplotlib
+matplotlib.use("Agg")  # This command writes figures and needs no GUI/Tk runtime.
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+from rich.console import Console
+from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    TimeElapsedColumn,
+    TimeRemainingColumn,
+)
 
+from des_core.automata import DFA
 from des_core.implicit_product import ProductIterationStats
 from des_core.implicit_product import benchmark_case1_product, product_state_label
+from des_core.visualization import save_original_system_png
 from examples.non_deadlock import build_small_cycle_example
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run the case-1 product LL-BTS benchmark.")
-    parser.add_argument("--copies", type=int, default=8)
-    parser.add_argument("--iterations", type=int, default=200)
-    parser.add_argument("--horizon", "-u", type=int, default=7)
+    parser.add_argument("--copies", type=int, default=7)
+    parser.add_argument("--iterations", type=int, default=20, help="Maximum online iterations; Algorithm 2 may return earlier.")
+    parser.add_argument("--horizon", "-u", type=int, default=2)
     parser.add_argument("--quiet", action="store_true", help="Suppress per-iteration progress.")
+    parser.add_argument("--extra-plots", action="store_true", help="Also write auxiliary PNG plots.")
+    parser.add_argument("--pattern-mode", choices=("explicit", "reduced", "factored"), default="factored")
+    parser.add_argument("--cache-size", type=int, default=0, help="Optional identical-root result cache; disabled for timing by default.")
+    parser.add_argument("--no-cache", action="store_true", help="Recompute every online iteration.")
     args = parser.parse_args()
+    if args.copies < 1 or args.iterations < 1 or args.horizon < 0 or args.cache_size < 0:
+        parser.error("copies/iterations must be positive and horizon nonnegative")
 
     copies = args.copies
     iterations = args.iterations
     horizon = args.horizon
-    default_run = copies == 8 and iterations == 200 and horizon == 7
-    stem = (
-        "case1_product_8copy"
-        if default_run
-        else f"case1_product_{copies}copy_u{horizon}_{iterations}iter"
-    )
-    output = Path("outputs") / f"{stem}_benchmark.txt"
-    plot_output = Path("outputs") / f"{stem}_visited_states.png"
-    plot_with_new_output = Path("outputs") / f"{stem}_visited_states_with_new.png"
-    plot_paper_output = Path("outputs") / f"{stem}_visited_states_paper.pdf"
+    stem = f"case1_product_{copies}copy_u{horizon}_{iterations}iter_{args.pattern_mode}"
+    stem += "_round-robin"
+    if args.no_cache or args.cache_size == 0:
+        stem += "_uncached"
+    output_dir = Path("outputs") / stem
+    output_dir.mkdir(parents=True, exist_ok=True)
+    iteration_log = output_dir / "iterations.jsonl"
+    iteration_log.write_text("", encoding="utf-8")
+
+    def record_step(item: ProductIterationStats, _total: int, _elapsed: float) -> None:
+        # Preserve completed steps even if a long run is interrupted later.
+        with iteration_log.open("a", encoding="utf-8") as stream:
+            stream.write(json.dumps(asdict(item)) + "\n")
+    output = output_dir / "benchmark.txt"
+    original_system_output = output_dir / "original_system.png"
+    plot_output = output_dir / "visited_states.png"
+    plot_with_new_output = output_dir / "visited_states_with_new.png"
+    plot_paper_output = output_dir / "visited_states_paper.pdf"
 
     example = build_small_cycle_example()
+    system_lines = _component_system_lines(example.dfa, copies)
     global_state_count = len(example.dfa.states) ** copies
-    progress = (
-        None
-        if args.quiet
-        else lambda item, total, elapsed: _print_progress(
-            item, total, elapsed, global_state_count
+    console = Console()
+    if not args.quiet:
+        console.print("\n".join(system_lines))
+        console.print(
+            f"[bold cyan]running single-branch LL-BTS product benchmark[/] "
+            f"copies={copies}, iterations={iterations}, u={horizon}"
         )
-    )
-    if progress is not None:
-        print(
-            f"running complete LL-BTS benchmark: copies={copies}, "
-            f"iterations={iterations}, u={horizon}",
-            flush=True,
+
+    if not args.quiet:
+        console.print(
+            "Each uncached iteration constructs the local LL-BTS; single-branch "
+            "refers only to the selected physical successor. "
+            "D/O/frontier update during construction; coverage updates after each iteration."
         )
-    result = benchmark_case1_product(
-        component=example.dfa,
-        copies=copies,
-        iterations=iterations,
-        horizon=horizon,
-        progress=progress,
-    )
+
+    if args.quiet:
+        result = benchmark_case1_product(
+            component=example.dfa,
+            copies=copies,
+            iterations=iterations,
+            horizon=horizon,
+            pattern_mode=args.pattern_mode,
+            cache_size=0 if args.no_cache else args.cache_size,
+            progress=record_step,
+        )
+    else:
+        with _rich_progress(console) as progress_bar:
+            task = progress_bar.add_task(
+                "online iterations",
+                total=iterations,
+                coverage="0.0%",
+                local="0",
+                new="0",
+                edges="0",
+                expansion="preparing local window",
+            )
+
+            def update_progress(item: ProductIterationStats, total: int, elapsed: float) -> None:
+                record_step(item, total, elapsed)
+                _update_rich_progress(
+                    progress_bar,
+                    task,
+                    item,
+                    total,
+                    elapsed,
+                    global_state_count,
+                )
+
+            last_expansion_update = 0.0
+
+            def update_expansion(decisions: int, observations: int, frontier: int) -> None:
+                nonlocal last_expansion_update
+                now = perf_counter()
+                if frontier and now - last_expansion_update < 0.5:
+                    return
+                last_expansion_update = now
+                progress_bar.update(
+                    task, expansion=f"D={decisions:,} O={observations:,} frontier={frontier:,}"
+                )
+
+            result = benchmark_case1_product(
+                component=example.dfa,
+                copies=copies,
+                iterations=iterations,
+                horizon=horizon,
+                pattern_mode=args.pattern_mode,
+                cache_size=0 if args.no_cache else args.cache_size,
+                progress=update_progress,
+                expansion_progress=update_expansion,
+            )
 
     lines = [
         "Case 1 implicit product benchmark",
+        "",
+        *system_lines,
+        "",
+        "Implicit product benchmark",
         f"component states: {len(example.dfa.states)}",
         f"copies: {result.copies}",
         f"global product states: {result.global_state_count}",
         f"overall system lookahead limit u: {result.horizon}",
         f"iterations: {result.iterations}",
+        f"requested iterations completed: {result.iterations == iterations}",
+        f"stop reason: {result.stop_reason}",
+        "iteration count includes the final synthesis attempt, even if no successor is selected",
+        f"pattern representation: {result.pattern_mode}",
+        f"physical successor policy: {result.successor_policy}",
+        "state/edge counts describe the represented graph before the final backward pass",
+        "factored construction already prunes locally known inconsistent families",
+        "reduced O counts are representatives; factored O counts are observable-choice families",
+        "neither count is the number of full explicit observation information states",
+        f"actual synthesis calls: {result.synthesis_calls}",
+        f"identical-root cache hits: {result.cache_hits}",
+        f"decision-observation cycle check: {result.cycle_check.message}",
         f"elapsed seconds: {result.elapsed_seconds:.6f}",
+        f"max actual step seconds: {max(s.step_seconds for s in result.stats):.6f}",
+        f"mean step seconds: {sum(s.step_seconds for s in result.stats) / len(result.stats):.6f}",
         f"max LL-BTS concrete states per iteration: {result.max_local_states}",
         f"max states in decision estimates: {max((item.decision_estimate_state_count for item in result.stats), default=0)}",
         f"max states in observation estimates: {max((item.observation_estimate_state_count for item in result.stats), default=0)}",
@@ -71,7 +171,7 @@ def main() -> None:
         f"max observation information states: {max((item.observation_information_state_count for item in result.stats), default=0)}",
         f"final cumulative visited states: {result.stats[-1].cumulative_state_count if result.stats else 0}",
         f"last new unique states: {result.stats[-1].new_state_count if result.stats else 0}",
-        f"max LL-BTS edges per iteration: {result.max_local_edges}",
+        f"max unique LL-BTS edges per iteration: {result.max_local_edges}",
         "",
         "Selected iterations",
     ]
@@ -84,6 +184,8 @@ def main() -> None:
                 "",
                 f"[iteration {item.iteration}]",
                 f"current: {product_state_label(item.current)}",
+                f"cache hit: {item.cache_hit}",
+                f"step seconds: {item.step_seconds:.6f}",
                 f"LL-BTS concrete states: {item.local_state_count}",
                 f"states in decision estimates: {item.decision_estimate_state_count}",
                 f"states in observation estimates: {item.observation_estimate_state_count}",
@@ -91,45 +193,110 @@ def main() -> None:
                 f"observation information states: {item.observation_information_state_count}",
                 f"new unique states: {item.new_state_count}",
                 f"cumulative states: {item.cumulative_state_count}",
-                f"LL-BTS edges: {item.local_edge_count}",
+                f"unique LL-BTS edges: {item.local_edge_count}",
                 f"selected event: {item.selected_event or '<none>'}",
                 f"next: {product_state_label(item.next_state) if item.next_state else '<none>'}",
             ]
         )
 
-    output.parent.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
     output.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    _save_visited_state_plot(result, plot_with_new_output, include_new=True, paper_style=True)
-    _save_visited_state_plot(result, plot_output, include_new=False, paper_style=True)
+    (output_dir / "benchmark.json").write_text(json.dumps(asdict(result), indent=2) + "\n", encoding="utf-8")
+    save_original_system_png(
+        example.dfa,
+        example.layout,
+        original_system_output,
+        title="case1 component original system",
+    )
+    if args.extra_plots:
+        _save_visited_state_plot(result, plot_with_new_output, include_new=True, paper_style=True)
+        _save_visited_state_plot(result, plot_output, include_new=False, paper_style=True)
     _save_visited_state_plot(result, plot_paper_output, include_new=False, paper_style=True)
     print("\n".join(lines))
+    print(f"\noriginal component system PNG written to: {original_system_output.resolve()}")
     print(f"\nreport written to: {output.resolve()}")
-    print(f"plot written to: {plot_output.resolve()}")
-    print(f"plot with new states written to: {plot_with_new_output.resolve()}")
+    if args.extra_plots:
+        print(f"plot written to: {plot_output.resolve()}")
+        print(f"plot with new states written to: {plot_with_new_output.resolve()}")
     print(f"paper PDF plot written to: {plot_paper_output.resolve()}")
 
 
-def _print_progress(
+def _rich_progress(console: Console) -> Progress:
+    return Progress(
+        SpinnerColumn(style="cyan"),
+        TextColumn("[bold cyan]{task.description}"),
+        BarColumn(bar_width=34, complete_style="green", finished_style="bold green"),
+        MofNCompleteColumn(),
+        TextColumn("[magenta]cov={task.fields[coverage]}"),
+        TextColumn("[blue]local={task.fields[local]}"),
+        TextColumn("[yellow]new={task.fields[new]}"),
+        TextColumn("[red]edges={task.fields[edges]}"),
+        TextColumn("{task.fields[expansion]}"),
+        TimeElapsedColumn(),
+        TimeRemainingColumn(),
+        console=console,
+        transient=False,
+    )
+
+
+def _component_system_lines(dfa: DFA, copies: int) -> list[str]:
+    return [
+        "Original component system",
+        f"states: {', '.join(sorted(dfa.states))}",
+        f"initial state: {dfa.initial}",
+        f"events: {', '.join(sorted(dfa.events))}",
+        f"controllable events: {_event_list(dfa.controllable)}",
+        f"uncontrollable events: {_event_list(dfa.uncontrollable)}",
+        f"observable events: {_event_list(dfa.observable)}",
+        f"unobservable events: {_event_list(dfa.unobservable)}",
+        f"product observable events: {_event_list(_product_events(dfa.observable, copies))}",
+        f"product unobservable events: {_event_list(_product_events(dfa.unobservable, copies))}",
+        f"product controllable events: {_event_list(_product_events(dfa.controllable, copies))}",
+        f"product uncontrollable events: {_event_list(_product_events(dfa.uncontrollable, copies))}",
+        "product setting: asynchronous interleaving; event controllability and observability inherit from the component",
+        f"product control-pattern count: 2^{copies * len(dfa.controllable)} = {2 ** (copies * len(dfa.controllable))}",
+        "transitions:",
+        *_component_transition_lines(dfa),
+    ]
+
+
+def _component_transition_lines(dfa: DFA) -> list[str]:
+    return [
+        f"  {source} --{event}--> {target}"
+        for (source, event), target in sorted(dfa.transitions.items())
+    ]
+
+
+def _product_events(events, copies: int) -> list[str]:
+    return [
+        f"{event}_{index}"
+        for index in range(copies)
+        for event in sorted(events)
+    ]
+
+
+def _event_list(events) -> str:
+    ordered = sorted(events)
+    return ", ".join(ordered) if ordered else "<none>"
+
+
+def _update_rich_progress(
+    progress: Progress,
+    task_id,
     item: ProductIterationStats,
     total_iterations: int,
     elapsed: float,
     global_state_count: int,
 ) -> None:
-    percent = 100.0 * (item.iteration + 1) / max(total_iterations, 1)
     coverage = 100.0 * item.cumulative_state_count / max(global_state_count, 1)
-    filled = int(round(percent / 5.0))
-    bar = "#" * filled + "." * (20 - filled)
-    print(
-        f"[{bar}] [{item.iteration + 1:4d}/{total_iterations}] "
-        f"{percent:6.2f}% elapsed={elapsed:8.1f}s "
-        f"|Ihat|={item.decision_information_state_count:7d} "
-        f"|I|={item.observation_information_state_count:7d} "
-        f"D-est={item.decision_estimate_state_count:7d} "
-        f"O-est={item.observation_estimate_state_count:7d} "
-        f"new={item.new_state_count:7d} "
-        f"cum={item.cumulative_state_count:7d} ({coverage:5.1f}%) "
-        f"edges={item.local_edge_count:8d}",
-        flush=True,
+    progress.update(
+        task_id,
+        completed=item.iteration + 1,
+        total=total_iterations,
+        coverage=f"{coverage:5.1f}%",
+        local=f"{item.local_state_count:,}",
+        new=f"{item.new_state_count:,}",
+        edges=f"{item.local_edge_count:,}",
     )
 
 
@@ -137,10 +304,10 @@ def _save_visited_state_plot(result, output: Path, include_new: bool, paper_styl
     iterations = [item.iteration for item in result.stats]
     local_counts = [item.local_state_count for item in result.stats]
     decision_estimate_counts = [item.decision_estimate_state_count for item in result.stats]
-    observation_estimate_counts = [item.observation_estimate_state_count for item in result.stats]
+    observation_estimate_counts = [item.observation_estimate_state_count or float("nan") for item in result.stats]
     decision_info_counts = [item.decision_information_state_count for item in result.stats]
-    observation_info_counts = [item.observation_information_state_count for item in result.stats]
-    new_counts = [max(item.new_state_count, 1) for item in result.stats]
+    observation_info_counts = [item.observation_information_state_count or float("nan") for item in result.stats]
+    new_counts = [item.new_state_count if item.new_state_count else float("nan") for item in result.stats]
     cumulative_counts = [item.cumulative_state_count for item in result.stats]
 
     font_size = 15 if paper_style else 11
@@ -197,7 +364,7 @@ def _save_visited_state_plot(result, output: Path, include_new: bool, paper_styl
                 color="#ff7f0e",
                 linewidth=1.8,
                 alpha=0.9,
-                label=r"$|\mathbb{I}|$",
+                label=(r"$|\mathbb{I}|$" if result.pattern_mode == "explicit" else "O families / representatives"),
             )
             ax.plot(
                 iterations,
@@ -224,7 +391,7 @@ def _save_visited_state_plot(result, output: Path, include_new: bool, paper_styl
             label=rf"$|Q_{{\mathrm{{product}}}}|={result.global_state_count}$",
         )
         ax.set_xlabel(r"Iteration")
-        ax.set_ylabel(r"Visited states")
+        ax.set_ylabel("States / represented nodes" if include_new else "Visited concrete states")
         ax.set_yscale("log")
         ax.yaxis.set_major_locator(mticker.LogLocator(base=10, numticks=8))
         ax.yaxis.set_minor_locator(
@@ -243,7 +410,7 @@ def _save_visited_state_plot(result, output: Path, include_new: bool, paper_styl
                 if count > 0
             ]
             lower = max(1, min(positive_counts) * 0.65)
-            ax.set_ylim(lower, result.global_state_count * 1.65)
+            ax.set_ylim(lower, max([result.global_state_count] + positive_counts) * 1.65)
         else:
             lower = max(1, min(local_counts) * 0.55)
             upper = result.global_state_count * 1.18

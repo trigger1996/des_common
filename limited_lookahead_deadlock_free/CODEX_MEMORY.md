@@ -2,6 +2,53 @@
 
 This file is project-local shared context for Codex sessions.
 
+## 2026-09-11 cleanup and Example 2 revalidation
+
+- README primary commands are the Example 2 import command and
+  `python .\case1_product_benchmark.py --copies 8 --iterations 100 -u 3`.
+  The four-copy command remains as a smaller alternative.
+- Consolidated repeated physical branch artifact writing and removed redundant
+  Example 3 output cleanup; synthesis algorithms and example plants are unchanged.
+- Reran Example 2 against existing outputs, backed up under
+  `outputs/example2_validation_20260911/before/`. All 59 output files remain;
+  only runtime description and branch-choice memory changed. All PNG/GIF and
+  transition/frame reports are byte-identical. See `comparison.json` alongside
+  the backup. All image frames decoded successfully.
+- All 30 unit tests passed. Example 2 matched the saved pre-optimization
+  synthesis baseline for all 14 roots, horizons 0 through 6, and both explicit
+  and factored modes (196 comparisons of emptiness, maximal patterns, successors).
+
+## 2026-09-11 optimization update (supersedes older benchmark notes)
+
+- Subsequent user correction: Example 1 now has `q_0 --o2--> q_1` and
+  `q_2 --a--> q_0`; `q_1 --b--> q_2` is unchanged. Event partitions remain
+  unchanged. Benchmark numbers recorded before this correction describe the
+  old labels and must not be presented as measurements of the corrected plant.
+
+- The user's timing target is **30--60 seconds per actual online synthesis
+  step**, not a few seconds for the entire run. Validate fresh solves with
+  cross-step result caching disabled and normal round-robin observable outcomes.
+- Example 1 has six reachable states. Seven asynchronous copies have 279936
+  reachable states. Preserve inherited controllability and observability; never
+  replace the product alphabet with all-uncontrollable/all-observable events.
+- Reference optimizations and Example-2 branch-memory fixes are integrated.
+- `construct_ll_bts` defaults to `explicit` for small examples. The product
+  runner defaults to `factored`: exact maximal hidden representatives and
+  symbolic controllable-observable families, resolved by Algorithm 2.
+  Do not execute raw family upper patterns. Do not report family counts as
+  explicit O-node counts. Factored construction applies known inconsistent
+  losses early, so concrete-state search can be a subset of explicit search.
+- Read `OPTIMIZATION_AND_CONSISTENCY_NOTES.md` for the equivalence argument and
+  unresolved draft notation issues, including the explicitly protected maximal
+  pattern formula in `__paper/main.tex`. Paper text has not been silently fixed.
+- README must retain these two user commands exactly:
+  `python -c "from des_dfa_on_the_fly import main_example2_partial; main_example2_partial()"`
+  and `python .\case1_product_benchmark.py --copies 4 --iterations 20 -u 3`.
+- `requirements.txt` lists the runtime dependencies. Runners use the Agg backend
+  for file output, so headless runs do not depend on Tk.
+- DFA transition mappings are immutable copies; create a new DFA to change a
+  plant instead of mutating transitions behind a cached index.
+
 ## Project
 
 Workspace: `D:\__Workspace\Pycharm\des_common\on-the-fly_nonblocking`
