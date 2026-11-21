@@ -1,0 +1,432 @@
+                       IEEE CONTROL SYSTEMS LETTERS, VOL. 7, 2023                                                              1087
+
+ Abstraction-Based Veriﬁcation of Approximate
+        Preopacity for Control Systems
+
+      Junyao Hou   , Siyuan Liu   , Graduate Student Member, IEEE, Xiang Yin   , Member, IEEE,
+                        and Majid Zamani   , Senior Member, IEEE
+
+
+
+
+
+  Abstract—In this letter, we consider the problem of ver-                                 I. INTRODUCTION
+ifying pre-opacity for discrete-time control systems. Pre-
+                                               YBER-PHYSICAL systems (CPS) are the technolog-
+opacity is an important information-ﬂow security property
+                                                                               ical backbone of the increasingly interconnected andthat secures the intention of a system to execute some C
+secret behaviors in the future. Existing works on pre-   smart world where security vulnerability can be catastrophic.
+opacity only consider non-metric discrete systems, where   However,  the  tight  interaction between embedded  control
+it is assumed that intruders can distinguish different output   software and the physical environment in CPS may expose
+behaviors precisely. However, for continuous-space con-                                                      numerous attack surfaces for malicious exploitation. In the
+trol systems whose output sets are equipped with metrics
+                                                                            last decade, the analysis of various security properties for CPS(which is the case for most real-world applications), it is
+too restrictive to assume precise measurements from out-   has drawn considerable attention in the literature [3], [9]. The
+side observers. In this letter, we ﬁrst introduce a concept of   concept of opacity was originally introduced in computer sci-
+approximate pre-opacity by capturing the security level of   ence literature [11] for the analysis of cryptographic protocols.
+control systems with respect to the measurement precision   Afterwards, opacity was widely investigated in the domain of
+of the intruder. Based on this new notion of pre-opacity, we
+                                                                  discrete-event systems (DES) since  it allows researchers topropose a veriﬁcation approach for continuous-space con-
+trol systems by leveraging abstraction-based techniques.   analyze the information-ﬂow security for dynamical systems
+In particular, a new concept of approximate pre-opacity   in a formal way [6]. Roughly speaking, opacity is a conﬁden-
+preserving simulation relation is introduced to characterize    tiality property that characterizes whether or not a dynamical
+the distance between two systems in terms of preserving   system will reveal some potentially sensitive behavior to an
+pre-opacity. This new system relation allows us to verify                                                                  external malicious observer (intruder) based on the information
+pre-opacity of complex continuous-space control systems
+                                                       ﬂow.using their ﬁnite abstractions. We also present a method
+to construct pre-opacity preserving ﬁnite abstractions for     In  the  past decades,  different notions  of opacity were
+a class of discrete-time control systems under certain   proposed in the literature to capture different security require-
+stability assumptions.                                   ments in the context of DES, including language-based notions
+                                                                    in [8] and state-based notions in [7], [12], [13]. The recent  Index Terms—Discrete event systems, opacity, formal
+abstractions.                                                        results in [2], [15] show that these notions are transformable to
+                                                          each other. Corresponding to the different opacity notions, var-
+                                                               ious veriﬁcation and synthesis approaches were also developed
+                                                                    in the DES literature; see [5], [6], [8], [9], [10] and the refer-
+  Manuscript received 14 September 2022; revised 17 November 2022;
+                                                           ences therein. Although the majority of the above-mentionedaccepted 7 December 2022. Date of publication 20 December 2022;
+date of current version 4 January 2023. This work was supported  works on opacity are applied to DES models with discrete
+in part by the National Natural Science Foundation of China under   state sets, the analysis of opacity for control systems with
+Grant 62061136004, Grant 62173226, and Grant 61833012; in part   continuous state sets has become the subject of many studies
+by the German Research Foundation under Grant ZA 873/7-1; and in
+part by the National Science Foundation under Grant ECCS-2015403.   recently [1], [9], [17]. In particular, a new concept of approx-
+Recommended by Senior Editor C. Seatzu. (Junyao Hou and Siyuan Liu  imate opacity is proposed in [17] which is more applicable
+contributed equally to this work.) (Corresponding author: Xiang Yin.)      to control systems since it allows us to quantitatively evaluate
+  Junyao Hou and Xiang Yin are with the Department of Automation
+                                                                 the security level of control systems whose outputs are phys-and Key Laboratory of System Control and Information Processing,
+Shanghai  Jiao Tong  University, Shanghai 200240, China  (e-mail:   ical signals. More recently, a new concept of opacity, called
+yinxiang@sjtu.edu.cn).                                              pre-opacity, was proposed in [16] to characterize whether or
+  Siyuan Liu  is with the Department  of  Electrical and Computer   not the secret intention of the system can be revealed. In
+Engineering, Technical University of Munich, 85737 Ismaning, Germany,
+and also with the Department of Computer Science, Ludwig Maximilian   other words, different from the other opacity notions which
+University of Munich, 80539 Munich, Germany.                       consider the current or past secret behaviors of the system,
+  Majid Zamani is with the Department of Computer Science, Ludwig   pre-opacity captures whether or not an outside observer can
+Maximilian University of Munich, 80539 Munich, Germany, and also with   be prematurely certain that the system will conduct some
+the Department of Computer Science, University of Colorado Boulder,
+Boulder, CO 80309 USA.                                             secret behaviors  in the  future. In  fact,  in many  practical
+   Digital Object Identiﬁer 10.1109/LCSYS.2022.3230770                scenarios, systems are indeed more interested in hiding their
+
+               2475-1456 c⃝2022 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                          See https://www.ieee.org/publications/rights/index.html for more information.
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 17,2023 at 04:49:49 UTC from IEEE Xplore. Restrictions apply.
+
+1088                                                                                    IEEE CONTROL SYSTEMS LETTERS, VOL. 7, 2023
+
+
+intentions to do something particularly important in the future.  B. System Model
+Nevertheless, the results developed in [16] are again tailored                                                                  In this letter, the system model that can be used to describe
+to DES models with discrete state  sets, which prevents  it                                                           both continuous-space and ﬁnite control systems is a tuple
+from being applied to real-world CPS with continuous state
+sets.                                                              S = (X, X0, U,  - , Y, H),
+  Our contribution. In this letter, we consider the problem                                                      where X  is a (possibly inﬁnite) set of states, X0 ⊆X  is a
+of verifying pre-opacity  for discrete-time control systems.                                                                 (possibly inﬁnite) set of initial states, U is a (possibly inﬁnite)
+Motivated by the limitations of the results in [16], we ﬁrst                                                                       set of inputs,  - ⊆X × U × X is a transition relation, Y
+introduce a new concept  called approximate K-step  pre-                                                                               is a (possibly inﬁnite) set of outputs, and H  : X →Y is the
+opacity which is more applicable to control systems. To be                                                              output function. For the sake of simplicity, we also denote a
+more speciﬁc, unlike discrete-event systems whose state sets                                                                      transition (x, u, x′) ∈  -  by x  u- x′, where we say that
+are discrete and outputs are logic events, control systems are
+                                                                                 x′ is a u-successor, or simply successor, of x. For each state
+in general metric systems whose state and output sets are
+                                                           x ∈X, we denote by U(x) the set of all inputs deﬁned at x,
+physical signals. Therefore, the notion of pre-opacity in [16]
+                                                                                          i.e., U(x) = {u ∈U : ∃x′ ∈X s.t. x  u- x′}, and by Upostu  (x)is too restrictive by assuming that one can always precisely
+                                                                 the set of u-successors of state x. A system S is said to bedistinguish between two outputs in the context of control
+                                                                        • metric,  if the output set Y  is equipped with a metricsystems. Note that the veriﬁcation of pre-opacity for control
+                                                   d : Y × Y →R≥0;systems  is in general undecidable. In  this  letter, we pro-
+                                                                        • ﬁnite (or symbolic), if X and U are ﬁnite sets;pose an abstraction-based pre-opacity veriﬁcation approach for
+                                     A ﬁnite state run of a system S generated from initial statecontinuous-space control systems. In particular, we ﬁrst pro-
+pose a notion of approximate K-step pre-opacity preserving   x0 ∈X0 under input sequence u1, . . . , un is a sequence of
+                                                                           u1-simulation relation, which is a system relation that can be used   transitions x0                                                                                    x1                                                                                   u2-  · · ·   un- xn, where xi  ui+1- xi+1
+to characterize the closeness between two systems in terms of   for all 0 ≤i ≤n −1. The corresponding output run is a
+preserving pre-opacity. Based on this system relation, one can   sequence of outputs H(x0)H(x1) · · · H(xn).
+verify pre-opacity of a complex control system using its ﬁnite
+abstraction, instead of directly applying veriﬁcation algorithms  C. Exact Pre-Opacity
+on the original control system which is undecidable. Moreover,                                                                  In many scenarios, the system wants to hide its intention to
+for the class of incrementally input-to-state stable nonlinear                                                             reach some secret states at some future instants in the presence
+control systems, we show that one can always construct ﬁnite                                                               of a malicious intruder (outside observer). In this letter, we
+abstractions which preserve pre-opacity of the control systems.                                                           adopt a state-based formulation of secrets. Speciﬁcally, we
+The proposed abstraction-based methodology is the ﬁrst in                                                      assume that XS ⊆X is a set of secret states. In the sequel,
+the literature that provides a sound way for verifying pre-                                             we incorporate the secret state set XS in the system deﬁnition
+opacity of discrete-time control systems with continuous state                                                       and use S = (X, X0, XS, U,  - , Y, H) to denote a metric
+spaces.                                                             system. We consider that the intruder knows the dynamics
+                                                               of the system and can observe the output sequences of the
+                                                             system, but cannot actively affect the behavior of the system.
+                           II. PRELIMINARIES                   To characterize whether or not the secret intention of a system
+                                                         can be revealed, a notion of K-step pre-opacity is proposedA. Notation
+                                                                    in [16] and recalled as follows.
+  We denote by N and R  the  set of non-negative  inte-
+                                                              Deﬁnition 1: Consider  a  system  S =  (X, X0, XS, U,
+gers and  real numbers,  respectively. They  are  annotated    - , Y, H)  and  a  constant K  ∈   N. We  say
+with subscripts to restrict them in the usual way, e.g., R≥0                                                                      that S  is  K-step  pre-opaque  if  for any  ﬁnite  sequence
+denotes the set of non-negative real numbers. Given a vec-                                                  u1-                                                          u2-  · · ·   un- xn, any non-negative  inte-                                                                x0                                                                           x1tor x ∈Rn, we denote by ∥x∥the inﬁnity norm of  x. A                                                                                      u′
+set B ⊆Rm  is called a box  if B =   mi=1 [ci, di], where   ger  t ≥  K,  there  exist a  ﬁnite sequence  x′0   1- x′1
+                                                                                                                                                u′ci, di ∈R                                                                       n-  · · ·       M           with ci <  di for each  i ∈{1, . . . , m}. For any       u′2-  · · ·    u′n- x′n    u′                                                                                                                          n+t- x′n+t such that
+set A =   j=1 Aj of the form of ﬁnite uion of boxes, where
+Aj =    ni=1 [cji, dji], we deﬁne span(A) = min{span(Aj)|j =                H(xi) = H(x′i), ∀i = {0, . . . , n},
+1, . . . , M}, where span(Aj) = min{|dji −cji||i = 1, . . . , m}.  and x′n+t /∈XS.
+For any μ ≤span(A), deﬁne [A]μ =  Mj=1 [Aj]μ, where      Intuitively, pre-opacity requires that the intruder can never
+[Aj]μ = [Rm]μ ∩Aj and [Rm]μ = {a ∈Rm|ai = kiμ, ki ∈   predict that the system will visit a secret state for some spe-
+Z, i = 1, . . . , m}. We denote the different classes of compar-   ciﬁc future instant. The above deﬁnition of K-step pre-opacity
+ison functions by K, K∞and KL, where K = {γ  : R≥0 →   requires that for any behavior of the system and any t ≥K,
+R≥0   : γ  is continuous, strictly increasing and γ (0) =  0};   there exists a behavior whose preﬁx generates exactly the same
+K∞= {γ ∈K  : limr→∞γ (r) = ∞}; KL = {β  : R≥0 ×   output and will reach a non-secret state in exact t steps. Thus,
+R≥0 →  R≥0   :    for  each  ﬁxed  s,  the map  β(r, s)   in the remainder part of this letter, we will refer to this def-
+belongs to class K with respect to r and, for each ﬁxed   inition as exact pre-opacity. Interested readers are referred
+nonzero r, the map β(r, s) is decreasing with respect to s and   to [16, Sec. V] for an illustrative example on the application
+β(r, s) →0 as s →∞}.                                       of exact pre-opacity. A detailed discussion on the relationships
+
+
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 17,2023 at 04:49:49 UTC from IEEE Xplore. Restrictions apply.
+
+HOU et al.: ABSTRACTION-BASED VERIFICATION OF APPROXIMATE PREOPACITY FOR CONTROL SYSTEMS                                    1089
+
+
+between pre-opacity and other notions of opacity can be found
+in [16, Fig. 3].
+
+
+D. Approximate Pre-Opacity
+  The notion of exact pre-opacity introduced in the previous                                                                               Fig. 1.  Example to illustrate δ-approximate K-step pre-opacity.
+subsection essentially assumes that the intruder can always
+measure each output or distinguish between two different out-
+puts precisely. However, for metric systems whose outputs are  way in the literature to check pre-opacity for systems with
+physical signals, due to the imperfect measurement precision   inﬁnite state sets so far. On the other hand, existing tools and
+of potential outside observers (which is the case for almost   algorithms (such as [16]) in DES literature can be leveraged
+every physical system), it is very difﬁcult to distinguish two   to check pre-opacity for ﬁnite systems. Therefore, to solve the
+observations if their difference is very small. Therefore, in the   pre-opacity veriﬁcation problem for control systems, it would
+following deﬁnition, we propose a “weak” and “robust” ver-   be more feasible to verify pre-opacity on their ﬁnite abstrac-
+sion of pre-opacity called δ-approximate pre-opacity which is   tions and then carry back the result to the concrete ones. The
+more applicable to metric systems.                          key to the construction of such ﬁnite abstraction is the estab-
+  Deﬁnition 2: Consider a system S = (X, X0, XS, U, - ,   lishment of formal relations between the concrete and abstract
+Y, H)  and  a  constant  δ  ∈  R≥0. We  say  that  S  is   systems.
+δ-approximate K-step pre-opaque  if for any ﬁnite sequence     In this section, we ﬁrst propose a new system relation called
+    u1-x0           x1            u2-  · · ·   un- xn, any non-negative  inte-   approximate K-step pre-opacity preserving simulation rela-
+                                                                                 u′
+ger  t ≥  K,  there  exist a  ﬁnite sequence  x′0   1- x′1   tion, and then show the usefulness of the proposed system
+  u′              u′            u′             u′                                   relation in terms of verifying pre-opacity.
+  2-  · · ·   n- x′n   n-  · · ·    n+t- x′n+t such that                Deﬁnition 3 (Approximate K-step Pre-Opacity Preserving
+                                                             Simulation   Relation):   Consider  two   metric   systems
+                                         - , Ya, Ha)  and  Sb  =                   i∈{0,...,n}d(H(xi),max          H(x′i)) ≤δ,                   Sa  =   (Xa, Xa0, XaS, Ua,                                                                                                         a
+and x′n+t /∈XS.                                               (Xb, Xb0, XbS, Ub,     b - , Yb, Hb)  with  the same  output
+  When δ =  0, approximate pre-opacity boils down to the   sets Ya = Yb and metric d. Given ε ∈R≥0, a relation
+exact version in Deﬁnition 1. We use the following example  R ⊆Xa × Xb  is called an ε-approximate K-step pre-opacity
+to illustrate the notions of exact and approximate pre-opacity.   preserving simulation  relation (ε-AKP simulation  relation)
+  Example 1: Consider system S = (X, X0, XS, U,  - ,  from Sa to Sb if
+Y, H) shown in Figure 1, where X = {A, B, C, D, E, F, G, H},     1)    a) ∀xa0 ∈Xa0, ∃xb0 ∈Xb0 : (xa0, xb0) ∈R;
+X0 =   {A, E},  XS =  {C, H}, U =   {u, u′}, Y  =           b) ∀xb0 ∈Xb0, ∃xa0 ∈Xa0 : (xa0, xb0) ∈R;
+{1.1, 1.2, 2.1, 2.3, 2.9, 3.1, 4.0, 4.2} ⊆R equipped with met-     2) ∀(xa, xb) ∈R : d(Ha(xa), Hb(xb)) ≤ε;
+ric d deﬁned by  d(y1, y2) = |y1 −y2|, ∀y1, y2 ∈Y. We mark     3) For any (xa, xb) ∈R, we have
+                                                                                                  ua              ub
+all secret states by red and the output of each state is speci-           a) ∀xa  a- x′a, ∃xb  b- x′b : (x′a, x′b) ∈R;
+ﬁed by a value associated to it. First, one can check that S is                        ub              ua
+                                                                       b) ∀xb  b- x′b, ∃xa  a- x′a : (x′a, x′b) ∈R.not exact K-step pre-opaque for any K ∈N, since we know
+                                                                                 ∈immediately that the system is at secret state when value 3.1 or           c) ∀xb     ub                                                                                          b                                   - x′b  ∈  Xb\XbS, ∃xa     uaa - x′a
+4.0 is observed. Next, consider an intruder with measurement                                                                Xa\XaS : (x′a, x′b) ∈R.precision δ = 0.2. We claim that S is 0.2-approximate 1-step                                        We say that Sa is ε-AKP simulated by Sb, denoted by Sa ⪯εA
+pre-opaque. For example, consider a ﬁnite path A  u- B   Sb,  if there exists an ε-AKP simulation relation R from Sa
+which generates output path [1.1][2.3] and will reach a secret   to Sb. A (ﬁnite) system Sb that simulates Sa through the ε-AKP
+state in 1 step. However, the intruder cannot predict for sure   simulation relation is called a pre-opacity preserving (ﬁnite)
+that the system will be at a secret state in 1 step since there   abstraction of Sa. Note that the proposed ε-AKP simulation
+is another path E  u- F generating an indistinguishable out-   relation is still a one-sided relation because conditions 1) and
+put path[1.2][2.1], but will reach a non-secret state G /∈XS.   3) are asymmetric.
+Similarly, when observing [1.2][2.1] (generated by the ﬁnite    The  following  theorem shows how  to  use  the above
+path E  u- F), the intruder cannot predict for sure that the   proposed simulation relation in terms of verifying pre-opacity.
+system will be at a secret state after 2 steps either, since there    Theorem 1: Consider two metric systems Sa = (Xa, Xa0,
+exists another path A  u- B  u- C  u- D which will   XaS, Ua,     a - , Ya, Ha)  and  Sb =  (Xb, Xb0, XbS, Ub,
+reach non-secret state D in 2 steps. This protects the possible   b- , Yb, Hb) with the same output sets Ya = Yb and metric
+secret intention of executing E  u- F  u- G  u- H.     d and let ε, δ ∈R≥0. If Sa ⪯εA Sb, then we have:
+                                                                  Sb is δ-approximate K-step pre-opaque
+ III. APPROXIMATE SIMULATION RELATION FOR K -STEP
+                                        ⇒Sa is (δ + 2ε)-approximate K-step pre-opaque.
+                 PRE-OPACITY
+                                                                Proof: Let us consider an arbitrary initial state x0 ∈Xa0, an  In the  last section, we introduced notions of exact and                                                                                                          u1         u2            un
+approximate pre-opacity for control systems. However, the   arbitrary ﬁnite run x0  a- x1  a- , . . .  a- xn in Sa, and
+(approximate) pre-opacity is in general hard (or even infeasi-   any non-negative integer t ≥K. Since Sa ⪯εA Sb, by conditions
+ble) to check for control systems since there is no systematic   1)-a), 2) and 3)-a) in Deﬁnition 3, there exists an initial state
+
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 17,2023 at 04:49:49 UTC from IEEE Xplore. Restrictions apply.
+
+1090                                                                                    IEEE CONTROL SYSTEMS LETTERS, VOL. 7, 2023
+
+                                             u′1           u′2             u′n
+x′0 ∈Xb0 and a ﬁnite run x′0  b- x′1  b-  · · ·  b- x′n in Sb
+such that
+          ∀i ∈{0, . . . , n} : d(Ha(xi), Hb(x′i)) ≤ε.         (1)
+Since   Sb    is   δ-approximate   K-step   pre-opaque,  by
+Deﬁnition  2,  for  any  non-negative  integer   t  ≥   K,
+there  exist an  initial  state  x′′0  ∈  Xb0  and  a  ﬁnite  run
+        u′′1             u′′2               u′′n             u′′n                      u′′n+t                 Fig. 2.   Example of ε-approximate 0-step pre-opacity preserving
+x′′0  b- x′′1  b-  · · ·  b- x′′n  b- x′′n+1 · · ·  b- x′′n+t such   simulation relation.
+that x′′n+t ∈Xb\XbS and
+            max  d(Hb(x′i), Hb(x′′i )) ≤δ.              (2)   that R  is an ε-approximate K-step pre-opacity preserving                     i∈{0,...,n}
+                                                               simulation  relation from Sa  to Sb when ε =  0.1.  First,
+Again, since Sa ⪯εA Sb, by conditions 1)-b), 2), 3)-b) and 3)-c)   for both initial states A and H in Sa, we have L, K ∈Xb0
+in Deﬁnition 3, there exists an initial state x′′′0 ∈Xa0 and a ﬁnite   in Sb such that (A, L) ∈R and (H, K) ∈R. Thus, con-
+                 u′′′1               u′′′2                u′′′n               u′′′n                        u′′′n+t
+run x′′′0   a-  x′′′1   a-  · · ·  a-  x′′′n   a-  x′′′n+1 · · ·  a-  x′′′n+t   dition 1) in Deﬁnition 3 holds. Also, one can check that
+such that x′′′n+t ∈Xa\XaS and                                 d(Ha(xa), Hb(xb)) ≤0.1 for any (xa, xb) ∈R. Therefore,                                                               condition 2) in Deﬁnition 3 holds. Moreover, one can check
+        ∀i ∈{0, . . . , n + t} : d(Ha(x′′′i ), Hb(x′′i )) ≤ε.       (3)   that conditions 3)-a) and 3)-b) in Deﬁnition 3 hold as well.
+                                                                                                               u
+                                                          For example, for (B, I) ∈R and B  a- C, we can chooseCombining inequalities (1), (2), (3), and using the triangle
+                                                                                          I such that (C, I) ∈R. Finally, condition 3)-c) ininequality, we have                                                        I    ub-
+          max  d(Ha(xi), Ha(x′′′i )) ≤δ + 2ε.           (4)   Deﬁnition 3 is also satisﬁed.u    As an example, for (H, K) ∈R                 i∈{0,...,n}                                                       and the transition K  b- J ∈Xb\XbS in Sb, there exists a
+                               u1         u2           un                                   u
+Since x0 ∈Xa0 and x0  a- x1  a-  · · ·  a- xn are arbi-                                                                      transition H  b- G ∈Xa\XaS in Sa such that (G, J) ∈R.
+trary, we conclude that Sa  is (δ + 2ε)-approximate K-step   Therefore, one can conclude that R is an ε-AKP simulation
+pre-opaque.                                                         relation from Sa to Sb, i.e., Sa ⪯0.1A   Sb. Furthermore,  it can
+  We should mention that, essentially, Theorem 1 provides   be seen  that Sb  is δ-approximate 0-step pre-opaque with
+us with a sufﬁcient but not necessary condition for verifying   δ = 0.2. Therefore, according to Theorem 1, we can readily
+pre-opacity of control systems using abstraction-based tech-   conclude that Sa is 0.4-approximate 0-step pre-opaque, where
+niques. In particular, when encountered with a complex control   0.4 = δ + 2ε, without applying any veriﬁcation algorithm to
+system Sa (possibly with inﬁnite state set), one can build a   Sa directly.
+ﬁnite abstraction Sb for Sa through the proposed ε-AKP sim-
+ulation relation. Then, one can verify pre-opacity of the ﬁnite           IV. PRE-OPACITY OF CONTROL SYSTEMS
+abstraction Sb leveraging existing algorithms in DES litera-
+                                                                  In this section, we proceed to investigate how to construct
+ture, and then carry back the veriﬁcation result to the concrete
+                                                                pre-opacity preserving ﬁnite abstractions for control systems.
+system Sa by employing the result obtained in Theorem 1.
+                                                               In particular, we show that for a class of discrete-time con-
+Note that such δ and ε are parameters that specify two differ-
+                                                                            trol systems under certain stability assumptions, one can build
+ent types of precision. The parameter δ is used to specify the
+                                                                ﬁnite abstractions which preserve pre-opacity of the concrete
+intruder’s measurement precision under which one can guar-
+                                                                 control systems under the proposed ε-AKP simulation relation.
+antee pre-opacity of a single system, whereas ε appeared in
+the proposed ε-AKP simulation relation is used to describe
+                                                A. Discrete-Time Control Systemsthe “distance” between two systems in terms of preserving
+pre-opacity.                                                      In this section, we consider a class of discrete-time control
+  Remark 1: In order to verify δ-approximate K-step pre-   systems of the following form.
+opacity for ﬁnite systems, one can combine techniques in [16]     Deﬁnition 4: A discrete-time control system     is deﬁned
+and [17]. Speciﬁcally, one can ﬁrst construct the δ-approximate  by the tuple  = (X, S, U, f, Y, h), where X, S ⊆X, U, and Y
+current-state estimator as deﬁned in [17], and then use the   are the state, secret state, input, and output sets, respectively.
+reachability analysis provided in [16] to check pre-opacity.  The map f  : X × U →X is the state transition function, and
+The reader is referred to [4, Sec. III] for more details about  h : X →Y is the output map. The dynamics of    is described
+how these two techniques can be combined.                 by difference equations of the form
+  We illustrate the newly proposed ε-AKP simulation relation
+                                                                               ξ(k + 1) = f(ξ(k), υ(k)),
+and the preservation of pre-opacity between two related ﬁnite                             :                                            (5)
+                                                                                ζ(k) = h(ξ(k)),
+systems by the following example.
+  Example 2: Consider   systems   Sa   and   Sb   shown  where ξ  : N →X, ζ  : N →Y, and υ  : N →U rep-
+in   Figures   2(a)  and   2(b),   respectively.   All   secret   resent the state, output, and input signals, respectively. We
+states  are  marked  by  red  and  the  output  of  each   write ξxυ(k) to denote the point reached  at time k under
+state   is  speciﬁed  by  the  value  associated  to   it.  Let   the input signal υ from  initial condition x =  ξxυ(0), and
+us  consider   the  following   relation  R  =    {(A, L),   ζxυ(k) to denote the output corresponding to state ξxυ(k), i.e.,
+(B, I), (C, I), (D, I), (E, J), (F, J), (G, J), (H, K)}. We claim   ζxυ(k) = h(ξxυ(k)). Throughout this section, we assume that
+
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 17,2023 at 04:49:49 UTC from IEEE Xplore. Restrictions apply.
+
+HOU et al.: ABSTRACTION-BASED VERIFICATION OF APPROXIMATE PREOPACITY FOR CONTROL SYSTEMS                                    1091
+
+the output map satisﬁes the following Lipschitz condition:   (x, xq) ∈R if and only if ∥x −xq∥≤α−1(ε). First, accord-
+∥h(x) −h(x′)∥≤α(∥x −x′∥) for some α ∈K∞, for  all   ing to the construction of Sq(  ) in (7), for any initial state
+x, x′ ∈X.                                                       x0 ∈X0 in S(   ), there exists an initial state xq0 ∈Xq0 in
+                                                           Sq(  ) such that ∥xa0 −xq0∥≤η. By (9), we further have
+B. Construction of Finite Abstractions                  η ≤α−1(ε). Thus, we get that (x0, xq0) ∈R and condition 1)-
+                                                                    a) in Deﬁnition 3 readily holds. Moreover, for any xq0 ∈Xq0,  Next, we present how to construct ﬁnite abstractions which
+                                                                  there exists x0 = xq0 ∈X0 such that ∥x0 −xq0∥= 0 ≤α−1(ε).preserve  pre-opacity  for  a  class  of  discrete-time  control
+                                                         Hence, (x0, xq0) ∈R and condition 1)-b) in Deﬁnition 3 is alsosystems. Speciﬁcally, the ﬁnite abstraction is built under the
+                                                                   satisﬁed. Now consider any (x, xq) ∈R. By the deﬁnition ofassumption that the concrete control system is incrementally
+                                           R and the Lipschitz assumption, we have ∥H(x) −Hq(xq)∥=input-to-state stable [14] as deﬁned next.
+                                                            ∥h(x) −h(xq)∥≤α(∥x −xq∥) ≤ε, which shows that con-  Deﬁnition 5: System  = (X, S, U, f, Y, h) is called incre-
+                                                                    dition 2) in Deﬁnition 3 is satisﬁed. Further, let us proceedmentally input-to-state stable (δ-ISS) if there exist functions
+                                                                    to prove condition 3) in Deﬁnition  3.  First, consider anyβ ∈KL and γ ∈K∞such that ∀x, x′ ∈X and ∀υ, υ′ ∈
+                                                                    pair (x, xq) ∈R. Given any input u ∈U and the transitionN →U, the following inequality holds for any k ∈N:
+                                                           x  u- x′ = f(x, u) in S(   ), let us choose an input uq ∈Uq
+   ∥ξxυ(k) −ξx′υ′(k)∥≤β(∥x −x′∥, k) + γ (∥υ −υ′∥∞).  (6)   such that ∥u −uq∥≤μ, where μ ≤span(U). From the δ-ISS
+                                                          assumption on     , the distance between x′ and f(xq, uq) is  Next, in order to construct pre-opacity preserving ﬁnite
+                                                      bounded as:
+abstractions for a control system  = (X, S, U, f, Y, h) in
+Deﬁnition 4, we deﬁne an associated metric system S(  ) =                                   (6)                                                                           ∥x′ −f(xq, uq)∥ ≤β ∥x −xq∥, 1 + γ ∥u −uq∥
+(X, X0, XS, U,  - , Y, H), where X = X, X0 = X, XS = S,
+U = U, Y1 = Y, H = h, and x  u- x′  if and only  if            ≤β α−1(ε), 1 + γ (μ).          (11)
+x′ = f(x, u). In the sequel, we will use S(  ) to denote the
+                                                               Besides, by the structure of Sq(  ) as in (8), we haveconcrete control systems interchangeably. Now, we are ready
+to introduce a ﬁnite abstraction for a control system    . To do                     ∥f(xq, uq) −x′q∥≤η.                (12)
+so, we assume that sets X, S and U are of the form of ﬁnite
+                                                  Now, combining the inequalities (9), (11), (12), and triangleunion of boxes. Consider a tuple q = (η, μ, θ) of parame-
+                                                                     inequality, we obtain:ters, where 0 < η ≤min{span(S), span(X\S)} is the state set
+quantization, 0 < μ ≤span(U) is the input set quantization,         ∥x′ −x′q∥= ∥x′ −f(xq, uq) + f(xq, uq) −x′q∥
+and θ is the designed inﬂation parameter. A ﬁnite abstraction
+                                                            ≤∥x′ −f(xq, uq)∥+ ∥f(xq, uq) −x′q∥of     is deﬁned as
+                                        ≤β α−1(ε), 1 + γ (μ) + η ≤α−1(ε).
+       Sq(  ) = (Xq, Xq0, XqS, Uq,  q- , Yq, Hq),       (7)
+                                                               Therefore, we can conclude that (x′, x′q) ∈R and condition 3)-where Xq = Xq0 = [X]η, XqS = [Sθ]η, where Sθ = {x ∈                                                                    a) in Deﬁnition 3 holds. Next, let us show that the condition
+X  : ∃x′ ∈S,  s.t. ∥x −x′∥≤θ} denotes the θ-expansion of
+                                                                  3)-b) in Deﬁnition 3 holds as well. Consider xq and any input
+set S, Uq = [U]μ, Yq = {h(xq) | xq ∈Xq}, Hq(xq) = h(xq),                                                            uq ∈Uq in Sq(   ). Let us choose u = uq. Then, we get the
+∀xq ∈Xq, and                                                          unique transition x  u- x′ = f(x, u) in S(   ). Be leveraging
+      xq                        if and only if ∥x′q −f(xq, uq)∥≤η.     (8)   the δ-ISS assumption on    , we have that the distance between            uqq- x′q                                                                                 x′ and f(xq, uq) is bounded as:
+Now, we are ready to present the main result of this section,          ∥x′ −f(xq, uq)∥≤β ∥x −xq∥, 1 + γ ∥u −uq∥
+which shows that under some condition over the quantization
+parameters η, θ and μ, the ﬁnite abstraction Sq(  ) constructed             ≤β α−1(ε), 1  .                  (13)
+in (7) indeed simulates our concrete control system S(  )
+through approximate K-step pre-opacity preserving simulation  Based on the structure of Sq(   ), there exists x′q ∈Xq s.t.:
+relation as in Deﬁnition 3.
+                                                                                 ∥f(xq, uq) −x′q∥≤η,                (14)  Theorem 2: Consider  a  δ-ISS  control  system    =
+(X, S, U, f, Y, h) as in Deﬁnition 5 and  its associated met-   which, by the deﬁnition of Sq(  ) in (8), implies the existence
+ric system S(   ). For any desired precision ε > 0, and any            uq
+                                                               of xq  q- x′q in Sq(   ). Combining inequalities (9), (13), (14),tuple q = (η, μ, θ) of quantization parameters satisfying
+                                                       and triangle inequality, we obtain:
+         β α−1(ε), 1 + γ (μ) + η ≤α−1(ε),         (9)                                                                            ∥x′ −x′q∥= ∥x′ −f(xq, uq) + f(xq, uq) −x′q∥
+         β α−1(ε), 1 + η ≤θ,                     (10)               ≤∥x′ −f(xq, uq)∥+ ∥f(xq, uq) −x′q∥
+                                         ≤β α−1(ε), 1 + η ≤α−1(ε).we have S(  ) ⪯εA Sq(   ).
+  Proof: Given a  desired  precision ε >  0 appeared  in                                                               Therefore, we conclude that (x′q, x′) ∈R and condition 3)-b)Deﬁnition 3, let us consider a relation R ⊆X ×Xq deﬁned by:                                                                    in Deﬁnition 3 holds. Finally, let us show that condition 3)-c)
+                                                                    in Deﬁnition 3 holds. To this end, we ﬁrstly consider an arbi-
+  1The output  set  is assumed  to be equipped with  the  inﬁnity norm:
+d(y1, y2) = ∥y1 −y2∥, ∀y1, y2 ∈Y.                                       trary transition xq                                                                             uq- x′q with x′q /∈XS in Sq(   ). Similar to
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 17,2023 at 04:49:49 UTC from IEEE Xplore. Restrictions apply.
+
+1092                                                                                    IEEE CONTROL SYSTEMS LETTERS, VOL. 7, 2023
+
+                                                     9  u- 2  u- 1  u- 0  u- 1 which generates exactly the
+                                                   same output behavior, and will reach non-secret states (either
+                                                     0 or 1) in any future time step k ≥0. Finally, by leveraging
+                                                   Theorem 1, we can readily conclude that the concrete system
+                                                                               is 0.8-approximate 0-step pre-opaque without directly applying
+                                                                veriﬁcation algorithms on it.
+
+Fig. 3. A pre-opacity preserving ﬁnite abstraction of a control system.
+                                                                                VI. CONCLUSION
+the proof of condition 3)-b), we can show the existence of a                                                                  In this letter, we proposed an abstraction-based veriﬁcation
+transition x  u- x′ in S(  ) where (x′, x′q) ∈R holds, and the  framework tailored to a security property called pre-opacity
+input is chosen as u = uq ∈Uq. Then by the construction of   for discrete-time control systems. The concept of pre-opacity
+the secret set in the ﬁnite abstraction, one has XqS = [Sθ]η  was ﬁrst extended to an approximate version which is more
+with the inﬂation parameter satisfying θ ≥β(α−1(ε), 1) + η   applicable to control systems with continuous-space outputs.
+and 0 < η ≤min{span(S), span(X\S)}, which also implies   Then, a notion of approximate pre-opacity preserving simu-
+that the size of the non-secret region in Sq(  )  is smaller   lation relation was proposed, based on which one can verify
+than that in S(   ). Therefore, since (x′, x′q) ∈R which implies   pre-opacity of control systems using their ﬁnite abstractions.
+∥x′ −x′q∥≤β(α−1(ε), 1) + η ≤θ, we obtain that x′ /∈XS.  We also investigated how to construct ﬁnite abstractions that
+Thus, we conclude that condition 3)-c) in Deﬁnition 3 holds,   preserve pre-opacity for a class of control systems via the
+which completes the proof.                                 proposed system relation. Finally, an example was presented to
+                                                                           illustrate the proposed abstraction-based veriﬁcation approach.
+                                                          For future work, an interesting problem is how to synthesize                      V. EXAMPLE
+                                                                    controllers to enforce pre-opacity for general control systems.
+  Here, we provide an example to  illustrate the proposed
+abstraction-based pre-opacity veriﬁcation approach. Consider                                                           REFERENCES
+the following simple control system:
+                                                                                      [1] L. An and G. Yang, “Opacity enforcement for conﬁdential robust control
+                  ξ(k + 1) = 0.2ξ(k) + v(k)                              in linear cyber-physical systems,” IEEE Trans. Autom. Control, vol. 65,
+                        :                                        (15)         no. 3, pp. 1234–1241, Mar. 2020.
+                   ζ(k) = ∥cos(0.1πξ(k))∥,                           [2]  J. Balun and T. Masopust, “Comparing the notions of opacity for
+                                                                                         discrete-event  systems,”  Discr.  Event Dyn.  Syst.,  vol.  31,  no.  4,
+where the state set is X = X0 = [0, 12), the secret set is         pp. 553–582, 2021.
+XS = [11, 12), the input set is a singleton U = {0.05}, and     [3]  J. C. Basilio, C. N. Hadjicostis, and R. Su, “Analysis and control for
+the output set is Y = [0, 1]. The output function of the system          resilience of discrete event systems: Fault diagnosis, opacity and cyber                                                                                               security,” Found. Trends Syst. Control., vol. 8, no. 4, pp. 285–443, 2021.
+satisﬁes the Lipschitz condition as in Deﬁnition 4 with α(r) =     [4]  J. Hou, S. Liu, X. Yin, and M. Zamani, “Abstraction-based veriﬁcation of
+0.1πr. The main goal of the example is to verify approximate        approximate pre-opacity for control systems,” 2022, arXiv: 2211.04098.
+                                                                                      [5] R. Jacob, J.-J. Lesage, and J.-M. Faure, “Overview of discrete event
+pre-opacity of the system using the proposed abstraction-based        systems opacity: Models, validation, and quantiﬁcation,” Annu. Rev.
+approach.                                                                             Control., vol. 41, pp. 135–146, Jun. 2016.
+  Next, we apply our main results to achieve this goal. First,     [6]  S. Lafortune, F. Lin, and C. N. Hadjicostis, “On the history of diag-
+                                                                                         nosability and opacity in discrete event systems,” Annu. Rev. Control.,
+let us construct a ﬁnite abstraction Sq(  ) of   which preserves          vol. 45, pp. 257–266, Apr. 2018.
+pre-opacity with desired precision ε = 0.4 as in Deﬁnition 3.     [7] B. Lennartson, M. Noori-Hosseini, and C. N. Hadjicostis, “State-labeled
+Note that by Deﬁnition 5, one can readily check that this control          safety analysis of modular observers for opacity veriﬁcation,” IEEE
+                                                                                 Control Syst. Lett., vol. 6, pp. 2936–2941, 2022.
+system     is δ-ISS with β(r, k) = 0.2kr and γ (r) = 2r. Next,     [8]  F.  Lin,  “Opacity  of  discrete  event  systems and  its  applications,”
+a tuple of quantization parameters q = (η, μ, θ) = (1, 0, 2.3)         Automatica, vol. 47, no. 3, pp. 496–503, 2011.
+are chosen such that inequalities (9)-(10) are satisﬁed. By     [9]  S. Liu, A. Trivedi, X. Yin, and M. Zamani, “Secure-by-construction
+                                                                                       synthesis of cyber-physical systems,” Annu. Rev. Control.,  vol. 53,
+Theorem 2, we have S(  ) ⪯0.4A  Sq(   ). Given the quantization         pp. 30–50, Apr. 2022.
+parameters q = (η, μ, θ) = (1, 0, 2.3), the state set X is dis-    [10] Z. Ma, X. Yin, and Z. Li, “Veriﬁcation and enforcement of strong
+cretized into 12 discrete states as Xq = Xq0 = {0, 1, 2, . . . , 11},        Nov.inﬁnite-and2021, Art.k-stepno.opacity109838.using state recognizers,” Automatica, vol. 133,
+the discrete secret set  is XqS = {8, 9, 10, 11}, the discrete    [11] L. Mazaré, “Using uniﬁcation for opacity properties,” in Proc. Workshop
+input  set  is Uq =  {0.05}, and the  discrete output  set  is         Issues Theory Secururity, vol.  4, 2004, pp. 165–176.
+                                                                               [12] A. Saboori and C. N. Hadjicostis, “Veriﬁcation of k-step opacity and
+Yq = {0, 0.31, 0.59, 0.81, 0.95, 1}. The obtained ﬁnite abstrac-         analysis of its complexity,” IEEE Trans. Autom. Sci. Eng., vol. 8, no. 3,
+tion Sq(  ) of     is shown in Fig. 3. The states marked in         pp. 549–559, Jul. 2011.
+red represent the secret states, and the output of each state is    [13] Y. Tong, H. Lan, and C. Seatzu, “Veriﬁcation of K-step and inﬁnite-step
+                                                                                    opacity of bounded labeled Petri nets,” Automatica, vol. 140, Jun. 2022,
+speciﬁed by a value associated to it. Note that the system can be          Art. no. 110221.
+initiated from any state since Xq = Xq0 and the input u = 0.05    [14] D. N. Tran, “Advances  in  stability analysis  for nonlinear  discrete-
+is omitted in the ﬁgure for the sake of better presentation. One         time dynamical systems,” Ph.D. dissertation, Dept. Electr. Eng., Univ.
+                                                                                Newcastle, Callaghan, NSW, Australia, 2018.
+can readily check that Sq(  ) is exact 0-step pre-opaque since    [15] A. Wintenberg, M. Blischke, S. Lafortune, and N. Ozay, “A gen-
+for any run generated from any initial state of the system and          eral language-based framework for specifying and verifying notions of
+any future instant k ≥0, there exists another run with exactly          opacity,” Discr. Event Dyn. Syst., vol. 32, no. 2, pp. 253–289, 2022.
+                                                                               [16]  S. Yang and X. Yin, “Secure your intention: On notions of pre-opacity
+the same output trajectory such that it will reach a non-secret          in discrete-event systems,” IEEE Trans. Autom. Control, early access,
+state in exactly k steps. As an example, consider a state run         Sep. 27, 2022, doi: 10.1109/TAC.2022.3210148.
+11  u- 2  u- 1  u- 0  u- 1 which generates an output    [17] X.physicalYin, M.systems,”Zamani, IEEEand S.Trans.Liu, “OnAutom.approximateControl, opacityvol.  66,of no.cyber-4,
+run [0.95][0.81][0.95][1][0.95]. There exists another state run         pp. 1630–1645, Apr. 2021.
+
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 17,2023 at 04:49:49 UTC from IEEE Xplore. Restrictions apply.

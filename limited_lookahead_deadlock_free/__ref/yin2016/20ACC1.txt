@@ -1,0 +1,471 @@
+2020 American Control Conference
+Denver, CO, USA, July 1-3, 2020
+
+
+Supervisory Control of Discrete-Event Systems for Inﬁnite-Step Opacity
+
+
+                                       Yifan Xie and Xiang Yin
+
+
+
+  Abstract— In this paper, we investigate the problem of synthe-    When a system is veriﬁed to be non-opaque, one important
+sizing maximally-permissive opacity-enforcing supervisors for   problem  is to enforce opacity via some mechanisms. In
+partially-observed discrete-event systems. We focus on a speciﬁc                                                                the literature, several opacity enforcement mechanisms have
+type of opacity called inﬁnite-step opacity requiring that the
+                                                       been investigated, e.g., by supervisory control [1], [5], [6],intruder, which  is modeled as a passive observer, can never
+determine for sure that the system is/was at a secret state for    [20],  [22],  [23], by dynamic masks  [3],  [25], [27] and
+any speciﬁc instant. When the original system  is veriﬁed to   by insertion functions [9]–[11]. In particular, supervisory
+be non-opaque, one is interested in synthesizing a supervisor    control of opacity aims to ﬁnd a supervisor that restricts the
+that controls the system  in a  least-restrictive manner such                                                            behavior of the system dynamically such that the closed-loop
+that the closed-loop system is opaque. We provide an effective
+                                                        system is opaque. For example, [6] studies the supervisoryapproach for solving the inﬁnite-step opacity control problem
+by re-formulating  this problem as a two-player game over    control problem for current-state opacity assuming that all
+a generalized information structure that involves information    controllable events are observable and the intruder cannot
+delays. We show that the proposed  synthesis algorithm  is   observe more events than the supervisor. The work of [22]
+sound and complete, and the resulting supervisor is maximally-                                                                 relaxes above assumptions but assumes that the intruder does
+permissive. Most of the existing works on opacity-enforcing
+                                                             not know the implementation of the supervisor. Note that allsupervisory control only consider current-state opacity in which
+no delayed information  is  involved. Our work provides a    the above mentioned works on opacity-enforcing supervisor
+complete solution to the inﬁnite-step opacity control problem    synthesis consider current-state opacity.
+without any assumption on the relationship between control-      In  this  paper, we study  the problem  of  synthesizing
+lable events and observable events.                                                          maximally-permissive supervisors for inﬁnite-step opacity.
+                                                           This problem  is signiﬁcantly more challenging than the
+                          I. INTRODUCTION
+                                                                    current-state opacity enforcement problem. Speciﬁcally, in
+  In this paper, we investigate a formal information-ﬂow    the inﬁnite-step  setting, whether or not a secret can be
+security property called opacity in the context of Discrete-   revealed to the intruder not only depends on the information
+Event Systems (DES). Roughly specking, a system is opaque    available currently, but also depends on the information in the
+if its “secret” can never be revealed to a malicious intruder.    future. To handle this future information, in the veriﬁcation
+Essentially, opacity is a conﬁdentiality property guaranteeing   problem, we can look ahead in the original open-loop system.
+the plausible deniability for the secret of the system.         However, in the synthesis problem, the future information
+  In the context of DES, opacity has been studied very   of the closed-loop system is unknown and depends on the
+extensively in the past few years; see, e.g., [4], [8], [12],    control policy in the future which is to be determined. Hence,
+[13], [15], [21], [26]. Especially, to characterize different   how to handle the dependence between the delayed informa-
+types of security requirements, different notions of opacity    tion and the control policy is the main difﬁculty here. In
+are proposed in the  literature. For example, current-state    this paper, we propose an effective approach that solves the
+opacity [14] requires that the intruder should never know for    inﬁnite-step opacity control synthesis problem. In particular,
+sure that the system is currently at a secret state by utilizing  we show that the proposed synthesis algorithm  is sound
+the information available up to the current instant. In many   and complete, and the resulting supervisor  is maximally-
+situations, the intruder may further use future information   permissive.
+to better infer the security status of the system for some     The approach in  this paper essentially generalizes the
+previous instant. To capture this scenario, the notions of K-   two-player-game-based synthesis framework proposed in our
+step opacity [7], [19] and inﬁnite-step opacity [19], [24] are   previous work [23]  to the case of delayed information.
+proposed. Particularly, inﬁnite-step opacity is the strongest   Similarly information state has also been used in our recent
+one among all notions of opacity mentioned above, which   work for dynamic mask synthesis [25]. However, dynamic
+requires that the intruder can never know that the system   masks can only change the observation of the system, while
+is/was at a secret state for any speciﬁc instant even by using   supervisor will change the actually behavior of the system.
+future information.                                       Hence, different state updating rules are proposed here to
+                                                           handle the control problem. Finally, as we mentioned earlier,
+  This work was supported by the National Natural Science Foundation
+of China (61803259, 61833012) and by Shanghai Jiao Tong University   most of the existing works on opacity-enforcing supervisory
+Scientiﬁc and Technological Innovation Funds.                          control only consider current-state opacity. One exception is
+   Y.  Xie  and  X.  Yin  are  with  Department  of  Automation  and    [18], where the authors propose a method to enforce inﬁnite-
+Key  Laboratory  of  System  Control  and  Information  Processing,
+Shanghai  Jiao  Tong  University,  Shanghai  200240,  China.  E-mail:    step opacity by synthesizing a set of supervisors that run
+{xyfan1234,yinxiang}@sjtu.edu.cn.                    synchronously. However, our approach synthesizes a single
+
+
+978-1-5386-8266-1/$31.00 ©2020 AACC                      3665
+
+supervisor directly. Moreover, the approach in [18] is based
+on the assumption that all controllable events are observable;              0                     0                    0
+this assumption is also relaxed in our approach.                      a                    a                   a
+                                                                    b                 b                b
+                                                                      b                                   b                         II. PRELIMINARY                              1      4      7       1                           4      7
+A. System Model                                            b         c      o2      b                        c      o2
+  We assume basic knowledge of DES and use common        2  o1  5      8                                   5      8
+notations; see, e.g., [2]. A DES is modeled as a deterministic
+                                                            b     o2     o1                                         o2   o1ﬁnite-state automaton G = (X, Σ, δ, x0), where X  is the                                                                                 o1
+ﬁnite set of states, Σ is the ﬁnite set of events, δ : X×Σ →X        3      6                                          6
+is the partial transition function, where δ(x, σ) = y means
+that there is a transition labeled by event σ from state x to          (a) System G              (b) Solution G1              (c) Solution G2
+y, and x0 ∈X  is the initial state. The transition function
+                                                                     Fig. 1: Σo = {o1, o2}, Σc = {a, b, c} and XS = {5}.can also be extended to δ  : X × Σ∗→X in the usual
+manner [2]. For simplicity, we write δ(x, s) as δ(s) when
+x = x0. The language generated by G is deﬁned by L(G) :=
+{s ∈Σ∗: δ(x0, s)!}, where ! means “is deﬁned”.              observed, the intruder cannot know for sure that the system is
+  When the system is partially observed, Σ is partitioned    currently at secret state 5 or is at non-secret state 6. However,
+into two disjoint sets: Σ = Σo ˙∪Σuo, where Σo is the set of  G is not inﬁnite-step opaque w.r.t. XS and Σo. To see this,
+observable events and Σuo is the set of unobservable events.  we consider string abo1o2 with P(abo1o2) = o1o2 and the
+The natural projection P : Σ∗→Σ∗o is deﬁned by              delay-state estimate  is ˆXG(o1|o1o2) = {5} ⊆XS. This
+                                                   means that the system was at secret state 5 one step ago
+                ( P(s)σ   if σ ∈Σo                                                                   for sure when string o1o2 is observed. Upon the occurrence      P(ϵ) = ϵ and P(sσ) =
+                           P(s)     if σ ∈Σuo           of o1o2, secret state 5 will be revealed to the intruder.
+
+For  any  observation αβ  ∈  P(L(G)), we  denote by
+ˆXG(α|αβ) the delayed state estimate that captures the set of
+                                                                                           III. PROBLEM FORMULATION
+all possible states the system could be in at the instant when
+α is observed given the entire observation αβ, i.e.,
+                                             When a given system G is not inﬁnite-step opaque, we
+         (              ∃st ∈L(G) s.t.   )
+  ˆXG(α|αβ) :=   δ(s) ∈X :                                         .     need to enforce opacity on the system. One typical approach
+                         P(s) = α ∧P(st) = αβ          is to synthesize a supervisor that restricts the system’s behav-
+                                                                      ior to a sublanguage that satisﬁes the opacity requirement.
+                                                                 In the framework of supervisory control, a supervisor can
+For simplicity, we deﬁne ˆXG(α) := ˆXG(α|α) as the current                                                                control the transition function of G, which means  it can
+state estimate upon the occurrence of α.                                                          dynamically enable/disable the occurrences of events. We
+B. Secret and Intruder                                  assume that the events set  is further partitioned as Σ =
+                                                Σc ˙∪Σuc, where Σc is the set of controllable events and Σuc
+  We assume that system G has a “secret” modeled as a set
+                                                                              is the set of uncontrollable events. Controllable events are
+of secret states XS ⊆X. We consider an intruder modeled as                                                              events that can be prevented from happening, or disabled, by
+a passive observer that may also observe the occurrences of
+                                                                supervisor; uncontrollable events cannot be prevented from
+observable events. Then the intruder can infer whether or not                                                        happening by supervisor. A control decision γ ∈2Σ is said
+the system was/is at a secret state based on the information-
+                                                                   to be admissable if Σuc ⊆γ, namely uncontrollable events
+ﬂow available. If for any string that leads to a secret state, the                                                        can never be disabled. We deﬁne Γ = {γ ∈2Σ : Σuc ⊆γ}
+intruder can never determine whether the system is/was at a
+                                                              as the set of admissable control decisions. Since a supervisor
+secret state no matter what future information is generated,
+                                                        can only make decisions based on its observation, a partial-
+then we say that the system is inﬁnite-step opaque, which is
+                                                              observation supervisor is a function SP  : P(L(G)) →Γ. We
+formally deﬁned as follows.
+                                                           use the notation SP /G to represent the controlled system and
+  Deﬁnition 1: Given system G, a set of observable events
+                                                                the language generated by SP /G, denoted by L(SP /G), is
+Σo and a set of secret states XS, system G is said to be                                                     deﬁned recursively in the usual manner [2].
+inﬁnite-step opaque w.r.t. XS and Σo if
+                                                                 In this paper, we want to synthesize a supervisor that
+        ∀αβ ∈P(L(G)) : ˆXG(α|αβ) ⊈XS.               disables events dynamically such that the controlled system
+  The following example illustrates inﬁnite-step opacity.     SP /G is inﬁnite-step opaque. Note that, when the implemen-
+  Example 1: Let us consider system G in Fig.1(a) with    tation of the supervisor becomes a public information, the
+Σo = {o1, o2} and XS = {5}. This system  is actually    intruder may further know that some behavior in the original
+current-state opacity. For example, for observation o1 ∈   open-loop system is no longer feasible in the closed-loop
+P(L(G)), we have ˆXG(o1) = {5, 6}, i.e., when string o1 is   system. Therefore, for any supervisor SP and observable
+
+
+                                                       3666
+
+string αβ ∈P(L(SP /G)), we deﬁne                            Similarly,  let ρ ∈2X×X be a set of state pairs, which
+                                                                represents that the system is currently at the second state
+          (           ∃st ∈L(SP /G) s.t. )    and is from the ﬁrst state at some instant. Let γ ∈Γ be ˆXSP /G(α | αβ):=  δ(s)∈X :
+                          P(s) = α ∧P(st) = αβ      a control decision and σ ∈Σo be an observable event. We
+                                                         deﬁne:
+as the delayed  state estimate in the closed-loop system.   URγ(ρ)=f        (x1, δ(x2, w))∈X2 :(x1, x2)∈ρ, w∈(Σuo∩γ)∗
+Similarly, we deﬁne ˆXSP /G(α) = ˆXSP /G(α | α). Then we  NXσ(ρ)= (x1, δ(x2, σ))∈X2 :(x1, x2)∈ρ                  g
+say that the closed-loop system SP /G is inﬁnite-step opaque                                               ⊙γ(q)= (x, δ(x, w)) ∈X2 :x ∈q, w ∈(Σuo∩γ)∗
+w.r.t. XS and Σo if
+                                                              In particular, ⊙γ(q) maps q to a set of state pairs such that,
+     ∀αβ ∈P(L(SP /G)) : ˆXSP /G(α | αβ) ⊈XS.    (1)    in each pair of states, the ﬁrst state can reach the second
+                                                                       state via enabled but unobservable strings.
+Clearly, the less events enabled, the system is more likely
+                                                      Example 3: Let  us  consider  system G  in  Fig.1(a)
+to be opaque.  It  is desired that we can enable as many                                                                 again. Let q =  {1, 5} ∈2X  be a  set  of  states and
+events as possible. Therefore, our goal is to ﬁnd a maximally
+                                                  γ = {o1, o2, a, b} ∈Γ be the control decision. Then we have
+permissive supervisor. Then the supervisory control problem
+                                                   URγ({1, 5}) = {1, 2, 3, 5}. Upon the occurrence observable
+for enforcing inﬁnite-step opacity under partial observation
+                                                             event o1 ∈Σo, we have NXo1({1, 2, 3, 5}) =  {5, 6}.
+is formulated as follows.                                                           Let ρ = {(0, 1), (4, 5)} ∈2X×X be a set of state pairs,
+  Problem 1: (Inﬁnite-Step Opacity Control Problem) Giv-                                                     which  represents  that  the system  is  either  (i)  currently
+en system G and secret states XS ⊆X, synthesize a partial-                                                                        at  state 1  from  state  0;  or  (ii)  currently  at  state 5
+observation supervisor SP  : P(L(G)) →Γ, such that:                                                      from  state 4. Let γ = {o1, o2, a, b} ∈Γ be the control
+(1) SP /G is inﬁnite-step opaque w.r.t. XS and Σo; and       decision. Then we have UR{o1,o2,a,b}({(0,f                1), (4, 5)}) =
+(2) For  any  supervisor  S′P   satisfying   (1),  we  have   {(0, 1), (0, 2), (0, 3), (4, 5)}.  When  event  o1  ∈   Σo
+   L(SP /G)̸ ⊂L(S′P /G).                                    occurs,  we  have  NXo1({(0, 1), (0, 2), (0, 3), (4, 5)})=                         g
+The second condition implies that the synthesized supervisor   {(0, 5), (0, 6)}.  Besides,  let  q =  {1, 2, 3, 5}  ∈  2X
+is maximal in the sense that its permissiveness cannot be   and  γ  =    {o1, o1, a, b},  we   have  ⊙γ(q)  =
+improved anymore. As we will see in the following example,   {(1, 1), (1, 2), (1, 3), (2, 2), (2, 3), (3, 3), (5, 5)}.
+such maximal solution is not unique in general.
+                                                              IV. INFORMATION-STATE FOR INFINITE-STEP OPACITY  Example 2: Again, we  consider  system G shown  in
+Fig.1(a) and we assume that Σc = {a, b, c} is the set of      In this section, we study how information evolves in the
+controllable events. Actually, we have two different ways   closed-loop system when delayed information is involved.
+to  get an  inﬁnite-step opaque  controlled system.  If  the
+                                                            A. Notion of Information-State
+supervisor disables event b initially, then we get an inﬁnite-
+step opaque system G1 shown in Fig.1(b). This system is      In the synthesis of partially-observed systems, 2X is usual-
+clearly opaque as no secret state can be visited. Another    ly chosen as the set of information states representing current
+approach is to disable event a initially and we can get a   information of the system. This information state has been
+closed-loop system G2 shown in Fig.1(c). This system is also   shown to be suitable for current-state opacity enforcement.
+inﬁnite-step opaque since ˆXG2(ϵ | o2) = {0, 4, 5, 7}̸ ⊆XS.   However, inﬁnite-step opacity requires that the secret cannot
+One can verify  that both of these two solutions cannot   be revealed at any instant currently and in the future; hence,
+be further improved, i.e., they are maximal. Moreover, we   2X is not sufﬁcient enough.
+have L(G1)̸ ⊂L(G2) and L(G2)̸ ⊂L(G1), i.e., they are     Note that, the requirement of inﬁnite-step opacity in E-
+two incomparable maximal solutions. Note that, we cannot   quation (1) can be equivalent written as
+achieve L(G1)∪L(G2) as there is a control conﬂict for event                                            ∀α ∈P(L(SP /G)), ∀α′ ∈{α} : ˆXSP /G(α′|α) ⊈XS. (4)
+b in two solutions at the initial step.
+   Finally, we introduce some necessary operators that will   where {α} denotes the preﬁxes of all the strings in {α}, i.e.
+be used for further developments. Let q ∈2X be a set   {α} := {s ∈L(SP /G)  : ∃t ∈L(SP /G) s.t. st ∈{α}}.
+of states, γ ∈Γ be a control decision and σ ∈Σo be an   This reformulation suggests  that,  to enforce  inﬁnite-step
+observable event. The unobservable reach of q ⊆X under    opacity,  it is sufﬁcient to capture the delayed estimates of
+control decision γ ⊆Σ is deﬁned by                                 all previous instants. Therefore, instead of using 2X, we use
+                                                             another set of information states deﬁned by
+  URγ(q) := {δ(x, w) ∈X : x ∈q, w ∈(Σuo ∩γ)∗} .   (2)
+                                                                              I := 2X × 22X×X.
+which is the set of states that can be reached from states in q
+                                                   Then each information state ı ∈I  is in the form of ı =
+via unobservable strings allowed in γ. The observable reach
+                                                             (C(ı), D(ı)), where
+of q ⊆X upon the occurrence of σ ∈Σo is deﬁned by
+                                                                  • The ﬁrst component C(ı) ∈2X  is a set of states that
+         NXσ(q) := {δ(x, σ) ∈X : x ∈q}.          (3)        capture the current state estimate of the system; and
+
+
+                                                       3667
+
+  • The second component D(ı) ∈22X×X  is a  set of   I(o2), where
+     state pairs sets that captures  all possible delayed  s-
+                                                        C(I(o2)) =UR{o1,o2,a,b,c}(NXo2(C((ϵ))))      tate estimates  in  history. Speciﬁcally,  for (x, x′) ∈
+    2X×X, x represents the state of the system at some              ={6, 8}
+     previous  instant  and  x′  represents  the  current  s-      D(I(o2)) ={UR{o1,o2}(gf      NXo2(D(I(ϵ))))}
+      tate of the system, and D(ı) essentially contains al-                                                                          ∪{⊙{o1,o2,a,b,c}(C(I(o2))}
+       l  such  pairs  sets  for  all  previous  instants, where
+                                                                               {(0, 6),(4, 6),(5, 6),(0, 8),(4, 8),(7, 8)},     {(x1, x′1), (x2, x′2), · · · , (xn, x′n)} ∈D(ı).                =
+                                                                                           {(6, 6), (8, 8)}
+
+B. Information-State Update Rules                       Then  event  o1  is  observed  and new  control  decision
+                                              SP (o2o1) = {o1, o2, a, b, c} is made. The information state
+  Suppose  that  the  system’s  information-state  is  ı =                                                                              is then updated to I(o2o1), where
+(C(ı), D(ı)). Then, upon the occurrence of an observable
+event σ ∈Σo (should also be allowed by the previous control      C(I(o2o1)) =URSP (o2o1)(NXo1(C(I(o2))))
+decision), the supervisor will issue a new control decision              ={6}
+γ ∈Γ. Therefore, (σ, γ) is our new information about the
+                                                        D(I(o2o1)) ={URSPf  (o2o1)(gNXo1(D(I(o2))))}system and the information-state ı = (C(ı), D(ı)) needs to
+updated to ı′ = (C(ı′), D(ı′)) as follows:                           ∪{⊙SP (o2o1)(C(I(o2o1))}
+                                                                      ={{(0, 6),(4, 6),(7, 6)}, {(8, 6)}, {(6, 6)}}
+   C(ı′) =URγ(NXσ(C(ı)))
+                                                     C. Property of the Information-State
+      D(ı′) ={ URγ(gf  NXσ(ρ)) ∈2X×X : ρ ∈D(ı)}     (5)      In the following result, we formally show that the proposed
+         ∪{⊙γ(C(ı′))}                                                             information updating rule indeed yields the desired delayed
+                                                                       state estimate in the controlled system.
+Intuitively, the ﬁrst equation simply updates the current state
+                                                                Proposition 1: Let SP be a supervisor, α ∈P(L(SP /G))estimate of the system, while the second equation updates all
+                                                       be an observable string and I(α) be the information state
+possible delayed state estimates (pairs) of previous instants
+                                                              reached. Then we have
+and adds the current state estimate to the history. Then we
+consider a controlled system SP /G. Let α = σ1σ2 · · · σn ∈       (i) C(I(α)) = ˆXSP /G(α); and
+P(L(SP /G)) be an observable string. Then the following      (ii) D(I(α)) = {ρβ,α ∈2X×X : β ∈{α}}, where
+information states evolution will happen                (                      ∃st ∈L(SP /G) s.t. )
+                                                            ρβ,α =  (δ(s), δ(st))∈X×X :                                       .
+      (σ1,SP (σ1))     (σ2,SP (σ1σ2))      (σn,SP (σ1···σn))                                   P(s) = β ∧P(st) = α
+   ı0 −−−−−−−−→ı1 −−−−−−−−−→· · · −−−−−−−−−−−→ın                                                                   (6)
+                                                        Note that each information-state is in the form of ı =
+where  ı0 = (URSP (ϵ)({x0}), {⊙SP (ϵ)(URSP (ϵ)({x0}))})   (C(ı), D(ı)) = 2X ×22X×X, where D(ı) is a set of possible
+represents   the    initial   information   state  and   each    state-pairs. We deﬁne
+       (σi,SP (σ1···σi))
+ıi−1 −−−−−−−−−−→ıi means  that  ıi  is obtained from                                                             D1(ı) := {{x ∈X : (x, x′) ∈ρ} : ρ ∈D(ı)}     (7)
+ıi−1  with new information  (σi, SP (σ1 · · · σi)) according
+to Equation (5). We denote by I(α) the information state   as  the  set  of   its  ﬁrst  components.  For  I(o2)  =
+reached by α, i.e., I(α) = ın.                                 ({6, 8}, {{(0, 6), (4, 6), (5, 6), (0, 8), (4, 8), (7, 8)}, {(6, 6), (8,
+                                                         8)}})   in  Example   4,  we   have  D1(I(o2))  =  We illustrate the above information update procedure by
+                                                           {{0, 4, 5, 7}, {6, 8}}.  The  following  result  shows  thatthe following example.
+                                                       D1(ı) indeed captures all possible delayed state estimates.  Example 4: Let SP  be  the  supervisor  that  results  in
+                                                              Corollary 1: Let SP be a supervisory controller, α ∈closed-loop system G2 in Fig.1(c). Speciﬁcally, supervisor
+                                              P(L(SP /G)) be an observable  string and I(α) be theSP enables all the events except a initially,  i.e., SP (ϵ) =
+                                                             information state reached. Then we have{o1, o2, b, c}. Let us consider observable  string o2o1 ∈
+P(L(SP /G)). Then we have                                                        D1(I(α)) = {ˆXSP /G(β | α) ∈2X : β ∈{α}}.
+
+   I(ϵ) = (URSP (ϵ)({x0}), {⊙SP (ϵ)(URSP (ϵ)({x0}))}),       V. GENERALIZED BIPARTITE TRANSITION SYSTEM AND
+                                                              SYNTHESIS ALGORITHM
+where                                                            A. Bipartite Transition System
+     C(I(ϵ)) ={0, 4, 5, 7}                                       In Section IV, we have proposed a new type of information
+                        (0, 0), (0, 4), (0, 5), (0, 7),                 state that can capture all possible delayed state estimates.
+    D(I(ϵ)) =                     (4, 4), (4, 5), (4, 7), (5, 5), (7, 7)          Note that, the information state updating rule as deﬁned in
+                                                          Equation (5) essentially consists of two steps: the immediate
+Once event o2 is observed, new control decision SP (o2) =   observable reach when a new observable event occurs and the
+{o1, o2, a, b, c} is made, and the updated information state is   unobservable reach when a new control decision is issued.
+
+
+                                                       3668
+
+However, this is based on the assumption that supervisor SP     Example 5: Again,  consider  system G  in  Fig.1(a).
+is given. In the synthesis problem, the control decision at   Then  T ∗  in  Fig.2   is  a  G-BTS.  For  the  sake  of
+each instant is unknown and to be determined. Therefore,    simplicity,  uncontrollable  events o1 and o2  are omitted
+we need to separate these two update steps clearly. To this    in each  control  decision  in  Fig.2. From  the  initial Y -
+end, we deﬁne the generalized bipartite transition system (G-    state  y0  =   ({0}, {∅}),  by  making  control  decision
+BTS) which is a generalized BTS structure in our previous   γ = {b, c, o1, o2}, we will reach Z-state z1 = hTY Z(y0, γ) =
+work [23] by incorporating the new information state.         ({0, 4, 5, 7}, {{(0, 0), (0, 4), (0, 5), (0, 7), (4, 4), (4, 5), (4, 7),
+  Deﬁnition 2: A generalized bipartite transition system (G-    (5, 5), (7, 7)}}, {a, b, c}). From z1, the occurrence of observ-
+BTS) T w.r.t. G is a 7-tuple.                                  able event o2 leads to the next Y -state y1 = hTZY (z1, o2) =
+                                                              ({6, 8}, {{(0, 6), (0, 8), (4, 6), (4, 8), (5, 6), (7, 8)}}).  From
+        T = (QTY , QTZ, hTY Z, hTZY , Σo, Γ, yT0 ),         (8)    y1, by making control decision γ = {o1, o2, a, b, c}, we will
+                                                            reach Z-state z2 = hTY Z(y1, γ) = ({6, 8}, {{(0, 6), (0, 8), (4,where
+                                                                   6), (4, 8), (5, 6), (7, 8)}, {(6, 6), (8, 8)}}, {a, b, c}). From z2,
+  • QTY ⊆I  is the set of Y -states. Therefore, a Y -state    the observable event o1 can happen and we will reach the
+    y ∈QTY  is in the form of y = (C(y), D(y));             next Y -state y2 = hTZY (z2, o1) = ({6}, {{(0, 6), (4, 6), (7,
+  • QTZ ⊆I × Γ is the set of Z-states. For each z ∈QTZ,   6)}, {8, 6)}}). Then we make the control decision γ = {o1,
+    I(z) and Γ(z) denote, respectively, the information state    o2, a, b, c} and  reach  to  Z-state  z3 =  hTY Z(y2, γ) =
+    and the control decision, so that z = (I(z), Γ(z)) ∈   ({6}, {{(0, 6), (4, 6), (7, 6)}, {(8, 6)}, {(6, 6)}}, {a, b, c}).
+   2X × 22X×X × Γ. For simplicity, we further write z =
+    (C(I(z)), D(I(z)), Γ(z)) as z = (C(z), D(z), Γ(z));     B. Construction of Supervisor
+  • hTY Z  : QTY × Γ →QTZ  is the partial transition func-    By Equation (4) and Corollary 1, to make sure that the
+     tion from Y -states to Z-states satisfying the following   closed-loop system SP /G is inﬁnite-step opaque, it sufﬁces
+     constraint: for any hTY Z(y, γ) = z, we have                to guarantee that, for any information state ı reached, we
+                                                        have ∀q ∈D1(ı), q ⊈XS. Therefore, we deﬁne
+   C(z) =URγ(C(y))
+                                                     Qunsafe = {z ∈QZ : ∃q ∈D1(I(z)) s.t. q ⊆Xs}
+      D(z) ={gURγ(ρ)∈2X×X : ρ∈D(y)} ∪{⊙γ(C(z))}
+   Γ(z) =γ                                              as the set of unsafe Z-states. To synthesize a supervisor that
+                                                            (9)   enforces inﬁnite-step opacity, the controlled system SP /G
+  • hTZY  : QTZ × Σ →QTY  is the partial transition function   needs to guarantee that all the reachable information states
+    from Z-states to Y -states satisfying the following con-    are safe states. Furthermore, as the supervisor can only play
+      straint: for any hTZY (z, σ) = y, we have σ ∈Γ(z) ∩Σo    at Y -states, we need to make sure that (i) there is at least one
+    and                                                    choice at each Y -state; and (ii) all choices at each Z-state
+                                                           should be considered. Therefore, for each G-BTS T, we say
+     ( C(y) =NXσ(C(z))
+                                                       (10)    that a state is consistent if
+         D(y) ={NXσ(ρ)                  ∈2X×X : ρ ∈D(z)}              •  at least one transition is deﬁned when it is a Y -state;      g
+                                                                  •  all feasible observations are deﬁned when it is a Z-state.
+  • Σo is the set of observable events of G;
+  • Γ is the set of admissible control decisions of G;        Let T be the set of all G-BTSs. For any G-BTS T ∈T ,
+                                                                                    consist as the set of consistent states in T. Also,  • yT0 := ({x0}, {∅}) ∈QTY  is the initial Y -state.        we deﬁne QT
+                                                                   for a set of states Q ⊆QTY ∪QTZ, we deﬁne T|Q as the  The G-BTS structure is essentially a game structure be-
+                                                                       restriction of T to Q, i.e., T|Q is the G-BTS obtained bytween the controller and the environment. When the con-
+                                                       removing states and their transitions not in Q from T.troller picks a control decision γ ∈2Σ at a Y -state, the
+                                                                 In order to synthesize an opacity-enforcing supervisor,game moves to a Z-state. A transition from Y -state to Z-state
+                                                                        ﬁrst, we construct the largest G-BTS that enumerates  allis an unobservable reach under the issued control decision
+                                                               possible transitions for each state, i.e., a transition is deﬁnedand remembers the control decision. When the environment
+                                                      whenever  it satisﬁes the constraints in hTY Z or hTZY . Wepicks an observation σ ∈Σo ∩γ at a Z-state, the game
+                                                     deﬁne Ttotal ∈T  as the largest G-BTS that includes allmoves to a Y -state, and so  forth. A transition from Z-
+                                                               possible transitions. Second, we remove  all unsafe statesstate to Y -state is the observable reach. Transitions from
+                                                      from Ttotal and deﬁneZ-states to Y -states and transitions from Y -states to Z-
+states are indeed the information updating rule in Equation                  T0 = Ttotal|Q\Qunsafe.
+(5), but we separate the updating procedure into two parts.
+Speciﬁcally, for any z ∈QYZ, y ∈QTY , γ ∈Γ, σ ∈Σo, we   Then, we need to iteratively remove inconsistent states from
+                                                       (σ,γ)        T until the G-BTS is consistent. Speciﬁcally, we deﬁne an
+have hTY Z(hTZY (z, σ), γ) = (ı′, γ), where I(z) −−−→ı′. The                                                              operator
+basic structure of the BTS was originally proposed in [23].                                                        F : T →T
+Here we call the proposed structure generalized BTS as it
+is used information states capturing delays rather than the   by: for any T, we have F(T) = T|QTconsist. Note  that
+current-state-type information state used in [23].            T|QTconsist need not be consistent in general since removing
+
+
+                                                       3669
+
+                            {5,6},                                                            {0,1,2,3,4,5,7},{{(0,0),(0,1),{0,1,2,3,4,5,7},{{(0,0),(0,1),                   ૚૛                                                                     ૚૙                     {a,b,c}                             {c}                 {(0,5),(1,5),(2,5),(0,6),                                                {a,b,c}    {5,6},{{(0,5),                     (0,2),(0,3),(0,4),(0,5),(0,2),(0,3),(0,4),(0,5),                                            ૚૚                        (0,7),(1,1),(1,2),(1,3),(0,7),(1,1),(1,2),(1,3),                    ૚                                {0},{{(0,0)}},{c}                    (1,6),(2,6),(3,6)}         ,             (1,5),(2,5),(0,6),                                                                             ଵ                                                                                              (2,2),(2,3),(4,4),(4,5),(2,2),(2,3),(4,4),(4,5), ૛                      {(5,5),(6,6)}                    (1,6),(2,6),(3,6)}}     ݋                                                                                                                               {0},{ᅼ}{b,c}            {a,c}                           {a,b,c}                                                            (4,7),(5,5),(7,7)}},{a,b,c}(4,7),(5,5),(7,7)}},{a,b,c}           {a,b}                                                              ݋ଶ                                                                                                                                                    {b}                   {0,1},૜
+                                                                                                                                                                                       {{(0,0),(0,1),(1,1)}},                                                                                                                                           {0,4,5,7},{{(0,0),(0,4),૞                                             {a,c}                       ݋ଵ                                                                                                      (0,5),(0,7),(4,4),(4,5),
+                                                                                               {0,1,2,3,4,7},{{(0,0),(0,1),                           ૙                                                                     ૚૜                           (4,7),(5,5),(7,7)}},{b,c}                             {6},                                                                 ݋ଵ                  ࢀ                                                          {6,8},{{(0,6),(4,6),(5,                                                                                             (0,2),(0,4),(0,7),(1,1),(1,   ૚૝                    {                   0,6                                                  ,                         1,6  , 2,6 }                                                                                                                                                                                                 {0,4},                                                         6),(0,8),(4,8),(7,8)}}                                                                                              2),(1,3),(2,2),(2,3),(3,3), ૚૞                                                                                                                             ૝                        {(5,6)}                                                                                                                                                                                      {{(0,0),(0,4),(4,4)}},                                                                                              (4,4),(4,7),(7,7)}},{a,b}                                                                                                                                          ଶ                                {b}                                                                                                                                         {6,8},{{(0,6),(0,8),(4,6),૟    ݋
+                                {a,b,c}                                 {a,b,c}                                                           (4,8),(5,6),(7,8)}}
+
+                             {6},                                                                                                                          {a,b,c}              ૚ૡ
+                    {(0,6),(1,6),(2,6)}                                         ૚ૠ {6,8},                           ݋ଶ                                                  {(0,6),(4,6),(5,6),(0,8),(4,8),(7,8)}
+                        {(5,6)}                                                                                                                                                              澿                                                                             ,                                                                                             ૠ {6,8},                                                            {(6,6),(8,8)}                                                                                                                                  (0,6),(0,8),(4,6),(4,8),(5,6),(7,8)}  ࢀ࢚࢕࢚ࢇ࢒࢙                        {(6,6)}                                                                  ૚૟{8},                                                                                                                                                                                                                                                                                                                              ,                                                                    {a,b,c}                                                                                                                                          {(6,6),(8,8)}                                                                                               {{(0,8),(4,8),(7,8)}}                           {a,b,c}
+                                                                                                                                                  {a,b,c}                                                                                     ࢀכ
+                                                                                                                {a,b,c}                                                                  ଶ                                                                                                                                                                                                  {6},                                                    ݋                             {6},              ૛૚                                                                                                            {8},                                                                     {6},                                                 {a,b,c}                                                                                                              ݋ଵ             {a,b,c}     {(0,6),                                                                                                                                                                                         (4,6),                                                                                                                                                                                   (5,6),(7,6)}                                                                                                                                                       {6},                    {                   0,6                                                  ,                         4,6                                                              ,                               7,6 }                                         ૛૙                                                                                               {(0,8),(4,8),(7,8)}                                                                                             ૡ                                                           { 0,6                                                                                                                             ,                                                            4,6                                                                                                                                         ,                                                                    (7,6)}                                                                                                                                                                                        {(6,6),                                                                                                                                                                                 (8,6)}                ,                         8,6                                 }                          {                                                                               ,                                                                                                                                                                                                                              ,                  {(0,6),(4,6),(5,6),(7,6)}    ૚ૢ
+                                                                                                 {(8,8)}                                                               ݋ଵ                                                                                                                                         {(6,6),(8,6)}                                                            8,6                                                                        }                                                                  {                                                                                                                                                                                {(6,6)}                         6,6                                 }                          {
+                                                                                                        {a,b,c}
+                           {a,b,c}                                                                                                                                                           {a,b,c}
+
+
+
+Fig. 2: Example of the construction of the G-BTS. Rectangular (black) states correspond to Y -states and rectangular with
+rounded corners (red) states correspond to Z-states. Ttotal is the largest G-BTS that enumerates all transitions.
+
+
+inconsistent states may create new inconsistent states. Note      Next, we show that synthesizing a supervisor within T ∗
+that, iterating operator F always converges in a ﬁnite number    is without loss of generality.
+of steps since we need to remove at least one state for each     Theorem 5.1: The  opacity-enforcing  synthesis problem
+iteration and there are only ﬁnite number of states in T. We   has no solution if T ∗is empty.
+deﬁne                                                   Given a G-BTS T, we deﬁne CT (y) := {γ ∈Γ  :
+                                                  hTY Z(y, γ)!} as the set of control decisions deﬁned at y ∈QTY
+    T ∗= k→∞Flim   k(T0), where T0 = Ttotal|Q\Qunsafe      When T ∗is not empty, we can synthesize a supervisor
+as the resulting G-BTS after the convergence of operator F.  S∗as  follows. At each  instant,  the supervisor S∗will
+  Before we proceed further, we illustrate the above proce-   remember the current information state (Y -state) and pick
+dure by the following example.                              a locally maximal control decision γ deﬁned at the current
+  Example 6: We still consider G in Fig.1(a). We want to  Y -state in T ∗,  i.e., a control decision γ ∈CT ∗(y) such
+synthesize a partial-observation supervisor SP  to enforce     that̸ ∃γ′ ∈CT ∗(y) : γ ⊂γ′. 1 Note that locally maximal
+inﬁnite-step opacity. First, we construct the largest G-BTS    control decision is not unique in general and we denote by
+that enumerates all possible transitions for each state, which   LocMax(y, T ∗) the set of locally maximal control decisions
+is Ttotal shown in the box marked with black-dashed lines    at y in T ∗. Then we update the information state based on
+in Fig.2. We rename each state in Ttotal as S1, · · · , S21.    the control decision issued and wait for the next observable
+Then, to obtain T0, we need to restrict Ttotal to Qsafe. Since   event and so forth. The execution of S∗is formally described
+D1(S18) = {{0, 1, 2}, {5}, {6}} and {5} ⊆XS, S18 is a   as Algorithm 1.
+unsafe state, which needs to be removed. This results in T0      Next, we show that the proposed supervisor S∗indeed
+shown in the box marked with blue-dashed lines in Fig.2.   solves Problem 1.
+Then, we need to remove all inconsistent states from T0.     Theorem 5.2: Supervisor S∗deﬁned by Algorithm 1 en-
+Since S18 has been removed, S15 becomes an inconsistent    forces inﬁnite-step opacity and is maximally permissive.
+Z-state, which is also removed by applying operator F for     Example 7: Let us consider system G in Fig.1(a) and we
+the ﬁrst time. Then S12 becomes a new inconsistent Z-state   use Algorithm 1 to solve the inﬁnite-step opacity control
+as feasible observable event o1 is not deﬁned; hence S12 is   problem. At the initial Y -state y0 = ({x0}, {∅}), we have
+deleted when applying operator F for the second time. We
+                                                              1Some decisions are “equivalent” at a Y -state in the sense that some
+keep applying operator F and need to remove state S11. This    events in the control decision may not be feasible within the unobservable
+makes S10 and S13 inconsistent because feasible observable    reach. For example, decisions {a} and {a, c} are equivalent at S1 in Fig. 2
+event o1  is not deﬁned. So operator F  will further delete    as event c is not feasible. For those equivalent decisions, we only draw
+                                                           ∗     the one with all redundant event included in the ﬁgure. However, when
+S10 and S13. Then operator F converges and results in T     comparing decisions to ﬁnd local maximal decisions, those redundant events
+shown in the box marked with red-dashed lines in Fig.2.       should not be counted.
+
+
+                                                       3670
+
+ Algorithm 1: Online Execution of Supervisor S∗                  [3]  F. Cassez, J. Dubreil, and H. Marchand. Synthesis of opaque systems
+                                                                              with static and dynamic masks. Formal Methods in System Design,
+   1 y ←{{x0}, {∅}};                                                     40(1):88–115, 2012.
+   2 ﬁnd a locally maximal control decision                           [4]  J. Chen, M. Ibrahim, and R. Kumar.  Quantiﬁcation of secrecy in
+   γ ∈LOCMAX(y, T ∗);                                                         partially observed stochastic discrete event systems.  IEEE Trans.
+                                                                           Automation Science and Engineering, 14(1):185–195, 2017.
+   3 make initial control decision γ;                                      [5]  P. Darondeau, H. Marchand, and L.  Ricker.   Enforcing opacity
+   4 z ←hTY Z(y, γ);                                                           of regular predicates on modal transition systems.  Discrete Event
+                                                                    Dynamic Systems: Theory & Appllications, 25(1-2):251–270, 2014.   5 while new event σ ∈γ ∩Σo is observed do                                                                                     [6]  J. Dubreil, P. Darondeau, and H. Marchand. Supervisory control for
+   6    y ←hTZY (z, σ);                                                         opacity. IEEE Trans. Automatic Control, 55(5):1089–1100, 2010.
+   7    ﬁnd a locally maximal control decision                      [7] Y. Falcone and H. Marchand. Enforcement and validation (at runtime)
+      γ ∈LOCMAX(y, T ∗);                                              of various notions of opacity. Discrete Event Dynamic Systems: Theory
+                                             & Appllications, 25(4):531–570, 2015.
+   8     update the control decision to γ;                               [8] R. Jacob, J.-J. Lesage, and J.-M. Faure. Overview of discrete event
+   9    z ←hTY Z(y, γ);                                                  systems  opacity: Models,  validation, and  quantiﬁcation.   Annual
+                                                                           Reviews in Control, 41:135–146, 2016.
+                                                                                     [9] Y. Ji, Y.-C. Wu, and S. Lafortune. Enforcement of opacity by public
+                                                                        and private insertion functions. Automatica, 93:369–378, 2018.
+                                       {a,c}                                        [10] Y.  Ji, X. Yin, and S. Lafortune.   Enforcing opacity by insertion
+                        𝑆3        𝑆1                                         functions under multiple energy constraints. Automatica, 108:108476,
+                                                                             2019.
+                                  (a) Solution 𝑆𝑃1                                                                              [11] Y.  Ji, X. Yin, and S. Lafortune.  Opacity enforcement using non-
+             {b,c}       𝑜2          {a,b,c }        𝑜1          {a,b,c }                  deterministic publicly known edit functions. IEEE Trans. Automatic
+      𝑆1        𝑆5       𝑆6          𝑆7       𝑆8           𝑆9            Control, 64(10):4369–4376, 2019.
+                                                                              [12] C. Keroglou and C.N. Hadjicostis.  Probabilistic system opacity in
+                                (b) Solution 𝑆𝑃2                                           discrete event systems. Discrete Event Dynamic Systems: Theory &
+                                                                                       Appllications, pages 1–26, 2017.
+                    Fig. 3: Solution SP .                             [13]  S. Lafortune,  F.  Lin, and C.N.  Hadjicostis.  On  the  history of
+                                                                                      diagnosability and opacity in discrete event systems. Annual Reviews
+                                                                                         in Control, 45:257–266, 2018.
+LOCMAX(y0, T ∗) = {{a, c}, {a, b}}. If we choose control    [14]  F. Lin.   Opacity of  discrete event systems and  its  applications.
+decision {a, c}, then we reach Z-state S3 and the system has         Automatica, 47(3):496–503, 2011.
+no future observation. This gives supervisor SP 1 shown in    [15]  T. Masopust and X. Yin.  Complexity of detectability, opacity and                                                                                   A-diagnosability for modular discrete event systems.  Automatica,
+Fig.3(a), which is the one resulting in G1 in Fig.1(b). On         101:290–295, 2019.
+the other hand, if we choose control decision {b, c} initially,    [16]  S. Mohajerani, Y. Ji, and S. Lafortune. Compositional and abstraction-
+then the system moves to S5. From S5, the occurrence of         based approach for synthesis of edit functions for opacity enforcement.                                                                IEEE Trans. Automatic Control, 2019.
+o2 leads to S6 and the supervisor picks {a, b, c} as the    [17] M. Noori-Hosseini, B. Lennartson, and C. Hadjicostis. Compositional
+maximal control decision and the system moves  to S7.           visible bisimulation abstraction applied to opacity veriﬁcation. In 14th
+Then observable events o1 occurs and the system moves            Int. Workshop on Discrete Event Systems, pages 434–441, 2018.                                                                              [18] A. Saboori and C.N.  Hadjicostis.   Opacity-enforcing supervisory
+to S8, where supervisor SP 2 picks {o1, o2, a, b, c} leading           strategies via state estimator constructions. IEEE Trans. Automatic
+the system to state S9. This gives supervisor SP 2 shown in          Control, 57(5):1155–1165, 2011.
+Fig.3(b), which is the one resulting in G1 in Fig.1(c). As we    [19] A. Saboori and C.N. Hadjicostis. Veriﬁcation of inﬁnite-step opacity                                                                        and complexity  considerations.  IEEE Trans. Automatic Control,
+have discussed in Example 2, both supervisors are maximal         57(5):1265–1269, 2012.
+and they are incomparable.                                             [20]  S. Takai and Y. Oka. A formula for the supremal controllable and
+                                                                        opaque sublanguage arising in supervisory control. SICE J. Control,
+                  VI. CONCLUSION                              Measu. & Syst. Integration, 1(4):307–311, 2008.
+                                                                              [21] Y. Tong, Z. Li, C. Seatzu, and A. Giua.  Veriﬁcation of state-based
+  We solved the maximally-permissive inﬁnite-step opacity          opacity using Petri nets. IEEE Trans. Automatic Control, 62(6):2823–
+control problem without assumption on controllable events         2837, 2017.
+                                                                              [22] Y. Tong, Z. Li, C. Seatzu, and A. Giua.  Current-state opacity en-
+or observable events. We deﬁned a new class of general-         forcement in discrete event systems under incomparable observations.
+ized bipartite transition structures that captures the delayed          Discrete Event Dynamic Systems: Theory & Appllications, 28(2):161–
+information in the control synthesis problem over a game         182, 2018.
+                                                                              [23] X. Yin and S. Lafortune.  A uniform approach for synthesizing
+structure. Based on the G-BTS, we proposed an effective          property-enforcing supervisors for partially-observed discrete-event
+algorithm to construct a maximally-permissive supervisor          systems. IEEE Trans. Automatic Control, 61(8):2140–2154, 2016.
+that enforces inﬁnite-step opacity. Note that the worst com-    [24] X. Yin and S. Lafortune. A new approach for the veriﬁcation of
+                                                                                       inﬁnite-step and k-step opacity using two-way observers. Automatica,
+plexity of the proposed algorithm is doubly-exponential due         80:162–171, 2017.
+to the difﬁculty of the delayed information. In the future, we    [25] X. Yin and S. Li. Synthesis of dynamic masks for inﬁnite-step opacity.
+plan to further mitigate the computational complexity using        IEEE Trans. Automatic Control, 2019.
+                                                                              [26] X. Yin, Z. Li, W. Wang, and S. Li.  Inﬁnite-step opacity and k-step
+abstraction-based techniques [16], [17], [28].                            opacity of stochastic discrete-event systems. Automatica, 99:266–274,
+                                                                             2019.
+                 REFERENCES                                 [27] B. Zhang, S. Shu, and F. Lin. Maximum information release while
+                                                                                 ensuring opacity in discrete event systems. IEEE Trans. Automation
+ [1] E. Badouel, M. Bednarczyk, A. Borzyszkowski, B. Caillaud, and         Science and Engineering, 12(4):1067–1079, 2015.
+       P. Darondeau. Concurrent secrets. Discrete Event Dynamic Systems:                                                                              [28] K. Zhang, X. Yin, and M. Zamani.  Opacity of nondeterministic
+     Theory & Appllications, 17(4):425–446, 2007.                                                                                            transition systems: A (bi) simulation relation approach. IEEE Trans.
+ [2] C.G. Cassandras and S. Lafortune.  Introduction to Discrete Event         Automatic Control, 64(12):5116–5123, 2019.
+     Systems. Springer, 2nd edition, 2008.
+
+
+                                                       3671

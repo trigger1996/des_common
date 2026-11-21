@@ -1,0 +1,473 @@
+2023 62nd IEEE Conference on Decision and Control (CDC)
+December 13-15, 2023. Marina Bay Sands, Singapore
+
+
+ Diagnosis of Time-Sensitive Failures in Timed Discrete-Event Systems
+                with Metric Interval Temporal Logics
+
+
+                                Weijie Dong, Shaoyuan Li and Xiang Yin
+
+
+  Abstract— In this paper, we address the problem of failure     The aforementioned works on diagnosis of DES have only
+diagnosis in timed discrete-event systems modeled by timed   considered faults modeled by a single event or state. How-
+automata. While existing works on this topic typically focus on                                                                     ever, in practice, many engineering systems have real-time
+failures modeled as particular events, many complex applica-
+                                                      and temporal constraints that are necessary for achievingtions, especially time-critical systems, require the ability to iden-
+tify time-sensitive failures associated with real-time information    their tasks. Such systems are referred to as time-critical
+rather than just the occurrence of events at any time. To address   systems because any violation of the desired real-time con-
+this challenge, we propose the use of metric interval temporal    straint can lead to failures. Unfortunately, these complex
+logic (MITL) with continuous semantics on Boolean signals to                                                                 time-sensitive failures cannot be captured using a single fault
+formally describe time-sensitive failures. We introduce a novel
+                                                             event in existing frameworks.concept called time-sensitive diagnosability (TS-diagnosability)
+to characterize whether or not any violation of the MITL task     To address the above mentioned limitations, we propose
+(i.e., failure) can be determined within a finite time elapsing.   a novel approach that utilizes metric interval temporal logic
+Furthermore, we provide a necessary and sufficient condition   (MITL) [2] to formally describe time-sensitive failures in
+for verifying TS-diagnosability. Our results offer a more general                                                         timed DES modeled by a timed automaton. In this approach,
+framework for failure diagnosis of timed discrete-event systems.
+                                                       any violation of the given MITL specification is considered
+                                                           a failure. We introduce a new concept called time-sensitive
+                          I. INTRODUCTION                        diagnosability (TS-diagnosability) to determine whether any
+                                                                 time-sensitive failure can be diagnosed within a finite time.
+  Engineering cyber-physical systems (CPS), such as man-
+                                                           Furthermore, we provide a necessary and sufficient condition
+ufacturing systems and  intelligent transportation systems,
+                                                                   for verifying TS-diagnosability by leveraging the effective
+are  critical infrastructures of modern society. These sys-
+                                                                    translation from MITL formulae to timed transducers. To the
+tems, which rely on complex connections among millions
+                                                                 best of our knowledge, MITL has not been used to describe
+of components and modules, require high-levels of safety.
+                                                                      failures in the context of timed DES before.
+However, their intricate operation logic make CPS vulnerable
+                                                                                        It  is worth noting  that,  there are  several methods  into malfunction. As a result, failure diagnosis and detection
+                                                                the literature for representing system failures. For instance,are crucial but challenging tasks to ensure the safety and
+                                                              supervision patterns were  utilized  in  [9], [10]  to modelreliability  of CPS.  In  this  paper, we  investigate  failure
+                                                     complex faulty behaviors. In  [6], authors adopted Lineardiagnosis problem in the context of discrete-event systems
+                                                       Temporal Logic (LTL) formulae to define system failures(DES); see, e.g., some recent works [5], [7], [13]–[16], [19]–
+                                                      and studied the diagnosability verification problem. However,[22] and survey paper [11].
+                                                               these approaches were  limited  to untimed systems, and
+  Real-world engineering systems often have  strict time
+                                                             they cannot capture the concept of time-sensitive failures
+constraints that must be followed for proper behavior ex-
+                                                                     that arise when behaviors of timed systems violate  strict
+ecution. This real-time information is crucial for effective
+                                                           time constraints. Therefore, our new approach provides a
+fault diagnosis in these systems. The fault diagnosis problem
+                                                   more expressive framework for the diagnosis of time-critical
+for timed systems has been extensively studied, as seen in
+                                                             systems, which has not been explored in the literature on
+works such as [3], [4], [18], [23]. In [18], the concept of
+                                         DES so far.
+diagnosability was introduced for timed systems modeled
+by timed automata [1], and a diagnoser was developed as
+                                                                                                     II. PRELIMINARIES
+an online algorithm that tracks all possible states and zones.
+In [4], the diagnoser was realized as a deterministic timed   A. System Model
+automaton. In [23], the authors explicitly modeled the tick                                     A time interval ∆is a convex subset of R+ in the fol-
+of a global clock by an event and investigated fault diagnosis
+                                                         lowing forms: [0, a], [0, a), (0, a], (0, a), (0, ∞) and [0, ∞),
+for automata containing the tick event. In [3], diagnosability                                                     where a ∈R+ \ {0}. In particular, we define the singular
+was analyzed for labeled time Petri net systems.
+                                                            time interval as ∆= [0, 0]. The length of time interval ∆is
+  This work was supported by the National Natural Science Foundation of    exactly the right-end point, denoted by |∆|, e.g., |[0, a)| = a.
+China (62061136004, 62173226, 61803259).                    Two time intervals ∆1 and ∆2 are adjacent if either ∆1 is
+  W.  Dong,  S.  Li  and  X.  Yin  are  with  Department  of  Automa-    right open and ∆2 is left closed, or ∆1 is right closed and
+tion and Key Laboratory of System Control and Information Process-
+ing, Shanghai  Jiao Tong  University, Shanghai 200240, China. E-mail:  ∆2 is left open. A time interval sequence ∆0∆1∆2 · · ·  is
+{wjd dollar,syli,yinxiang}@sjtu.edu.cn.              well-defined  if for any i ≥0, the time intervals ∆i and
+
+
+979-8-3503-0123-6/23/$31.00 ©2023 IEEE                    6821
+
+∆i+1 are adjacent. In this paper, we only consider well-      •  discrete transition: there is a discrete transition (q, v) σ−→
+defined time interval sequences. Let Σ be a finite alphabet.          (q′, v′) whenever there exists a transition (q, g, Y, q′) ∈
+We define a signal over Σ by s = (p0, ∆0)(p1, ∆1) · · · ,     E such that v |= g and v′ = v[Y←0].
+where ∆0∆1 · · ·  is a time interval sequence and pi  is a                                                              In  particular, we denote by  (q, v)  ε−→(q, v) the empty
+subset of Σ, for any i ≥0. We denote by Sig(Σ) the set                                                                       transition.  For  simplicity, we  consider mixed  transition
+of all signals over Σ. The time length of signal s is denoted           (∆,δ)
+                                                                    (q, v) −−−→(q′, v′) which represents that there is another
+by time(s) = Pi∈{0,1,··· } |∆i|. A signal is infinite if its time                     ∆
+                                                                       state (q′′, v′′) such that (q, v) −→(q′′, v′′) is a time transitionlength is infinite; otherwise it is finite. For finite set Σ, we
+denote by |Σ| its cardinality. A sequence s = q1q2 · · · qn(· · · )   and  (q′′, v′′) δ−→(q′, v′)  is a discrete transition or empty
+is a finite (or infinite) sequence over Σ if qi ∈Σ for all    transition, where δ ∈{σ, ε}.
+i ≥0. We denote by Σ∗and Σω the set of all finite and     The executions of an IA is modeled by runs. A run of G
+infinite sequence over Σ, respectively.                            starting from state s = (q, v) ∈S(G) is a sequence
+  Let X denotes the set of clock variables whose codomain                  δ0             δ1             δ2                                                   π =−→ (q0, ∆0) −→ (q1, ∆1) −→ (q2, ∆2) · · ·
+is R+. Clock valuation v is a function assigning each clock                 v0             v1             v2
+variable a non-negative real number, i.e., v : X →R+. We    satisfying following conditions: (i) initial condition: q0 =
+denote by VX the set of all clock valuations over clock set    q, v0 = v;  (ii) time condition: ∆= ∆0∆1 · · ·  is a time
+X, and by 0X the valuation that assigns 0 to every clock.    interval sequence; (iii) transition condition: for any i ≥0,
+Given a clock valuation v ∈VX and a real number t ∈R+,                                                (|∆i|,δi+1)
+                                                                        δi ∈{σ, ε} and the transition (qi, vi) −−−−−−−→(qi+1, vi+1)
+we define the valuation v+t by (v+t)(c) = v(c)+t, for any
+                                                                 holds. Given a run π, we define time(π) = Pi∈{0,1,··· } |∆i|c ∈X. For a subset of clock variables Y ⊆X, we denote
+                                                              as the total time elapsing of π. Run π is said to be infinite
+by v[Y←0] the valuation that resets clock variables in Y to 0
+                                                                                     if time(π) = ∞; otherwise π is finite. Given an IA G, we
+and reserves values of other clocks. Given a clock valuation                                                     assume each run π ∈Run∗(G) obeys finite-variability [2],v : X →R+ and a subset X ′ ⊆X, we say vX ′ : X ′ →R+
+                                                           ′                                 that is, during finite time elapsing, there are finite discreteis a reduced valuation if ∀c ∈X   : vX ′(c) = v(c).
+                                                                       transitions. A state (q, v) ∈S(G) is said to be a timelock
+  An atomic clock constraint of a clock variable c ∈X
+                                                              [17] if there are no infinite runs starting from  it and G isis of the form c ∼a, where a ∈N+  is a constant and
+                                                                 timelock-free if all of its reachable states are not timelock.
+∼∈{<, ≤, =, ≥, >}. A valuation v ∈VX satisfies an atomic
+                                        We assume that the IA is timelock-free in this paper.
+clock constraint c ∼a whenever v(c) ∼a. A clock constraint                              δ0             δ1      δn
+                                                                                                                                                       · · · −→                                                           For a finite run π =−→                                                                                              (q0, ∆0) −→                                                                                                             (qn, ∆n), weg is a Boolean combination of atomic clock constraints. We                                                                                               v0                                                                                                              v1                                                                                                        vn
+denote by C(X) the set of all clock constraints over clock set   denote by last(π) = (qn, vn+|∆n|) the last state in π, and by
+X. Given a clock constraint g ∈C(X), a valuation v ∈VX    lastd(π) = qn its last discrete sate. Let S1 ⊆S(G) be a state
+satisfies g is denoted by v |= g.                                   set in G. The set of finite runs and infinite runs starting from
+  In this paper, we consider a timed system modeled by a    states in S1 are denoted by Run∗(G, S1) and Runω(G, S1),
+variant of timed automaton, called interval automaton (IA)    respectively; we denote the set of  all runs starting from
+[1], which is a seven-tuple                              S1 by Run(G, S1) = Run∗(G, S1) ∪Runω(G, S1). For
+       G = (Q, Q0, X, inv, E, AP, L),            (1)    simplicity, we  write Run∗(G) and Runω(G)  to denote
+                                                 Run∗(G, S0(G)) and Runω(G, S0(G)),  respectively. The
+where Q is a finite set of discrete states, Q0 ⊆Q is the                                                                      set of all runs generated by G is denoted by Run(G) =
+set of  initial discrete  states, X  is a  finite set of clocks,   Run∗(G)∪Runω(G). The concatenation of two runs π, π′ ∈
+inv : Q →C(X) is invariant function which assigns each                                               Run(G, S(G)) is denoted by ππ′ ∈Run(G, S(G)). Given
+state q ∈Q a clock constraint inv(q) specifying the length                                                           a set of runs Π ⊆Run(G), we define the prefix-closure
+of time the system can stay at q, E ⊆Q × C(X) × 2X × Q                                                              of Π by Pre(Π) = {π′ ∈Run∗(G)  : ∃π ∈Π, ∃π′′ ∈
+is the transition relation such that transition (q, g, Y, q′) ∈E                                               Run(G, S(G)) s.t. π′π′′ = π}. For any run π ∈Run(G),
+indicates a transition from q to q′ satisfying the guard g and                                             we write Pre({π}) as Pre(π) for the sake of simplicity.
+resetting all clocks in set Y ⊆X to zero after this transition,                                                        Given a run π, we denote by sπ = (q0, ∆0)(q1, ∆1) · · ·
+AP is a finite set of atomic propositions and L : Q →2AP                                                                the timed state sequence of π and denote by Path(G) ={sπ :
+is a labeling function assigning a set of atomic propositions                                              π ∈Run(G)} all timed state sequences of G. Using labeling
+to each discrete state. To formalize the semantics of an IA                                                                 function, we obtain timed trace trace(π) ∈Sig(AP) of run
+G, we define the time state (or simply state) of G as a                                              π by replacing each discrete state qi in sπ with L(qi), for i ≥
+pair s = (q, v) where q ∈Q and v ∈VX . We denote                                                                     0, i.e., trace(π) = (L(q0), ∆0)(L(q1), ∆1)(L(q2), ∆2) · · · .
+by S(G) ⊆Q × VX the set of all states in G. The set of                                        We denote by L(G) all timed traces generated by system
+initial states are denoted by S0(G) = {(q0, 0X ) : q0 ∈Q0}.                                                  G. For an IA G with clock set X, we denote by cX ′(G) the
+There are two types of state transitions in an IA G, discrete                                                                     largest integer a such that c ∼a ∈C(X ′) is a subformula of
+transition and time transition, which are defined by: for any                                                                          ′                                                 some clock constraint in G, where X ⊆X and ∼∈{≤, <
+states (q, v), (q′, v′) ∈S(G) and a time interval ∆,                                                                                              , ≥, >, =}. Then, we define the untimed state sequence of a
+                               ∆
+  • time transition: there is a transition (q, v) −→(q, v +   run π ∈Run(G) by a mapping unt : Run∗(G) →Q∗such
+     |∆|) whenever for any t ∈∆, v + t |= inv(q);              that the mapping only keeps discrete states the run visits.
+
+
+                                                       6822
+
+                                            (T,∅)                     transition function, which is defined by: for (q, r), (q′, r′) ∈                         {p}\o3
+                               3            5   ∅\o2
+       ∅\o1          ∅\o2                      QR and λ ∈ΣR, we have transition (q′, r′) ∈ER((q, r), λ)
+              (T,{c})         (c≥1,{c})        1            2                      (T,∅)                    if (i) λ = σ and there is a discrete transition (q, v) σ−→(q′, v′)
+      {c≤1}        (c<1,{c})            (T,∅)                    for v ∈r and v′ ∈r′; or (ii) λ = τ and there is a time
+                               4            6  ∅\o3               ∆                         {p}\o2                                 transition (q, v) −→(q′, v′) for v ∈r and v′ ∈r′, where r′
+Fig. 1: Interval automaton G. For each guard, T  is the    is a time successor of r.
+abbreviation of true. The conjunction of elements in the   A run in RA(G) is a finite (or infinite) sequence π =
+set next to discrete state is invariant of the discrete state,   qR0 −→qRλ0   1 −→·λ1    · · qRn (· · · ), where qRi ∈QR, λi ∈ΣR and
+and if the invariant is true, we omit it.                 qRi+1 ∈ER(qRi , λi), for i = 0, 1, · · · , n(· · · ). We denote
+Formally, given π ∈Run∗(G), unt is defined recursively   by RunR(G) all runs generated by RA(G). Given a finite
+                                                                              λ0
+by: (i) for π =δ−→ (q, ∆), we have unt(π) = q; (ii) for π =   run π = qR0 −→· · · qRn , we denote the last state of π by
+                v                                           lastR(π) = qRn and we say π is a cycle if qRn = qR0 . Theπ′ δ−→ (q, ∆), we have unt(π)=unt(π′) if δ=ε, and unt(π)=   v                                                          region automaton abstracts time transitions of the original
+unt(π′)q, if δ=σ.                                        system and preserves the discrete transitions. Specifically, we
+  In the context of failure diagnosis, the observation is not    define a mapping untR(πR) : RunR(G) →Q∗for run πR ∈
+perfect. Given an IA G = (Q, Q0, X, inv, E, AP, L), we de-  RunR(G) such that the mapping only reserves discrete state
+fine by O the set of output symbols. Furthermore, we assume   component in states that are visited by πR. Formally, untR is
+the external observer can measure the global time. Then we   defined recursively by: (i) for πR = (q, r) ∈RunR(G), we
+define the output function as H  : Q →O. Given a run                                                        have untR(πR) = q; (ii) for πR = π′ λ−→(q, r) ∈RunR(G)
+      δ0              δ1
+π =−→ (q0, ∆0) −→ (q1, ∆1) · · · , the observation of π is  we have untR(πR) = untR(π′)q if λ = σ, and untR(πR) =
+      v0             v1
+denoted by ρπ = (H(q0), ∆0)(H(q1), ∆1)(H(q2), ∆2) · · · .    untR(π′)  if λ =  τ.  It  is known  that region automaton
+  Example 1: Let us consider IA G, depicted in Figure 1,  RA(G) generates the same untimed runs with the original
+where we have AP = {p} and O = {o1, o2, o3}. The   IA G [1]. Specifically, there exists a run π ∈Run∗(G) and
+labeling function L and output function H  are specified   last(π) = (q, v) iff there is a run πR ∈RunR(G) such that
+by the label next to each  state, where the LHS of “\”   untR(πR) = unt(π) and lastR(πR) = (q, [v]G).
+represents the set of atomic propositions assigned to this
+                                                         C. Metric Interval Linear Temporal Logic
+state modeling the internal behaviors of the system, and
+the RHS of “\” represents output label generated by this      Let AP be a finite set of atomic propositions. A Metric
+state. For example, {p}\o3 above state 3 means that the    Interval Linear Temporal Logic (MITL) formula φ is con-
+atomic proposition p  is true  at  state 3 and we observe    structed based on the following syntax [2]:
+                                                              ε
+label o3 at this point. Then, we can obtain a run π =−−→                                                       0X          φ ::= ⊤| p | ¬φ | φ1 ∧φ2 | φ1UIφ2,
+          σ                ε               σ
+(1, [0, 1]) −→ (2, (0, 1])) −→ (2, (0, 0.5])) −→ (3, (0, 0.5]).
+            v1               v2                  v3               where UI denotes the “until” temporal operator. Here I ⊆
+The time elapsing of π is time(π) = 3. Then, we can obtain  Q≥0  is an interval of non-negative rational numbers with
+its timed state sequence sπ = (1, [0, 1])(2, (0, 1])(2, (0, 0.5])    integer end-points, and we restrict that I is not a singleton.
+(3, (0, 0.5])  and  the  untimed  state  sequence  of π   is   Based on  the fundamental  syntax, we can  derive  other
+unt(π) =  123. The timed  trace and observation  of π   Boolean operators, e.g., φ1 →φ2 = ¬φ1 ∨φ2. Similarly,
+are trace(π)=(∅, [0, 1])(∅, (0, 1])(∅, (0, 0.5])(p, (0, 0.5]) and  we can induce temporal operators ♢I “eventually” by ♢Iφ =
+ρπ = (o1, [0, 1])(o2, (0, 1.5])(o3, (0, 0.5]), respectively.      ⊤UIφ and □I “always” by □Iφ = ¬♢I¬φ.
+                                            MITL formulae are evaluated on  infinite signals over
+B. Region Automata
+                                                         atomic proposition  set. The reader  is referred to [8] for
+  We briefly review the region automata [1]. We first define   more details on the continuous-time semantics of MITL. We
+the clock regions of IA G. A clock region  is a class of   denote by s |= φ if a signal s ∈Sig(Σ) satisfies formula
+equivalent valuations and we denote by R(G) the set of all   φ. We denote by signal(φ) the set of all signals satisfying
+clock regions of G. For a valuation v ∈VX , the unique clock    the formula φ. We say that a run π ∈Runω(G) satisfies
+region corresponding to v in R(G) is denoted by [v]G. Given    specification φ if its timed trace satisfies φ, i.e., trace(π) |=
+two clock region r, r′ ∈R(G), r′ is the successor region of   φ. For simplicity, with a slight abuse of notations, we write
+r if r′ can be obtained by time elapsing. For a clock region   π |= φ whenever trace(π) |= φ. To capture  all signals
+r ∈R(G) and a clock subset X ′ ⊆X, we define reduced    satisfying MITL specification φ, we introduce a variant of
+clock region by r(X ′) = {vX ′  : v ∈r}. Specifically, the   IA, called timed transducer [8], [12].
+region automaton of G is a 4-tuple                               Definition 1 (Timed Transducer): A timed transducer  is
+                                                                                        0 , ΣB, XB, invB, ξ, η, Xm), where X          RA(G) = (QR, QR0 , ΣR, ER),                an 8-tuple B = (X, xB
+                                                                              is a finite set of states, xB0  is the initial state and xB0̸ ∈X,
+where QR = Q × R(G) is a finite set of states, QR0 =  ΣB  is an alphabet, XB  is a  finite set of clocks, invB  :
+{(q0, [0X ]G)  : q0 ∈Q0} is the set of initial states, ΣR =  X →C(XB) is an invariant function, ξ ⊆X ∪{xB0 } ×
+{τ, σ} is a set of events and ER : QR × ΣR →2QR is the  C(XB) × 2XB × X is the transition relation, η : X ∪ξ →
+
+
+                                                       6823
+
+                  (¬p, T, ∅)          (p, c < 2, {c})                         Definition 2 (Time Sensitive Diagnosability): Let G =
+    (⊤, T, ∅)   x1        (⊤, c < 2, ∅)        x3     (⊤, T, {c})      (Q, Q0, X, inv, E, AP, L) be an IA with output labels O, ob-
+             {p, T}     (⊤, T, {c})        {¬p, c < 2}                 servation function H, and φ be an MITL formula describing
+                                (p,c=2,{c})
+         !          ⊤,              !                                    !              the                                                           normal behaviors.                                                      We say                                                                                    system G is time-sensitively                 ⊤,                                                             p,             T,                                            (p,c<2,{c})                c=2,                                            c<2,           {c}                                                            diagnosable                                                                        (TS-diagnosable)                                                                                                                              if                   ∅                                                 ∅                                                  (⊤,T,∅)
+            x2           (¬p, T, {c})       x4                       (∀π1 ∈RunωF (G))(∃π′1 ∈Pre(π1))[TS-Diag],
+         {¬p, c < 2}        (p, c = 2, ∅)     {¬p, T}
+Fig. 2: Timed transducer Bφ of specification φ = ♢(0,2)p   where the diagnosis condition TS-Diag is
+with AP = {p}. All states and transitions are accepting.                                                           (∀π2 ∈Run∗(G))[ρπ2 = ρπ′1 ⇒π2 ∈Run∗F (G)].
+BC(ΣB) is the labeling function, where BC(ΣB) denotes   TS-diagnosability says that for any infinite faulty run π1, it
+the Boolean combinations over ΣB, and Xm ⊆X ∪ξ is a   has a finite prefix π′1 such that for any finite run π2, if it has
+set of accepting states and transitions.                          the same observation with π′1, then π2 is a finite faulty run.
+  Similar to classical IA in Equation  (1), there are two     Example 2: Again, we consider IA G in Figure 1. We
+types of transitions in timed transducer: time transition and   assume that the specification of G is given by MITL formula
+discrete transition, while the discrete transition consumes a  φ = ♢(0,2)p. Note that there exists an infinite faulty run
+time instant in timed transducer. Specifically, a run of timed                ε               δ1                 δ2
+                                                          πf = −−→ (1, [0, 1]) −→ (2, (0, 1.5]) −→ (3, (0, 0.5])
+transducer B over a signal s ∈Sig(ΣB) is an alternation              0X              v1                v2
+of discrete and time transitions stating from the initial state                 δ3
+                                e0              t1                 e1        −→ (5, (0, ∞))                                  (2)
+(xB0 , v0), i.e., π = (xB0 , v0) −→(x1, v1) −→(x1, v1+t1) −→                v3
+(x2, v2) · · · , where v0 = 0X , e0 = (xB0 , g0, Y0, x1) ∈ξ                                                         such that trace(πf) = (∅, [0, 2.5])(p, (0, 0.5])(∅, (0, ∞))̸ |=
+such that v0 |= g0, v1 = v0[Y0←0] and s(0) |= η(e1), and                                                          φ, i.e., πf ∈RunωF (G). However, there exists another runfor any  i =  1, 2, · · · , we have  ti ∈R+ \ {0} and  (i)                                                                                  ε               δ1                 δ2
+                                                                                   (1, [0, 1]) −→                                                                                                  (2, (0, 0.5]) −→                                                                                                                   (4, (0, 1])ei = (xi, g, Y, xi+1) ∈ξ, vi + ti |= g, vi+1 = vi[Y←0] and       πn = −−→                                                                                                   v1                                                                                                                     v2                                                                         0X
+s(Pik=1 tk) |= η(ei);  (ii) for any  t′ ∈(0, ti), vi + t′ |=                  δ3                 δ4
+invB(xi) and s(t′ + Pi−1k=1 tk) |= η(xi). An infinite signal        −→v3  (6, (0, 0.5]) −→v4  (5, (0, ∞)),               (3)
+s ∈Sig(ΣB)  is accepted by timed transducer B  if the
+                                                   whose timed  trace  is trace(πn) =  (∅, [0, 1.5])(p, (0, 1])run π over s visits the state in Xm for unbounded time
+                                                                   (∅, (0, ∞))  |=  φ,  i.e., πn ∈RunωN(G), such  that  theduration or the  transition in Xm  for  infinite times,  i.e.,
+                                                              observations of πf and πn are the same, i.e, ρπf = ρπn =inf(π) ∩Xm̸ = ∅, where inf(π) contains all states in X
+                                                                 (o1, [0, 1])(o2, (0, 1.5])(o3, (0, 0.5])(o2, (0, ∞)).  Therefore,visited by π for unbounded time duration and all transitions
+                                                                   for any prefix π′f ∈Pre(πf), there exists a finite normalenabled in π for infinite number of times. We denote by
+                                                         n ∈Pre(πn) such that ρπ′f = ρπ′n. By Definition 2,Lωm(B) the set of all signals accepted by B.                  run π′
+                                                        system G is not TS-diagnosable.  Given an MITL formula φ, we can translate φ into a timed
+transducer Bφ with alphabet ΣB = AP such that Lωm(Bφ) =                                                             IV. VERIFICATION OF TIME SENSITIVE DIAGNOSABILITY
+signal(φ) [8], [12]; we say such Bφ is associated with φ.
+                                                            A. Constrained System
+           III. TIME SENSITIVE DIAGNOSABILITY                                                        Given an IA G and a  specification φ,  to verify TS-
+                                                                   diagnosability, we first recognize all normal runs and faulty  In the failure diagnosis problem, system is assumed to be
+                                                                  runs, respectively. Recall that for any MITL formula φ, wesubject to faults. In this paper, we use an MITL formula φ
+                                                        can obtain a timed transducer Bφ such that Lωm(Bφ) =to model the time-sensitive specifications for a timed system
+                                                             signal(φ). To capture  all normal runs, we construct theand define faults by runs violating φ. Specifically, we denote
+                                                                   positive constrained system.by RunωF (G) = {π ∈Runω(G) : π̸ |= φ} the set of infinite
+                                                                    Definition 3 (Positive Constrained System): Given an IAfaulty runs in an IA G. Then we say a finite run is faulty if
+                                 G =  (Q, Q0, X, inv, E, AP, L) and a timed transducerany of its infinite extension is faulty and the set of finite
+faulty runs is denoted by Run∗F (G) = {π ∈Run∗(G)  :  Bφ = (Xp, xp0, AP, X B,p invpB, ξp, ηp, Xpm), the positive con-
+∀ππ′ ∈Runω(G) s.t. ππ′̸ |= φ}. Similarly, an infinite run    strained system is defined as a new-tuple
+π is normal if it satisfies φ, and the set of infinite normal            Tp = (Qp, Qp,0, Xp, invp, Ep, Qp,m),
+runs is RunωN(G) = {π ∈Runω(G) : π |= φ} . A finite run
+is normal if it is a prefix of some infinite normal run and the   where
+set of finite normal runs is Run∗N(G) = Pre(RunωN(G)) =      • Qp = QY ∪QZ  is the set of discrete states, where
+{π ∈Run∗(G)  : ∃ππ′ ∈Runω(G) s.t. ππ′ |= φ}.  It  is     QY = Q × Xp and QZ = Q × ξp;
+obvious that the set of finite normal runs is the complement      • Qp,0 = {(q0, (xp0, gB, YB, x1)) ∈Q0 × ξp  : L(q0) |=
+of the set of finite faulty runs, i.e., Run∗N(G) = Run∗(G) \        ηp((xp0, gB, YB, x1))} is the set of initial discrete states;
+Run∗F (G). Then we define Time-Sensitive Diagnosability      • Xp = X∪X B∪{cz}p         is a finite set of clocks, where cz /∈
+(TS-diagnosability) as follows:                     X∪X Bp is a new clock;
+
+
+                                                       6824
+
+  • invp  : Qp →C(Xp) is the invariant function defined                                        nc1c2 ≤1<2o                 {c2 <2}
+     by: for any state qp = (q, x) ∈Qp, we have                   nc1 ≤1o                  ({c1 ≤1},{c2})             ({c2 <2},{c1})                                                                                 cz =0  1, xp0 →x3                1, x3                 2, x3
+                      inv(q) ∧invpB(x),   if qp ∈QY                                                                                 ({c2 <2},{cz})                                                                                  ;        invp(qp) =                                                                                                                                (T,{cz})                                                                                                                                                       ({c1 <1},{c1})                       inv(q) ∧cz = 0,    if qp ∈QZ                                                                                        {cz =0} 4, x1 →x4                                                                                                           4, x1                                                                                                                                2, x3 →x1
+  • Ep ⊆Qp × C(Xp) × 2Xp × Qp is the transition relation                             (T,∅)                                   nc2 <2o
+                                                                                                                                   (T,∅)                                cz =0
+     defined by:                                                                    6, x4               5, x4
+      –  for any (q, x′), (q′, x′) ∈QY and (q, (x, gB, YB,
+                                                                                                          (a) Part of positive constrained system Tp.
+         x′)) ∈QZ, we have
+                                                                                                                             nc1 ≤1o
+          L(q) |= ηp(x′) ⇒                                                                                       {c1 ≤1}                  cz =0
+                                                                                                                                ({c1 ≤1},∅)            ({c1 ≤1},{cz})
+                                                                        nc1 ≤1o                                                                                      0 →x4              1, x4               1, x4 →x2            ((q, (x, gB, YB, x′)), inv(q), YB, (q, x′)) ∈Ep,           cz =0  1, xn
+                                                                                                                                                                ({c1 ≤1},{c2})                                                                                                                              {c2 <2}          L(q′) |= ηp(x′) ∧(q, g, Y, q′) ∈E ⇒                                                                                                                              ({c2 =2},{cz})                                                                                                                                                           ({c2 <2},{c1})
+                                                                                        {cz =0} 2, x2 →x1              2, x2                  1, x2            ((q, (x, gB, YB, x′)), g, Y ∪YB, (q′, x′)) ∈Ep;
+                                                                                              ≤2o                                                                                                                             nc1                                                                                                                      ({c1 ≥1},∅)                                                                                                                                             c2 <2                                                                                                                             {cz =0}      –  for any (q, x), (q′, x) ∈QY , we have                                                       (T,{cz})                            (T,∅)
+                                                                                       3, x1              5, x1 →x4               5, x4
+               L(q′) |= ηp(x) ∧(q, g, Y, q′) ∈E ⇒
+                 ((q, x), g ∧invpB(x), Y, (q′, x)) ∈Ep;                               (b) Part of negative constrained system Tn.
+                                                                  Fig. 3: Constrained system Tp and Tn in (a) and (b), respec-
+      –  for any  (q, x) ∈ QY  and  (q, (x, gB, YB, x′)),                                                                           tively. We represent each state (q, (x, gB, YB, x′)) ∈QZ by
+           (q′, (x, gB, YB, x′)) ∈QZ, we have                                                                    (q, x →x′).
+         L(q) |= ηp((x, gB, YB, x′)) ⇒((q, x), inv(q)∧      On the other hand, to recognize all faulty runs, we can
+                                                              obtain the negative constrained system Tn = (Qn, Qn,0, Xn,         gB, {cz}, (q, (x, gB, YB, x′))) ∈Ep,
+                                                               invn, En, Qn,m) based on the time transducer B¬φ = (Xn,
+         L(q′)|=ηp((x,gB,YB, x′))∧(q, g, Y, q′) ∈E ⇒             n                                                 xn0, AP, X B, invnB, ξn, ηn, Xnm) in the similar way.
+            ((q, x),g∧gB,Y∪{cz},(q′,(x,gB,YB,x′)))∈Ep;      To recognize  finite normal runs, we  first  translate Tp
+                                                                   into its region automaton T pR = (QRp , QRp,0, ΣRp , ERp , QRp,m),  • Qp,m = {(q, x) ∈Qp : x ∈Xpm} is accepting states set.
+                                                     where QRp,m ⊆QRp  is the set of accepting states defined   Intuitively, the positive constrained system is constructed
+                                                    by QRp,m = {(q, r) ∈QRp  : q ∈Qp,m}. An infinite run inby synchronizing the  original system G with the timed
+                                             T pR is accepted if it visits states in QRp,m infinitely and wetransducer Bφ according to internal behaviors. Specifically,
+each state (q, x) ∈QY  is a pair of state in system G and   denote by RunRm(Tp) the set of all infinite runs accepted by
+state in Bφ matching the time interval when the label of q   T pR . By Equation (4), we know that finite run π ∈Run∗(G)
+satisfies the label of x, while state (q, e) ∈QZ is a pair of    is normal iff there exists a finite run πp ∈Run∗(Tp) such
+state in system G and transition in Bφ representing the time    that slπp = sπ and πp can be extended to an infinite run
+instant such that the label of q satisfies the label of e. Each    visiting states in Qp,m infinitely, i.e., πp ∈Pre(Runm(Tp)).
+transition in Bφ consumes one time instant. To match the   To recognize all runs in Pre(Runm(Tp)), we say a state
+time elapsing, we actually regard each transition in Bφ as a   qp = (q, r) ∈QRp  is normal feasible if RunRm(T pR (qp))̸ = ∅,
+new discrete state with invariant cz = 0.                   where T pR (qp) = (QRp , {qp}, ΣRp , ERp , QRp,m) is equivalent to
+ A discrete state (q, x) ∈Qp is accepting if its second com-  T pR except that the initial state is set to qp. Then, we denote
+                                            δ0                                                                   δ1    by QRfeas ⊆QRp the set of all normal feasible states in T pR .ponent is accepting in Bφ. Let πp =−→                                            ((q0, x0), ∆0) −→
+                                          v0                   v1   We have the following equivalence
+                  δ2
+((q1, x1), ∆1) −→                            · · · be an infinite run of Tp. We say that        (π ∈Pre(Runm(Tp))) ⇔(∃πR ∈RunR(T pR ))                 v2
+π is accepted by Tp if it visits discrete state (q, x) ∈Qp,m         (unt(π) = untR(πR) ∧lastR(πR) ∈QRfeas).      (5)
+for infinite number of times. We denote by Runm(Tp) all
+infinite runs accepted by Tp. Given a timed sequence s =   Based on the normal feasible state set QRfeas, we say a state
+((ql0, qr0), ∆0)((ql1, qr1), ∆1), · · · , we denote the left and right    (q, v) ∈Qp × VXp is normal feasible if there exists a state
+timed state sequence of it by sl = (ql0, ∆0)(ql1, ∆1) · · · and    (q, r) in QRfeas such that v ∈r. We denote by Qfeas =
+sr = (qr0, ∆0)(qr1, ∆1) · · · , respectively. By construction of    {(q, v) ∈Qp × VXp  : ∃(q, r) ∈QRfeas, v ∈r} the set of all
+Tp, an infinite run πp ∈Runω(Tp) is accepted by Tp if there    feasible states in Tp. Then, for any run π ∈Run∗(Tp), we
+exists an infinite normal run π ∈Runω(G) such that slπp =   have the following equivalence
+sπ and trace(π) |= φ. For any discrete state (q, x) ∈Qp,         π ∈Pre(Runm(Tp)) ⇔last(π) ∈Qfeas.       (6)
+we define the observation of it as Hp((q, x)) = H(q). Then,
+we have the following equivalence                          Example 3:  Still, we consider IA G in Figure 1 with
+       ∃π ∈RunωN(G)⇔                                     specification φ=♢(0,2)p. We translate φ to timed transducer
+                                            Bφ as shown in Figure 2, where we omit the initial state
+        ∃πp ∈Runm(Tp), slπp = sπ ∧ρπp = ρπ.       (4)   xp0 and all states and transitions are accepting. The timed
+
+
+                                                       6825
+
+                                                                     ncn1 ≤1,cp1≤1,o          ncn1 ≤1,cp1≤1,o          ncn1 ≤1,cp1≤1,o
+                                                                          cn                                                                                                            cp                                                                                                                      cn                                                                                    z =0,cn                                                                                         z =0  (cn                                                                                                                                      z =0,cp                                                                                          2<2                                                                                                                2<2  1,                        1, x3    τ                                           1, x3     τ                                                              1, x3   xp0 →x3  σ                                                                                                   1 ≤1 ),{cp2}                                                                                         (1,xn                                                                                        c2≤1                                                                                                                         {cn1 ≤1},{cnz}                                                                                                                                                  (1,x4),                                                                                                                                                       (1,x4                                                                                                                             →x2),                                                                                        0 →x4),   {c1=c2                    {c1=c2                                {0<c1=c2                                                     {c1=c2
+  =cz= 0}        =cz= 0}        =cz< 1}        =cz= 1}                           (1,xp0 →x3)                     (1,x3)                        (1,x3)
+                                        σ
+                                                                                                       <2,o                                                                     ncn                                                                                            ncn                                                                                                                                  {cn                                                                                                                                      ≤1},{cn                                                                                     2 <2,cp                                                                                                                 2                                                                                  2<2,o                                                                                                                                  1                                                                                                                               2}                  x3                                                                                                            cp                                                                                                                                                    )!     4,                                                                                                                    (cn                                                                                                             (cn                                                                                                     <2 )          σ  2,               →x1   σ      x1                                           2, x3      τ                                                              2, x3                                                                                       cz2=0                                                                                          2<2                                                                                                                                   1                                                                                                                            2                   {0<c1<1,                                                                                                                                                                                               ,  {c1=cz=0,                                 {1<c2=cz<2,                                                     {c2=cz=1,                                                                                                                        cp                                                                                                                                cp                    1<c2<2,                                                                                                           {cp2<2},{cpz}                                                                                                                 (2,x2),                                                                                                                                                  (2,x2),                                                                                                                                                                                   (1,x2),                                                                                                        2<2                                                                                                                                   1  1 <          2}                                                                  0}    c2<                                  0<c1<1}                                              c1=                    cz=0}                                                                                               (2,x3                                                                    →x1)                                                                                                                                     (2,x3)                                                                                                                                                                  (1,x3)       τ
+                                                                                                                              ≤1,cp                                                                                                              ncn                                                                                                           o                                                                                                         =0,                                                                                                                                       1                                                                                                                               1≤1,                                                                                      nxn                                                                                      o                                                                                                               z                                                                                                  {cp1<1},{cp                                                                                                     1}     4, x1     τ                        4, x1     τ                                           4, x1      τ                                                              4, x1                                                                                                                      cn                                                                                                                               <2,cp                                                                                                            cp                                                                                                                                       2                                                                                                                2<2                                                                                          (cn                                                                                                )                                                                                           z=0                 {0<c1=cz<1,                                 {0<c1=cz<1,                                                     {c1=cz=1,{0<c1=cz<1,                                                                                                      z
+                                                                                               {cn2 =2},                    c2=2}                                    c2>2}                                                    c2>2}   1<c2<2}                                                                                                    cp                                                                                                                             {cn1 ≥1},∅                                                                                                      z                                                                                                                 (2,x2),                                                                                                                           (2,x2                                                                                                       →x1),                                                                                                                                                                                   (3,x1),
+                                        σ                                 (4,x1)                   (4,x1 →x4)                     (6,x4)
+                                           6,                                                                                                                                                                                     T, {cn    5, x4     σ                       6, x4      τ                                  σ                                   x4                                                           4, x1                                    →x4                                                                                     {cn2 <2}                                                                                                                             z}  {1<c1<2,                   {1<c1<2,                          > 2,                                     > 2,                                     {c1=1,c2                                                       {c1=1,c2   0<cz<1,                   0<cz<1,                                     cz=0}                                                     cz=0}                                                                                                                                                  (5,x4),           T, ∅                                                                                                                                                       (5,x1                                                                                                                             →x4),    c2>2}           c2>2}
+       τ                                                                                                                          (5,x4)                        (5,x4)                                                          τ
+    5, x4     τ       5, x4      τ      5, x4     τ      5, x4                                                                             {cnz =0}
+ {c1=2,c2     > 2,       {c2>c1>2,                                    {c2>c1>2,                                                {c2>c1>
+    cz=1}                   1<cz<2}                                     cz=2}                                                    cz>2}                          Fig. 5: Part of verification system V .
+Fig. 4: Part of region automaton of positive constrained   (qn, qp) ∈QV , we denote by HV ((qn, qp)) = Hn(qn) =
+system T pR , where all states are normal feasible.            Hp(qp) the output of this state. Then the verification system
+transducer B¬φ is exactly same as Bφ except that we replace   has the following properties: (i) For any π in V with last
+edge (⊤, T, ∅) from xp0 to x1 and edge (⊤, T, {c}) from xp0    state last(π) = ((qn, qp), v), there exist two runs πn in Tn
+to x3 in Bφ with edge (⊤, T, {c}) from xp0 to x2 and edge   and πp in Tp such that sπn = slπ, sπp = srπ, ρπn = ρπp =
+(⊤, T, ∅) from xp0 to x4, respectively, which are omitted.   ρπ, and the last states of πn and πp  satisfy last(πn) =
+Based on Bφ and B¬φ, we construct positive constrained   (qn, vn), last(πp) = (qp, vp), vn = vXn and vp = vXp; (ii)
+system Tp and negative positive constrained system Tn,   For any f πn ∈Run(Tn) and πp ∈Run(Tp) with last states
+which are partially shown in Figure 3(a) and Figure 3(b),   last(πn) = (qn, vn) and last(πp) = (qp, vp), if they have the
+respectively, with all states accepting. The part of Tp depicted   same observation, there exists a run π ∈Run(V ) such that
+in Figure 3(a) contains the normal run πn in Equation (3)   sπn = slπ, sπp = srπ, ρπn = ρπp = ρπ and the last state of π
+and the faulty run πf in Equation (2) is embedded in the    is last(π) = ((qn, qp), v) satisfying vXn = vn and vXp = vp.
+part of Tn shown in Figure 3(b). Then, we construct the
+region automaton T pR and the part that abstracts the part Tp   C. Checking TS-Diagnosability
+in Figure 3(a) is depicted in Figure 4, where all states are
+                                                   Now, we present how to verify TS-diagnosability usingaccepting. Since, starting from each state in Figure 4, there
+                                                                the  verification system. For a  verification system V =is an infinite run that can reach the final state ((5, x4), {c1 >
+                                               (QV , QV,0, XV , invV , EV ), we first translate  it into region
+2, c2 >2, cz >2}) as highlighted by red color and can repeat           R                                                       automaton V  = (QRV , QR0,V , ΣRV , ERV , QRm), where QRm ⊆the self loop infinitely, all states are normal feasible.
+                                     QRV  is the set of accepting states defined by:
+B. Verification System
+                                           QRm ={((qn, qp), r) ∈QRV  : qn ∈Qn,m∧
+  Given IA G and MITL specification φ, we can obtain Tp =                                                                              (∃(qp, r′) ∈QRfeas)(r(Xp) = r′)}.       (7)(Qp, Qp,0, Xp, invp, Ep, Qp,m) and Tn = (Qn, Qn,0, Xn,
+invn, En, Qn,m). Then we construct the verification system    Intuitively, a state qRV = ((qn, qp), r) ∈QRm is accepting if
+          V = (QV , QV,0, XV , invV , EV )                       (i) qn is an accepting state in negative constrained system;
+                                                      and (ii) the second component of discrete state qp and the
+where                                                            clock region r can be reduced to a normal feasible state
+  • QV = {(qn, qp) ∈Qn ×Qp : Hn(qn) = Hp(qp)} is the                                                                  (qp, r(Xp)) ∈QRfeas. We are now ready to present the the
+     set of discrete states;                                                            necessary and sufficient conditions for TS-diagnosability.
+  • QV,0 = {(qn, qp) ∈Qn,0 × Qp,0 : Hn(qn) = Hp(qp)}     Theorem 1: System G is not TS-diagnosable w.r.t. obser-
+      is the set of initial discrete states;                                                               vation function H and MITL specification φ, if and only if,
+  • XV = Xn ∪Xp is a finite set of clocks;                    in the region automaton V R of verification system V , there
+  • invV  : QV →C(XV ) is the invariant function defined    exists a reachable cycle
+     by: for any state qV = (qn, qp) ∈QV , invV (qV ) =                          λ1      λ2     λn−1
+                                                       π = qR1 −→qR2 −→· · · −−−→qRn     invn(qn) ∧invp(qp);
+  • EV ⊆QV × C(XV ) × 2XV × QV  is the transition   such that qRi ∈QRm and λj = τ  , for some i ∈{1, . . . , n}
+     relation, defined by:                                                      and j ∈{1, . . . , n −1}.
+         - (qn,gn,Yn,q′n)∈En ⇒((qn, qp),gn,Yn,(q′n, qp))∈EV        Intuitively, since π is a reachable cycle, we can find an
+         - (qp,gp,Yp, q′p)∈Ep ⇒((qn, qp), gp, Yp, (qn, q′p))∈EV      infinite run π′ ∈RunR(V R) starting from some initial state
+         - (qn, gn, Yn, q′n) ∈En ∧(qp, gp, Yp, q′p) ∈Ep ⇒    in QR0,V  and going through cycle π  infinitely. Then, the
+          ((qn, qp), gn ∧gp, Yn ∪Yp, (q′n, q′p))∈EV .            condition λj = τ ensures that there exists an infinite run
+   Essentially, verification system V tracks every pair of runs   πV ∈Run(V ) embedded in π′; and the condition qRi ∈QRm
+in Tn and Tp that have the same observation. For any state   ensures that  (i) there is an infinite run πn ∈Runm(Tn)
+
+
+                                                       6826
+
+    (1,xn0 →x4)                 (1,x4)                    (1,x4)                (1,x4 →x2)                 (1,x2)                    (1,x2)                    (1,x2)
+    (1,xp0 →x3)   σ          (1,x3)      τ          (1,x3)     σ         (1,x3)     σ         (1,x3)      τ          (1,x3)       τ         (1,x3)
+   {cn1 =cn2 =cnz =          {cn1 =cn2 =cnz =         {0<cn1 =cn2 =cnz =       {0<cn1 =cn2 =cp1=       {0<cn1 =cp1=cp2=        {0<cn1 =cp1=cp2=       {cn1 =cp1=cp2=cpz=1
+   cp1=cp2=cpz=0}         cp1=cp2=cpz=0}         cp1=cp2=cpz<1}        cp2=cpz<1,cnz =0}        cpz<1,cn2 =cnz =0}       cpz<1,0<cn2 =cnz <1}       0<cn2 =cnz <1}
+                                                                                                σ
+        (2,x2)                    (2,x2)                    (2,x2)                    (2,x2)                    (2,x2)                    (2,x2)                    (2,x2)
+        (4,x1)       τ         (4,x1)       τ         (4,x1)     σ      (2,x3 →x1)    σ         (2,x3)        τ        (2,x3)        τ        (2,x3)
+ {1<cnz =cn2 <cp2=2,      {1<cnz =cn2 <cp2<2,     {0<cn1 <1,cn2 =cnz =1,    {0<cn1 =cp1<1,cn2 =cnz    {0<cn1 =cp1<1,cn2 =cnz     {0<cn1 =cp1<cn2 =cnz       {cn1 =cp1=0,cp2=cpz
+ 0<cp1=cpz<cn1 =1}      0<cp1=cpz<cn1 <1}      cp1=cpz=0,1<cp2<2}      =1,1<cp2<2,cpz=0}       =1,1<cp2=cpz<2}        <1,1<cp2=cpz<2}       =1,0<cn2 =cnz <1}
+         τ
+        (2,x2)                    (2,x2)                (2,x2 →x1)                 (3,x1)                    (3,x1)                (5,x1 →x4)                 (5,x4)
+        (4,x1)       τ          (4,x1)     σ      (4,x1 →x4)   σ         (6,x4)       τ          (6,x4)     σ          (5,x4)     σ         (5,x4)
+ {1<cn1 <cn2 =cnz <2,     {1<cn1 <2,cn2 =cnz =2,     {1<cn1 <cn2 =2<cp2,      {1<cn1 <cn2 =2<cp2,      {1<cp1<cn1 <2<cn2       {1<cp1<cn1 <2<cn2       {1<cp1<cn1 <2<cn2
+ cp2>2,0<cp1=cpz<1}       cp2>2,cp1=cpz=1}        cp1=1,cnz =cpz=0}        cp1=1,cnz =cpz=0}       <cp2,0<cnz =cpz<1}     <cp2,0<cpz<1,cnz =0}    <cp2,0<cpz<1,cnz =0}
+                                                                                                                           τ
+                                                                           τ          (5,x4)                                             (5,x4)
+                                                                                                              (5,x4)       τ                  τ          (5,x4)
+                                                                                                  {cp                                                                              >cn                                                                                                                    <2<cn                                                                            2>cn                                                                                                   1                                                                                                                                                 2
+                                                                                        cp                                                                                             >2}                                                                                                                                           1<cp                                                                              1>cp                                                                              z>cn2                                                                                                z                                                               >         · · · · · ·        <cp{1<cp2,0<cn1<cnz                                                                                                                                    z<1}
+Fig. 6: Part of region automaton of verification system V R. The cycle highlighted in red contains event τ and an accepting
+state (((5, x4), (5, x4)), {cp2 >cn2 >cn1 >cp1 >cpz >cnz >2}).
+such  that  slπV =  sπn; and  (ii) there  is an  infinite run      [4]  P. Bouyer, F. Chevalier, and D. D’Souza. Fault diagnosis using timed
+πp ∈Runω(Tp) such  that srπV =  sπp and any prefix         automata. In 8th International Conference on Foundations of Software                                                                                Science and Computation Structures, pages 219–233, 2005.
+π′p ∈Pre(πp) can be extended to an accepting run in Tp,      [5] L. Carvalho, M. Moreira, and  J. Basilio.  Comparative analysis of
+i.e., π′p ∈Pre(Runm(Tp)). Moreover, the construction of           related notions of robust diagnosability of discrete-event systems.
+V ensures πn and πp have the same output. Therefore, the         Annual Reviews in Control, 51:23–36, 2021.
+                                                                                     [6]  J. Chen and R. Kumar.  Fault detection of discrete-time stochastic
+existence of such a cycle falsifies TS-diagnosability.                  systems subject to temporal logic correctness requirements.  IEEE
+  Example 4: Still consider G in Figure 1 with the same          Trans. Automation Science and Engineering, 12(4):1369–1379, 2015.
+setting in Example 2, which is not TS-diagnosable subject      [7] W. Dong, X. Yin, and S. Li. A uniform framework for diagnosis of
+                                                                                        discrete-event systems with unreliable sensors using linear temporal
+to specification φ =  ♢(0,2)p. Based on Tp and Tn, we           logic. IEEE Transactions on Automatic Control, 2023.
+construct the verification structure V . We partially depict V       [8]  T. Ferrere, O. Maler, D. Niˇckovi´c, and A. Pnueli. From real-time logic
+in Figure 5, which tracks part of Tp in Figure 3(a) and Tn           to timed automata. Journal of the ACM, 66(3):1–31, 2019.
+                                                                                     [9] H. Gougam, Y. Pencol´e, and A. Subias.  Diagnosability analysis of
+Figure 3(b). Then, we obtain the region automaton V R, par-          patterns on bounded labeled prioritized Petri nets.  Discrete Event
+tially shown in Figure 6, where all states are accepting. Here        Dynamic Systems, 27:143–180, 2017.
+we can find a run reaching state (((5, x4), (5, x4)), {cp2 >    [10]  T. J´eron, H. Marchand, S. Pinchinat, and M. Cordier.  Supervision                                                                                        patterns in discrete event systems diagnosis.  In 8th International
+cn2 > cn1 > cp1 > cpz > cnz > 2})  that has a self-loop        Workshop on Discrete Event Systems, pages 262–268, 2006.
+enabled by event τ, as highlighted by red color. Note that    [11]  S. Lafortune, F. Lin, and C. Hadjicostis. On the history of diagnosabil-
+(5, x4) is an accepting state in Tn,  i.e., (5, x4) ∈Qn,m.            ity and opacity in discrete event systems. Annual Reviews in Control,
+                                                                            45:257–266, 2018.
+Let r =  {cp2 > cn2 > cn1 > cp1 > cpz > cnz > 2} and    [12] L. Lindemann, G. Pappas, and D. Dimarogonas.  Reactive and risk-
+r′ = r(Xp) = {cp2 > cp1 > cpz > 2}. There  is a  state         aware control for signal temporal  logic.  IEEE Trans. Automatic
+((5, x4), r′) ∈QRfeas as highlighted by red color in Figure 4.          Control, 67(10):5262–5277, 2021.                                                                              [13] Z. Ma, X. Yin, and Z. Li.  Marking diagnosability verification in
+That is, there exists a reachable cycle satisfying all conditions          labeled petri nets. Automatica, 131:109713, 2021.
+in Theorem 1 and the system G is not TS-diagnosable.          [14] N. Ran, T. Li, Z. He, and C. Seatzu. Codiagnosability enforcement in
+                                                                                    labeled Petri nets. IEEE TAC, 68(4):2436–2443, 2023.
+                                                                              [15] N. Ran, H. Su, A. Giua, and C. Seatzu. Codiagnosability analysis of
+                   V. CONCLUSION                              bounded Petri nets. IEEE TAC, 63(4):1192–1199, 2018.
+                                                                              [16]  S. Takai. A general framework for diagnosis of discrete event systems
+  In this paper, we investigated the failure diagnosis problem          subject to sensor failures. Automatica, 129:109669, 2021.
+for timed discrete-event system with MITL specification. In    [17]  S. Tripakis.  Verifying progress in timed systems.  In ARTS, volume
+contrast to existing works, we considered time-sensitive fail-         1601, pages 299–314, 1999.                                                                              [18]  S. Tripakis.  Fault diagnosis for timed automata.  In International
+ures for timed systems formalized by MITL formulae under        Symposium on Formal Techniques in Real-Time and Fault-Tolerant
+continuous semantics. We proposed a new notion called TS-          Systems, pages 205–221. Springer, 2002.
+diagnosability to capture the capability of determine failures    [19] G. Viana, M. Alves, and J. Basilio.  Codiagnosability of networked
+                                                                                          discrete event systems with timing structure. IEEE Trans. Automatic
+in  finite time. We also provided necessary and sufficient          Control, 67(8):3933–3948, 2022.
+conditions for the verification of TS-diagnosability.               [20] X. Yin, J. Chen, Z. Li, and S. Li. Robust fault diagnosis of stochastic
+                                                                                          discrete event systems. IEEE Trans. Automatic Control, 64(10):4237–
+                                                                             4244, 2019.
+                 REFERENCES                                 [21] X. Yin and S. Lafortune. Codiagnosability and coobservability under
+                                                                       dynamic observations: Transformation and verification.  Automatica,
+ [1] R. Alur and D.  Dill.  A theory of timed automata.   Theoretical         61:241–252, 2015.
+     Computer Science, 126(2):183–235, 1994.                               [22] X. Yin and S. Lafortune.  On the decidability and complexity of
+ [2] R.  Alur,  T. Feder, and  T. Henzinger.   The  benefits of relaxing          diagnosability for labeled Petri nets. IEEE Trans. Automatic Control,
+      punctuality. Journal of the ACM, 43(1):116–146, 1996.                      62(11):5931–5938, 2017.
+ [3]  F. Basile, M. Cabasino, and C. Seatzu.  Diagnosability analysis of    [23]  S. Zad, R. Kwong, and W. Wonham. Fault diagnosis in discrete-event
+      labeled time  Petri net systems.  IEEE Trans. Automatic Control,          systems: Incorporating timing information.  IEEE Trans. Automatic
+     62(3):1384–1396, 2016.                                                       Control, 50(7):1010–1015, 2005.
+
+
+                                                       6827

@@ -1,0 +1,444 @@
+2021 61st IEEE Conference on Decision and Control (CDC)
+December 6-9, 2022. Cancún, Mexico
+
+
+           Fault Diagnosis of Discrete-Event Systems under
+         Non-Deterministic Observations with Output Fairness
+
+
+                          Weijie Dong, Shang Gao, Xiang Yin and Shaoyuan Li
+
+
+  Abstract— In this paper, we revisit the fault diagnosis prob-   In [13], Takai and Ushio investigated the issue of non-
+lem of discrete-event systems (DES) under non-deterministic    deterministic observation using Mealy automata. Speciﬁ-
+observations. Non-deterministic observation  is a general ob-                                                                         cally, the observation of the system is modeled by a state-
+servation model that includes the case of intermittent  loss
+                                                         dependent non-deterministic output function. The model isof observations. In this setting, upon the occurrence of an
+event, the sensor reading may be non-deterministic such that    quite general that captures the issue of intermittent loss of
+a set of output symbols are  all possible. Existing works on    observations. Furthermore, it allows the observation symbols
+fault diagnosis under non-deterministic observations require    to be different from the original event set.
+to consider all possible observation realizations. However, this                                                    Our work is motivated by the aforementioned works on
+approach includes the case where some possible outputs are
+                                                                       fault diagnosis under intermittent loss of observations [4] or,permanently disabled. In this work, we introduce the concept
+of output fairness by requiring that, for any output symbols,    in a broad sense, non-deterministic observations [13]. In par-
+if  it has inﬁnite chances to be generated, then  it will indeed    ticular, we note that the existing models for non-deterministic
+be generated inﬁnite number of times. We use an assume-   observations essentially assume that all possible realizations
+guarantee type of linear temporal logic formulas to formally                                                        under the non-deterministic output mapping are feasible. In
+describe  this assumption. A new notion  called  output-fair
+                                                                the context of fault diagnosis, therefore, it needs to considerdiagnosability (OF-diagnosability)  is proposed. An  effective
+approach is provided for the veriﬁcation of OF-diagnosability.   whether or not  fault can be detected under  all possible
+We show that the proposed notion of OF-diagnosability  is   observation realizations. We argue in  this work that  this
+weaker than the standard deﬁnition of diagnosability under    setting is somehow too strict for the purpose of diagnosis
+non-deterministic observations, and it better captures the physi-                                                               since  it may exclude the possibility for the occurrence of
+cal scenario of observation non-determinism or intermittent loss
+                                                 some possible sensor reading, which is “unfair”.of observations.
+                                                                                        It  is worth noting that, in [2], the authors investigated
+                          I. INTRODUCTION                        diagnosability for fair systems. However, the notion of fair-
+                                                            ness is different from our setting. Speciﬁcally, [2] assumes
+  Engineering cyber-physical systems (CPS), such as manu-                                                                     that the dynamic of the system  is  fair in the sense that
+facturing systems, transportation systems and power systems,                                                         each transition can be executed for inﬁnite number of times
+are generally very complex due to their intricate operation                                                      whenever  it is enabled inﬁnitely. However, the observation
+logic and hybrid dynamics. For such  large-scale  safety-                                                    mapping considered therein is still static modeled as a natural
+critical systems, failures during their operations are very                                                                  projection. In contrast, we impose fairness constraint on the
+common as millions of components/modules are working in                                                              observation mapping rather than the internal behavior of the
+parallel. Thefore, fault diagnosis and detection is crucial but                                                        system the system’s dynamic. Therefore, the problem setting
+challenging task in order to monitor the operation conditions                                                                   in our work is quite different from that of [2].
+and to maintain safety for CPSs. In this work, we investigate                                                                 In this paper, we revisit the fault diagnosis problem un-
+the fault diagnosis problem in the framework of discrete-                                                             der non-deterministic observations. Motivated by the above
+event systems (DES) [5]–[7], [9]–[12], [15]–[19].                                                                 discussion, however, to better capture the physical scenario
+  In the modeling of DES, the occurrences of events are                                                                   in which  all possible observations are always available,
+essentially observed by the corresponding sensors. In prac-                                             we further require that each possible observation (or output
+tice, however, due to measurement noises, sensor failures or                                                        symbol) is fair in the sense that if it has inﬁnite chances to be
+malicious attacks, the sensor readings can be unreliable or                                                          observed then it will indeed be observed inﬁnite number of
+non-deterministic. Such non-deterministic observation issue                                                                 times. To formally describe this fairness requirement, we use
+was initially addressed in the context of intermittent loss                                                       an assume-guarantee type linear temporal logic (LTL) for-
+of observations [3], [4], [8], where it is assumed that some                                                           mulas. Then, we propose a new condition called output-fair
+observable events are unreliable in the sense that their oc-                                                                diagnosability (OF-diagnosability) that provides the neces-
+currences may be observed or be lost non-deterministically.                                                              sary and sufﬁcient condition for the existence of a diagnoser
+                                                                     that works correctly under the fair-observation setting. Also,
+  This work was supported by the National Natural Science Foundation of
+China (62061136004, 61803259, 61833012) and the National Key Research  we utilize the structure properties of fairness requirement to
+and Development Program of China (2018AAA0101700).                provide an more effective procedure for checking this new
+  W. Dong S. Gao, X. Yin and S. Li are with Department of Automation    condition. Our work bridges the gap between the existing
+and Key  Laboratory  of System  Control and  Information  Processing,
+Shanghai  Jiao  Tong  University,  Shanghai  200240,  China.  E-mail:   mathematical deﬁnition of diagnosability under intermittent
+{wjd dollar,gaoshang,yinxiang,syli}@sjtu.edu.cn.  loss of observations and the physical setting, where those
+
+
+978-1-6654-6761-2/22/$31.00 ©2022 IEEE                    4256
+
+unreliable sensors will not fail permanently.                 and O(q, σ) = {ε} for all σ ∈Σuo. Also,  it captures the
+                                                                 so-called intermittent loss of observations [4]. In this setting,
+                         II. PRELIMINARY                                                                the event set is usually partitioned as Σ = Σr ˙∪Σur ˙∪Σuo,
+A. System Model                                       where Σr  is the set of reliable events whose occurrences
+  Let Σ be a ﬁnite set of events. A ﬁnite (inﬁnite) string   can always be observed directly, Σur is the set of unreliable
+over Σ is a ﬁnite (inﬁnite) sequence of events in Σ of form   events whose occurrences may be observed but can also
+s = σ1σ2 . . . σn(. . . ), where σi ∈Σ, for i = 1, · · · , n. A   be lost and Σuo  is the set of unobservable events whose
+ﬁnite (inﬁnite) language is a set of ﬁnite (inﬁnite) strings. We   occurrences can never be observed. This  setting can be
+denote by Σ∗and Σω, respectively, the set of all ﬁnite and the   captured by considering a non-deterministic output function
+set of all inﬁnite strings over Σ. Note that the empty string,   with ∆= Σ and for any q ∈Q and σ ∈Σ, we have
+denoted by ε, is included in Σ∗. Given a ﬁnite language                                        {σ}      if σ∈Σr
+L ⊆Σ∗, the preﬁx-closure of L is deﬁned by Pre(L) =                                                                             O(q, σ)=  {σ, ε}   if σ∈Σur
+{w ∈Σ∗: ∃t ∈Σ∗s.t. wt ∈L}. Similarly, for an inﬁnite
+                                        {ε}       if σ∈Σuolanguage L ⊆Σω, its preﬁx-closure is the set of all its ﬁnite
+preﬁxes, i.e., Pre(L) = {w ∈Σ∗: ∃t ∈Σω s.t. wt ∈L}.   Note that, for the general case we consider here, the output
+For any string s ∈Σ∗∪Σω, we write Pre({s}) as Pre(s)   symbols ∆can be different from the original event set Σ.
+for the sake of simplicity. Given an inﬁnite string s ∈Σω,     Based on the output function O  : Q × Σ →2∆ε, we
+Inf(s) denotes the set of events that appear inﬁnitely number   can deﬁne a non-deterministic observation mapping M   :
+of times in the string.                              L(G) →2∆∗, where ∆∗is the set of ﬁnite strings over
+  In this paper, we consider DES modeled by a deterministic  ∆and we have ε ∈∆∗, recursively as:
+ﬁnite-state automaton (DFA) G = (Q, Σ, f, q0), where Q      • M(ε) = {ε};
+is the ﬁnite set of states; Σ is the ﬁnite set of events; f  :      •  for any s ∈Σ∗and σ ∈Σ, we have
+Q × Σ →Q is the partial transition function; and q0 ∈Q
+is the initial state. The transition function f can be extended      M(sσ) = {αβ ∈∆∗: α∈M(s) ∧β ∈O(f(q0, s), σ)}
+to f  : Q × Σ∗→Q recursively in the usual manner. The                                                                        Intuitively, M(s) ∈∆∗is the set of all possible observations
+ﬁnite language generated by G is deﬁned by L(G) = {s ∈                                                                   (or output strings) upon the occurrence of internal string s ∈
+Σ∗: f(q0, s)!}, and the inﬁnite language generated by G is                                                       Σ∗. The observation mapping is also extended to M : 2Σ∗→
+deﬁned by Lω(G) = {s ∈Σω : f(q0, s)!}. We assume that                                                2∆∗by: for any language L ⊆L(G), M(L) = ∪s∈LM(s).
+system G is live, i.e., ∀q ∈Q, ∃σ : f(q, σ)!.                                                             Since the observation is non-deterministic, for any speciﬁc
+B. Non-Deterministic Observations                              internal  string s ∈L(G),  it may have  different output
+                                                                     realizations. To “embed” the actual observation occurred into
+  In the partial observation setting,  it is assumed that the
+                                                                the internal execution of the system, we deﬁne
+occurrence of each event cannot be observed directly or per-
+fectly. A commonly adopted simple approach is to partition                  Σe = Q × Σ × ∆ε
+the event set Σ into observable events Σo and unobservable
+events Σuo. Then natural projection P  : Σ∗→Σ∗o can be   as the set of extended events. Then an extended string is a
+used to capture the issue of partial observability.               ﬁnite or inﬁnite sequence of extended events. We say a ﬁnite
+  In many real-world scenarios, however, the sensor read-   extended string
+ings may be non-deterministic due to observation noises,
+                                                             s = (q0, σ0, δ0)(q1, σ1, δ1) . . . (qn, σn, δn) ∈Σ∗esensor failures or malicious attacks. Furthermore, the sensor
+reading of the event occurrence can be state-dependent.    is generated by G  if f(qi, σi) = qi+1, ∀i < n and δi ∈
+Here, we adopt state-dependent non-deterministic observa-   O(qi, σi), ∀i ≤n. We denote by Le(G) the  set of  all
+tion model proposed by [13], [14], which captures both state-    ﬁnite extended strings generated by G. The inﬁnite extended
+dependency and non-determinism of observations.              strings are deﬁned analogously and the set of all inﬁnite
+  Formally, we assume that ∆is a new set of all possible   extended strings generated by G is denoted by Lωe (G).
+observations or output symbols. Then a state-dependent non-     For any extended string s = (q0, σ0, δ0)(q1, σ1, δ1) · · · , we
+deterministic output function is                           deﬁne ΘQ(s) = q0q1 · · · , ΘΣ(s) = σ0σ1 · · · and Θ∆(s) =
+                                                            δ0δ1 · · · as its corresponding state sequence, (internal) event           O : Q × Σ →2∆ε,
+                                                                     string and output string, respectively. Clearly, for any s ∈
+where ∆ε = ∆∪{ε}. The output function means that if event   Le(G), we have Θ∆(s) ∈M(ΘΣ(s)) because Θ∆(s) is a
+σ ∈Σ occurs at state q ∈Q, then the system is possible to   speciﬁc observation realization of internal string ΘΣ(s).
+observe any symbol in O(q, σ) non-deterministically.          Example 1: Let us consider system G1 in Figure 1, where
+  Remark 1: The  above   non-deterministic   observation  we have Σ = {a, b, c, σf, u} and ∆= {a, b, c}. The output
+model  is  quite general  in  the sense  it subsumes many   function O : Q × Σ→2∆ε is speciﬁed by the label of each
+observation models  in  the  literature.  For  example,  the    transition, where the LHS of “\” denotes the internal event
+standard   natural-projection-based   observation  can  be   and the RHS of “\” denotes the set of all possible output
+formulated by  setting O(q, σ) = {σ}  for  all σ ∈Σo   symbols. For example, b\{b, ε} from state 3 to state 4 means
+
+
+                                                       4257
+
+                                                                   rather than the internal strings in order to capture the issue
+                                                              of non-deterministic observations.
+                                                      Example 2: Again, we consider system G1 depicted in
+                                                            Figure 1 with Σ =  {a, b, c, σf, u}, ∆=  {a, b, c} and
+                                          ΣF =  {σf}.  Let  us  consider  faulty  extended  string
+                                                                   (1, σf, ε) ∈Ψe(G1), which can be extended  arbitrarily
+                                                           long as sF = (1, σf, ε)[(2, a, a)(3, b, b)(4, c, ε)]n. However,
+                                                                   for any n, we can ﬁnd a normal extended string sN =
+                                                                   (1, u, ε)[(5, a, a)(6, b, b)]n such that Θ∆(sF ) = Θ∆(sN) =
+                                                              (ab)n. Therefore, system G1 is not diagnosable under O.                     Fig. 1: System G1.
+that system moves to state 4 from state 3 by ﬁring event b,          III. DIAGNOSABILITY WITH ALWAYS-FAIRNESS
+i.e., f(3, b) = 4, and we can non-deterministically observe                   ASSUMPTION
+any output in set O(3, b) = {b, ε}. In this example, we                                                            A. Motivating Example
+either observe b itself or observe nothing, which corresponds
+                                                 As we discussed in Remark 1, the non-deterministic outputto the case of intermittent loss of observations. Then for
+                                                              function can be used to capture the issue of intermittent lossﬁnite string σfab ∈L(G1), the set of all possible output is
+M(σfab) = {ab, a}. These two different outputs lead to the    of observations. Here, however, we argue that the original
+following two extended strings (1, σf, ε)(2, a, a)(3, b, b) and   deﬁnition of diagnosability in Deﬁnition 1 may be too strong
+(1, σf, ε)(2, a, a)(3, b, ε), respectively.                           for the case of intermittent loss of observations.
+                                                    To see this, we still consider system G1 shown in Figure 1,
+C. Fault Diagnosis                                     where the reliable event set is {a}, the unreliable events set
+  In this work, we assume that the system  is subject to    is {b, c} and the unobservable event set is {σf, u}. As we
+faults whose occurrences need to be diagnosed within a ﬁnite   have discussed in Example 2, this system is not diagnosable
+number of steps. Speciﬁcally, we assume that ΣF ⊂Σ is   because there are two inﬁnite extended strings:
+the set of fault events. For the sake of simplicity, we do      • one is faulty sF = (1, σf, ε)[(2, a, a)(3, b, b)(4, c, ε)]ω;
+not distinguish among different fault types. We say a string      • the other is non-faulty sN = (1, u, ε)[(5, a, a)(6, b, b)]ω
+s ∈Σ∗∪Σω  is faulty  if some event in ΣF  appears in                                                      and they have the same observation, i.e., Θ∆(s1) = Θ∆(s2)
+s and we write ΣF ∈s with a slight abuse of notation;                                 = (ab)ω. As a result, the occurrence of fault in string sF
+otherwise, it is normal. We deﬁne LF (G) and LωF (G) as the   can never be detected within a ﬁnite number of steps.
+sets of all ﬁnite and inﬁnite faulty strings generated by G,                                                        Note that, the existence of above extended string sF is due
+respectively. Similarly, we deﬁne Σe,F = Q × ΣF × ∆ε as                                                                   to the following physical scenario: the inﬁnite internal string
+the set of extended fault events and denote by Le,F (G) =                                                         σf(abc)ω  is executed, i.e., the system loops forever in the
+{s ∈Le(G)  : Σe,F ∈s} the set of  all ﬁnite extended                                                              cycle formed by states 2, 3 and 4, and each time when event
+faulty strings generated by G; the extended inﬁnite faulty                                                            c is executed at state 4, the sensor reads ε due to observation
+language Lωe,F (G) is also deﬁned analogously. Finally, we    loss. In other words, the sensor corresponds to transition 4 c−→
+deﬁne Ψe(G) as the set of all ﬁnite extended faulty strings                                                           has to fail permanently in order to draw the conclusion that
+in which fault events occur for the ﬁrst time, i.e.,                                                                the system is not diagnosable. However, this source of non-
+  Ψe(G) = {s ∈Le,F (G) : ∀t ∈Pre(s) \ {s}, Σe,F /∈t}.      diagnosability seems violate the setting of intermittent loss
+                                                              of observations. In the context of intermittent loss of ob-
+To capture whether or not the occurrences of fault events                                                                 servations or non-deterministic observations, it makes more
+can be detected within a ﬁnite number of steps, the notion                                                            sense to assume that each possible observation is eventually
+of diagnosability (under non-deterministic observations) has    possible. Therefore, if event c at state 4 corresponds to a
+been proposed in the literature [13].                                                             sensor that may be unreliable but will not fail permanently,
+  Deﬁnition 1: System G is said to be diagnosable w.r.t.                                                            then along the inﬁnite loop of σf(abc)ω, once one has a
+output function O and fault events ΣF  if                       single chance to observe output c for transition 4 c−→, it will
+  (∀s∈Ψe(G))(∃n∈N)(∀st∈Le(G))[|t| ≥n ⇒diag]  (1)   conclude immediately that fault events have occurred.
+where the diagnostic condition diag is                        B. ∆′-Fairness Assumption
+                                                    The above discussion suggests that the exiting deﬁnition     (∀ω ∈Le(G))[Θ∆(ω) = Θ∆(st) ⇒Σe,F ∈ω].
+                                                              of  diagnosability under non-deterministic observations  is
+   Intuitively, the above deﬁnition says that, for any faulty   a  bit strong than  its underlying physical setting because
+extended string in which fault events appear for the ﬁrst     it includes the situation where some output symbols are
+time, there exists a ﬁnite detection bound such  that, for   disabled permanently. In order to bridge this discrepancy
+any of its continuation longer than the detection bound, any   between the deﬁnition of diagnosability and the physical
+other extended strings having the same observation must also   meaning of non-deterministic observations, in  this work,
+contain fault events. Note that we consider extended strings  we put an additional fairness assumption on those sensors
+
+
+                                                       4258
+
+that are subject to intermittent loss of observations, or non-      Deﬁnition 3: (OF-diagnosability) System G is said to be
+deterministic observations in a broad sense. Speciﬁcally, we    output-fairly diagnosable (OF-diagnosable) w.r.t. fault events
+assume that ∆′ ⊆∆is a set of “fair” output symbols in the  ΣF , output function O and fair outputs ∆′ ⊆∆ε if
+sense that if they have inﬁnite opportunities to occur, then
+                                                                (∀s ∈Lϕe,F (G))(∃t ∈Pre(s))[fair-diag]       (3)they will indeed occur inﬁnite number of times.
+  To formalize this fairness requirement, we use the linear   where the fair-diagnostic condition fair-diag is
+temporal logic (LTL) formulas. Formally, an LTL formula
+                                                    (∀w ∈Le(G))[Θ∆(w) = Θ∆(t) ⇒Σe,F ∈w].ϕ is constructed based on a set of atomic propositions AP,
+Boolean operators and temporal operators as follows [1]:
+                                                                           Intuitively, OF-diagnosability revises the standard diag-
+    ϕ ::= true | p | ϕ1 ∧ϕ2 | ¬ϕ | ⃝ϕ | ϕ1Uϕ2,          nosability by restricting our attention only to those inﬁnite
+                                                          extended strings satisfying the fairness assumption and in-
+where p ∈AP is an atomic proposition; ⃝and U denote
+                                                                  vestigates whether or not faults in those “output-fair” strings
+“next” and “until”, respectively. Other Boolean connectives
+                                                        can be detected.
+can be induced by ∧and ¬, e.g., ϕ1 ∨ϕ2 = ¬(¬ϕ1 ∧¬ϕ2)
+                                                    Remark 2: In Deﬁnition 1, it is known that “∀s∈Ψe(G)”and ϕ1 →ϕ2 = ¬ϕ1 ∨ϕ2. Temporal operators □“always”                                                      and “∃n ∈N” can be swapped, which means that  if the
+and ♦“eventually” can be induced by until operator,  i.e.,
+                                                        system is diagnosable, then there exists a uniform detection
+♦ϕ = trueUϕ and □ϕ = ¬♦¬ϕ. LTL formulas are
+                                                    bound after the occurrence of any fault events. However, in
+evaluated over inﬁnite sequences of atomic proposition sets
+                                                          Deﬁnition 3, the length of detection preﬁx t can be arbitrarily
+(called words). For any inﬁnite word s ∈(2AP)ω, we denote
+                                                                long, depending on how the fairness assumption is satisﬁed
+by s |= ϕ if it satisﬁes LTL formula ϕ.
+                                                                   in the speciﬁc inﬁnite faulty string s ∈Lϕe,F (G), since the  In  our  context  of  non-deterministic  observations, we                                                               ∆′-fairness assumption only guarantees that all fair outputs
+choose extended events as atomic propositions, i.e., AP =
+                                                                eventually occur but the delay can be arbitrarily large.
+Σe. For the sake of simplicity, each extended event (q, σ, δ)                                         We show that the proposed notion of a OF-diagnosability
+will also be written as σδq meaning that event σ occurs at state                                                             provides the necessary and sufﬁcient condition for the ex-
+q and generates observation δ. For simplicity, we deﬁne                                                                  istence of diagnoser that works “correctly” under the ∆′-
+                   σq := _   σδq                           fairness assumption. Formally, a diagnoser is a function
+                            δ∈O(σ,q)                       D : M(L(G)) →{0, 1}
+as the proposition formula meaning that transition q  σ−→                                                                     that decides whether a fault has happened (by issuing “1”) or
+occurs no matter what output it generates. Then we introduce                                                             not (by issuing “0”) based on the output string. We say that a
+the notion of ∆′-fairness as follows.                                                            diagnoser works correctly under the ∆′-fairness assumption
+  Deﬁnition 2: (∆′-Fairness) Let ∆′ ⊆∆ε be a set of                                                                                     if it satisﬁes the following conditions:
+output symbols. We say an inﬁnite extended string s ∈
+                                                    C1) By assuming  that each  fair-output  will  actually be
+Lωe (G) is ∆′-fair if                                                              observed inﬁnitely if they have inﬁnite chances to be
+                                    observed, the diagnoser will issue a fault alarm for any
+
+                                                           q s |= ϕfair := ^  □♦σq →  ^   □♦σδ                                  (2)        occurrence of fault events, i.e.,
+            q∈Q,σ∈Σ            δ∈∆′∩O(q,σ)
+                                                              (∀s ∈Lϕe,F (G))(∃s′ ∈Pre(s)))[D(Θ∆(s′)) = 1].
+  The above subset of outputs ∆′ ⊆∆ε is referred to as the                                                    C2) The diagnoser will not issue a false alarm if the execu-
+fair outputs meaning that these outputs will always have the
+                                                                        tion is still normal, i.e.,
+opportunity to be measured. Speciﬁcally, this requirement
+is captured by formula ϕfair saying that, for any transition             (∀s ∈Le(G) : Σe,F /∈s)[D(Θ∆(s)) = 0].
+q σ−→, if it is ﬁred inﬁnite number of times, then any of its
+                                                    The following theorem says that there exists a diagnoser
+fair outputs, i.e., σ ∈∆′ ∩O(q, σ), can actually be observed                                                       working “correctly” under the ∆′-fairness assumption if and
+inﬁnite number of times. This excludes the case where some
+                                                           only if the system is OF-diagnosable.
+fair outputs are disabled permanently. We deﬁne                                                      Theorem 1: There exists a diagnoser satisfying conditions
+        Lϕe (G) = {s ∈Lωe (G) : s |= ϕfair}           C1 and C2 if and only if G is OF-diagnosable w.r.t. fault
+                                                              events ΣF , output function O and fair outputs ∆′ ⊆∆ε.
+as the set of inﬁnite extended strings generated by G satis-                                         We use the following examples to illustrate the concept of
+fying ϕfair. We also deﬁne Lϕe,F (G) = Lϕe (G) ∩Lωe,F (G)   output fairness as well as the notion of OF-diagnosability.
+as the set of inﬁnite faulty extended strings satisfying ϕfair.                                                      Example 3: Again, let us consider system G1 shown in
+C. OF-Diagnosability                                       Figure 1 with ΣF = {σf} and suppose that the fair outputs
+                                                                are ∆′ =  {b, c}. Then by Deﬁnition 2, the ∆′-fairness  Based on the above notion of ∆′-fairness on extended
+                                                         assumption isstrings, now we modify the existing deﬁnition of diagnosabil-
+ity as shown in Deﬁnition 1 to the output-fair diagnosability        ϕfair = ( ^ □♦bi →□♦bbi) ∧(□♦c4 →□♦cc4)
+(OF-diagnosability) deﬁned as follows.                                         i=3,6
+
+
+                                                       4259
+
+Note that for inﬁnite faulty extended string
+
+        sF = (1, σf, ε)[(2, a, a)(3, b, b)(4, c, ε)]ω,
+we have sF̸ |= ϕfair because □♦c4 holds but □♦cc4 does
+not hold. Therefore, sF̸ ∈Lϕe,F (G) is not considered in the
+analysis of OF-diagnosability. Clearly, for any faulty string
+in Lϕe,F (G), cc4 must occur, which means output c will be
+observed and upon the occurrence of which the fault can be
+detected. Therefore, this system is actually OF-diagnosable.                                                                         Fig. 2: Augmented system ˜G1 for system G1.
+       IV. VERIFICATION OF OF-DIAGNOSABILITY           Example 4:  Still, we consider system G1 shown in Fig-
+                                                             ure 1 with the same setting in Example 3. Its augmented
+A. Augmented System
+                                                        system  ˜G1  is depicted  in Figure  2, where  (1, σf, ε)  is
+  To verify OF-diagnosability, our ﬁrst step is to augment    the extended fault event and after occurrence of which all
+both the state-space and the event-space of G such that         states is augmented with label F, e.g., states 2F and 3F.
+  • the information of whether or not a fault event has   Furthermore, the transitions of the augmented system ˜G1 are
+     occurred is encoded in the augmented state-space; and   deﬁned according to the actual transitions and the underlying
+  • the information of where the event occurs and which   observations of original system G1. For example, because
+     speciﬁc output  is observed are encoded in the aug-   f(3, b) = 4 and O(3, b) =  {b, ε}, we have two new
+    mented event-space.                                          transitions in ˜G1: ˜f(3F, bb3) = 4F and ˜f(3F, bε3) = 4F.
+  Formally, given system G = (Q, q0, Σ, f), fault events ΣF
+                                                            B. Veriﬁcation Structure
+and output function O, we deﬁne the augmented system as
+                                                  Q˜
+a new DFA                                                  Let r ∈2  be a set of states representing the current
+                     ˜G = (˜Q, ˜q0, Σe, ˜f),                  (4)    state estimation of the augmented system. By observing a
+                                                new output symbol δ ∈∆, the estimate is updated by the
+where                                                       following observable reach
+  •  ˜Q ⊆Q × {F, N} is the set of augmented states;
+                                                                                                      ∃˜q ∈r, ˜σ ∈Σe s.t  •  ˜q0 = (q0, N) is the initial augmented state;                 Next(r, δ) =    ˜q′ ∈˜Q :                                           .                                                                     Θ∆(˜σ)=δ ∧˜q′ = ˜f(˜q, ˜σ)  • Σe  is the  set of augmented events, which are  just
+    extended events;                                        Also, the system can execute silently without generating an
+  •  ˜f : ˜Q × Σe →˜Q is the transition function deﬁned by:   output symbol. This is captured by the unobservable reach
+     for any ˜q = (q, l) ∈˜Q and ˜σ = (q, σ, δ) ∈Σe, we have   deﬁned by:
+       ˜f(˜q, ˜σ)! if f(q, σ)! and δ ∈O(q, σ). Furthermore, when
+                                                                                                                  e s.t                                                                                                                                                                             .       ˜f(˜q, ˜σ)!, we have                                   UR(r) =    ˜q′ ∈˜Q :    ∃˜q ∈r, s ∈Σ∗
+                                                             Θ∆(s)=ε ∧˜q′ = ˜f(˜q, s)
+                   (f(q, σ), N)    if l = N ∧˜σ /∈Σe,F         ˜f(˜q, ˜σ) =                                                             .                   (f(q, σ), F)   otherwise                Now, based on the augmented system ˜G = (˜Q, ˜q0, ˜Σ, ˜f),
+                                             we construct the veriﬁcation structure as follows:
+  The above constructed augmented system ˜G has the fol-
+lowing properties:                                             V = (QV , q0V , ΣV , fV )                (5)
+  •  First,  the augmented system  ˜G  generates extended                                                     where
+      strings. Essentially, it still tracks the original dynamic              Q˜                                                                  • QV ⊆˜Q × 2   is the set of states;
+     of the system by putting both the output realization and
+                                                                  • q0V = (˜q0, UR({˜q0})) is the initial state;     the current state information together with the internal
+                                                                  • ΣV = Σe  is the event set, which  is just the set of
+     event. Therefore, we have
+                                                              extended events;
+                                                                                                          transition function deﬁned                                                                  • fV  : QV × ΣV →QV  is the          L(˜G) = Le(G) and Lω(˜G) = Lωe (G).                                                              Q˜                                                                  by: for any (˜q, r) ∈˜Q × 2  and ˜σ ∈ΣV , we have
+  • Second, each augmented state (q, l) ∈Q×{F, N} = ˜Q
+     has two components. The ﬁrst component q is the actual                                               (˜q′, r)    if Θ∆(˜σ) = ε                                                               fV ((˜q, r), ˜σ) =
+     state in the original system G and the second component                                               (˜q′, r′)   if Θ∆(˜σ) ∈∆
+       l ∈{N, F} is a label denoting whether fault events have                                                         where ˜q′ = ˜f(˜q, ˜σ) and r′ = UR(Next(r, Θ∆(˜σ))).
+     occurred. By the construction, the label will change
+                                                                           Intuitively, each state (˜q, r) in the veriﬁcation structure V    from N to F only when an extended fault event occurs
+                                                           has two components. The ﬁrst component ˜q ∈˜Q tracks the    and once the label becomes F,  it will be F  forever.
+                                                                current (augmented) state in ˜G. Therefore, the transition of   We denote by ˜QN = {(q, l) ∈˜Q : l = N} the set of
+                                                                the ﬁrst part is consistent with ˜f. As a result, we also have    normal augmented states and the set of faulty states ˜QF
+      is deﬁned analogously.                                                            L(V ) = L(˜G) = Le(G)
+
+
+                                                       4260
+
+and the same for the generated inﬁnite language. On the other   Furthermore, if some state in a loop is uncertain, then all
+                        Q˜hand, the second component r ∈2   captures the current    states in it are uncertain.
+state estimation of system  ˜G. Therefore,  this component     The following main  result shows  that,  to check OF-
+is updated only when a new output symbol is generated,    diagnosaiblity, it sufﬁces to check the existence of a reach-
+i.e., Θ∆(˜σ) ∈∆. Furthermore, if it is updated, then it ﬁrst   able fair and uncertain loop (FU-loop) in the veriﬁcation
+updates the estimate by the observable reach to compute the    structure V .
+set of state that can be reached immediately following the     Theorem 2: A system G is not OF-diagnosable w.r.t. fault
+output. Also, we need to include all states that can be reached   events ΣF , output function O and fair outputs ∆′ ⊆∆, if and
+silently by using the unobservable reach. Essentially, we can   only if, there exists a reachable FU-loop in the veriﬁcation
+image V  as the synchronization of the augmented system    structure V .
+˜G and its current-state estimate under the non-deterministic     The condition in Theorem 2 can be checked as follows.
+observation setting.                                                    First, in veriﬁcation  structure, we ﬁnd  all strongly con-
+  For any state (˜q, r) ∈QV in V , we say the state is         nected components (SCCs) that are reachable by fault events.
+  • certain if ˜q ∈˜QF and r ⊆˜QF ;                            Clearly, each of above SCCs only consists of either certain
+  • uncertain if ˜q ∈˜QF and r ∩˜QN̸ = ∅.                       states or uncertain  states and we only need to consider
+                                                              those uncertain SCCs. Then we need to check  if any ofWe denote by QcerV  and QuncV   the set of certain states and
+                                                                the uncertain SCCs contains a fair loop. To this end, foruncertain states in V , respectively. Then for any string s ∈
+                                                         each extended event  (q, σ, δ), we check  if  it  is  fair  inL(V ), based on the deﬁnition of uncertain and certain states,
+                                                                the sense that any δ ∈∆′ ∩O(q, σ) also appears in thewe know that (i) for any faulty extended string s ∈L(V ) =
+Le(G), there exists a normal extended string s′ ∈Le(G)   same SCC.  If not, we need to remove such an extended
+                                                                  event, and then recompute the SCCs and repeat the abovesuch that Θ∆(s) = Θ∆(s′) if and only if fV (q0V , s) ∈QuncV   ;
+                                                        removal procedure. When no such “unfair” extended eventand (ii) for any faulty extended string s ∈L(V ) = Le(G),
+                                                        can be removed, the SCC remained (if exists) will containif fV (q0V , s) ∈QcerV   , then for any of its continuation st ∈
+                                                           a fair-loop; otherwise, no fair-lopp can be found. The aboveL(V ), we have fV (q0V , st) ∈QcerV   .
+                                                           procedure is in polynomial-time in the size of the veriﬁcation
+C. Checking OF-Diagnosability                                 structure since computing all SCCs can be done in linear time
+  Now we investigate the veriﬁcation of OF-diagnosability.   and the above procedure repeats at most |Q|2|Σ||∆| times.
+According to Deﬁnition 2, a system is not OF-diagnosable   However, the size of the veriﬁcation structure is exponential
+if and only if there exists an inﬁnite extended faulty string    in the size of the original system. Therefore, the overall
+satisfying the ∆′-fairness assumption but  all states in V    complexity for checking OF-diagnosability is exponential.
+reached along  the  string  are  uncertain. Then,  since  the     Example 5:  Still, let us consider system G1 shown Fig-
+systems is ﬁnite, only loops can generate inﬁnite strings. This   ure 1 with ΣF = {σf} and suppose that the fair outputs are
+leads to the deﬁnition of fairly uncertain loop (FU-loop).     ∆′ = {b, c}. As we have discussed in Example 3, this system
+  Formally, given the veriﬁcation structure V , we deﬁne a    is OF-diagnosability. Here, we analyze this more formally
+run in V as a ﬁnite sequence                                using Theorem 2. Based on the augmented system ˜G1, we
+                                                                construct the veriﬁcation structure V1; part of it is shown in
+                     σ1V      σ2V      σn−1V
+         π = q1V −−→q2V −−→· · · −−−→qnV                Figure 3, where we focus on the only reachable uncertain
+                                                                loop, as highlighted with red lines in the Figure 3, and omit
+where q1V , · · · , qnV ∈QV , σ1V , · · · , σnV ∈ΣV and qi+1V  =    other parts without loss of generality for the purpose of
+fV (qiV , σiV ), i = 1, . . . , n −1. A run of the above form is    veriﬁcation. To form a loop, we have to ﬁre extended event
+called a loop if q1V = qnV .                                         cϵ4 inﬁnite number of times at state 4F. However, the fair
+                               σ1V         σn−1V                                                                                       c−→is c ∈∆′, i.e., O(4, c) ∩∆′ = {c}  Then given a loop π = q1V −−→q2V · · · −−−→qnV  in the   output of transition 4
+veriﬁcation structure, where σiV = (qi, σi, δi), we say π is    and extended cc4 is not included. Therefore, we conclude the
+                                                     V1 cannot form a FU-loop, which means that system G1 is  •  fair  if  for each  transition  that occurs  in  the  loop,
+                                                         OF-diagnosable according to Theorem 2.    any of its fair output symbols must occur in the loop
+                                                                 In the previous running example, the non-deterministic     associating with the same transition, i.e.,
+                                                              observation is either to see the occurrence of the internal
+         (∀i ∈{1, · · · , n})(∀δ ∈O(qi, σi) ∩∆′)             event or to lose the observation. This actually corresponds
+         (∃j ∈{1, · · · , n})[(qj, σj)=(qi, σi) ∧δj =δ]         to the special case of intermittent loss of observations. As we
+                                                          mentioned, our framework captures the general case of state-
+  • uncertainty if all states in the loop are uncertain, i.e.,    dependency and allows the output symbols to be different
+                                                      from the event set.                ∀i ∈{1, · · · , n} : qiV ∈QuncV
+                                                      Example 6: Let us consider system G2 shown in Fig-
+  • reachable if there exists a ﬁnite string s ∈L(V ) such   ure 4(a) with Σ = {a, b, c, σf, u}, ∆= {o1, o2, o3} and
+     that fV (q0V , s) = q1V .                         ΣF = {σf}. We assume that the fair outputs are ∆′ =
+Clearly, by properties of the veriﬁcation structure, we know   {o2, o3}. For example, for transition 4 c−→, we may observe
+that an uncertain loop will only be reached by faulty strings.   any output δ ∈O(4, c) = {o2, o3, ε} non-deterministically.
+
+
+                                                       4261
+
+Fig. 3: Part of veriﬁcation structure V1 corresponding to    Fig. 5:  Part of veriﬁcation structure V2 corresponding to
+system G1. The uncertain loop is highlighted by red lines.    system G2. The uncertain loop is highlighted by red lines.
+The augmented system ˜G2 is depicted in Figure 4(b). For
+                                                               REFERENCESthis system, the ∆′-fairness assumption is given by
+ ϕfair =( ^ (□♦ci → ^  □♦cδi ))
+                                                                                     [1] C. Baier and J. Katoen.  Principles of Model Checking. MIT press,
+          i=4,7           δ∈{o2,o3}                                        2008.
+      ∧(□♦b3 → ^  □♦bδ3) ∧(□♦b6 →□♦bo26 ) .       [2]  P. Biswal and S. Biswas. A polynomial algorithm for diagnosability of                                                                                                     fair discrete event systems. Systems Science & Control Engineering,
+                       δ∈{o2,o3}                                            3(1):307–319, 2015.
+Now, let us verify OF-diagnosability using Theorem 2. To      [3] A. Boussif, M. Ghazel, and J. Basilio. Intermittent fault diagnosability
+                                                                                    of discrete event systems: an overview of automaton-based approaches.
+this end, we construct the corresponding veriﬁcation system          Discrete Event Dynamic Systems, 31(1):59–102, 2021.
+V2, part of which is shown in Figure 5. This loop is fair      [4] L. Carvalho, J. Basilio, and M. Moreira. Robust diagnosis of discrete
+because for transition 3 b−→all fair outputs in O(3, b)∩∆′ =          event systems against intermittent loss of observations. Automatica,
+                                                                             48(9):2068–2078, 2012.
+{o2, o3} occur in the loop, and for transition 4 c−→all fair      [5] L. Carvalho, M. Moreira, and  J. Basilio.  Comparative analysis of
+outputs  in O(4, c) ∩∆′ =  {o2, o3} occur  in the loop.           related notions of robust diagnosability of discrete-event systems.
+Furthermore, all states in the loop are uncertain. Thus, system         Annual Reviews in Control, 2021.
+G2 is not OF-diagnosable.                                                  [6] Y. Hu, Z. Ma, Z. Li, and A. Giua.  Diagnosability enforcement in                                                                                    labeled petri nets using supervisory control. Automatica, 131:109776,
+                                                                             2021.
+                                                                                     [7]  S. Lafortune, F. Lin, and C. Hadjicostis. On the history of diagnosabil-
+                                                                                                   ity and opacity in discrete event systems. Annual Reviews in Control,
+                                                                            45:257–266, 2018.
+                                                                                     [8]  F. Lin.  Control of networked discrete event systems: dealing with
+                                                                         communication delays and losses.  SIAM Journal on Control and
+                                                                   "#          "#                      Optimization, 52(2):1276–1298, 2014.
+                                                                                     [9] Z. Ma, X. Yin, and Z. Li.  Marking diagnosability veriﬁcation in
+                                                                                "$                      labeled petri nets. Automatica, 131:109713, 2021.
+                                                           "$   "%                             [10] V. Oliveira, F. Cabral, and M. Moreira. K-loss robust diagnosability
+                                                                                    of discrete-event systems. IFAC-PapersOnLine, 53(4):250–255, 2020.
+                                                                        N. Ran, H.                                                                                           Su,                                                                                     A. Giua,                                                                                              and                                                                                                      C.                                                                                                                    Seatzu. Codiagnosability                                                                                                                                                  analysis of                                                                                "%                                                                            "$                                                                                           "#        [11]
+                                                       "$  "%            &                                                                         &                                                                                   '                                                                               IEEE                                                                                                            Trans.                                                                                                          Automatic                                                                       bounded                                                                                                         petri                                                                                                             nets.                                                                                                                               Control, 63(4):1192–1199,
+                    !                            !                    2018.
+                                                                              [12]  S. Takai. A general framework for diagnosis of discrete event systems
+             (a) System G2.               (b) Augmented system ˜G2.                subject to sensor failures. Automatica, 129:109669, 2021.
+     Fig. 4: Example of a non-OF-diagnosable system.          [13]  S. Takai and T. Ushio.  Veriﬁcation of codiagnosability for discrete
+                                                                                  event systems modeled by Mealy automata with nondeterministic
+                                                                                  output functions. IEEE Trans. Aut. Control, 57(3):798–804, 2012.
+of diagnosability under non-deterministic observations and    [14]  T. Ushio and S. Takai. Nonblocking supervisory control of discrete
+                                                                                  event systems modeled by Mealy automata with nondeterministic
+the physical setting of non-deterministic observations.                 output functions. IEEE Trans. Aut. Control, 61(3):799–804, 2015.
+                   V. CONCLUSION                              [15] G. Viana, M. Moreira, and J. Basilio.  Codiagnosability analysis of
+                                                                                        discrete-event systems modeled by weighted automata. IEEE Trans.
+  In this work, we revisited the problem of fault diagnosis of         Automatic Control, 64(10):4361–4368, 2019.
+DES under non-deterministic observations. Compared with    [16] X. Yin, J. Chen, Z. Li, and S. Li. Robust fault diagnosis of stochastic
+existing works, we introduced the notion of output fairness           discrete event systems. IEEE Trans. Automatic Control, 64(10):4237–
+                                                                             4244, 2019.
+that excludes the case where some possible outputs are
+                                                                              [17] X. Yin and S. Lafortune. Codiagnosability and coobservability under
+disabled permanently, which  is formalized as ∆′-fairness        dynamic observations: Transformation and veriﬁcation.  Automatica,
+assumption by LTL. We proposed a new notion called OF-         61:241–252, 2015.
+diagnosability to capture the diagnostic requirement under    [18] X. Yin and S. Lafortune.  On the decidability and complexity of
+                                                                                      diagnosability for labeled Petri nets. IEEE Trans. Automatic Control,
+∆′-fairness assumption. Necessary and sufﬁcient condition         62(11):5931–5938, 2017.
+for testing OF-diagnosability was also provided based. Our    [19]  J. Zaytoon and S. Lafortune. Overview of fault diagnosis methods for
+work bridged the discrepancy between the existing deﬁnition           discrete event systems. Annual Rev. Control, 37(2):308–320, 2013.
+
+                                                       4262

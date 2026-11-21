@@ -1,0 +1,1035 @@
+3914                                              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 62, NO. 8, AUGUST 2017
+
+ Synthesis of Maximally-Permissive Supervisors
+           for the Range Control Problem
+
+              Xiang Yin, Student Member, IEEE, and St´ephane Lafortune, Fellow, IEEE
+
+
+
+  Abstract—We investigate the supervisor synthesis prob-   Moreover, we want the supervisor S to be as permissive as
+lem for centralized partially-observed discrete event sys-   possible.
+tems subject to safety speciﬁcations. It is well known that                                                              Let L ⊆K be a sub-language of K. Under the partial obser-
+this problem does not have a unique supremal solution in
+                                                                vation setting, it is well-known that there exists a supervisor thatgeneral. Instead, there may be several incomparable locally
+maximal solutions. One then needs a mechanism to select   exactly achieves L if and only if L is controllable and observ-
+one locally maximal solution. Our approach in this paper is   able [8], [13]. Since controllability is preserved under union,
+to consider a lower bound speciﬁcation on the controlled   there exists a supremal controllable sub-language of K; this is
+behavior, in addition to the upper bound for the safety spec-                                                                 the unique supremal solution to the synthesis problem when all
+iﬁcation. This leads to a generalized supervisory control
+                                                               events are observable. However, the supervisor synthesis prob-problem called the range control problem. While the up-
+per bound captures the (preﬁx-closed) legal behavior, the  lem is much more challenging under the partial observation
+lower bound captures the (preﬁx-closed) minimum required   setting, since observability is not preserved under union. There-
+behavior. We provide a synthesis algorithm that solves this   fore, the supervisor synthesis problem may not have a unique
+problem by effectively constructing a maximally-permissive                                                          supremal solution in general. Instead, there may be several in-
+safe supervisor that contains the required lower bound
+                                                         comparable locally maximal solutions.behavior. This is the ﬁrst algorithm with such properties,
+as previous works solve either the maximally-permissive     Several approaches have been proposed in the literature in
+safety problem (with no lower bound), or the lower bound   order to tackle the synthesis problem; see, e.g., [2]–[4], [7], [9],
+containment problem (without maximal permissiveness).      [19], [29]. One approach is to compute the supremal control-
+  Index Terms—Discrete event systems, maximal permis-   lable and normal solution, which was initially proposed in [8],
+siveness, partial observation, supervisory control, synthe-   [13]; see, also [3], [7] for its computation. When all controllable
+sis.                                                           events are observable, normality and controllability coincide
+                                                           with observability and controllability, which implies that the
+                                I. INTRODUCTION                         synthesis problem has a supremal solution for this special case.
+                                                       However, the supremal normal solution may be conservative in
+     E INVESTIGATE the supervisor synthesis problem for
+                                                                  general, when there are controllable events that are unobserv-
+        partially-observed Discrete Event Systems (DES) in theW                                                             able. In [4], [19], two different solutions that are strictly larger
+framework of supervisory control theory [16]. In this prob-
+                                                             than the supremal normal solution were derived. However, the
+lem, one is interested in synthesizing a supervisor such that
+                                                                  solutions obtained by these approaches are not maximal in gen-
+the closed-loop system under control satisﬁes a given safety
+                                                                            eral. In [2], an online approach was proposed in order to com-speciﬁcation. Formally, let G be a system and K ⊆L(G) be a
+                                                             pute a maximal solution. This approach can only be applied to
+preﬁx-closed speciﬁcation language describing the legal behav-
+                                                             preﬁx-closed speciﬁcations, since the solution obtained may be
+ior for the controlled system. The goal is to ﬁnd a supervisor S
+                                                            blocking in general. The problem of supervisor (or controller)such that L(S/G) ⊆K, where L(S/G) denotes the language
+                                                                 synthesis under partial observation has also been investigated ingenerated by G under the control of S (closed-loop system).
+                                                                other frameworks; see, e.g., [1], [6], [12], [21].
+                                                                  In our recent works [27], [28], we proposed a new information
+  Manuscript received August 24, 2016; revised December 8, 2016;   structure called the All Inclusive Controller (AIC) in order to
+accepted December 16, 2016. Date of publication December 23, 2016;   solve the supervisor synthesis problem. The AIC is a ﬁnite struc-
+date of current version July 26, 2017. This work was supported in part by
+the U.S. National Science Foundation grants CCF-1138860 (Expeditions   ture that “embeds” all (inﬁnitely many in general) safe supervi-
+in Computing project ExCAPE: Expeditions in Computer Augmented   sors for a given speciﬁcation. A maximal solution for the preﬁx-
+Program Engineering) and CNS-1446298. This work was done when   closed case was also obtained based on the AIC. The structure
+the ﬁrst author was at the University of Michigan. Recommended by
+Associate Editor S. Takai. (Corresponding author: Xiang Yin.)           of the AIC was further extended to the non-preﬁx-closed case,
+  X. Yin is with the Department of Automation, Shanghai Jiao Tong  where the Non-Blocking All Inclusive Controller (NB-AIC)
+University, Shanghai 200240, China (e-mail: xiangyin@umich.edu).     was proposed. By using the NB-AIC as a basis, we showed
+  S. Lafortune is with the Department of Electrical Engineering and
+Computer Science, University of Michigan, Ann Arbor, MI 48109 USA   that the problem of synthesizing a maximally-permissive safe
+(e-mail: stephane@umich.edu).                                and non-blocking supervisor for partially-observed DES is de-
+  Color versions of one or more of the ﬁgures in this paper are available   cidable. Moreover, the solution can be represented by a ﬁnite
+online at http://ieeexplore.ieee.org.
+   Digital Object Identiﬁer 10.1109/TAC.2016.2644867                    structure.
+
+
+               0018-9286 © 2016 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                  See http://www.ieee.org/publications standards/publications/rights/index.html for more information.
+
+YIN AND LAFORTUNE: SYNTHESIS OF MAXIMALLY-PERMISSIVE SUPERVISORS FOR THE RANGE CONTROL PROBLEM                          3915
+
+
+                                             we deﬁne the notion of Control Simulation Relation (CSR). The
+                                          CSR is used to resolve the future dependency issue, which is
+                                                                 the main difﬁculty in handling maximal permissiveness with
+                                                                 the lower bound constraint. In Section VI, we ﬁrst provide an
+                                                             algorithm to synthesize a maximally-permissive supervisor thatFig. 1.   Let G be the system, K be the legal behavior and R be the
+required behavior. M ax1, M ax2 and M ax3 are three incomparable   contains the required behavior. Then we prove the correctness of
+maximal solutions in K, i.e., ∀i, j ∈{1, 2, 3} : M axi̸ ⊂M axj. However,   the proposed algorithm. We also discuss how to verify whether
+M ax1 and M ax2 contain the required behavior R, while M ax3 does
+                                                           a given supervisor is maximal or not. Finally, we conclude thenot contain any string in R.
+                                                           paper in Section VII.
+                                                                Preliminary and partial versions of some of the results in this
+  Although maximal solutions have been reported in the liter-   paper are presented in [25], [26]. The differences between the
+ature in [2], [27], the maximal solutions obtained so far are just   present paper and its conference versions are as follows. First,
+a particular type of maximal solutions, namely, greedy maximal   the approach in [25] does not solve the range control problem,
+solutions. In a greedy maximal solution, the supervisor tries to   since it does not guarantee ﬁnite convergence. Second, although
+enable as many events as possible at each control decision in-   the algorithm proposed in [26] solves the range control prob-
+stant. However, no consideration is given to including some min-   lem, the complexity of the algorithm is double-exponential in
+imum required behavior in these solutions, a meaningful crite-   general. This is because [26] assumes that the lower bound spec-
+rion when choosing among locally maximal solutions. This phe-   iﬁcation language is controllable and observable; in the worst
+nomenon is illustrated in Fig. 1. In fact, none of the synthesis al-   case, it requires exponential state-space explosion of the original
+gorithms in[2]–[4], [7], [19], [27], [29] canguaranteethat thesu-   lower bound automaton in order to make this assumption hold.
+pervisor synthesized therein contains a given required behavior.   In this paper, we provide a uniﬁed and simpliﬁed framework that
+  In order to resolve the above issue, we consider in this paper a  subsumes all results in [25], [26], together with all proofs (only
+generalized supervisor synthesis problem called the Maximally-  some proofs are presented in [25], [26]). Moreover, we relax
+Permissive Range Control Problem. In this problem, we not   the assumption that the lower bound speciﬁcation language is
+only want to ﬁnd a locally maximal supervisor, but we also re-   controllable and observable; this signiﬁcantly reduces the com-
+quire that the synthesized maximal supervisor contains a given   plexity of the synthesis procedure from double-exponential-time
+behavior. Namely, we want to ﬁnd a “meaningful” maximal   to exponential-time.
+solution. Note that, as illustrated by Fig. 1, such a solution
+need not be unique. More speciﬁcally, in addition to the safety                             II. PROBLEM FORMULATION
+speciﬁcation language K, which is also referred to as the up-
+                                                        A. Preliminaries
+per bound language, we consider a preﬁx-closed lower bound
+language R ⊆K, which models the required behavior that the     Let Σ be a ﬁnite set of events. We denote by Σ∗the set of all
+closed-loop system must achieve. To solve the range control   ﬁnite strings over Σ, including the empty string ϵ. For any string
+problem, we present a new synthesis algorithm based on the   s ∈Σ∗, |s| denotes its length with |ϵ| = 0. A language L is a
+two notions of All Inclusive Controller (AIC) and Control Sim-   subset of Σ∗. We denote by L the preﬁx-closure of language L;
+ulation Relation (CSR). The AIC was originally proposed in  L is said to be preﬁx-closed if L = L, i.e., L = {u ∈Σ∗: ∃v ∈
+[27] in order to synthesize an arbitrary maximal solution, with   Σ∗s.t. uv ∈L}.
+no consideration to a lower bound behavior. Throughout the   A DES  is modeled  as  a  ﬁnite-state  automaton G =
+paper, we only consider preﬁx-closed languages. Therefore, the  (X, Σ, δ, x0, Xm), where X is the ﬁnite set of states, Σ is the
+issue of non-blockingness cannot be handled. On the other hand,   ﬁnite set of events, δ : X × Σ →X is the partial transition func-
+to the best of our knowledge, the maximally-permissive range   tion, x0 ∈X is the initial state, and Xm ⊆X is the set of marked
+control problem we solve herein was an open problem even in   states. The transition function δ is extended to X × Σ∗in the
+the preﬁx-closed case. Note that the range control problem is   usual manner; see, e.g., [5]. For brevity, we write δ(x, s) as δ(s)
+quite different from the problems studied in [27], [28], where no    if x = x0. We deﬁne L(G, x) := {s ∈Σ∗: δ(x, s)!} as the lan-
+lower bound speciﬁcation is considered. Consequently, several   guage generated by G from state x, where ! means “is deﬁned”.
+new techniques are developed in this paper to tackle the lower  We write L(G, x) as L(G) if x = x0. In this paper, we will
+bound requirement.                                          only deal with preﬁx-closed languages. Therefore, we assume
+  This paper is organized as follows. In Section II, we ﬁrst   that Xm = X and denote an automaton by G = (X, Σ, δ, x0).
+introduce some necessary background. Then we formulate the     Given  two  automata A=(XA, Σ, δA, xA,0)  and B=
+maximally-permissive range control problem that we solve in  (XB , Σ, δB , xB ,0), we say that A is a sub-automaton of B, de-
+the paper. The notions of Bipartite Transition Structure (BTS)   noted by A ⊑B, if δA(xA,0, s)=δB (xB ,0, s) for all s∈L(A).
+and AIC are reviewed in Section III. The main contributions  We say that A is a strict sub-automaton1 of B, denoted by A ⊏
+of this paper are presented in Sections IV–VI. In Section IV,  B, if (i) A ⊑B; and (ii) ∀x, y ∈XA, ∀s ∈Σ∗: δB (x, s)=y⇒
+we ﬁrst reveal that the notion of strict sub-automaton plays an   δA(x, s)=y. Note that, for any two automata A and B such
+important role in the range control problem. Then we provide
+a new constructive approach for computing the inﬁmal safe     1The deﬁnition of strict sub-automaton used in this paper is slightly stronger
+supervisor that contains the lower bound behavior. In Section V,   than the deﬁnition used in [7].
+
+3916                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 62, NO. 8, AUGUST 2017
+
+
+that L(A) ⊆L(B), we can always reﬁne the state spaces of   controllable and observable super-language of R. Moreover, it
+A and B and obtain two new automata A′ and B′ such that  was shown in [11], [17] that R↓C O is a regular language when
+L(A′)=L(A), L(B′)=L(B) and A′ ⊏B′.           R is regular; language-based formulas for R↓C O were provided
+  In the supervisory control framework [16], the event set is   in [11], [17].
+partitioned into two disjoint sets Σ = Σc ˙∪Σuc, where Σc is the     Since we consider partially-observed DES, we deﬁne an in-
+set of controllable events and Σuc is the set of uncontrollable   formation state as a set of states and denote by I = 2X the set
+events. A control decision γ ∈2Σ is a set of events with the   of information states. Let i ⊆I be an information state, γ ∈Γ
+constraint that Σuc ⊆γ, i.e., the supervisor should always en-   be a control decision, and σ ∈Σo be an observable event. We
+able uncontrollable events. We denote by Γ the set of all control  deﬁne the following two operators:
+decisions, i.e., Γ := {γ ∈2Σ : Σuc ⊆γ}. Under the partial ob-
+servation setting [8], [13], the event set is further partitioned into  URγ (i)={x∈X : ∃y∈i, ∃s∈(Σuo ∩γ)∗s.t. x=δ(y, s)}  (3)
+another pair of disjoint sets Σ = Σo ˙∪Σuo, where Σo is the set                                                    Nextσ(i)={x ∈X : ∃y ∈i s.t. x = δ(y, σ)}               (4)
+of observable events and Σuo is the set of unobservable events.
+The natural projection P : Σ∗→Σ∗o is deﬁned by
+                                                         B. Problem Formulation
+                          P(s)σ    if σ ∈Σo      P(ϵ) = ϵ and P(sσ) =                              (1)     In this paper, we consider a generalized supervisory control
+                           P(s)      if σ ∈Σuo                                                                 synthesis problem, called the range control problem, where we
+The projection P is extended to 2Σ∗by P(L) = {t ∈Σ∗o : ∃s∈   have two preﬁx-closed speciﬁcation languages:                                                                              r                                                                       the upper bound language K =K ⊆L(G); andL s.t. t=P(s)} and P −1 denotes the inverse projection. A su-                                                                              rpervisor is a function S : P(L(G)) →Γ, i.e., it enables events         the lower bound language R=R⊆K.
+only based on its observations. We denote by L(S/G) the lan-    The upper bound K describes the legal behavior of the sys-
+                                                     tem and we say that a supervisor S is safe if L(S/G)⊆K.guage generated by the closed-loop system under control, com-
+                                        We say that a safe supervisor S is maximally permissive (orputed recursively by:
+     i) ϵ ∈L(S/G); and                                   maximal) if there does not exist another safe supervisor S′,
+     ii) sσ∈L(S/G)⇔s∈L(S/G)∧sσ∈L(G)∧σ∈           such that L(S/G)⊂L(S′/G). Note that the maximal super-
+      S(P(s)).                                                  visor may not be unique and there may be two incomparable
+  Let K ⊆L(G). We say that language K is                maximal supervisors S1 and S2 such that L(S1/G)̸⊂L(S2/G)
+    r      controllable (w.r.t. Σc and G), if KΣuc ∩L(G) = K;     and L(S2/G)̸⊂L(S1/G). In order to synthesize a “meaning-
+    r     observable (w.r.t. Σc and Σo and G), if (∀s ∈K, ∀σ ∈   ful” maximal solution, we introduce a lower bound language
+     Σc : sσ ∈K)[P −1P(s)σ ∩L(G) ⊆K]          R describing the required behavior that the closed-loop sys-
+   It is well-known that, given a language K ⊆L(G), there  tem must achieve. Examples of using the range requirement to
+exists a partial observation supervisor S such that L(S/G) =  impose design constraints can be found in [10], [13]–[15]. We
+K, if and only if, K is controllable and observable [8], [13].    now formulate the Maximally-Permissive Range Control Prob-
+                                                       lem (MPRCP):  When K is not controllable or observable, i.e., K cannot be
+                                                         Problem 1. (Maximally-Permissive Range Control Problem)exactly achieved by a supervisor, one is interested in ﬁnding
+a controllable and observable sub-language of K that is as  Given  system G,  lower  bound  language R  and  upper
+                                                     bound language K such that R ⊆K ⊆L(G), synthesize a“large” as possible in terms of language inclusion; this problem
+                                                           maximally-permissive  supervisor S∗: P(L(G)) →Γ  suchis also referred to as the synthesis problem. Since controllability
+                                                                      that R ⊆L(S∗/G) ⊆K.is preserved under union, there exists a supremal controllable
+                                                     Remark 1: We make several comments on MPRCP.sub-language of K [16], i.e., the synthesis problem under the
+                                                                   1) First, under the assumption that Σc ⊆Σo, MPRCP has afull observation setting has a unique optimal solution. However,
+                                                                unique solution, if one exists. In this case, since control-there does not exist a supremal controllable and observable sub-
+                                                                                  lability and observability together imply normality, thelanguage of L(G), since observability is not preserved under
+                                                               supremal controllable and observable sub-language of Kunion in general, i.e., L1 ∪L2 may be not observable even if
+                                                               does exist [5] and it coincides with the supremal control-both L1 and L2 are observable. Instead, there may be several
+                                                                         lable and normal sub-language of K, denoted by K↑C N .incomparable locally maximal sub-languages; the deﬁnition of
+                                                                     Therefore, it sufﬁces to compute K↑C N , and test whetherlocally maximal will become clear later.
+                                                                      or not R ⊆K↑C N . If so, then K↑C N is the unique supre-  Although observability is not preserved under union, both
+                                                          mal solution; otherwise, there does not exist a solution tocontrollability and observability are preserved under intersec-
+                                                  MPRCP.tion when the languages are preﬁx-closed. Therefore, for a given
+language R ⊆L(G), we deﬁne the following class of languages      2) Second, when the lower bound requirement is relaxed,
+                                                                                                   i.e., R = {ϵ}, MPRCP is solved by the results in [2],
+    CO(R) = {L ⊆Σ∗: (L = L) ∧(R ⊆L ⊆L(G))                [27], since  it sufﬁces to synthesize an arbitrary max-
+                                                                 imal supervisor without taking the lower bound into          ∧(L is controllable and observable)}      (2)
+                                                                        consideration.
+and there exists an inﬁmal element in class CO(R) deﬁned by      3) Finally, if the maximal permissiveness requirement is
+R↓C O :=  L∈CO(R) L. We call R↓C O the inﬁmal preﬁx-closed          relaxed, then we just need to compute R↓C O, and test
+
+YIN AND LAFORTUNE: SYNTHESIS OF MAXIMALLY-PERMISSIVE SUPERVISORS FOR THE RANGE CONTROL PROBLEM                          3917
+
+
+      whether or not R↓C O ⊆K. If so, then R↓C O is the most  Y -state is a “system state” from which the supervisor makes
+      conservative solution; otherwise, MPRCP does not have   control decisions. Each Z-state is an “environment state” from
+      a solution.                                        which (enabled) observable events occur. Since the supervisor
+  Hence, many existing problems solved in the literature are   cannot choose which event will occur once it has made a control
+special cases of MPRCP. To the best of our knowledge, MPRCP   decision, all enabled and feasible observable events should be
+is still open for the general case, which is clearly more difﬁcult  deﬁned at a Z-state; this is why we put “⇔” in Equation (7). We
+than the above special cases. In fact, the idea of using both the   denote by CT (y) the set of control decisions deﬁned at y ∈QTY
+upper bound and the lower bound speciﬁcations was originally   in T, i.e., CT (y) = {γ ∈Γ : hTY Z (y, γ)!}. We say that a BTS T
+introduced in [13]. However, the approach proposed in [13] can    is
+                                                                              ronly ﬁnd the most restrictive supervisor satisfying the range        complete, if ∀y ∈QTY  : CT (y)̸ = ∅; and
+                                                                              rrequirement.                         ■         deterministic, if ∀y ∈QTY  : |CT (y)| = 1.
+  Remark 2: Since controllability and observability provide       If T is deterministic, then we also use notation cT (y) to denote
+the necessary and sufﬁcient conditions for the existence of a su-   the unique control decision deﬁned at y ∈QTY .
+pervisor that achieves a given language, MPRCP is equivalent     For simplicity, we also write y γ−→T z if z = hTY Z (y, γ) and
+to the problem of ﬁnding a maximal controllable and observable   z σ−→T y  if y = hTZ Y (z, σ). Note that, for two BTSs T1 and
+language L such that R ⊆L ⊆K. This language-based formu-                                                              T2, we have that hT1Y Z (y, γ) = hT2Y Z (y, γ) whenever they are
+lation and the supervisor-based formulation are essentially the                                                          deﬁned. Therefore, we will drop the superscript in hTY Z (y, γ)
+same. All results developed hereafter will be stated in terms of                                                       and write it as hY Z (y, γ) and y γ−→z if it is deﬁned for some T;
+supervisors rather than languages.              ■                                                                 the same holds for hZ Y and z σ−→y. We call γ0σ1γ1σ2 . . . σnγn,  Throughout  the  paper, we  use K = (XK , Σ, δK , x0,K )
+                                                      where γi ∈Γ, σi ∈Σo, a run. A run also induces a sequenceto  denote  the  automaton  generating K,  and  use R =
+(XR, Σ, δR, x0,R) to denote the automaton generating R. For        y0 −→z0γ0   −→y1σ1   −→.γ1    . . −−−→zn−1γn −1    −→ynσn   −→znγn
+the sake of simplicity and without loss of generality, we assume
+that K ⊏G. This assumption essentially says that legality of  We say that a run is generated by T if its induced sequence is
+                                                      deﬁned in T.strings is fully captured by states. Namely, X \ XK is the set of
+                                                              Let S : P(L(G)) →Γ be a partial observation supervisor.illegal states and δ(x0, s) /∈XK iff s /∈K.
+                                                                                      It works as follows. Initially, it makes control decision S(ϵ).
+                                                   Then new control decision S(σ) is made upon the occurrence of
+                     III. ALL INCLUSIVE CONTROLLER
+                                                               (enabled) observable event σ, and so forth. Let s = σ1 . . . σn ∈
+  In order to solve MPRCP, we use the two structures called  P(L(S/G)) be an observed string. Then the execution of s
+Bipartite Transition System (BTS) and All Inclusive Controller   induces a well-deﬁned sequence
+(AIC); these were introduced in [27] to solve supervisory control
+                                                                                   S(ϵ)      σ1      S(σ1 )      σn      S(σ1 ...σn )
+problems. For the sake of completeness of this paper, we review        y0 −−→z0 −→y1 −−−→. . . −→yn −−−−−−→zn
+in this section key deﬁnitions and results from [27].
+                                        We denote by ISYS (s) and ISZS (s), the last Y -state and Z-state   Deﬁnition 1: (Bipartite Transition System): A bipartite tran-
+                                                                    in y0z0y1z2 . . . zn−1ynzn, respectively, i.e., ISYS (s) = yn andsition system T w.r.t. G is a 7-tuple
+                                               ISZS (s) = zn. That is, ISYS (s) and ISZS (s) are the Y -state and
+         T = (QTY , QTZ , hTY Z , hTZ Y , Σo, Γ, y0)          (5)   the Z-state that result from the occurrence of string s under su-
+                                                                pervisor S, respectively. Moreover, ISYS (s) and the information
+where QTY ⊆I = 2X is the set of Y -states; QTZ ⊆I × Γ is the   state component of ISZS (s) can also be expressed as follows
+set of Z-states and I(z) and Γ(z) denote, respectively, the infor-
+mation state and the control decision components of a Z-state  ISYS (s) = {x ∈X : ∃t ∈(Σ∗Σo ∪{ϵ}) ∩L(S/G)
+z, so that z = (I(z), Γ(z)); hTY Z  : QTY × Γ →QTZ is the partial                                       s.t. P(t) = s ∧δ(x0, t) = x}
+transition function from Y -states to Z-states, which satisﬁes the
+following constraint: for any y ∈QTY , z ∈QTZ and γ ∈Γ, we  I(ISZS (s))={x∈X : ∃t∈L(S/G) s.t. P(t)=s ∧δ(x0, t)=x}
+have                                                       Example 1: Let us consider the system G shown in Fig. 2(a).
+     hTY Z (y, γ) = z ⇒[I(z)=URγ (y)] ∧[Γ(z) = γ];    (6)  The upper bound automaton K is obtained by removing the sin-
+                                                                 gle illegal state 7 from G. Let Σc = {c1, c2} and Σo = {a, b}.
+hTZ Y  : QTZ × Σo →QTY  is the partial transition function from  The structure shown in Fig. 2(b) is a complete BTS. From the
+Z-states to Y -states, which satisﬁes the following constraint:                                                                               initial Y -state y0 = {1}, we can make control decision {},
+for any y ∈QTY , z ∈QTZ and σ ∈Σo, we have                                                              {}
+                                                      which leads to a Z-state via {1} −→({1, 2}, {}). By observ-
+     hTZ Y (z, σ) = y ⇔[σ∈Γ(z)] ∧[y=Nextσ(I(z))];    (7)   ing event a from this Z-state, we move to the next Y -state by
+                                                               ({1, 2}, {}) a−→{3, 4}. This BTS is not deterministic since thereΣo is the set of observable events of G; Γ is the set of control
+                                                                 are three different control decisions deﬁned at Y -state {3, 4}.decisions of G; and y0 ∈QTY  is the initial Y -state, where y0 =                                                              Let us consider supervisor S deﬁned by
+{x0}.
+   Intuitively, a BTS is a game structure between the system                     Σuc              if s = ϵ
+                                                                 S(s) =                                         (8)
+(control decision) and the environment (event occurrence). Each                      {c1} ∪Σuc     if s ∈{a, b}
+
+3918                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 62, NO. 8, AUGUST 2017
+
+
+                                           S is information-state-based (IS-based) if
+                                                               ∀s, t ∈P(L(S/G)) : ISYS (s) = ISYS (t) ⇒S(s) = S(t).
+
+                                                         Then, a supervisor can be realized by a BTS iff it is IS-based.
+                                                       Example 2: Let us consider again the system G and the spec-
+                                                                iﬁcation K in Fig. 2(a). The AIC for this system is in fact the
+                                           BTS shown in Fig. 2(b). Note that, at Y -state {3, 4}, we can
+                                                                      either choose to enable c1 or c2, but we cannot make control
+                                                               decision {c1, c2}, since it will unobservably lead to illegal state
+                                                                      7. This is why control decision {c1, c2} is not deﬁned at {3, 4}
+                                                                    in the AIC. It is easy to verify that supervisor S deﬁned in Equa-
+Fig. 2.  For G, we have Σo = {a, b} and Σc = {c1, c2}. In the AIC, rect-   tion (8) is included in the AIC, since S(ϵ) ∈CAIC(G,K)({1})
+angular states represent Y -states and oval states represent Z-states.  and S(a), S(b) ∈CAIC(G,K)({3, 4}). Therefore, S is a safe su-
+For the sake of simplicity, uncontrollable events a and b are omitted in   pervisor. Moreover, S is an IS-based supervisor. In particular, if
+each control decision in the ﬁgure. (a) K and G, (b) AIC(G, K), (c) R.
+                                             we remove control decisions {} and {c2} from Y -state {3, 4}
+                                                       and call the remaining (deterministic) BTS T, then we have that
+                                                 S(T) = {S}, i.e., S = ST .                 ■Then, for string a ∈P(L(S/G)), S induces the sequence
+                                                     Remark 3: In Fig. 2(b), we can also make control decision
+          S(ϵ)                         S(a)                     {c1} at the initial Y -state {1}. However, event c1 is not feasible   {1} −−→({1, 2}, {}) a−→{3, 4} −−−→({3, 4, 5}, {c1})
+                                                              before the next observable event occurs. Therefore, we treat
+Therefore, we have  that ISYS (a) = {3, 4} and ISZS (a) =   c1 as a redundant event and omit  it in the control decision.
+({3, 4, 5}, {c1}).                       ■   Formally, we say that a control decision γ is irredundant at
+  With the above notions, we can “decode” supervisors from a  Y -state y if ∀σ ∈γ, ∃x ∈URγ (y) : δ(x, sσ)!. We say that a
+BTS as explained in the following deﬁnition.              BTS is irredundant if for any y ∈QTY and for any γ ∈CT (y),
+   Deﬁnition 2: A supervisor S is said to be included in a BTS  γ is irredundant at y. Similarly, we say that a supervisor is
+T if for any observable string s ∈P(L(S/G)), the control de-   irredundant if for any s ∈P(L(S/G)), S(s) is irredundant at
+cision made by S is deﬁned at the corresponding Y -state, i.e.,  ISYS (s). Hereafter, we will only consider irredundant BTSs and
+S(P(s)) ∈CT (ISYS (s)). We denote by S(T) the set of super-   supervisors; this will not affect their properties.       ■
+visors included in T.
+  In [27], the AIC structure is deﬁned as the largest BTS in-            IV. SYNTHESIS OF THE INFIMAL SUPERVISOR
+cluding only safe supervisors.
+                                                                  In this section, we synthesize a BTS TR that realizes the in-   Deﬁnition 3. (All Inclusive Controller) The  All  Inclusive
+                                                   ﬁmal supervisor achieving the lower bound, i.e., L(STR /G) =Controller for G and K, AIC(G, K) = (QAICY     , QAICZ    , hAICY Z  ,                                                 R↓C O. This inﬁmal supervisor will be further used as a ba-
+hAICZ Y  , Σo, Γ, y0), is deﬁned as the largest complete BTS such                                                                           sis to solve MPRCP. First, we illustrate the role of strict sub-
+that ∀z ∈QAICZ     : I(z) ⊆XK .                                                        automaton in this problem. Then, we provide an effective algo-  Note that the AIC only depends on the system model G
+                                                             rithm to construct TR.and the upper bound automaton K; it does not depend on the
+lower bound automaton R. We refer the reader to [27] for more
+                                                        A. The Role of Strict Sub-Automaton
+details and for the construction of the AIC. Here we recall a key
+property of the AIC from [27].                             The goal of this section is to construct a BTS TR such that
+  Theorem 1: ([27]): A supervisor S is safe iff it is included  L(STR /G) = R↓C O. Although we know that R↓C O is a regular
+in the AIC, i.e., S ∈S(AIC(G, K)).                           language, this fact in itself is not sufﬁcient for the purpose of
+  Let y ∈QAICY   be a Y -state in the AIC. We say that a control   synthesis. Speciﬁcally, we are interested in whether or not R↓C O
+decision γ ∈Γ is safe at y if γ ∈CAIC(G,K)(y). Then we have   can be achieved by an IS-based supervisor which can be realized
+the following monotonicity properties.                      by a BTS. This question is very important, since it essentially
+  Proposition 1: (Monotonicity Properties [24]):               asks what is the right state space in order to realize the inﬁ-
+   1) Any control decision that is safe at Y -state y1 is also safe  mal supervisor that contains R. One may conjecture that there
+       at Y -state y2 ⊆y1.                                   always exists a BTS TR such that L(STR /G) = R↓C O when
+   2) If control decision γ1 is safe at Y -state y, then so is any  R↓C O ⊆K. However, this is not true in general as illustrated
+       control decision γ2 ⊆γ1.                           by the following example.
+   If a BTS T  is deterministic, then the supervisor included     Example 3: Let us still consider the system G and the upper
+in T  is unique, since the control decision at each Y -state is  bound automaton K shown in Fig. 2(a). We consider a lower
+unique. In this case, we denote by ST the unique supervisor  bound language R which is generated by automaton R shown
+included in T, i.e., S(T)={ST }. Essentially, T is a realization   in Fig. 2(c). One can easily check that any IS-based supervisor
+of supervisor ST . However, not all supervisors can be realized by  S does not contain R. This is because events a and b lead to
+a BTS, since a supervisor may make different control decisions   the same Y -state {3, 4} in any BTS and control decision S(a)
+at different visits to the same Y -state. We say that a supervisor  and S(b) should always be the same in any IS-based supervisor
+
+YIN AND LAFORTUNE: SYNTHESIS OF MAXIMALLY-PERMISSIVE SUPERVISORS FOR THE RANGE CONTROL PROBLEM                          3919
+
+
+S. However, we can ﬁnd a non-IS-based supervisor S′, which
+enables c1 after observing a and enables c2 after observing b,
+such that R↓C O = L(S′/G).                ■
+  The reason why there may not exist an IS-based supervisor
+that achieves R↓C O is explained as follows. Suppose that R is
+a sub-automaton of K such that we can match the state space
+of R with the state space of K. Let s ∈P(R) be an observable
+string in P(R) and deﬁne
+
+    yR(s) = {x ∈XR : ∃t ∈R ∩(Σ∗Σo ∪{ϵ})
+
+                                     s.t. δR(x0, t) = x ∧P(t) = s}
+
+as the “information state” of R reached upon observing s,
+which is analogous to a Y -state in a BTS. Then it is possi-
+ble that two different “information states” under the original
+control strategy can be merged as a single information state
+under the new (more permissive) control strategy. As a con-
+sequence, information is lost by using the newly reached in-
+                                                                               Fig. 3.   In Fig. 3(a), G′ is the entire automaton and K′ is obtained byformation state. We call this phenomenon information merge.
+                                                                removing illegal state 7 from G′. (a) K′ and G′, (b) AIC(G′, K′).
+For example, for the lower bound automaton R shown in
+Fig. 2(c), we have that yR(a) = {3} and yR(b) = {4}. In or-
+der to achieve R, in addition to enabling events a and b ini-
+                                                     Such a pre-processing algorithm can be found in [23], which
+tially, we also need to enable event u, since it is uncontrol-
+                                                                 generalizes the procedure in [7] from two automata to three
+lable. Then the two different “information states” {3} and {4}
+                                                             automata. In the worst case, the reﬁned system model G′ con-in R, which are reached by observing a and b, respectively,
+                                                                      tains |X| × (|XK | + 1) × (|XR| + 1) states. Therefore, onlywill be merged as a single state {3, 4}. However, simply know-
+                                                           polynomial-space reﬁnement is needed to make Assumption 1
+ing state {3, 4} is not sufﬁcient for making control decisions
+                                                                hold; this is different from the state-partition-automata-based
+in order to contain the lower bound behavior. To ﬁnd an IS-
+                                                        reﬁnement in the literature, which has an exponential complex-
+based solution, state {3, 4} has to be split into two states:
+                                                                                     ity. This assumption and Proposition 2 play important roles in
+one is reached by observing a and the other is reached by
+                                                                         this paper; they will also be involved several times in our later
+observing b.
+                                                           development. Finally, we remark that the reason why we as-  Let y ∈2X be an information state and suppose that XR ⊆                                                  sume that K⊏G and the reason why we assume that R⊏K
+X. We denote by y|R the restriction of y to the state space of
+                                                                 are different. We assume that K⊏G to guarantee that legalityR, i.e., y|R = y ∩XR. The following result says that the state                                                               of strings is fully captured by states. We assume that R⊏Kmerging phenomenon described above will not occur when R
+                                                                    to make sure that the information merge phenomenon will notis a strict sub-automaton of K.
+                                                                  occur.                            ■   Proposition 2: Assume that R ⊏K ⊏G. Then for any su-
+                                                       Example 4: Let us return to Example 2. The original au-pervisor S such that R ⊆L(S/G), we have that
+                                                          tomata R and K in Figs. 2(c) and (a) do not satisfy the assump-
+    1. ∀s∈P(R) : ISYS (s)|R = yR(s);                                                                    tion that R ⊏K. Therefore, we reﬁne the state spaces of K and
+    2. ∀s, t∈P(R) : yR(s)̸=yR(t)⇒ISYS (s)̸=ISYS (t).    G and obtain new automata K′ and G′ shown in Fig. 3(a) such
+   Proof: See the Appendix.                 ■
+                                                                      that R ⊏K′ ⊏G′, L(K) = L(K′) and L(G) = L(G′). The
+  Remark 4: The intuition of the above result is as follows.
+                                              AIC AIC(G′, K′) for the reﬁned system is shown in Fig. 3(b).Since R ⊏K, any newly introduced string, namely a string in
+                                        We see that the original state {3, 4} in AIC(G, K) splits intoL(K) \ L(R), must lead to a state in XK \ XR. Therefore, if                                                     two states {3′, 4} and {3, 4′} in AIC(G′, K′).
+strings s and t lead to two distinct “information states” y1 =
+                                                                 ■
+yR(s) and y2 = yR(t), respectively, then the newly reached Y -
+states y′1 and y′2 under a supervisor whose closed-loop language
+                                                         B. Synthesis Algorithm
+contains R must be in the form of y′1 = y1 ∪ˆy1 and y′2 = y2 ∪
+ˆy2, respectively, where ˆy1, ˆy2 ⊆XK \ XR. Since y1̸ = y2, we   We are now ready to show how to compute the supervisor that
+know that y′1̸ = y′2.                      ■   achieves R↓C O. In particular, we show that such a supervisor
+  Therefore, we make the following assumption hereafter.      can be realized by a BTS.
+   Assumption 1: R ⊏K ⊏G.                                Let y ⊆XR be a set of states in R. We ﬁrst deﬁne the fol-
+  Remark 5: Note that the above assumption is without loss of   lowing set of events
+generality: if R, K and G do not satisfy this assumption, then we
+                                                      ΓR(y) := {σ ∈Σ : ∃x ∈y, ∃s ∈Σ∗uo s.t. δR(x, sσ)!}can always reﬁne the state spaces of R, K and G by construct-
+ing new automata R′, K′ and G′ such that 1) R′ ⊏K′ ⊏G′;  The following result reveals that ΓR(y) is indeed the set of
+and 2) L(R) = L(R′), L(K) = L(K′) and L(G) = L(G′).   events that should be enabled at y in order to achieve R.
+
+3920                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 62, NO. 8, AUGUST 2017
+
+
+   Proposition 3: For any supervisor S : P(L(G)) →Γ, R ⊆
+L(S/G), if and only if,
+∀s ∈P(L(S/G)) : ISYS (s)|R̸ = ∅⇒ΓR(ISYS (s)|R) ⊆S(s).
+
+   Proof: See the Appendix.                 ■
+  Now, we are ready to present the algorithm that constructs the
+BTS TR such that L(STR /G) = R↓C O. Speciﬁcally, the BTS
+TR is constructed by a depth-ﬁrst search as follows. Initially, we
+start from the initial Y -state y0. For each Y -state y encountered,
+if y|R̸ = ∅, we choose ΓR(y|R) ∪Σuc as the unique control
+decision deﬁned at y. Note that y|R̸ = ∅implies that y can be
+reached by some string in P(R), i.e., the supervisor is not sure
+whether or not the system has already gone outside the lower
+bound language R. Therefore, we choose ΓR(y|R) ∪Σuc as the
+control decision since it is the smallest control decision we need
+in order to contain R. If y|R = ∅, then we know for sure that
+the system has already gone outside R and we just choose Σuc
+as the control decision, i.e., all controllable events are disabled.
+To summarize the above rule, in the constructed BTS TR, we
+have that
+
+                       ΓR(y|R) ∪Σuc     if y|R̸ = ∅   ∀y ∈QTRY   : cTR (y) =                       Σuc                    if y|R = ∅
+
+Based on the above discussion, Algorithm INF-SYNT is pro-
+posed to construct TR. Namely, for each Y -state encountered,
+we choose one control decision based on the above-discussed
+rules; for each Z-state encountered, we need to consider all
+observable events that are feasible. Such a depth-ﬁrst search is
+implemented by the recursive procedure termed DoDFS. More-
+over, Algorithm INF-SYNT returns “No Solution” when a Y -                                                       Theorem 2: Algorithm INF-SYNT returns “No Solution” if
+state y such that ΓR(y|R) ∪Σuc̸ ∈CAIC(G,K)(y) is encoun-                            O̸                                                       and only if R↓C ⊆K.
+tered. This implies that achieving the lower bound R will violate                                                                 Proof: (⇐) By contraposition. Suppose that Algorithm INF-
+the safety speciﬁcation, either immediately or unavoidably in the
+                                              O  SYNT returns BTS TR. Since STR  is an IS-based supervisor,future. In this case, MPRCP has no solution. Of course, R↓C
+                                                                    for any s ∈P(L(STR /G)) such that ISYST R (s)|R̸ = ∅, we havealways exists, but our focus herein is on solving MPRCP. (If the
+focus is solely on the computation of R↓C O, then it sufﬁces to
+                                                          STR (s) = cTR (ISYST R (s)) = ΓR(ISYST R (s)|R) ∪Σucset K = L(G) in the above development.)
+  Next, we ﬁrst illustrate Algorithm INF-SYNT by an example.                                                               Therefore, by Proposition 3, we know that R ⊆L(STR /G).
+Then we prove its correctness.                                                         Then, by  the  deﬁnition  of  ↓C O, we know  that R↓C O ⊆
+  Example 5: Let us return to the running example. The input                                                    L(STR /G). Moreover, STR   is  safe  since  it  is an AIC-
+parameters of Algorithm INF-SYNT are R and AIC(G′, K′)                                                             included supervisor, i.e., L(STR /G) ⊆K. Overall, we know
+shown in Figs. 2(c) and 3(b), respectively. We start procedure                                                                      that R↓C O ⊆K.
+DoDFS from the initial Y -state y0 = {1}. Since {1}|R̸ = ∅,                                                 (⇒) By contradiction. Assume that Algorithm INF-SYNT
+we take control decision ΓR({1}) ∪Σuc = Σuc (which is de-                         O                                                                   returns “No Solution” but R↓C ⊆K. Therefore, we know that
+picted as {} in Fig. 3(b) for simplicity since all events in it                                                                  there exists a supervisor S such that R ⊆L(S/G) ⊆K and
+are uncontrollable events), and move to the successor Z-state                                                                  there exists a sequence in the form of
+({1, 2}, {}). Then we need to consider all possible event oc-
+currences from this Z-state. If a occurs, then Y -state {3, 4′}        ΓR (y0 |R )∪Σu c     σ1       ΓR (yn −1 |R )∪Σu c     σn
+                                                                  y0 −−−−−−−−→z1 −→y1 . . . −−−−−−−−−−→zn −→yn   (9)
+is reached. Since {3, 4′}|R = {3}̸ = ∅, we need to take control
+decision ΓR({3}) ∪Σuc = {c1} ∪Σuc. Similarly, we need to   in procedure DoDFS in Algorithm INF-SYNT such that
+take control decision {c2} ∪Σuc if Y -state {3′, 4} is reached.      1) ∀i = 0, . . . , n : yi|R̸ = ∅; and
+The above procedure yields deterministic BTS TR, which is the      2) ∀i = 0, . . . , n −1 : ΓR(yi|R) ∪Σuc ∈CAIC(G,K)(yi);
+part highlighted in Fig. 3(b).                 ■        and
+  We now prove the correctness of Algorithm INF-SYNT. First,      3) ΓR(yn|R) ∪Σuc̸ ∈CAIC(G,K)(yn).
+we show that, under the assumption that R ⊏K ⊏G, Algo-     Next, we show by induction that, for any i ≥0, we have that
+rithm INF-SYNT will never return “No Solution” when a solu-
+tion exists.                                                                 yi ⊆ISYS (σ1 . . . σi) and yi|R = ISYS (σ1 . . . σi)|R    (10)
+
+YIN AND LAFORTUNE: SYNTHESIS OF MAXIMALLY-PERMISSIVE SUPERVISORS FOR THE RANGE CONTROL PROBLEM                          3921
+
+
+Clearly, the induction basis holds for i = 0, since y0 = ISYS (ϵ).  we know that ΓR(yn|R) ∪Σuc ∈CAIC(G,K)(yn). However,
+Let us assume that Equation (10) holds for i = k; we need to   this is a contradiction.                    ■
+show that Equation (10) holds for i = k + 1. By deﬁnition, we     Remark 6: Note that the “only if” part of the proof of the
+know that                                                above theorem relies on the condition that R ⊏G. In fact,
+                                                                                       if R ⊏G does not hold, then Algorithm INF-SYNT may re-
+yk+1 ={x∈X : ∃x′ ∈yk, ∃w∈((ΓR(yk|R) ∪Σuc) ∩Σuo)∗      turn “No Solution” even when R↓C O ⊆K. For example, let us
+                                                            use R and AIC(G, K) shown in Figs. 2(c) and (b), respec-            s.t. δ(x′, wσk+1) = x}                          (11)
+                                                                             tively, as the input parameters of Algorithm INF-SYNT, where
+   ={x∈XR : ∃x′ ∈yk|R, ∃w∈((ΓR(yk|R) ∪Σuc) ∩Σuo)∗ R is a sub-automaton of G but not a strict sub-automaton.
+                                                          Then, after taking control decision Σuc  at the  initial state            s.t. δR(x′, wσk+1) = x} ∪AG\R                 (12)
+                                                       and observing event a, we will reach Y -state {3, 4}. Since
+where AG\R ⊆X \ XR. Note that the second equality is a con-  ΓR({3, 4}) ∪Σuc = {c1, c2} ∪Σuc /∈CAIC(G,K)({3, 4}), Al-
+sequence of the assumption that R ⊏G, since any string that   gorithm INF-SYNT returns “No Solution”. However, a solution
+leaves the state space of R must lead to a state in X \ XR.   does exist since R↓C O ⊆K. This highlights our earlier asser-
+Similarly, we can write                                            tion that the strict sub-automaton condition plays an important
+                                                                    role in the synthesis algorithm.                ■
+  ISYS (σ1 . . . σk+1)                                     The next result reveals that the BTS returned by Algorithm
+                                               INF-SYNT is indeed the one that realizes the inﬁmal safe
+= {x∈X : ∃x′ ∈ISYS (σ1 . . . σk), ∃w∈(S(σ1 . . . σk) ∩Σuo)∗                                                                   supervisor.
+                s.t. δ(x′, wσk+1) = x}                        (13)     Theorem 3: Suppose  that Algorithm INF-SYNT  returns
+                                           BTS TR. Then L(STR /G) = R↓C O.
+={x∈XR :∃x′ ∈ISYS (σ1 . . . σk)|R, ∃w∈(S(σ1 . . . σk)∩Σuo)∗     Proof: We prove this by contradiction. Let us assume that
+                s.t. δR(x′, wσk+1) = x} ∪BG\R              (14)  L(STR /G)̸ = R↓C O. In the proof of Theorem 2, we have shown
+                                                                       that R ⊆L(STR /G). Therefore, there exists a supervisor S′
+= {x∈XR : ∃x′ ∈ISYS (σ1 . . . σk)|R,                         such that R ⊆L(S′/G) ⊂L(STR /G). This implies that ∃s ∈
+                                                  P(L(S′/G)) ∩P(L(STR /G)) such that S′(s) ⊂STR (s). For        ∃w∈((ΓR(ISYS (σ1 . . . σk)|R) ∪Σuc)∩Σuo)∗                                                                      string s, we have the following two cases.
+                s.t. δR(x′, wσk+1) = x} ∪BG\R              (15)     Case 1: ISYST R (s)|R = ∅.
+                                                                  In  this  case, by Algorithm INF-SYNT, we know  that= {x∈XR : ∃x′ ∈yk|R, ∃w∈((ΓR(yk|R) ∪Σuc) ∩Σuo)∗
+                                                      STR (s) = cTR (ISYST R (s)) = Σuc. However, it contradicts the
+                s.t. δR(x′, wσk+1) = x} ∪BG\R              (16)   fact that S′(s) ⊂STR (s), since S′(s) always contains Σuc.
+                                                         Case 2: ISYST R (s)|R̸ = ∅.where BG\R ⊆X \ XR. Note that the second equality also
+comes from the assumption that R ⊏G. The third equality     In   this   case,  by  Algorithm  INF-SYNT,  STR (s) =
+comes from the fact that, for any string                                                 ΓR(ISYST R (s)|R) ∪Σuc. Since R ⊆L(S′/G), by Proposi-
+                                                                    tion 3, we know that ΓR(ISYS ′(s)|R) ∪Σuc ⊆S′(s). More-
+   w ∈((S(σ1 . . . σk) \ ΓR(ISYS (σ1 . . . σk)|R)) ∩Σuo)∗       over, by Proposition 2, we have ISYS ′(s)|R = ISYST R (s)|R =
+                                                            yR(s), since both S′ and STR  contains R. This implies thatδR(x′, wσk+1) is not deﬁned for x′ ∈XR. Note that the last
+                                                 ΓR(ISYST R (s)|R) ∪Σuc ⊆S′(s). However, this also contra-equality follows from the induction hypothesis that yk|R =
+ISYS (σ1 . . . σk)|R.                                                  dicts the fact that S′(s) ⊂STR (s).              ■O                                                      Remark 7: Although language-based formulas for R↓C   Therefore, by Equations  (12) and  (16), we know  that
+                                                       were provided in [11], [17], the formula-based approach doesyk+1|R = ISYS (σ1 . . . σk+1)|R. Moreover, by the induction hy-
+                                                              not tell us directly what is the right structure and how manypothesis and Proposition 3, we know
+                                                                      states are required to realize the supervisor achieving R↓C O. To
+   ΓR(yk|R) = ΓR(ISYS (σ . . . σk)|R) ⊆S(σ1 . . . σk).   (17)   the best of our knowledge, no constructive approach for R↓C O,
+                                                                    in terms of supervisor, is provided in the literature. The results
+Since Equation (10) holds for i = k, combining Equations (11),   in this section not only provide a direct constructive approach
+(13) and (17) together, we obtain yk+1 ⊆ISYS (σ1 . . . σkσk+1),   to compute the inﬁmal preﬁx-closed controllable and observ-
+ i.e., Equation (10) holds for i = k + 1.                          able super-language, but also provides a new structural prop-
+  Now,  let us go back  to the sequence  in Equation  (9).   erty about the corresponding inﬁmal supervisor. In particular,
+Since L(S/G) ⊆K, by Theorem 1, we have S(σ1 . . . σn) ∈  we show that, when the state spaces have been properly reﬁned,
+CAIC(G,K)(ISYS (σ1 . . . σn)). We  have  proved  that  yn ⊆    i.e., R⊏K⊏G, 2X  is sufﬁcient enough to represent this su-
+ISYS (σ1 . . . σn).  Then,  by  Proposition  1,  S(σ1 . . . σn) ∈   pervisor, i.e., the inﬁmal supervisor can be written in the form
+CAIC(G,K)(yn).  Moreover,  since  we  have  shown  that   of STR :2X →Γ. Moreover, the BTS TR will be further used as
+ΓR(yn|R) = ΓR(ISYS (σ1 . . . σn)|R), by Proposition 3, we have   a basis to synthesize a maximal safe supervisor containing R.
+ΓR(yn|R) ∪Σuc ⊆S(σ1 . . . σn). Then, by Proposition 1 again,   This will be discussed in Section VI.             ■
+
+3922                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 62, NO. 8, AUGUST 2017
+
+
+
+
+
+Fig. 4.  For R, K and G: Σc = {v, w} and Σo = {a, b, v}. (a) R, (b) K, (c) G, (d) AIC(G, K), (e) TR .
+
+
+
+             V. CONTROL SIMULATION RELATION           may make the lower bound behavior unachievable. More prob-
+                                                                    lematically, we do not know whether or not enabling an event
+  In this section, we ﬁrst discuss the difﬁculty that arises in
+                                                                    will lead to failure to contain the lower bound behavior, un-
+solving the range control problem. Then we deﬁne the notion of
+                                                                      less we get stuck at some instant in the future, e.g., after ob-
+Control Simulation Relation (CSR) as the tool to overcome the
+                                                               serving event a in the previous example. Moreover, we do
+difﬁculty.
+                                                              not know a priori, when or whether or not this phenomenon
+                                                                    will occur in the future. In other words, whether or not a
+                                                               decision deﬁned in the AIC is a “good” control decision de-A. Difﬁculty in Handling the Lower Bound
+                                                         pends on its effects in the future. This future dependency is
+  In order to synthesize a maximal supervisor, the general idea   the fundamental difﬁculty of the range control problem and
+is to guarantee by construction that the control decision made by    it is in fact the essential difference between MPRCP and the
+the supervisor at each instant cannot be improved any further.   standard supervisor synthesis problem without a lower bound
+However, this is not an easy task. Suppose that y ∈QAICY     is a   requirement.
+Y -state in the AIC; by Theorem 1, we know that any control
+decision in CAIC(G,K)(y) is a safe control decision. Therefore,                                                         B. Deﬁnition of the CSR
+if there is no lower bound requirement and one is only interested
+in the safety upper bound K, then we can simply pick a “greedy     In order to resolve the future dependency issue discussed
+maximal” decision from CAIC(G,K)(y). This is essentially the   above, we propose a simulation-like relation, called the Control
+strategy we use in [27]; a similar strategy (but not based on the   Simulation Relation (CSR), to pre-process this future depen-
+AIC) is used in [2]. However, the following example illustrates   dency and transform it to local information. The key idea is to
+how to choose a control decision from CAIC(G,K)(y) becomes  compare two BTSs T1 and T2 and to establish a formal relation-
+much more complicated when the lower bound speciﬁcation R   ship between states in T1 and states in T2. The formal deﬁnition
+has to be considered.                                           of the CSR is presented next.
+  Example 6: Let us consider automata R, K and G shown in     Deﬁnition 4. (Control Simulation Relation) Let T1 and T2
+Figs. 4(a), (b) and (c), respectively, where we have R ⊏K ⊏G.   be two BTSs w.r.t. the same G. A relation Φ = ΦY ∪ΦZ ⊆
+Let Σc = {v, w} and Σo = {a, b, v}. The AIC AIC(G, K) is   (QT1Y × QT2Y ) ∪(QT1Z × QT2Z ) is said to be a control simulation
+shown in Fig. 4(d). By applying Algorithm INF-SYNT, we   relation from T1 to T2 if the following conditions hold:
+construct BTS TR that realizes the inﬁmal supervisor achieving      1) (y0, y0) ∈Φ;
+R↓C O; TR is shown in Fig. 4(e). Initially, TR chooses to disable      2) For every (y1, y2) ∈ΦY we have that:
+                                                                                           γ1                                                γ2
+w, i.e., cTR (y0) = {}, while enabling w is also a safe choice at         y1 −→T1 z1 in T1 implies the existence of y2 −→T2 z2 in
+the initial Y -state according to the AIC. It seems that choosing        T2 such that γ1 ⊆γ2 and (z1, z2) ∈ΦZ ;
+{w} provides more behavior than choosing {}. However, if we      3) For every (z1, z2) ∈ΦZ we have that:
+choose {w}, then upon the occurrence of a, we can only choose         z1 σ−→T1 y1 in T1 implies the existence of z2 σ−→T2 y2 in
+to disable v, since we are not sure whether the current state is 3        T2 such that (y1, y2) ∈ΦY .
+or 4. This leads to failure to contain the lower bound behavior   We say that T1 is control-simulated by T2 or that T2 control-
+(av)∗, where we need to enable v after observing a. Therefore,   simulates T1, denoted by T1 ⪯T2, if there exists a control sim-
+the lower bound behavior can only be achieved by choosing   ulation relation from T1 to T2.
+{} at the beginning rather than choosing {w}, which is greedy      Intuitively, the control simulation relation captures whether or
+maximal.                           ■   not T2 is able to match an arbitrary control decision made by T1
+  The above example illustrates the following issue. In some  by either taking the same control decision or a control decision
+scenario, enabling more events is not a good choice, since it   that is strictly larger than the one made by T1 and maintain this
+may introduce more information uncertainty. Consequently, to   ability for all possible future behaviors.
+maintain safety, the control decision may become more con-     Given two BTSs T1 and T2, a relevant question is whether or
+servative in the future due to this information uncertainty. This   not there exists a CSR from T1 to T2. To answer this question,
+
+YIN AND LAFORTUNE: SYNTHESIS OF MAXIMALLY-PERMISSIVE SUPERVISORS FOR THE RANGE CONTROL PROBLEM                          3923
+
+
+we deﬁne an operator                                    The ﬁrst result reveals that the CSR indeed captures whether
+                                                               or                                                                 not any                                                                            possible                                                                                behavior                                                                                from                                                                                             a state in                                                                                                       a BTS can be
+   F : 2Q TY 1 ×Q TY 2 ∪2Q TZ 1 ×Q TZ 2 →2Q TY 1 ×Q TY 2 ∪2Q TY 1 ×Q TY 2                                                       matched                                                            by                                                                         another BTS                                                                           from some                                                                                                            different                                                                                                                                 state.
+                                                                 Proposition 5: Let T1 and T2 be two complete BTSs and
+as follows. For any Φ = ΦY ∪ΦZ ⊆(QT1Y × QT2Y ) ∪(QT1Z ×                                                                 z1 ∈QT1Z  and z′1 ∈QT2Z  be two Z-states in T1 and T2, re-
+QT2Z ), we have that                                                 spectively. Then (z1, z′1) ∈Φ∗(T1, T2), if and only if, for any
+   1) (y1, y2) ∈F(ΦY ) if (y1, y2) ∈ΦY and for any transition
+            γ1                                  γ2                     sequence
+      y1 −→T1 z1 in T1, there exists y2 −→T2 z2 in T2 such that
+                                                                                        σ1       γ1       γn −1        σn      γn
+      γ1 ⊆γ2 and (z1, z2) ∈ΦZ .                                        z1 −→y1 −→. . . −−−→zn−1 −→yn −→zn     (19)
+   2) (z1, z2) ∈F(ΦZ ) if (z1, z2) ∈ΦZ and for any transition
+                                                                    in T1, there exists a sequence      z1 σ−→T1 y1 in T1, there exists z2 σ−→T2 y2 in T2 such that
+       (y1, y2) ∈ΦY .                                                                σ1      γ 1′       γ n′ −1        σn      γ n′
+                                                                                      z′1 −→y′1 −→. . . −−−→z′n−1 −→y′n −→z′n     (20)  The following results reveal how operator F is related to the
+CSR.                                                              in T2, such that γi ⊆γ′i, ∀i ≥0.
+   Proposition 4: The operator F has following properties:       The next result reveals the relationship between the CSR and
+   1) Φ is a control simulation relation from T1 to T2, if and   the closed-loop behavior of the system.
+      only if, Φ ⊆F(Φ) and (y0, y0) ∈Φ;                        Proposition 6: Let T1 and T2 be two deterministic BTSs.
+   2) Φ1 ⊆Φ2 ⇒F(Φ1) ⊆F(Φ2).                      Then L(ST1 /G) ⊆L(ST2 /G), if and only if, T1 ⪯T2.
+   Proof: See the Appendix.                 ■    The last result reveals that the CSR is transitive.
+  The above results have the following implications. First, since      Proposition 7: Let T1, T2 and T3 be three BTSs such that
+Φ ⊆F(Φ) for any CSR Φ, we know that the maximal relation   T1 ⪯T2 and T2 ⪯T3. For i = 1, 2, 3, let yi ∈QTiY  and γi ∈
+Φ is a ﬁxed-point of operator F, i.e., F(Φ) = Φ. Note that   CTi (yi) be a Y -state in Ti and a control decision deﬁned at this
+F(Φ) ⊆Φ always holds. By the second property in Proposition   state, respectively. Then
+4, we know that F is monotone. Therefore, by Tarski’s ﬁxed-
+point theorem [20], we know that the supremal ﬁxed-point of F,             [(z1, z2) ∈Φ∗(T1, T2) ∧(z2, z3) ∈Φ∗(T2, T3)]
+denoted by Φ∗(T1, T2), exists and it can be computed as follows                                                    ⇒[(z1, z3) ∈Φ∗(T1, T3)]
+                            Y × QT2Y ) ∪(QT1Z × QT2Z ))  (18)  where zi = hY Z (yi, γi), i = 1, 2, 3.  Φ∗(T1, T2) = k→∞Flim   k((QT1
+In other words, Φ∗(T1, T2) is a maximal control simulation rela-                                                                  VI. SYNTHESIS OF A MAXIMALLY-PERMISSIVE SUPERVISOR
+tion from T1 to T2 if (y0, y0) ∈Φ∗(T1, T2). Otherwise, T1̸ ⪯T2
+if (y0, y0)̸ ∈Φ∗(T1, T2). This is similar to the standard simu-     In this section, we ﬁrst present the main synthesis algorithm
+lation relation; see, e.g., [18]. Note that the limit in Equation   that solves MPRCP. Then we prove its correctness.
+(18) can be achieved within at most |QT1Y ||QT2Y  | + |QT1Z ||QT2Z  |
+iterations.                                               A. Synthesis Algorithm
+  Example 7: We consider again the AIC AIC(G, K) and                                                 As we discussed earlier, to synthesize a maximally permis-
+BTS TR shown in Figs. 4(e) and 4(d), respectively. We com-                                                                   sive supervisor containing R, we need to consider some infor-
+pute the maximal CSR between TR and AIC(G, K); we write                                                         mation in the future. Fortunately, such future information has
+Φ∗(TR, AIC(G, K)) = Φ∗Y ∪Φ∗Z , where Φ∗Y ⊆QTRY × QAICY     been transformed to local information by the CSR. The idea of
+and Φ∗Z ⊆QTRZ × QAICZ     . Then we have                         the synthesis algorithm is as follows. First, we construct BTS
+                                               TR that includes the inﬁmal supervisor STR achieving R↓C O.
+   Φ∗Y = {({1}, {1}), ({3}, {3}))}                                                   Then we compute the maximal CSR between BTS TR and the
+   Φ∗Z = {(({1}, {}), ({1}, {})), (({3}, {v}), ({3}, {v})),     AIC AIC(G, K). Next, we construct a new BTS, denoted by
+                                             T ∗, such that TR ⪯T ∗, by using a depth-ﬁrst search procedure.
+           (({3}, {v}), ({3, 5}, {v, w}))}                                                                 Speciﬁcally, suppose that y is a Y -state in T ∗at which we need
+The reason why ({3}, {3, 4}) /∈Φ∗Y  is that {v}  is deﬁned   to choose a control decision. First, this control decision should
+at {3} in TR  but there  is no decision containing {v} de-   be chosen from CAIC(G,K)(y) in order to guarantee safety. In
+ﬁned  at {3, 4}  in  the AIC. Consequently, we know  that   order to take care of the lower bound behavior, we need to make
+(({1}, {}), ({1, 2}, {w})) /∈Φ∗Z , where ({1}, {}) and ({1, 2},   sure that this control decision preserves the CSR. The reason
+{w}) are the predecessor Z-states that enter {3} and {3, 5} with  why we consider the CSR between TR and AIC(G, K) is that
+the same event a, respectively.                ■  TR realizes the inﬁmal supervisor containing R; namely, any
+                                           BTS whose induced supervisor contains R should “simulate”
+                                                                 the behavior of TR.
+C. Properties of the CSR
+                                                                  In order to formalize the above idea, let y ∈QAICY   be a Y -
+   Hereafter, we present properties of the CSR that will be   state in the AIC and ˆy ∈QTRY  be a Y -state that “tracks” y in TR
+used  later in the paper. Their proofs are provided in the   such that y|R, ˆy|R̸ = ∅. (How ˆy “tracks” y will be clear later.)
+Appendix.                                  We denote by Φ∗R := Φ∗(TR, AIC(G, K)) the maximal CSR
+
+3924                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 62, NO. 8, AUGUST 2017
+
+
+from TR to AIC(G, K). Then we deﬁne
+
+                γ ∈CAIC(G,K)(y) and γ ⊇cTR (ˆy)and
+Ξ(y, ˆy):=  γ ∈Γ :
+                    (hY Z (ˆy, cTR (ˆy)), hY Z (y, γ)) ∈Φ∗R
+
+Set Ξ(y, ˆy) will be the key in the synthesis algorithm. Intuitively,
+γ ∈Ξ(y, ˆy) is a control decision such that:
+   1) It is safe at y, i.e., γ ∈CAIC(G,K)(y); and
+   2) It contains the corresponding control decision made by
+     STR at ˆy, i.e., cTR (ˆy); and
+   3) Any behavior that can occur from the corresponding
+     Y -state ˆy in TR can still occur from y in the AIC by
+      taking γ.
+  We are now ready to present the main synthesis algorithm,
+which is formally presented in Algorithm MAX-RANGE. Let us
+explain how it works. Initially, we construct TR and compute the
+maximal CSR Φ∗(TR, AIC(G, K)) from TR to AIC(G, K).
+Then we construct a new deterministic BTS T ∗by a depth-ﬁrst
+search as follows. Initially, we start from the initial Y -state y0.
+We pick one control decision from the AIC for each Y -state en-
+countered (how this control decision is picked will be speciﬁed
+soon) and pick all observations for each Z-state encountered.
+This depth-ﬁrst search is implemented by recursive procedure
+DoDFS in Algorithm MAX-RANGE, which traverses the reach-
+able state space of T ∗. Moreover, during the construction BTS
+of T ∗, we use TR to track the sequence that reaches the Y - or
+Z-state in T ∗. Speciﬁcally, whenever T ∗moves from a Y -state
+y to a Z-state z (line 10), we need to move from Y -state ˆy
+to its (unique) successor Z-state ˆz in TR (line 12). Similarly,
+whenever T ∗moves from a Z-state z to a Y -state y via observ-
+able event σ (line 18), we need to move from Z-state ˆz to a
+successor Y -state ˆy in TR through the same observable event σ
+(line 20). In other words, Y -state ˆy in TR essentially “tracks”
+Y -state y in the AIC or in T ∗, since they are always reached by
+sequences that have the same projected string. Note that we use
+TR to track T ∗only when the current Y -state y encountered in
+T ∗satisﬁes y|R̸ = ∅. Whenever y|R = ∅, then we just set ˆy = ∅
+(line 21). This means that we know for sure that the string is                                                        Note that, in line 8 of Algorithm MAX-RANGE, the locally
+already outside of L(R).                                                     maximal element in Ξ(y, ˆy) may not be unique. If multiple lo-
+  Now it still remains to discuss how to choose the control                                                                    cally maximal elements exist, then we will randomly choose
+decision at each Y -state in T ∗. To this end, we need to consider                                                       one from them; which one to choose may depend on the spe-
+two cases for each Y -state y encountered:                                                             ciﬁc implementation of the algorithm. However, we will show
+  1) Suppose that y|R̸ = ∅; this means that y must be reached   in Section VI-B that, no matter which maximal element we
+                       γ1 σ1 ...γn σn
+by a sequence y0 −−−−−−−→y such that the projected string   choose from Ξ(y, ˆy), our algorithm always guarantees that 1)
+in this sequence is in P(R), i.e., σ1 . . . σn ∈P(R). Then we   the solution satisﬁes the range requirement; and 2) it cannot be
+know that there exists a sequence in TR that “tracks” the above   improved anymore.
+sequence, which means that  ˆy̸ = ∅. In this case, we choose a   We illustrate Algorithm MAX-RANGE in the next example.
+locally maximal decision in Ξ(y, ˆy), since we still need to be     Example 8: Let us return to the system we have considered
+able to match any behavior in R in the future. This case is   in Example 6. The inputs are BTS TR that includes the inﬁ-
+implemented by line 8 of Algorithm MAX-RANGE.           mal supervisor and the AIC AIC(G, K), which are shown in
+  2) Suppose that y|R = ∅; this means that y must be reached   Figs. 4(e) and 4(d), respectively. We ﬁrst start procedure DoDFS
+                       γ1 σ1 ...γn σn
+by a sequence y0 −−−−−−−→y such that σ1 . . . σn /∈P(R).  from the pair of initial Y -states, i.e., y = ˆy = y0 = {1}. Since
+This also implies that ˆy = ∅. Then we simply chose a locally   (({1}, {}), ({1, 2}, {w})) /∈Φ∗R, we know that Ξ({1}, {1}) =
+maximal decision in CAIC(G,K)(y), since we know for sure that   {∅}. Therefore, the only control decision we can choose is {}
+the string is already outside of L(R). This case is implemented  and we have z = ˆz = hY Z (y, {}) = ({1}, {}). Then upon ob-
+by line 9 of Algorithm MAX-RANGE.                          serving a, we reach new Y -states y = ˆy = {3}. This time we
+
+YIN AND LAFORTUNE: SYNTHESIS OF MAXIMALLY-PERMISSIVE SUPERVISORS FOR THE RANGE CONTROL PROBLEM                          3925
+
+
+                                                                Induction Step: To proceed, we show that, for any Y -state
+                                                           reached by sequence in the form of
+
+                                                                                     γ0      σ1          γn −1      σn      γn         σn + 1
+                                                                y0 −→z1 −→y1 . . . −−−→zn −→yn −→zn+1 −−−→yn+1
+
+                                                                    in procedure DoDFS,  if  ˆyn+1̸ = ∅, we have that Ξ(yn+1,
+                                                                            ˆyn+1)̸ = ∅and yn+1|R = ˆyn+1|R, where ˆyn+1  is the state
+                                                           reached by the following sequence in TR
+
+Fig. 5.  Figures in Example 8. (a) T ∗, (b) L(ST ∗/G), (c) Another maxi-              cT R (y0 )      σ1       cT R (ˆy1 )                                                                    y0 −−−−−→ˆz1 −→ˆy1 −−−−−→mal solution.
+
+                                                                                             cT R (ˆyn −1 )      σn       cT R (ˆyn )        σn + 1
+                                                                                                       . . . −−−−−−→ˆzn −→ˆyn −−−−−→ˆzn+1 −−−→ˆyn+1
+have Ξ({3}, {3}) = {{w}, {v, w}}, since ({3}, {v}) is related
+to both ({3}, {v}) and ({3, 5}, {v, w}). Therefore, we choose      First, we show that yn+1|R = ˆyn+1|R. To see this, we write
+{v, w} at state {3} in T ∗. Then we move to z = ({3, 5}, {v, w})
+                                                        yn+1|R = {x ∈X : ∃x′ ∈yn, ∃wσn+1 ∈L(G) s.t.and ˆz = ({3}, {v}).
+  Now, from Z-state ({3, 5}, {v, w}), if event v occurs, T ∗           w∈(γn ∩Σuo)∗and δ(x′, wσn+1)=x}|R
+moves to Y -state y = {1}, which has already been visited. If
+                                       = {x ∈XR : ∃x′ ∈yn|R, ∃wσn+1 ∈L(R) s.t.event b occurs, T ∗moves to Y -state y = {6}. However, TR
+cannot track this move since b is not deﬁned at ˆz = ({3}, {v})           w∈(γn ∩Σuo)∗and δ(x′, wσn+1)=x}
+in TR. Therefore, we set ˆy = ∅, which means that the string is
+                                       = {x ∈XR : ∃x′ ∈ˆyn|R, ∃wσn+1 ∈L(R) s.t.already outside of R. Therefore, for Y -state {6}, we just choose
+a locally maximal control decision in CAIC({6}), i.e., {w}, and            w∈(cTR (ˆyn) ∩Σuo)∗and δ(x′, wσn+1)=x}
+move to z = ({5, 6}, {w}) and ˆz = ∅. Finally, by observing b
+                                       = {x ∈X : ∃x′ ∈ˆyn, ∃wσn+1 ∈L(G) s.t.again, T ∗moves back to Y -state {6} that has been visited. This
+completes the depth-ﬁrst search and returns the deterministic            w∈(cTR (ˆyn) ∩Σuo)∗and δ(x′, wσn+1)=x}|R
+BTS T ∗shown in Fig. 5(a), which includes a supervisor ST ∗
+                                       = ˆyn+1|Rsuch that R ⊆L(ST ∗/G) ⊆K, where L(ST ∗/G) is shown in
+Fig. 5(b). (We will prove later that this supervisor is indeed  The second and the fourth equalities follow from the assumption
+maximal.)                          ■   that R ⊏G, since any string that leaves the state space of R
+  Remark 8: One can  verify  that the language shown  in  must lead to a state in X \ XR. The third equality follows from
+Fig. 5(c) is a maximal controllable and observable sub-language   the induction hypothesis that yn|R = ˆyn|R and the fact that
+of K. In fact, this solution is obtained by using the strategies   ΓR(ˆyn|R) = cTR (ˆyn) ⊆γn.
+proposed in [2], [27], i.e., we pick a locally maximal decision in     Next, we show that Ξ(yn+1, ˆyn+1)̸ = ∅. According to line 8
+CAIC(G,K)(y) for each Y -state y and disregard the lower bound   in Algorithm MAX-RANGE, γn  is chosen such that γn ∈
+requirement. However, this solution does not fully contain R   Ξ(yn, ˆyn). Note that Ξ(yn, ˆyn) is non-empty by the induction
+although it is maximal.                    ■   hypothesis. Therefore, cTR (ˆyn) ⊆γn and
+  Note that, given arbitrary Y -states y and ˆy, set Ξ(y, ˆy) may
+                                                                   (hY Z (ˆyn, cTR (ˆyn)), hY Z (yn, γn)) ∈Φ∗Rbe empty. For example, in Fig. 4, if we take y = {3, 4} and
+ˆy = {3}, then we know that Ξ(y, ˆy) = ∅, since cTR (ˆy) = {v}   That is, (ˆyn+1, yn+1) ∈Φ∗R. Therefore, for any sequence
+but no control decision deﬁned at y in the AIC contains {v}.
+                                                                                                    σn + 2                                                                                     R (ˆyn + 1 )                                                                                                                                cT R (ˆyn + k −1 )
+                                                                        −−−→.If such a scenario occurs, then Algorithm MAX-RANGE may           ˆyn+1 −−−−−−→ˆzn+2cT                                                                                                                                                  . . −−−−−−−−→ˆzn+k
+get stuck before it correctly returns T ∗. However, the following
+result reveals that Ξ(y, ˆy) is always non-empty for any Y -states y   in TR, there exists a sequence
+and ˆy encountered in Algorithm MAX-RANGE, i.e., the control                      γn + 1         σn + 2       γn + k −1
+                                                               yn+1 −−−→zn+2 −−−→. . . −−−−→zn+k
+decision Act in line 8 of Algorithm MAX-RANGE is always
+well-deﬁned.                                                      in the AIC, such that cTR (ˆyn+i) ⊆γn+i, ∀i ≥1. Hence, γn+1 ∈
+   Proposition 8: For any Y -state y reached  in procedure  CAIC(G,K)(yn+1) and (ˆzn+2, zn+2) ∈Φ∗R, i.e.,
+DoDFS, if ˆy̸ = ∅, then Ξ(y, ˆy)̸ = ∅. Moreover, y|R = ˆy|R.
+                                                             (hY Z (ˆyn+1, cTR (ˆyn+1)), hY Z (yn+1, γn+1)) ∈Φ∗R    (21)   Proof: We prove it by induction on the length of the sequence
+that reaches y in procedure DoDFS.                             Therefore, γn+1 ∈Ξ(yn+1, ˆyn+1), i.e., Ξ(yn+1, ˆyn+1) is also
+  Induction Basis: The induction basis holds, since for the ini-   non-empty. This completes the induction step.        ■
+tial state, we have that y0|R = y0, i.e., cTR (y0|R) ∈Ξ(y0, y0).     Remark 9: Let us discuss the complexity of Algorithm
+  Induction Hypothesis: We assume  that, for any Y -state  MAX-RANGE. First, we need to construct the AIC, which
+reached by sequence in the form of                              takes O(|X||Σ|2|X |+|Σ|) according to [27]. Then Algorithm
+                    γ0      σ1          γn −1      σn              INF-SYNT takes O(|X||Σ|2|X |) to construct TR, since there
+            y0 −→z1 −→y1 . . . −−−→zn −→yn                                                                  |                                                                 are at most 2|X Y -states and the same number of Z-states in
+in procedure DoDFS, if  ˆyn̸ = ∅, we have Ξ(yn, ˆyn)̸ = ∅and  TR; for each Y -state it takes O(|X||Σ|) to determine its con-
+yn|R = ˆyn|R.                                                            trol decision and for each Z-state it takes O(|Σ|) to consider
+
+3926                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 62, NO. 8, AUGUST 2017
+
+
+all possible observations. Computing the maximal CSR Φ∗R   Recall that s is an arbitrary string in P(L(ST ∗/G)). Therefore,
+takes O(22|X |+2|Σ|). For procedure DoDFS in Algorithm MAX-  by Proposition 3, we know that R ⊆L(ST ∗/G).      ■
+RANGE, it takes O(2|Σ|) to determine control decision Act for      Finally, we show that ST ∗is maximal.
+each Y -state and it takes O(|Σ|) to consider all observations for    Lemma 3: ST ∗is a maximally-permissive supervisor, i.e.,
+each Z-state. In the worst case, there are still 2|X | Y -states and   for any safe supervisor S′, L(ST ∗/G)̸ ⊂L(S′/G).
+the same number of Z-states in T ∗, which implies that procedure      Proof: By contradiction. Assume that ST ∗is not maximal.
+DoDFS takes O(2|X |+|Σ|) to construct T ∗. Therefore, the over-   This implies that there exists another safe supervisor S′ such
+all complexity of Algorithm MAX-RANGE is O(22|X |+2|Σ|),   that L(ST ∗/G) ⊂L(S′/G). This implies that
+which is exponential w.r.t. G. However, it is well-known that the      1) ∀s ∈L(ST ∗/G) : ST ∗(P(s)) ⊆S′(P(s)); and
+supervisor synthesis problem under partial observation is NP-      2) ∃s ∈L(ST ∗/G) : ST ∗(P(s)) ⊂S′(P(s)).
+hard even without the lower bound requirement [22]. Therefore,     Let us consider an observable string t ∈P(L(ST ∗/G)) such
+it is highly unlikely that there exists a polynomial-time algorithm   that ST ∗(t)⊂S′(t) and ∀t′ ∈{t} \ {t} : ST ∗(t′)=S′(t′). Then
+for MPRCP. Note that, under the assumption that K ⊏G, the  we have that ISYST ∗(t)=ISYS ′(t); we call this Y -state y.
+complexity of computing a maximal solution without consid-   We claim that, for the above y and S′(t), we have
+ering the lower bound is O(|X||Σ|2|X |+|Σ|) [27]. Therefore,
+                                                           (hY Z (y, cT ∗(y), hY Z (y, S′(t))) ∈Φ∗(T ∗, AIC(G, K)) (22)we do need to spend additional effort to guarantee the lower
+bound behavior. Also we note that, if Assumption 1 does not  Too see this, let us consider an arbitrary sequence
+hold, then the reﬁned system automaton may contain at most
+|X′| := |X| × (|XK | + 1) × (|XR| + 1) states. In the case, the     y −−−→z1cT ∗(y)   −→y1σ1   −−−−→.cT ∗(y1 )    . . zn −→ynσn   −−−−→zn+1cT ∗(yn )         (23)
+overall complexity becomes O(22|X ′|+2|Σ|), which is still single
+exponential w.r.t. G, K and R.               ■   in T ∗. Since, L(ST ∗/G) ⊆L(S′/G), S′ induces the following
+                                                          sequence
+B. Correctness of the Algorithm                           y −−→z′S ′(t)  1 −→y′σ1   1 −−−−→.S ′(tσ1 )   . . z′n −→y′σn  n −−−−−−−→z′S ′(tσ1 ...σn )  n+1   (24)
+  In this section, we establish the correctness of Algorithm                                                           Since S′ is a safe supervisor, by Theorem 1, S′ is an AIC-
+MAX-RANGE, i.e., it effectively solves MPRCP.                                                             included supervisor. This implies that the above sequence exists
+   Hereafter, we still denote by T ∗the BTS returned by Algo-                                                                    in the AIC. Hence, Equation (22) holds by Proposition 5.
+rithm MAX-RANGE and denote by ST ∗the supervisor induced                                                               Next, we consider two cases for this Y -state y to show the
+by T ∗. First, we show that ST ∗is a safe supervisor.                                                                   contradiction.
+  Lemma 1: L(ST ∗/G) ⊆K, i.e., ST ∗is safe.                                                        Case 1: y|R = ∅.
+   Proof: This follows directly from Theorem 1. Since for each                                                              Since S′  is a  safe  supervisor, by Theorem  1,  S′(t) ∈
+Y -state y encountered, cT ∗(y) is chosen from Ξ(y, ˆy), which is                                                         CAIC(G,K)(y). Moreover, cT ∗(y) is chosen as a maximal el-
+a subset of CAIC(G,K)(y). Therefore, ST ∗is an AIC-included                                                      ement in CAIC(G,K)(y). Therefore, we obtain a contradiction
+supervisor, which means that it is safe.                                                          immediately since cT ∗(y) ⊂S′(t) is not possible.
+  Next, we show that language R is contained in L(ST ∗/G).                                                        Case 2: y|R̸ = ∅.
+  Lemma 2: R ⊆L(ST ∗/G).                                                         Suppose that Y -state y is reached, for the ﬁrst time, by the
+   Proof: We use Proposition 3 to show that ST ∗contains R. Let                                                              following sequence
+us consider an arbitrary observable string s ∈P(L(ST ∗/G))
+                                                                                                  γ1      σ1       γ2       γn      σn
+s.t. ISYST ∗(s)|R̸ = ∅. For simplicity, we denote y = ISYST ∗(s).               y0 −→z1 −→y1 −→. . . −→zn −→y        (25)
+Since y|R̸ = ∅, when y is reached for the ﬁrst time in proce-
+                                                                    in procedure DoDFS in Algorithm MAX-RANGE. Since y|R̸ =dure DoDFS of Algorithm MAX-RANGE, i.e., when state y
+                                                   γ1 σ1 ...γn σn              ∅, we know that σ1 . . . σn ∈P(R) and the following sequence,
+is added, it is reached by a sequence y0 −−−−−−−→y in T ∗,
+                                                      which tracks the sequence in Equation (25), is well-deﬁned in
+where σ1 . . . σn ∈P(R). Since σ1 . . . σn ∈P(R), there exists
+                                               TR                                  γ 1′ σ1 ...γ n′ σn
+a corresponding sequence y0 −−−−−−−→ˆy in TR that tracks
+                                                                                         cT R (y0 )      σ1       cT R (ˆy1 )       cT R (ˆyn )      σn
+the above sequence leading to y in T ∗, i.e., ˆy is the Y -state that     y0 −−−−−→ˆz1 −→ˆy1 −−−−−→. . . −−−−−→ˆzn −→ˆy   (26)
+tracks y in the depth-ﬁrst search. Note that σ1 . . . σn need not
+                                                              Since L(STR /G) ⊆L(ST ∗/G), by Proposition 6, we knowbe equal to s since there may exist multiple sequences that lead
+                                                                      that TR ⪯T ∗. Therefore, by the deﬁnition of the CSR, Equa-to y and the depth-ﬁrst search just randomly picks one of them.
+                                                                    tions (25) and (26) imply that (y, ˆy) ∈Φ∗(TR, T ∗). This furtherTherefore, ˆy may depend on the speciﬁc implementation of the
+                                                               implies that
+depth-ﬁrst search.
+  By Algorithm MAX-RANGE, cT ∗(y) is chosen such that       (hY Z (ˆy, cTR (ˆy)), hY Z (y, cT ∗(y))) ∈Φ∗(TR, T ∗)    (27)
+cTR (ˆy) ⊆cT ∗(y). By Algorithm INF-SYNT, cTR (ˆy) is chosen
+                                                                 Overall, by Eqs. (22) and (27) and by Proposition 7, we getsuch that ΓR(ˆy|R) ∪Σuc = cTR (ˆy). By Proposition 8, we know
+that y|R = ˆy|R. Moreover, ST ∗is an IS-based supervisor, which     (hY Z (ˆy, cTR (ˆy)), hY Z (y, S′(t))) ∈Φ∗(TR, AIC(G, K))
+implies that ST ∗(s) = cT ∗(y). Overall, we know that
+                                                      Note  that we also have  that cTR (ˆy) ⊆cT ∗(y) ⊂S′(t) and
+ ΓR(ISYST ∗(s)|R) = ΓR(ˆy|R) ⊆cTR (ˆy) ⊆cTR (y) = ST ∗(s).    S′(t) ∈CAIC(G,K)(y). Therefore, S′(t) ∈Ξ(y, ˆy). However,
+
+YIN AND LAFORTUNE: SYNTHESIS OF MAXIMALLY-PERMISSIVE SUPERVISORS FOR THE RANGE CONTROL PROBLEM                          3927
+
+
+cT ∗(y)⊂S′(t) is not possible, since cT ∗(y) is chosen as a max-  where AG\R = {x∈X : ∃w∈{ϵ}∪((L(S/G)\R)∩Σ∗Σo)s.t.
+imal decision in Ξ(y, ˆy). This is a contradiction.       ■   δ(x0, w)=x ∧P(w)=s} ⊆X \ XR. The  reason why we
+   Finally, combining Lemmas 1, 2 and 3 together, we have the  know that AG\R does not contain a state in R is that we have
+following theorem.                                             already assumed that R is a strict sub-automaton of both K and
+  Theorem 4: ST ∗is a maximally-permissive supervisor such  G. Hence, any string that goes outside of R will not go back to
+that R ⊆L(ST ∗/G) ⊆K, i.e., Algorithm MAX-RANGE ef-   the state space of R. Therefore, we have that
+fectively solves MPRCP.
+  Since the resulting supervisor ST ∗is realized by BTS T ∗, we          ISYS (s)|R = yR(s)|R ∪AG\R|R = yR(s)      (28)
+also have the following corollary.
+   Corollary 1: ST ∗is an IS-based solution, which implies that     Next, we show the second statement. Let us consider two
+the closed-loop language L(ST ∗/G) is regular.                    arbitrary strings s, t ∈P(L(R)) such that yR(s)̸ = yR(t). By
+  Remark 10: We have shown that Algorithm MAX-RANGE   the ﬁrst statement, we can write ISYS (s) in the form of
+                                                  ISYS (s) = yR(s) ∪AG\R, where AG\R ⊆X \ XR. Similarly,solves  MPRCP.  In   fact,   it  also  solves  the  maximal-
+permissiveness veriﬁcation problem. Speciﬁcally, suppose that  we can write ISYS (t) in the form of ISYS (t) = yR(t) ∪BG\R,
+there exists a given supervisor S : P(L(G)) →Γ and we want  where BG\R ⊆X \ XR. Note that yR(s), yR(t) ⊆XR. There-
+to verify whether  it is maximal or not. In this case, we can   fore, since yR(s)̸ = yR(t), we have ISYS (s)̸ = ISYS (t).   ■
+just set R = L(S/G) as the lower bound requirement and ap-     Proof of Propositon 3
+                                                                 Proof: (⇒)  By   contradiction.  Assume   that  ∃s ∈ply Algorithm MAX-RANGE to ﬁnd a maximal safe super-
+                                               P(L(S/G)) such that ISYS (s)|R̸ = ∅and ΓR(ISYS (s)|R)̸ ⊆visor S∗that contains R. If L(S/G) = L(S∗/G), then we
+                                                             S(s). Let σ be an event in ΓR(ISYS (s)|R) \ S(s). By theknow that the given supervisor S is already maximally per-
+                                                              deﬁnition  of  ΓR(·), we  have  that ∃x ∈ISYS (s)|R, ∃w ∈missive, since we cannot improve it any further. Otherwise, if
+L(S/G) ⊂L(S∗/G), then we know that S is not maximal. To  Σ∗uo s.t. δR(x, wσ)!. Since x ∈ISYS (s)|R, there exists a string
+                                                                         t ∈R such that P(t) = s and δR(x0, t) = x, which impliesthe best of our knowledge, the maximality veriﬁcation problem
+                                                                      that twσ ∈R. However,  since σ /∈S(s) = S(P(tw)), wewas open in the literature; it is now solved as a special case of
+the synthesis problem.                    ■  know  that twσ /∈L(S/G). This  contradicts  the  fact  that
+                                   R ⊆L(S/G).
+                                              (⇐) It sufﬁces to show that, t ∈R ⇒t ∈L(S/G). We pro-
+                        VII. CONCLUSION                      ceed by induction on the length of the projection of t.
+                                                                Induction Basis: For string  t ∈R such  that |P(t)| = 0,  We have solved a generalized supervisor synthesis problem,
+                                             we know that t ∈(ΓR({x0}) ∩Σuo)∗∩R. Since ΓR({x0}) =called the range control problem, for partially-observed DES.
+We considered both a standard upper bound speciﬁcation that  ΓR(ISYS (ϵ)) ⊆S(ϵ),  we  know  that  t ∈(S(ϵ) ∩Σuo)∗∩
+                                             L(G) ⊆L(S/G), i.e., the induction basis holds.describes the legal behavior and a lower bound speciﬁcation that
+                                                                Induction Hypothesis: Assume that t ∈R ⇒t ∈L(S/G)describes the desired behavior. We provided new information-
+                                                                    for any t such that |P(t)| = k.state-based constructive approaches for computing both inﬁmal
+                                                                Induction Step: To prove the induction step, we show thatand maximal supervisors satisfying these requirements. The pro-
+                                           vσw ∈R ⇒vσw ∈L(S/G), where |P(v)| = k, σ ∈Σo andposed approach combines the three notions of AIC, strict sub-
+                                     w ∈Σ∗uo. Note that any string t such that |P(t)| = k + 1 can beautomaton, and CSR, in a novel manner; each of them plays a
+                                                                 written in the above form. Let v′ ∈{v} be the longest preﬁx ofdifferent role in the synthesis problem. This results in a “mean-
+                                                      v that ends up with an observable event and let x = δ(x0, v′) ∈ingful” maximally-permissive safe supervisor that contains a
+given behavior. An interesting future direction is to extend the  XR. Since |P(v′)| = |P(v)| = k, by the induction hypothe-
+                                                                                 sis, we know that v′ ∈L(S/G). Therefore, x = δ(x0, v′) ∈results in this paper to the non-preﬁx-closed case.
+                                                  ISYS (P(v)). By the deﬁnition of ΓR(·), all events between v′
+                                                       and vσ are in ΓR({x}). Since x ∈XR and x ∈ISYS (P(v)),
+                     APPENDIX                   we know  that ISYS (P(v))|R̸ = ∅.  Therefore, ΓR({x}) ⊆
+                                                        S(P(v)), which implies  that vσ ∈L(S/G).  Similarly,  letA. Proofs Not Contained in Main Body
+                                                                     x′ = δ(x0, vσ) ∈XR. We know that x′ ∈ISYS (P(v)σ) and
+   Proof of Proposition 2                               ISYS (P(v)σ)|R̸ = ∅. Again, since ΓR({x′}) ⊆S(P(v)σ), we
+   Proof: First, we show the ﬁrst statement. By the deﬁnition   have sσw ∈L(S/G). This completes the induction step.  ■
+of ISYS , we have that                                           Proof of Proposition 4
+                                                                 Proof: The proof is similar to the proof in [18] for the
+ ISYS (s) = {x ∈X : ∃w ∈{ϵ} ∪(L(S/G) ∩Σ∗Σo)           standard simulation relation. Suppose that Φ = ΦY ∪ΦZ is a
+                                                                 control simulation relation from T1 to T2. Let (y1, y2) ∈ΦY .
+                            s.t. δ(x0, w) = x ∧P(w) = s}                               γ1               γ2
+                                                           Since (∀y1 −→T1 z1)(∃y2 −→T2 z2)[γ1 ⊆γ2 ∧(z1, z2)∈ΦZ ], we
+     = {x ∈XR : ∃w ∈{ϵ} ∪(R ∩Σ∗Σo)             know that (y1, y2) ∈F(Φ). Similarly, for any (z1, z2) ∈ΦZ ,
+                                                                                                                                                                                ], we know                            s.t. δR(x0, w) = x ∧P(w) = s} ∪AG\R    since (∀z1 σ−→T1 y1)(∃z2 σ−→T2 y2)[(y1, y2) ∈ΦY
+                                                                      that (z1, z2) ∈F(ΦZ ). Therefore, we conclude that Φ ⊆F(Φ)
+     = yR(s) ∪AG\R                                 and (y0, y0) ∈Φ.
+
+3928                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 62, NO. 8, AUGUST 2017
+
+
+  Suppose that Φ ⊆F(Φ) and (y0, y0) ∈Φ. Clearly, the ﬁrst    By iteratively applying the above arguments, suppose that,
+requirement in Deﬁnition 4 is satisﬁed. For any (y1, y2) ∈ΦY ,   for some m ≥1, we have that
+we know that the ﬁrst requirement in the deﬁnition of F im-
+                                                       (∃γm ∈CT1 (ym))(∀γ′m ∈CT2 (y′m))[γm̸ ⊆γ′m]     (34)plies that second requirement in Deﬁnition 4. Similarly, for any
+(z1, z2) ∈ΦZ , we know that the second requirement in the deﬁ-   and
+nition of F implies that third requirement in Deﬁnition 4. Hence,
+                                                            (∀1 ≤i ≤m)(∃Φ2i−1 ⊃Φ2i−2 : (zi, z′i) ∈Φ2i−1)we know that Φ is a control simulation relation from T1 to T2.
+  Now we prove the second property. For any (y1, y2) ∈        (∃σi ∈Σo :)[(yi, y′i)̸ ∈Φ2i−1]                     (35)
+F(Φ1) ∩(QT1Y × QT2Y  ), we have that (y1, y2) ∈Φ1 and
+                                                      where yi = hZ Y (zi, σi), y′i = hZ Y (z′i, σi) and Φ0 = Φ∗(T1,
+          γ1                           γ2
+                            z2)[γ1 ⊆γ2 ∧(z1, z2)∈Φ1]   (29)   T2); and   (∀y1 −→T1             z1)(∃y2 −→T2
+Since Φ1 ⊆Φ2, we know that (y1, y2), (z1, z2) ∈Φ2. There-  (∀1≤i≤m −1)(∃Φ2i ⊃Φ2i−1 : (yi, y′i)∈Φ2i)(∃γi ∈CT1 (yi))
+fore,  Equation  (29)  implies  that  (y1, y2) ∈F(Φ2).  Simi-   (∀γ′i ∈CT2 (y′i) : γi ⊆γ′i)[(zi+1, z′i+1)̸ ∈Φ2i]            (36)
+larly, for any (z1, z2) ∈F(Φ1) ∩(QT1Z × QT2Z ), we have that
+                                                                       Z (yi, γi) and  z′i+1 = hY Z (y′i, γ′i). In par-(z1, z2) ∈Φ1 and (∀z1 σ−→T1 y1)(∃z2 σ−→T2 y2)[(y1, y2) ∈Φ1].  where zi+1 = hY
+                                                                            ticular, Equations  (34),  (35), and (36) are the generaliza-Since Φ1 ⊆Φ2, we also know that (y1, y2), (z1, z2) ∈Φ2.
+Therefore, (z1, z2) ∈F(Φ2).                ■   tions of Equations (31), (33) and (32), respectively. Then                                                                                                                          σ1       γ1      γm −1
+   Proof of Proposition 5                            we know that there exists a sequence z1 −→y1 −→. . . −−−→
+                                                                            γm                                                                σm
+   Proof: The “only if” part is straightforward. For a sequence  zm−1 −−→ym                                                      −−→zm                                                                                            in T1 such that, for any sequence z′1 −→σ1
+in Equation (19), we can always construct a sequence in Equa-       γ 1′       γ m′ −1        σm       γ m′                                                                         y′1 −→. . . −−−→z′m−1 −−→y′m −−→z′m in T2, if γi ⊆γ′i, i =
+tion (20) by choosing γ′i for each i ≥0 such that γi ⊆γ′i and   0, . . . , m −1, then there does not exist a control decision
+(hY Z (yi, γi), hY Z (y′i, γ′i)) ∈Φ∗(T1, T2). The deﬁnition of the   γ′m ∈CT2 (y′m) such that γm ⊆γ′m. This completes the con-
+CSR guarantees the existence of such γ′i at each y′i encountered.                                                                     trapositive proof.
+  Next, we show the “if part” by contraposition. Suppose                                                        Note that, since Φ1 ⊂Φ2 ⊂· · · ⊂Φ2m  is strictly increas-
+that  (z1, z′1)̸ ∈Φ∗(T1, T2). Then, by Equation  (18),  either                                                                     ing, such a m always exists. To see this, let Φ2m = (QT1Y ×
+there exists an event σ1 ∈Σo : hZ Y (z1, σ1)! but σ1 ∈Σo :
+                                                    QT2Y ) ∪(QT1Z × QT2Z ), which is the largest possible relation.hZ Y (z1, σ1)¬!, where “¬!” means “is not deﬁned”; or there
+                                                       Suppose that for any i < m, there exists Φ2i ⊃Φ2i−1 such
+exists Φ1 ⊃Φ∗(T1, T2) such that (z1, z′1) ∈Φ1 but                                                                      that (yi, y′i) ∈Φ2i but (∃γi ∈CT1 (yi))(∀γ′i ∈CT2 (y′i) : γi ⊆
+               (∃σ1 ∈Σo)[(y1, y′1)̸ ∈Φ1]             (30)   γ′i)[(zi+1, z′i+1)̸ ∈Φ2i] Then for Φ2m,  it must be (∃γm ∈
+                                                       CT1 (ym))(∀γ′m ∈CT2 (y′m))[γm̸ ⊆γ′m] since there does not ex-
+where y1 = hZ Y (z1, σ1) and y′1 = hZ Y (z′1, σ1).                      ist a relation that is larger than Φ2m anymore.        ■
+  For the ﬁrst case, we know immediately that there exists                                                              Proof of Proposition 6                  σ1       γ1
+a sequence z1 −→y1 −→z2 in T1, where γ1  is an arbitrary      Proof: (⇒) By  contraposition.  Suppose  that  T1̸ ⪯T2,
+control decision                  in CT1                         (y1), such that there does not exist a  which means that (y0, y0) /∈Φ∗(T1, T2). Therefore, either (i)
+                       γ 1′               σ1
+sequence z′1 −→y′1 −→z′2 in T2 satisfying γ1 ⊆γ′1. Hereafter,   cT1 (y0)̸ ⊆cT2 (y0); or (ii) (z11, z21) /∈Φ∗(T1, T2), where zi1 =
+we consider the case where Equation (30) holds. Again, by  hY Z (y0, cTi (y0)), i = 1, 2.  If case  (i) holds, then we know
+Equation (18), (y1, y′1)̸ ∈Φ1 implies that either                immediately  that L(ST1 /G)̸ ⊆L(ST2 /G),  since ST1 (ϵ)=
+                                                                     cT1 (y0)̸⊆cT2 (y0)=ST2 (ϵ). If case (ii) holds, then by Propo-
+        (∃γ1 ∈CT1 (y1))(∀γ′1 ∈CT2 (y′1))[γ1̸ ⊆γ′1]     (31)   sition  5,  there  exists  a  string  σ1 . . . σn ∈P(L(ST1 /G))
+or there exists Φ2 ⊃Φ1 such that (y1, y′1) ∈Φ2 but             such  that  ST1 (σ1 . . . σi) ⊆ST2 (σ1 . . . σi), ∀i = 1, . . . , n −1
+                                                               but ST1 (σ . . . σn)̸ ⊆ST2 (σ . . . σn). Therefore, we still have that
+ (∃γ1 ∈CT1 (y1)(∀γ′1 ∈CT2 (y′1) : γ1 ⊆γ′1)[(z2, z′2)̸∈Φ2] (32)  L(ST1 /G)̸ ⊆L(ST2 /G).
+                                                 (⇐)  By   contraposition.  Suppose   that  L(ST1 /G)̸ ⊆where z2 = hY Z (y1, γ1) and z′2 = hY Z (y′1, γ′1).                                                       L(ST2 /G).  Then  ∃σ1 . . . σn ∈P(L(ST1 /G))  such   that  Suppose that Equation (31) holds, then we also know im-
+                                                σ1       γ1             ST1 (σ1 . . . σn−1) ⊆ST2 (σ1 . . . σn−1)  but  ST1 (σ1 . . . σn)̸ ⊆
+mediately that there exists a sequence z1 −→y1 −→z2 in T1,
+                                                           ST2 (σ1 . . . σn). Since T1  is deterministic, the above string                                                        σ1      γ 1′
+such that there does not exist a sequence z′1 −→y′1 −→z′2   σ1 . . . σn uniquely determines the following sequence in T1
+in T2 satisfying γ1 ⊆γ′1. Suppose that Equation (32) holds.
+                                                                                 γ 01      σ1      γ 11       γ n1 −1        σn      γ n1
+Let γ1 ∈CT1 (y1) be a control decision satisfying Equation      y0 −→z11 −→y11 −→. . . −−−→z1n−1 −→y1n −→z1n    (37)
+(32) and  let γ′1 ∈CT2 (y′1) be an arbitrary control decision
+                                                      where γ1i = ST1 (σ1 . . . σi) is the unique control decision de-such that γ1 ⊆γ′1. Note that γ1 ⊆γ′1 implies that ∀σ ∈Σo :
+                                                                                                                             i . However, there does not exist a sequencehT1Z Y (z2, σ)! ⇒hT2Z Y (z′2, σ)!. Since (z2, z′2) /∈Φ2, by Equation  ﬁned at y1
+                                                                                                                       2      σ1      γ 12       γ n2 −1        σn      γ n2(18), ∃Φ3 ⊃Φ2 such that (z2, z′2) ∈Φ3 but                                 γ 0
+                                                                  y0 −→z21 −→y21 −→. . . −−−→z2n−1 −→y2n −→z2n    (38)
+               (∃σ2 ∈Σo)[(y2, y′2)̸ ∈Φ3]             (33)
+                                                                    in T2 such that γ1i ⊆γ2i , ∀i = 1, . . . , n, since the control deci-
+where y2 = hZ Y (z2, σ2) and y′2 = hZ Y (z′2, σ2).                 sion from each y2i in T2 is uniquely deﬁned and the only control
+
+YIN AND LAFORTUNE: SYNTHESIS OF MAXIMALLY-PERMISSIVE SUPERVISORS FOR THE RANGE CONTROL PROBLEM                          3929
+
+
+decision deﬁned at y2n, i.e., ST2 (σ1 . . . σn), does not contain    [21]  J. G. Thistle and H. M. Lamouchi, “Effective control synthesis for partially
+γ1n = ST1 (σ1 . . . σn).                    ■        observed discrete-event systems,” SIAM J. Control Optim., vol. 48, no. 3,                                                                                     pp. 1858–1887, 2009.
+   Proof of Proposition 7                                                 [22]  J. N. Tsitsiklis, “On the control of discrete-event dynamical systems,”
+                     σ1      γ 11       γ n1 −1        σn      γ n1                 Math. Control, Signals Syst., vol. 2, no. 2, pp. 95–107, 1989.
+   Proof: Let z1 −→y11 −→. . . −−−→z1n−1 −→y1n −→z1n be    [23] X.  Yin  and  S.  Lafortune,  “Supplement  material,”  http://www-
+an arbitrary sequence in T1. Since (z1, z2) ∈Φ∗(T1, T2), by         personal.umich.edu/˜xiangyin/TAC-range-sup.pdf.
+                                                σ1      γ 12       γ n2 −1     [24] X. Yin and S. Lafortune, “A general approach for synthesis of supervisors
+Proposition 5, there exists a sequence z2 −→y21 −→. . . −−−→          for partially-observed discrete-event systems,” In Proc. 19th IFAC World
+      σn      γ n2                                                              Congress, pages 2422–2428, 2014.
+z2n−1 −→y2n −→z2n  in T2 such that γ1i ⊆γ2i , ∀i = 1, . . . , n.    [25] X. Yin and S. Lafortune, “On maximal permissiveness in partially-
+Similarly, since (z2, z3) ∈Φ∗(T2, T3), by Proposition 5, there        observed discrete event systems: Veriﬁcation and synthesis,” In Proc.
+                         σ1      γ 13       γ n3 −1        σn      γ n3              13th Int. Workshop Discrete Event Syst., pages 1–7, 2016.
+exists a sequence z3 −→y31 −→. . . −−−→z3n−1 −→y3n −→z3n    [26] X. Yin and S. Lafortune, “On maximally permissive range control problem
+in T3 such that γ2i ⊆γ3i , ∀i = 1, . . . , n. Therefore, (z1, z3) ∈          in partially-observed discrete event systems,” In Proc. 55th IEEE Conf.                                                                               Decision Control, 2016.
+Φ∗(T1, T3) by Proposition 5.                 ■    [27] X. Yin and S. Lafortune, “Synthesis of maximally permissive supervisors
+                                                                                           for partially observed discrete event systems,” IEEE Trans. Autom. Contr.,
+                   REFERENCES                                        vol. 61, no. 5, pp. 1239–1254, 2016.
+                                                                               [28] X. Yin and S. Lafortune, “A uniform approach for synthesizing property-
+ [1] A. Arnold, A. Vincent, and I. Walukiewicz, “Games for synthesis of con-         enforcing supervisors  for  partially-observed  discrete-event systems,”
+      trollers with partial observation,” Theoretical Computer Science, vol. 303,       IEEE Trans. Autom. Contr., vol. 61, no. 8, pp. 2140–2154, 2016.
+     no. 1, pp. 7–34, 2003.                                                     [29]  T.-S. Yoo and S. Lafortune, “Solvability of centralized supervisory control
+ [2] N. Ben Hadj-Alouane, S. Lafortune, and F. Lin, “Centralized and dis-        under partial observation,” Discrete Event Dynamic Systems: Theory &
+      tributed algorithms for on-line synthesis of maximal control policies under         Applications, vol. 16, no. 4, pp. 527–553, 2006.
+      partial observation,” Discrete Event Dynamic Systems: Theory & Appli-
+      cations, vol. 6, no. 4, pp. 379–427, 1996.
+ [3] R. Brandt, V. Garg, R. Kumar, F. Lin, S. I. Marcus, and W. M. Won-
+     ham, “Formulas for calculating supremal controllable and normal sublan-
+     guages,” Syst. & Contr. Lett., vol. 15, no. 2, pp. 111–117, 1990.
+ [4] K. Cai, R. Zhang, and W. M. Wonham, “Relative observability of discrete-
+     event systems and its supremal sublanguages,” IEEE Trans. Autom. Con-                      Xiang Yin (S’16) was born in Anhui, China, in
+       trol, vol. 60, no. 3, pp. 659–670, 2015.                                                    1991. He received the B.Eng. degree from Zhe-
+ [5] C. G. Cassandras and S. Lafortune, Introduction to Discrete Event Systems.                            jiang University, Zhejian, China, in 2012, the
+      Springer: New York, 2nd edition, 2008.                                                  M.S. degree from the University of Michigan,
+ [6] K. Chatterjee, L. Doyen, T. A. Henzinger, and J.-F. Raskin, “Algorithms                    Ann Arbor, in 2013, and the Ph.D. degree from
+      for omega-regular games with imperfect information,” In Computer Sci-                          the University of Michigan, Ann Arbor, in 2017,
+     ence Logic, pages 287–302. Springer: New York, 2006.                                                         all in electrical engineering.
+ [7] H. Cho and S. I. Marcus, “On supremal languages of classes of sublan-                     He is now with the Department of Automation,
+     guages that arise in supervisor synthesis problems with partial observa-                       Shanghai Jiao-Tong University. His research in-
+      tion,” Math. Contr. Sig. Syst., vol. 2, no. 1, pp. 47–69, 1989.                                        terests include supervisory control of discrete-
+ [8] R. Cieslak, C. Desclaux, A. S. Fawaz, and P. Varaiya, “Supervisory control                         event systems, model-based fault diagnosis, for-
+      of discrete-event processes with partial observations,” IEEE Trans. Autom.   mal methods, security and their applications to cyber and cyber-physical
+      Control, vol. 33, no. 3, pp. 249–260, 1988.                            systems.
+ [9] K. Inan, “Nondeterministic supervision under partial observations,”. In       Dr. Yin received the Outstanding Reviewer Award from Automatica
+     11th Int. Conf. Analy. Opt. Syst.: Discr. Event Syst., 39–48, 1994.            in 2016 and the IEEE Conference on Decision and Control (CDC) Best
+[10]  S. Jiang, R. Kumar, S. Takai, and W. Qiu, “Decentralized control of   Student Paper Award Finalist in 2016. He is the co-chair of the IEEE
+      discrete-event systems with multiple local speciﬁcations,” IEEE Trans.  CSS Technical Committee on Discrete Event Systems.
+     Autom. Sci. Eng., vol. 7, no. 3, pp. 512–522, 2010.
+[11] R. Kumar and M. Shayman, “Formulae relating controllability, observ-
+       ability, and co-observability,” Automatica, vol. 34, no. 2, pp. 211–215,
+     1998.
+[12] O. Kupferman and M. Vardi, “Synthesis with incomplete informatio,”. In
+     Advances in Temporal Logic, pages 109–127. Springer, 2000.
+                                                                                       St´ephane Lafortune (F’99) received the B.Eng.[13]  F. Lin and W. M. Wonham, “On observability of discrete-event systems,”
+                                                                                    degree from Ecole Polytechnique de Montr´eal in     Inform. Sciences, vol. 44, no. 3, pp. 173–198, 1988.
+                                                                                       1980, the M.Eng. degree from McGill University[14]  F. Lin and W. M. Wonham, “Decentralized control and coordination of
+                                                                                                                in 1982, and the Ph.D. degree from the Univer-      discrete-event systems with partial observation,” IEEE Trans. Autom. Con-
+                                                                                                                    sity of California at Berkeley in 1986, all in elec-       trol, vol. 35, no. 12, pp. 1330–1337, 1990.
+                                                                                                                           trical engineering.[15]  T. Moor and K. W. Schmidt, “Fault-tolerant control of discrete-event
+                                                                                         Since September 1986, he has been with the     systems with lower-bound speciﬁcations,” In Proc. 5th Int. Workshop
+                                                                                                    University of Michigan, Ann Arbor, where he is    DCDS, pages 161–166, 2015.
+                                                                              a Professor of Electrical Engineering and Com-[16]  P. J. Ramadge and W. M. Wonham, “Supervisory control of a class of
+                                                                                               puter Science. He is the Lead Developer of the      discrete event processes,” SIAM J. Cont. Opt., vol. 25, no. 1, pp. 206–230,
+                                                                                            software package UMDES and co-developer of     1987.
+                                                   DESUMA. He co-authored the textbook Introduction to Discrete Event[17] K. Rudie and W. M. Wonham, “The inﬁmal preﬁx-closed and observable
+                                                            Systems - Second Edition (Springer, 2008). He is Editor-in-Chief of the     superlanguange of a given language,” Syst. & Contr. Let., vol. 15, no. 5,
+                                                                      Journal of Discrete Event Dynamic Systems: Theory and Applications.     pp. 361–371, 1990.
+                                                                     His research interests are in discrete event systems and include multiple[18]  P. Tabuada, Veriﬁcation and Control of Hybrid Systems: A Symbolic Ap-
+                                                                problem domains: modeling, diagnosis, control, optimization, and appli-     proach, Springer: New York, 2009.
+                                                                         cations to computer and software systems.[19]  S. Takai and T. Ushio, “Effective computation of an Lm (G)-closed, con-
+                                                                                Dr. Lafortune received the Presidential Young Investigator Award from      trollable, and observable sublanguage arising in supervisory control,” Syst.
+                                                                       the National Science Foundation in 1990 and the George S. Axelby Out-   & Contr. Let., vol. 49, no. 3, pp. 191–200, 2003.
+                                                                      standing Paper Award from the Control Systems Society of the IEEE in[20] A. Tarski, “A lattice-theoretical ﬁxpoint theorem and its applications,”
+                                                           1994 and 2001.     Paciﬁc J. Math., vol. 5, no. 2, pp. 285–309, 1955.

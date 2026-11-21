@@ -1,0 +1,560 @@
+5508                                              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 8, AUGUST 2024
+
+
+               Distributed Fault Diagnosis in Discrete Event
+          Systems With Transmission Delay Impairments
+
+       Jiwei Wang    , Simone Baldi    , Senior Member, IEEE, Wenwu Yu    , Senior Member, IEEE,
+                             and Xiang Yin    , Member, IEEE
+
+
+  Abstract—This note studies the distributed fault diagnosis prob-    starting from the notion of codiagnosability [10]: codiagnosability is
+lem in partially-observed discrete event systems, where the system   an extension of the single-agent (centralized) diagnosability to a multi-
+is monitored by a group of agents to cooperatively diagnose faults
+                                                                    agent decentralized scenario, i.e., without information sharing amongwithin a ﬁnite number of steps. The novelty of this work is the
+creation of a methodology to verify when the faults can be diag-   agents. Related notions have been studied, Yin and Lafortune [11]
+nosed even in the presence of transmission delay impairments. To   discussedtheconnectionbetweencodiagnosabilityandcoobservability,
+address this scenario, a new distributed diagnosability condition is   Viana and Basilio [12] revisited codiagnosability with a new necessary
+proposed, which extends decentralized diagnosability conditions
+                                                             and sufﬁcient condition in [13], [14], [15], and [16], different notions
+proposed in the literature. Such distributed diagnosability condi-
+tion is then veriﬁed via a novel structure named delay recorder   of codiagnosability and veriﬁcation methods were proposed, where
+and a new diagnosis function. Theoretical analysis shows that the   Keroglou et al. [15] and [16] studied distributed diagnosis under ideal
+veriﬁcation method can successfully determine whether the faults   transmission. It should be noted that ideal transmission allows each
+can be diagnosed.                                                  agent to get information with no delay, converging to a centralized
+  Index Terms—Diagnosability, discrete event systems (DES), dis-   scenario.
+tributed fault diagnosis, transmission delay impairments.            The distributed multiagent diagnosis problem is largely open, and in
+                                                                             particular no framework exists to address the inevitable transmission
+                                                                    delay impairments associated with information sharing. Hence, this
+                                     I. INTRODUCTION                                                                                  article proposes a new diagnosis framework to handle such an issue in
+   In recent decades, fault diagnosis for discrete event systems (DES)   theDES.Theframeworkisabletoaccountforrestrictedcommunication
+has attracted increasing attention [1], [2], [3], with the most stud-  among agents, and it bridges the centralized, the distributed, and the
+ied problems being the veriﬁcation [4], [5] and the synthesis prob-   decentralized architectures in a uniﬁed way; in fact, the framework
+lems [6], [7]. In fault diagnosis of DES, the challenge is to diagnose  we propose comprises the decentralized scenario as the transmission
+the occurrence of a fault in ﬁnite steps by only observing limited   impairmentsincreaseandthecentralizedoneastheimpairmentsvanish.
+events, while other events including the faults are unobservable. In     The main difﬁculties in developing this framework lie in dealing
+such partially-observed DES, the fault diagnosis architecture is called   with the uncertain delays arising from transmitting and processing
+centralized when there is only one agent monitoring all observable   the information. Notably, as some information may not contribute
+events [8], [9].                                                            to fault diagnosis, a method should be put in place to identify those
+  However, as limited coverage and limited communication ability   events whose delays need to be recorded. Novel methods and structures
+may make a centralized architecture unpractical, multiagent architec-   are put forward, which form the main contributions of this article.
+tures have been proposed, where the system is monitored by a group  We propose a new condition for distributed fault diagnosis, namely
+of agents, each one having partial observation capability [10], [11],   KT-codiagnosability (cf. Deﬁnition 3), which extends in a natural way
+[12], [13], [14], [15], [16]. If each agent can share its information   the state-of-the-art notion of codiagnosability within K steps,  i.e.,
+with a few neighboring agents, the multiagent architecture is called   K-codiagnosability (cf. Deﬁnition 2). We propose a novel structure,
+distributed, otherwise  it is decentralized. Decentralized multiagent   named as delay recorder (cf. Algorithm 1), to record the delays re-
+diagnosis problems have been mostly considered in DES literature,   quired for diagnosis; a new diagnosis function is proposed, with which
+                                                                   KT-codiagnosability is veriﬁed (cf. Theorem 1). Here, T refers to the
+                                                                      transmission efﬁciency. Our framework comprises the decentralized
+  Manuscript received 17 December 2022; revised 2 September 2023;   K-codiagnosability as T decreases (i.e., impairments increase), and
+accepted 10 February 2024. Date of publication 23 February 2024; date   the centralized K-diagnosability as T increases (i.e., the impairments
+of current version 30 July 2024. This work was supported in part by the
+                                                                          vanish). Summarizing, this study proposes the ﬁrst uniﬁed framework
+National Key R&D Program of China under Grant 2022YFE0198700,
+and  in part by the National Natural Science Foundation of China   for distributed fault diagnosis in the DES with transmission delay
+under Grant 62150610499, Grant 62073074, Grant 62073076, Grant   impairments.
+62233004, and Grant 62173226. Recommended by Associate Editor J.     The rest of this article is organized as follows. Section II describes
+Komenda. (Corresponding authors: Simone Baldi; Wenwu Yu.)            the partially-observed DES. Section III proposes the key notion of
+  Jiwei Wang  is  with  the  School  of  Cyber  Science  and  En-   KT-codiagnosability. In Section IV, the delay recorder and diagnosisgineering,  Southeast  University,  Nanjing  210096,  China  (e-mail:
+jwwang@seu.edu.cn).                                                 function are proposed to accomplish veriﬁcation. Finally, Section V
+  Simone Baldi and Wenwu Yu are with the School of Mathematics,   concludes this article.
+Southeast University, Nanjing 210096, China (e-mail: simonebaldi@
+seu.edu.cn; wwyu@seu.edu.cn).
+  Xiang Yin is with the Department of Automation and Key Laboratory                                                                                                                                              II. PRELIMINARIES
+of System Control and Information Processing, Shanghai Jiao Tong
+University, Shanghai 200240, China (e-mail: yinxiang@sjtu.edu.cn).         Let us recall the basic formalism of automata, used to model DES.
+   Digital Object Identiﬁer 10.1109/TAC.2024.3369510                                                                 Consider the ﬁnite event set E in DES as an alphabet, so that the
+
+               1558-2523 © 2024 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                          See https://www.ieee.org/publications/rights/index.html for more information.
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:57:56 UTC from IEEE Xplore. Restrictions apply.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 8, AUGUST 2024                                                             5509
+
+
+
+concatenation of a string of words in the alphabet can be viewed as
+a ﬁnite sequence of events in E. A language is a set of event strings,
+formed from the events in E. Let E∗be the set of all ﬁnite strings
+over E. Denote the length of a string s as |s|, and let ϵ be the empty
+string with |ϵ| = 0. The preﬁx-closure of a language L is deﬁned as
+L = {s ∈E∗|∃t ∈E∗, s.t. st ∈L} and L is preﬁx-closed if L = L.
+We assume to work with live languages L: ∀s ∈L, ∃e ∈E, s.t. se ∈L,
+that is, any string in L can be extended to an arbitrary length.
+  Automata are a common framework for manipulating languages. Let
+us consider a ﬁnite automaton
+
+
+            G = (X, E, α, X0)                       (1)
+
+
+where X  is the set of ﬁnite states; E  is the set of ﬁnite events;
+α : X × E∗→2X is the transition function that describes the tran-
+sition of an event string; and X0 ⊆X is the set of possible initial
+states. The language generated by G from state x ∈X  is denoted
+by L(x, G) = {s ∈E∗|α(x, s)!}, where ! means that the string s “is
+deﬁned”, i.e., it can occur starting from state x. If x ∈X0, we simply
+denote α(x0, s) as α(s) and L(x0, G) as L(G). Given a set of states
+ι ⊆X, we deﬁne the set of accessible states of ι as AG(ι) = {x′ ∈
+X ∃x ∈ι, ∃s ∈L(x, G), s.t. x′ ∈α(x, s)}.
+   In a partially-observed DES, the event set E is divided into the
+observable events Eo and the unobservable events Euo. A projection
+operator PEo : E∗→E∗o is used to obtain the observation of an event
+string as follows: ∀s ∈L(G), ∀e ∈E : α(se)!,                            Fig. 1.   Air heating unit, the model G of its start-up process and the
+                                                         M-machine ME′o(G) with E′o = {e1}. (a) Air heating unit. (b) G. (c)
+                               PEo(s)e,    if e ∈Eo            ME′o(G).
+        PEo(ϵ) = ϵ, PEo(se) =                                 (2)
+                               PEo(s),     if e /∈Eo.
+
+                                                              A.  Illustrative Example
+Intuitively, PEo(s) shows the observed events for a trajectory s ∈
+L(G). The operator PEo can also handle a set of event string, that is,     To illustrate the key concepts, we present throughout this work a few
+∀S ⊆L(G), PEo(S) = {s ∈E∗o|∃s′ ∈S, s.t. s = PEo(s′)}. Based   examples inspired by an air heating unit start-up scenario, cf. Fig. 1(a).
+on the projection operator PEo, consider an operator ζnEo: ∀s ∈L(G),   At start-up, under healthy conditions, the fan creates an air ﬂow heated
+                                                           by the heating coil. The air ﬂow blows the heat away from the coil so
+  ζnEo(s)={s′′ ∈s|∃s′ ∈s : |s′|≥|s| −n, s.t.PEo(s′′)=PEo(s′)}.       that a desired temperature is reached at an equilibrium. But in some
+                                                                             start-up scenarios, the fan may fail to turn ON and we need to diagnose
+Intuitively, ζnEo(s) collects all preﬁxes of s with the same observation   the fault to avoid coil overheating. The system is monitored by the                                                                    following two sensors: 1) a temperature sensor close to the coil and 2)
+as a trajectory s′.
+                                                              an air ﬂow sensor at the outlet. Denote the event observed by sensor 1
+  To embed the information of observable events into the system model
+                                                                      as e1 (desired temperature is reached) and the event observed by sensor
+and determine the indistinguishable states, we make use of the M-
+                                                         2 as e2 (ﬂow rate is regular). The fault, obviously unobservable by any
+machine w.r.t. G and Eo as [17] and [18]
+                                                                          sensor, is denoted as f.
+                                                             Example 1: (System model). We model the start-up of the air heating
+           MEo(G) = (Z, E ∪{ϵ}, δ, Z0)                (3)   unit as the automaton G in Fig. 1(b), where the initial state x0 = {0}
+                                                         means that the system is OFF initially. The branch on the left of state 0
+where Z ⊆X × X is the set of states and Z0 = X0 × X0 is the set   represents the healthy functioning. The air ﬂow is regular (in state 1), so
+of initial states. For any (x1, x2) ∈Z, e ∈E, the transition function    that after some time the desired temperature is reached (in state 2). The
+δ : Z × E ∪{ϵ} →2Z is deﬁned as follows.                         branch starting on the right of state 0 represents the scenario that the fan
+ 1) If e∈Eo ∧α(x1, e)! ∧α(x2, e)!, then, δ((x1, x2), e) ={(x′1, x′2)   does not start, which may be due to an unobservable fault (in state 3),
+      | x′1 ∈α(x1, e), x′2 ∈α(x2, e)}.                                  leading to overheating detected via sensor 1 (in state 4). However, it is
+ 2) If  e /∈Eo ∧α(x1, e)!, then,  δ((x1, x2), e) = {(x′1, x2) | x′1 ∈   possible that the fan simply did not start timely (e.g., due to blockage in
+    α(x1, e)}.                                                          the ﬂow channel, or wear), and after some time, e2 may occur, detected
+ 3) If  e /∈Eo ∧α(x2, e)!, then,  δ((x1, x2), ϵ) = {(x1, x′2) | x′2 ∈   by sensor 2. Using the automaton formalism, we have that when the
+    α(x2, e)}.                                                   system is in state 0, the only events that can occur are f and e2, that
+   Intuitively, the deﬁnitions of α and δ  are such  that L(G) =    is, α(0, f)! and α(0, e2)!. For the string fe1e2e2 generated by G,
+L(MEo(G)). In addition, we have ∀s ∈L(G), δ(s) = {(x, x′) ∈Z |    let Eo = {e1, e2}. Then, PEo(fe1e2e2) = e1e2e2, ζ0Eo(fe1e2e2) =
+x ∈α(s), x′ ∈α(s′) : PEo(s′) = PEo(s)}, which implies that for any   {fe1e2e2} and ζ3Eo(fe1e2e2) = {ϵ, f, fe1, fe1e2, fe1e2e2}. To il-
+(x, x′) ∈Z, x and x′ are indistinguishable with the observation ability    lustrate the M-machine, consider an observable event set E′o = {e1}.
+Eo. In the following, we use the notation I1(x, x′) = x and I2(x, x′) =   Then, we have ME′o(G) = (Z′, E ∪{ϵ}, δ′, Z′0) shown in Fig. 1(c).
+x′ to indicate the ﬁrst and the second state component of (x, x′) ∈Z.   For fe1e2e2 ∈L(ME′o(G)), we have δ′(fe1e2e2) = {(4, 4), (4, 2)},
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:57:56 UTC from IEEE Xplore. Restrictions apply.
+
+5510                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 8, AUGUST 2024
+
+
+
+                                                             and the reception of the same event by the other agents. Nevertheless,
+                                                                      as CA is a connected graph, the message that an event is observed (and
+                                                                                             its timestamp) will reach all other agents, possibly with some delay. For
+                                                                             better readability and in line with the literature (e.g., [10], [11], [12],
+                                                                             [13], [14]), we will simply analyze two agents ai(i ∈{1, 2}). All the
+                                                                               results in this work can be extended to more agents, at the price that
+                                                         more cases should be analyzed.
+                                                               Note that the messages processed by each agent ai(i ∈{1, 2}) have
+                                                           two sources as follows: 1) Mo from the observation module and 2) Mnew
+                                                            from the storage module. Thus, the set of all observable events Eo can
+                                                              be partitioned into Ei and Eo\Ei, where the occurrence of the events
+                                                                           in Ei is received with no delay, while the occurrence of the events in
+                                                     Eo\Ei is received from the storage module with some delay.
+                                               We now introduce a coefﬁcient T > 0 related to transmission efﬁ-
+                                                                          ciency, where T =1 indicates a nominal efﬁciency and T <1 indicates
+                                                                              that the efﬁciency degrades. The distance between agents is |a1a2| ≥0
+Fig. 2.   Distributed observation architecture (lower) and relations be-   and we represent the transmission delays as follows: if another agent
+tween the three modules of each agent (upper).                      ak (k̸=i) observes an event e /∈Ei, ai will receive the observation e
+                                                                  with a delay of no more than ⌈|a1a2|T  ⌉steps (⌈·⌉rounds the element
+indicating that states 4 and 2 are indistinguishable when we rely only   to the nearest integer towards inﬁnity). Note that T ≪1 degrades to a
+on the observation of e1.                      □   decentralized setting, whereas T ≫1 converges to a centralized setting
+                                                            where each agent can monitor all observable events with delay of no
+                         III. DISTRIBUTED DIAGNOSABILITY                more than one step.
+
+  The notion of codiagnosability [10] was proposed as the basic prop-
+erty to handle decentralized fault diagnosis, i.e., without information   B. Kt-Codiagnosability
+sharing between agents. We provide a distributed extension, called
+                                                       As a starting point for fault analysis in the distributed setting, we
+KT -codiagnosability, when information sharing between agents is
+                                                                               recall state-of-the-art notions for centralized and decentralized fault
+allowed (possibly subject to transmission impairments). Before this, we
+                                                                         diagnosis.
+discuss the distributed observation architecture and ambiguities arising
+                                                                     Let G = (X, E, α, x0) be the system model and f be the fault
+from partial observation and transmission impairments.
+                                                                      events we intend to diagnose. Let K be the maximum number of steps
+                                                                 allowed from the occurrence of a fault to its diagnosis. To diagnose
+A. Distributed Observation                                           the faults within K steps, a structure of step counter Δ : L(G) →
+   Let the system under consideration be monitored by a set of   {−1, 0, 1, . . . , K} is used to count the number of steps in an event
+agents A = {a1, a2, . . . , aN}(N ∈N+) with corresponding events in    string after a fault occurs: ∀s ∈L(G), ∀e ∈E : α(se)! ⇒Δ(ϵ) =
+{E1, E2, . . . , EN} such that Eo = E1 ∪· · · ∪EN. Each agent can   −1, Δ(se) =
+share its information with some of the other agents according to a
+                                                                    Δ(s),        if [Δ(s)=−1 ∧e̸=f] ∨[Δ(s)=K]weighted connected graph CA = (VA, WA) consisting of a set of                                                                        (4)
+                                                            Δ(s)+1,    if [Δ(s)=−1 ∧e=f] ∨[0≤Δ(s)<K]vertices VA = {a1, . . . , aN} representing the agents, and a set of undi-
+rected weighted edges WA ⊆VA × VA representing the transmission
+                                                            where −1 means no fault happens. By means of Δ, the literature has
+links among neighboring agents; the nonnegative weight of each edge
+                                                                     introduced the notions of K-diagnosability and K-codiagnosability.
+is related to a transmission delay as speciﬁed later. Denote the length
+                                                                     Deﬁnition 1. (K-diagnosability [19]):  For K ∈N, the live lan-
+of the path between two vertices as the sum of the weights along the
+                                                             guage L(G) is K-diagnosable w.r.t. f if ∀s ∈L(G) : Δ(s) = K,
+path. Then, for any two agents ai, aj, we deﬁne their distance |aiaj|
+as the minimum length between them.                                              ∀s′ ∈L(G) : PEo(s′) = PEo(s), Δ(s′)̸ = −1.         (5)
+  With the distributed structure above, we now consider a simple
+communication protocol between agents. The following three modules      Deﬁnition 2. (K-codiagnosability [20]):  For K ∈N, the live lan-
+are required for each agent: 1) communication; 2) storage; and 3)   guage L(G) is K-codiagnosable w.r.t. f if ∀s ∈L(G) : Δ(s) = K,
+observation modules in Fig. 2:
+ 1) Communication module: this module forwards Mr (message re-
+    ceived from neighbours) to the storage module, and sends Mnew        ∃i∈{1, 2}, s.t.∀s′ ∈L(G):PEi(s′)=PEi(s), Δ(s′)̸=−1.  (6)
+   (new message from storage module) and Mo (message from ob-
+    servation module) to the neighbours.                                Obviously, K-diagnosability is a centralized notion as a single mon-
+ 2) Storage module: this module stores Mo from the observation    itors all observable events. In K-codiagnosability, f can be diagnosed
+    module,andavoidsthattheoccurrenceofacertaineventis recorded   by either a1 or a2 unambiguously within K steps, without any commu-
+    multiple times, in fact, Mr is stored as Mnew only if it is not already   nication between agents. Unfortunately, the following example shows
+    in the storage set.                                                       that some faults may go undetected in the absence of communication.
+ 3) Observation module: in this module, a new observed event from     Example 2. (Limits of K-codiagnosability):  For the system in
+    sensors receives a timestamp and becomes Mo; the module also   Fig.  1(b), we  consider a1  with  observation  ability E1 = {e1},
+    performs diagnosis by processing Mo, Mnew with a diagnoser [1]   and a2 with observation ability E2 = {e2}. Since PE1(fe1e2e2) =
+    or an observer [2].                                          PE1(e2e1e2) = e1 and PE2(fe1e2e2) = PE2(e2e1e2) = e2e2, i.e.,
+  The operations of communication and storage are expected to intro-   faulty and healthy strings are indistinguishable, it is impossible for
+duce delays between the observation of an event by one of the agents   a1 or a2 to determine within K = 3 steps if the fault f has occurred
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:57:56 UTC from IEEE Xplore. Restrictions apply.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 8, AUGUST 2024                                                             5511
+
+
+
+or not. We conclude that, when K = 3, L(G) is not K-codiagnosable
+w.r.t. f.                               □
+   Intuitively, a fault that goes undetected in the absence of communica-
+tion may become detectable if communication among agents is allowed
+(cf. Example 3). This means that K-codiagnosability is restrictive and
+an appropriate extension is required, which is the key deﬁnition in this
+article.
+   Deﬁnition 3. (KT -codiagnosability):  For K ∈N and T > 0, the
+live language L(G)  is KT -codiagnosable  w.r.t. f  if ∀s ∈L(G) :
+Δ(s) = K,
+                                                                               Fig. 3.   Fault automaton ˆG and delay recorder R′1. (a) ˆG. (b) R′1.
+      ∃i ∈{1, 2}, s.t. ∀s′ ∈L(G) : PEi(s′) = PEi(s) ∧
+
+               ⌈|a1a2|T   ⌉                ⌈|a1a2|T   ⌉
+     PEo(ζ Eo\Ei  (s′)) ∩PEo(ζ Eo\Ei  (s))̸=∅, Δ(s′)̸=−1.    (7)   A. Delay Recorder
+   Intuitively, if (7) holds, then, ai can timely observe or receive all key      In diagnosis, it is crucial to observe the events that help to distinguish
+events to determine the occurrence of f. In other words, ai is capable   the faulty from the healthy strings. A delay recorder aims to register the
+of consistently distinguishing a fault string (s satisfying Δ(s) = K)   delays of these events correctly. Note that recording all the delays can
+from a normal string (s satisfying Δ(s) = −1), despite the imperfect   be deleterious for veriﬁcation, which will be more clear in Example 4.
+observation caused by delay. As T increases, the strings that cannot     Motivated by the step counter Δ in (4), a structure of fault automaton
+be distinguished from the string s : Δ(s) = K become less and less,    is constructed from (1) to count the number of steps after a fault
+that is, (7) gets weaker and weaker. As expected, KT-codiagnosability   happens [11]
+⇒KT ′-codiagnosability when T ≤T ′ (higher transmission efﬁciency
+improves diagnosis ability).                                                                      ˆG = ( X,ˆ E, ˆα, X0)ˆ                         (8)
+  Example 3. (KT -codiagnosability):  Consider the same system
+                                                                                                                      ′               where Xˆ = X × {−1, 0, 1, . . . , K} includes the state in X and theand agents as Example 2. Suppose |a1a2| = 2, T = 2, then, a1
+                                                                                fault counting component, i.e., ˆx = (x, |ˆx|f) ∈ˆX where |ˆx|f indicateswill receive the occurrence of e2  in no more than ⌈|a1a2|T ′ ⌉= 1
+                                                                        the number of steps after a fault occurs, as calculated in [11]. The
+step. When e2e1  occurs, the occurrence of e2  will be received                                                                              transition function ˆα : Xˆ × E →2 Xˆ is deﬁned as follows: for any ˆx =
+by a1 before e1, but no e2  will be received by a1 before the                                                                     (x, |ˆx|f) ∈ˆX and e ∈E satisfying α(x, e)!, we have ˆα((x, |ˆx|f), e)=
+observation of e1 when fe1 occurs. This implies that e2e1 and fe1
+                                                                         {(x′, |ˆx|f + v)|x′ ∈α(x, e)}, where |ˆx|f ∈{−1, 0, 1, . . . , K} and v is
+are distinguishable, i.e., the fault can be diagnosed by a1. Indeed,
+                                                            deﬁned by
+Deﬁnition  3  gives PE1(fe1) = e1, PEo(ζ1E2(fe1)) = {ϵ},  and
+each    string    s′ ∈{s|PE1(s) = e1 ∧PEo(ζ1E2(s)) ∩{ϵ}̸ = ∅} =
+{fe1, fe1e2}  satisﬁes  Δ(s′) ≥0. We  conclude  that L(G)  is                  0,   if [|ˆx|f = −1 ∧e̸ = f] ∨[|ˆx|f = K]
+                                                                                           ′                               v =KT ′-codiagnosable   w.r.t.  f  when T = 2  and K ≥1.  Next,                  1,   if [|ˆx|f = −1 ∧e = f] ∨[0 ≤|ˆx|f < K].
+suppose T = 1, so that a1  will receive the occurrence of e2  in
+no more  than  ⌈|a1a2|T ⌉= 2  steps.  In  this  case, we know  that     The set of initial states is X0ˆ = {(x0, −1) | x0 ∈X0}. Obviously,
+                                                      L( ˆG) = L(G). Let us consider the M-machine w.r.t. ˆG and Eo, thatfe1e2e2  and  e2e1  are  indistinguishable  since  e2 may  not be
+received before e1. Correspondingly, the string set {s | PE1(s) =    is, MEo( ˆG) = (Z, E ∪{ϵ}, δ, Z0). For each state z ∈Z ⊆ˆX × X,ˆ
+PE1(fe1e2e2) ∧PEo(ζ2E2(s)) ∩PEo(ζ2E2(fe1e2e2))̸ = ∅} =       we have that I1(z), I2(z) ∈ˆX: thus, we can use |I1(z)|f and |I2(z)|f
+{e2e1, fe1e2, fe1e2e2, . . . }  and  Δ(e2e1) = −1.  That   is,  the   to represent the fault counting value. We denote the “confusing state”
+fault may  not be  diagnosed by a1 when T = 1 and K = 3.   subset as
+Nevertheless, Example 6  will show  that KT -codiagnosability  is        ZC = {z : |I1(z)|f = K ∧|I2(z)|f = −1} ⊆Z.       (9)
+satisﬁed when T = 1 and K = 3, as the fault can be diagnosed
+by a2.                                □    We are now in the position to explain how to handle delays. For
+  Remark   1.   (Relations  between   K-codiagnosability,  KT -   agent ai(i ∈{1, 2}), the delay recorder to determine the delays to be
+codiagnosability and K-diagnosability):   Obviously,  (6) ⇒(7),   recorded is deﬁned as an automaton
+that  is,  if  K-codiagnosability  holds,  then,  KT-codiagnosability
+                                                                    Ri = (Xi, E, αi, Xi0)                  (10)
+holds  for any T. From  (7) and  the  deﬁnition  of  ζ, we have
+PEo(s′) = PEo(s) ⇔PEo(ζ0Eo\Ei(s′)) =  PEo(ζ0Eo\Ei(s)) ⇒   where      each        state      xi = (ˆx, (|xi|jii )ji) ∈Xi ⊆ˆX ×
+                               ⌈|a1a2|T   ⌉                                                       ⌈|a1a2|T   ⌉                                                                                        ⌈|a1a2|T   ⌉, ∞})ji(ji ∈{1, . . . , ni}) contains the following                                                 (s))̸=∅    for   ({0, 1, . . . ,PEi(s′)=PEi(s) ∧PEo(ζ Eo\Ei                             (s′))∩PEo(ζ Eo\Ei
+                                                           two components: 1) the state in Xˆ and 2) the delay value, denoted byany T. We obtain that (7) ⇒(5), that is, if KT-codiagnosability holds
+                                                                                   |xi|jii  . Here, ni is the number of the delay value we need to record.for any T, then, K-diagnosability holds. Hence, we conclude the
+                                                         The transition function αi : Xi × E →2Xi and the set of initial statesfollowing:
+  K-codiagnosability⇒KT -codiagnosability ⇒K-diagnosability.   Xi0 are built as in Algorithm 1.
+                                                                  Algorithm 1 consists of two parts: the ﬁrst part (lines 1–20) marks
+                                                                ni sets of transitions, utilized to build the delay recorders with the
+         IV. VERIFICATION OF DISTRIBUTED DIAGNOSABILITY
+                                                 RECORD procedure in the second part (lines 21–29). All the procedures
+                                                                                                                                                            j
+   In general, it is impossible to determine if a fault can be diagnosed   are  listed in Algorithm 2. The procedure FORWARD1(ι, Yi ) collects
+                                                                                                                   j
+by analyzing each event string as in Example 3. It is necessary to embed   the transition sets for Y i , that, only containing the events in Eo\Ei,
+the delay information into the automaton and develop a feasible method   cannotbedistinguishedundertheobservationabilityEo.Theprocedure
+to verify KT-codiagnosability. This is done by linking the system states  FORWARD2(Y ij ) explores new transition sets; lines 3–20 check which
+                                                                                                           j
+to fault events and by building a delay recorder structure to handle the    transition set in Y i  is necessary to be marked. The procedure RECORD
+delays.                                                         appends the delay ∞to the subsequent states of the marked transitions,      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:57:56 UTC from IEEE Xplore. Restrictions apply.
+
+5512                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 8, AUGUST 2024
+
+
+ Algorithm 1: The Construction of the Delay Recorder Ri.            Algorithm 2: The RECORD Procedure in Algorithm 1.
+  Input: ˆG = ( X,ˆ E, ˆα, X0),ˆ    ⌈|a1a2|T   ⌉, ZCEi, Eo, Ei(i ∈{1, 2});          1: procedure RECORD(ˆx, (u)j), Ri                                                                              2:    for e ∈E : ˆα(ˆx, e)! do
+  Output: Ri = (Xi, E, αi, Xi0);
+             1        1                                                       3:      for ˆx′ ∈ˆα(ˆx, e) do   1: T ini, T i , X1i , Y i , Xi0, Xi ←∅; m ←1;                                                                        j
+                                                                                                                                                  i then   2: FORWARD1 ( X0,ˆ X1i , Y i1 ); FORWARD2(Yi1 ); n ←m;                4:           if (ˆα(ˆx, e) = ˆx′) ∈T
+                                                                              5:           u′ ←∞;   3: for l ∈{1, . . . , n} do
+                                                                              6:         else if u = ∞∧e ∈Eo\Ei then              l−n+m {{ˆx′ ∈ˆX|∃ˆx∈ˆX :(ˆα(ˆx, e)= ˆx′)∈y}};   4: I ←  y∈Yi                                                   ˆ                        7:           u′ ←⌈|a1a2|T   ⌉;
+   5:   if ∀(ˆxk, ˆx−1)∈ZCEi, [∀ι, ι′ ∈I :ι̸=ι′, ˆxk /∈AG(ι),                    8:         else if u > 0 then
+        ˆx−1 /∈AG(ι′)]ˆ     ∧[ˆxk /∈Xl−n+mi      ∨ˆx−1 /∈Xl−n+mi         ] then              9:           u′ ←u −1;
+   6:   T il−n+m ←T im ; Xl−n+mi   ←Xmi  ; Y il−n+m ←Y im ;             10:         else if u = 0 then
+   7:  m←m −1;                                                  11:           u′ ←0;
+   8:  end if                                                          12:      end if
+   9: end for                                                          13:      Add αi((ˆx, (u)j), e) = (ˆx′, (u′)j) to Ri;
+ 10: n ←m; n′ ←1; ni ←1;                                         14:           if (ˆx′, (u′)j) /∈Xi then
+ 11: for j ∈{2, 3, . . . , n} do                                          15:       Xi ←Xi ∪{(ˆx′, (u′)j)};
+                                          j ,s.t.∀y′ ∈Y il , y̸ ⊆y′ then           16:         RECORD((ˆx′, (u′)j), Ri); 12:   if ∀l ∈{1, . . . , ni}, ∃y ∈Y i
+ 13:    for l′ ∈{0, . . . , n′−1} do                                    17:      end if
+ 14:        if ∀y ∈Y in′−l′ , ∃y′ ∈Y ij , s.t. y ⊆y′ then                     18:     end for
+                   n′−l′     ni     n′−l′     ni 15:      T i  ←T i   ; Y i  ←Y i   ; ni ←ni−1;                    19:   end for
+ 16:     end if                                                      20: end procedure
+ 17:   end for
+                                   ni       j    ni       j 18:    ni ←ni + 1; n′ ←ni; T i ←T i ; Y i ←Y i ;
+ 19:  end if
+                                                             and records the delay of the transitions that “leave” these states marked
+ 20: end for
+                                                           by ∞.
+ 21: for ˆx0 ∈ˆX0 do                                                       As Ri is built from ˆG, we have L(Ri) = L( ˆG). Note that Ri records
+ 22:  Xi0 ←Xi0 ∪{(ˆx0, (∞)1)}; Xi ←Xi ∪{(ˆx0, (∞)1)};
+                                                                        the delay of the events in Eo\Ei that help to distinguish the pair of
+ 23:  RECORD((ˆx0, (∞)1), Ri);
+                                                               system trajectories s and s′ satisfying PEi(s) = PEi(s′) and Δ(s) = 24:  for j ∈{2, . . . , ni} do                                                  K, Δ(s′) = −1. This is needed to verify KT-codiagnosability, as it will
+ 25:   Xi0 ←Xi0∪{(ˆx0, (0)j)}; Xi ←Xi∪{(ˆx0, (0)j)};
+                                                              be clear in the next section.
+ 26:    RECORD((ˆx0, (0)j), Ri);
+                                                             Example 4. (The importance of a delay recorder): For the system G
+ 27:  end for                                                                           in Fig. 1(b), the corresponding fault automaton ˆG is shown in Fig. 3(a).
+ 28: end for
+                                                            With the observable event set E1 = {e1}, we obtain the M-machine
+ 29: Return Ri;
+                                                                                                E1 = {((4, 3), (2, −1))}. 30: procedure FORWARD1ι, Xji , Y ij                     ME1( ˆG) and the confusing state′ subset ZC
+ 31:  Xtem ←{ˆx∈ˆX|∃ˆx′ ∈ι, s∈(E\Eo)∗, s.t.ˆx∈ˆα(ˆx′, s)};          Next,  using  ˆG,  |a1a2| = 2, T = 2, ZCE1, Eo and E1, we run
+ 32:   if Xtem̸ ⊆Xji then                                        Algorithm 1 to obtain the delay recorder R′1 shown in Fig. 3(b). From
+ 33:   Xji ←Xji ∪Xtem;                                  R′1,onecanseethatonlythedelayofe2 (denotedwithbold)infe1e2e2
+ 34:    for e ∈Eo : ∃ˆx ∈Xtem, s.t. ˆα(ˆx, e)! do                   and e2e1e2 are recorded. The delay value “0” in ((4, 3), (0)1) and
+                                                                         ((2, −1), (0)1) indicates that the occurrence of these e2 that help to 35:        if e ∈Ei then
+ 36:      FORWARD1({ˆx ∈Xi|∃ˆx′ ∈Xtem, s.t.                     distinguish fe1e2e2 and e2e1e2 have been received, which implies that
+                  ˆx ∈                     ˆα(ˆx′, e)}, Xji , Y ij );                    the fault can be diagnosed by a1, as shown in Example 3 with T ′ = 2.
+                                                                       Nevertheless, without a delay recorder, a naive strategy could be to 37:       else if e ∈Eo\Ei then
+                  j                          j ∪{{ˆα(ˆx′, e) = ˆx|∃ˆx′ ∈Xtem,                 record each delay of e2, that is, fe1e2e2 and e2e1e2. Unfortunately, by 38:      Y i       ←Y i
+                                                                doing this, one would obtain ((4, 3), (1)1) and ((2, −1), (1)1), where                  ˆx ∈ˆX, s.t. ˆx ∈ˆα(ˆx′, e)}};
+                                                                        the delay value “1” implies that we cannot determine if e2 has been 39:     end if
+                                                                      received by a1, leading to a trouble for veriﬁcation.         □ 40:   end for
+                                                           Remark 2. (Complexity analysis):  Like existing diagnosis algo- 41:  end if
+                                                                         rithms, Algorithm 1 relies on the construction of observers (or diag- 42: end procedure
+                                    j                                           nosers). This operation is known from the literature having worst-case 43: procedure FORWARD2Yi
+                    j                                                    exponential complexity O(22n) [2], where n is the number of states. 44:  for y ∈Y i do
+ 45:   X′ ←{ˆx′ ∈ˆX|∃ˆx ∈ˆX : (ˆα(ˆx, e) = ˆx′) ∈y};              However, this worst-case complexity is rarely reached, and recent
+ 46:      if [∃(ˆxk, ˆx−1) ∈ZCEi, s.t. ˆxk, ˆx−1 ∈                            studies have shown that, for deterministiclog          automata, the average state           ˆ                                                               size of diagnosers is O(n0.77   k+0.63) [21], where k is the number of     A G(X′)] ∧        [y /∈T ini] then
+              ini      ini                                                  events.
+ 47:    T  ←T   ∪y; m ←m + 1;
+ 48:    T im ←y; Xmi ←∅; Y im ←∅;
+ 49:     FORWARD1(X′, Xmi  , Y im ); FORWARD2(Yim );             B. Veriﬁcation of Kt-Codiagnosability
+ 50:   end if                                                                Using all structures introduced before, we now initiate the veriﬁca-
+ 51:  end for                                                                           tion process of KT-codiagnosability.
+ 52: end procedure                                                                     Let ˆG in (8) be the fault automaton built from G in (1). We ﬁrst
+                                                                     consider the delay value of ai (i ∈{1, 2}). To run Algorithm 1, we
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:57:56 UTC from IEEE Xplore. Restrictions apply.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 8, AUGUST 2024                                                             5513
+
+
+                                                                               states  ˆx1 ∈ˆX1 corresponding to the omitted  states in Fig. 4(b)
+                                                            must satisfy  |ˆx1|d =H]. For the string fe1e2e2 ∈L(ME1(R1)),
+                                                  we      have      δ1(fe1e2e2)={(((4, 3), (1)1), ((2, −1), (0)1)),
+                                                                         (((4, 3), (1)1), ((2, −1), (1)1)), . . . },   which    corresponds    to
+                                                              ˆα1(fe1e2e2)={((4, 3), (1)1, H), ((4, 3), (1)1, F)}.   The    state
+                                                                         ((4, 3), (1)1, F) corresponds to the fact, shown in Example 3, that the
+                                                                                fault may not be diagnosed by a1.                  □
+                                                                Using  the automaton  ˆRi, we then  construct  the M-machine
+                                           MEk( ˆRi) to obtain ZCEk and further run Algorithm 1 with ˆRi and
+                                                 Ek to get the augmented delay recorder
+
+                                                                                 Ri,k = (Xi,k, E, αi,k, Xi,k,0)               (14)
+
+                                                            where similar to ai, we can obtain nk and denote the delay value of ak
+                                                                      as | · |jkk  (jk ∈{1, . . . , nk}). Then, using Ek, the M-machine
+
+                                                              MEk(Ri,k) = (Zi,k, E ∪{ϵ}, δi,k, Zi,k,0)        (15)
+
+                                                                                        is obtained, where we still denote I1(z) as the ﬁrst state component,
+                                                                  I2(z) as the second state component for each state z ∈Zi,k. Finally,
+                                                  we deﬁne a diagnosis function ψ : z →{H, F} as follows: ∀z ∈Zi,k,
+Fig. 4.   Part of M-machine ME1(R1) that may include the fault states
+and the reconstructed automaton ˆR1. (a) R1. (b) Part of ME1(R1). (c)                   ψ(z) =  F,       if z ∈VCk                (16)
+ˆR1.                                                                     H,     otherwise
+
+                                                            where condition z ∈VCk is deﬁned as follows:
+built MEi( ˆG) to get the state subset ZCEi, and then, the delay recorder
+Ri in (10) is obtained. Aiming to determine the fault states that ai        |I1(z)|d =F, |I2(z)|f =−1, |I1(z)|jkk >0, |I2(z)|jkk >0.    (17)
+cannot diagnose even with the received message, we further build the
+M-machine MEi(Ri) = (Zi, E ∪{ϵ}, δi, Zi0). As MEi(Ri) only   With a slight abuse of notation, although the notation | · |d is deﬁned for
+contains the delay information of ai, we need to run Algorithm 1 again    states in ˆRi, we denote |I1(z)|d = F for I1(z) ∈Xi,k in Ri,k. This is
+with Ek (k ∈{1, 2}, k̸ = i) to obtain the delay information of ak.   possible because Ri,k is built from ˆRi, the only difference being that
+Considering that the input of Algorithm 1 should be a fault automaton,   Xi,k contains the delay information of ak. Similarly, we also allow the
+we need reconstruct MEi(Ri) to be a fault automaton with the delay    states in Xi,k to use | · |f.
+information of ai. To this end, we remove the second component of    Now we are in the position to verify KT-codiagnosability with the
+each state in Zi and the empty event ϵ in event set E, constructing the   following theorem.
+automaton                                                    Theorem 1: Let G in (1) be the system model, E1 and E2 be the
+                                                                               set of observable events for agents a1 and a2, f be the fault events,
+                        ˆRi = ( Xi,ˆ  E, ˆαi, Xi0).ˆ                      (11)                                                    MEk(Ri,k) in (15) be the M-machine built from the augmented delay
+                                                                      recorder Ri,k in (14). Then, L(G) is KT -codiagnosable w.r.t. f iff
+The      state    Xiˆ = Xˆ × ({0, 1, . . . , ⌈|a1a2|T   ⌉, ∞})ji × {H, F}
+(ji ∈{1, . . . , ni}),  where  “H”  means   “healthy’  and  “F”                                                                           ∀z ∈Zi,k, ψ(z) = H.                   (18)
+means   “faulty”.  For  each   zi ∈Zi  and   the  corresponding
+ˆxi = ((x, |ˆxi|f), (|ˆxi|jii )ji, |ˆxi|d) ∈ˆXi,  denote   |ˆxi|f = |I1(zi)|f,      Proof: (⇒) By contradiction, let us ﬁrst suppose that L(G) is KT -
+|ˆxi|jii = |I1(zi)|jii and                                              codiagnosable w.r.t. f while ∃z ∈Zi,k, s.t. ψ(z) = F. Then, we have
+                                                                              that z satisﬁes (17).                         F,       if zi ∈VCi
+                         |ˆxi|d =                                    (12)       First, we  consider  ak,  combining  (17)  and  (13), we  have                     H,     otherwise
+                                                            ∃j ∈{1, . . . , nk},  s.t.  |I1(z)|jk > 0,  |I2(z)|jk > 0,  |I1(z)|f = K,
+where we deﬁne the condition zi ∈VCi as follows:                      |I2(z)|f = −1 and I1(z), I2(z) ∈Xi,k.
+                                                                     Since  |I1(z)|jk > 0 and  |I2(z)|jk > 0,  there must  be  a  pair   |I1(zi)|f =K, |I2(zi)|f =−1, |I1(zi)|jii >0, |I2(zi)|jii >0.   (13)                                                                      of  event   strings,  sf, sck ∈L(Ri,k) : I1(z) ∈αi,k(sf) ∧I2(z) ∈
+Clearly, ˆRi can be seen as a fault automaton, in fact, each state ˆxi ∈ˆXi   αi,k(sck) ∧PEk(sf) = PEk(sck) such that two transitions are marked,
+has a fault counting value, and |ˆxi|d = F can be regarded as the fault   where we denote the events of the marked transition as ef1  in
+states ˆx ∈ˆX satisfying |ˆx|f = K in the automaton ˆG to determine the   sf and ec1  in sck. Then, we further denote sf = sf1ef1sf2 and
+                                                                    k = sc1ec1sc2. Recalling the FORWARD1 procedure in Algorithm 1,confusing state subset ZCEk.                                           sc
+  Example  5.  (The  reconstructed  automaton):   For  the  fault  we have PEo(sf1ef1) = PEo(sc1ec1). We now consider the following
+automaton ˆG and the  state subset ZCE1  in Example  4, we run   two cases.
+Algorithm 1 with T =1 to obtain R1 shown in Fig.  4(a). The    1) If the delay of an event ef2  (or ec2) ∈Eo\Ek  in sf2 (sc2)
+crucial  difference  between R1  and  ˆR1  [shown  in  Fig.  4(c)]         is recorded, then the system will enter I1(z) (or I2(z)) within
+is  the  third  component {H, F}.  For  compactness,  Fig.  4(b)        ⌈|a1a2|T  ⌉−1 steps after the occurrence of ef2 (or ec2), that is,
+shows  the M-machine ME1(R1)=(Z1, E ∪{ϵ}, δ1, Z10)  after      0<|I1(z)|jk ≤⌈|a1a2|T  ⌉(or 0<|I1(z)|jk ≤⌈|a1a2|T   ⌉). In this case,
+omitting   the   states  z1 ∈Z1   satisfying  AR1(I1(z1)) ∩{z′1 ∈     we further denote sf2 =sf3ef2sf4 (or sc2 =sc3ec2sc4), where
+Z1||I1(z′1)|f =K}=∅ ∨  |I2(zi)|f >0  [according  to  (13),   all       |sf4|<⌈|a1a2|T  ⌉(or |sc4|<⌈|a1a2|T   ⌉).
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:57:56 UTC from IEEE Xplore. Restrictions apply.
+
+5514                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 8, AUGUST 2024
+
+
+ 2) If no delay in sf (or sck) is recorded, then the system will enter
+    I1(z) (or I2(z)) without any occurrence of the events in Eo\Ek,
+     that is, |I1(z)|jk =∞(or |I1(z)|jk =∞).
+   Recalling the FORWARD1 procedure in Algorithm 1, we know
+that PEo\Ek(sf1ef1) = PEo\Ek(sf1ef1sf3) and PEo\Ek(sc1ec1) =
+PEo\Ek(sc1ec1sc3) in case 1), and PEo\Ek(sf1ef1) = PEo\Ek(sf)
+and PEo\Ek(sc1ec1) = PEo\Ek(sck)  in  case  2). Then, we have
+             ⌈|a1a2|T   ⌉                         ⌈|a1a2|T   ⌉sf1ef1 ∈ζ                 (sf) and sc1ec1 ∈ζ                                              (sck), indicating  that         Eo\Ek                                  Eo\Ek
+        ⌈|a1a2|T   ⌉                 ⌈|a1a2|T   ⌉
+PEo(ζ Eo\Ek (sf)) ∩PEo(ζ Eo\Ek (sck))̸ = ∅.
+  Now we consider  ai: we know  that Ri,k  is  built with Al-
+gorithm 1 from ˆRi which  is reconstructed from the M-machine
+MEi(Ri) = (Zi, E ∪{ϵ}, δi, Zi0). From |I1(z)|d = F, we have the
+corresponding |ˆxi|d = F, and further zi satisﬁes ∃j′ ∈{1, . . . , ni},
+s.t.  |I1(zi)|j′i > 0,  |I2(zi)|j′i > 0,  |I1(zi)|f = K and  |I2(zi)|f =
+−1, where  I1(zi), I2(zi) ∈Xi  in Ri = (Xi, E, αi, Xi0). Then,
+from I1(z) ∈αi,k(sf), we know that I1(zi) ∈αi(sf). Recalling
+                                                                               Fig.  5.  Augmented delay recorder R1,2 and part  of M-machinethe  property  of M-machine, ∃sci ∈L(Ri) : I2(zi) ∈αi(sci),  s.t.                                                       ME2(R1,2) that may include the  fault state. (a) R1,2. (b) Part of
+PEi(sci) = PEi(sf). And with a similar analysis as above, we have   ME2(R1,2).
+        ⌈|a1a2|T   ⌉                 ⌈|a1a2|T   ⌉
+PEo(ζ Eo\Ei  (sf)) ∩PEo(ζ Eo\Ei  (sci))̸ = ∅.
+  To sum up, for the event string sf ∈L(Ri,k) = L(Ri) = L(G) :
+                                                              ⌈|a1a2|T   ⌉         which means the corresponding state ˆxi ∈ˆαi(s) in ˆRi, as well asΔ(sf) = K, ∀l ∈{1, 2}, PEl(sf) = PEl(scl ), PEo(ζ Eo\El  (sf)) ∩                                                                           xi,k ∈ˆαi,k(s) in Ri,k, satisﬁes |ˆxi|d = |xi,k|d = F.
+        ⌈|a1a2|T   ⌉
+PEo(ζ Eo\El  (scl ))̸ = ∅and Δ(scl ) = −1. In other words, L(G) is not    Now  we  consider  ak:∃sck ∈L( ˆG)=L(Ri,k):Δ(sck)=−1,s.t.
+KT -codiagnosable w.r.t. f, resulting in a violation.                                                        ⌈|a1a2|T   ⌉               ⌈|a1a2|T   ⌉
+                                                     PEk(s)=PEk(sck), PEo(ζ Eo\Ek (s))∩PEo(ζ Eo\Ek (sck))̸=∅.  (⇐) By contradiction, let us suppose that ∀z ∈Zi,k, ψ(z) = H
+                                                                Then, as well, there must be an index jk ∈{1, . . . , nk} markingwhile L(G) is not KT -codiagnosable w.r.t. f. Then, we have that there
+                                                                        the relevant  transitions in s and sck. With a similar analysis as
+exists s ∈L(G) : Δ(s) = K, such that condition (7) is violated for a1
+                                                                    above, we have that ∃(xi,k, x′i,k)∈δi,k(s)⊆Zi,k  in MEk(Ri,k),and a2.
+                                                                                   >0, |x′i,k|jkk >0.  Since   First, we  consider  ai :∃sci ∈L( ˆG) = L(Ri):Δ(sci)=−1,   s.t.     s.t.   xi,k ∈αi,k(s), x′i,k ∈αi,k(sck), |xi,k|jkk
+                              ⌈|a1a2|T   ⌉               ⌈|a1a2|T   ⌉                     |xi,k|d =F and |x′i,k|f =−1, we have ψ((xi,k, x′i,k))=F, resulting
+PEi(s)=PEi(sci), PEo(ζ Eo\Ei (s))∩PEo(ζ Eo\Ei  (sci))̸=∅.          in a violation, which completes the proof.              ■
+  Then, we  have  that  ∃ef1, ec1 ∈Eo\Ei : s = sf1ef1sf2, sci =     Example 6. (Verifying KT -codiagnosability):  Considering the au-
+                                                                ⌈|a1a2|T   ⌉                                                               tomaton ˆR1 in Example 5, we build the M-machine ME2( ˆR1) to                                                             (s)) ∩sc1ec1sc2,  s.t. PEo(sf1ef1) = PEo(sc1ec1) ∈PEo(ζ Eo\Ei                                                                        get ZCE2 = {(((4, 3), (1)1, F), ((2, −1), (0)1, H))}. Then, we run        ⌈|a1a2|T   ⌉
+PEo(ζ Eo\Ei  (sci)). Since PEo(sf1ef1) = PEo(sc1ec1), the transi-   Algorithm 1 with ˆR1, ⌈|a1a2|T   ⌉, ZCE2, Eo and E2  to obtain the
+tions of ef1 and ec1 in s and sci must be marked by an index in line 2 of   augmented delay recorder R1,2 as shown in Fig. 5(a). Finally, the
+Algorithm 1. Nevertheless, after the ﬁrst check in lines 3–9, the mark  M-machine ME2(R1,2) = (Z1,2, E ∪{ϵ}, δ1,2, Z0) is constructed
+on ef1 and ec1 may be canceled, but an event in sf2 and an event in sc2   with E2:  Fig. 5(b) shows 11 of the 31  states of ME2(R1,2),
+will still be marked according to the condition in line 5. Hence, we can   where the omitted 20 states z ∈Z1,2 obviously satisfy |I1(z)|d =
+regard ef1 and ec1 as the marked transition without loss of generality.  H according to (17). The only state z satisfying |I1(z)|d = F  is
+Next, after the second check in lines 11–20, the transition ef1 and ec1   (((4, 3), (1)1, F, (0)1), ((2, −1), (0)1, H, (1)1)), however, we have
+in s and sci may not be marked, but there must be another pair of event    |((4, 3), (1)1, F, (0)1)|12 = 0, violating (17). Hence, for any z ∈Z1,2,
+strings marking ef1 and ec1 according to the conditions in lines 12 and  we have ψ(z) = H, indicating that L(G) is KT -codiagnosable w.r.t.
+14. Hence, we can regard s and sci as the pair of event strings where   f with K = 3 and T = 1. Despite a1 failing to diagnose the fault (cf.
+ef1 and ec1 are marked without loss of generality. Now we consider   Example 3), the diagnosis task can be fulﬁlled thanks to a2, indicating
+ji ∈{1, . . . , ni} as the index that marks the transitions of ef1 and ec1    that distributed diagnosability is possible if and only if at least one of
+in s and sci. Recalling the RECORD procedure in Algorithm 1, there are   the agents can diagnose the faults with the information received from
+two cases to be analyzed as follows.                                    other agents.                            □
+ 1) If the delay of an event ef2 (or ec2) after ef1 (or ec1) is recorded,
+    then, we can denote sf2 = sf3ef2sf4 (or sc2 = sc3ec2sc4). Here,
+   we know |sf4| < ⌈|a1a2|T  ⌉(or |sc4| < ⌈|a1a2|T   ⌉), otherwise there                             V. CONCLUSION
+                                                              ⌈|a1a2|T   ⌉
+    will be a violation that PEo(sf1ef1) /∈PEo(ζ Eo\Ei  (s)) [or      In this article, a novel framework has been presented to solve
+                               ⌈|a1a2|T   ⌉                                      the problem of distributed fault diagnosis in discrete event systems
+    PEo(sc1ec1) /∈PEo(ζ Eo\Ei  (sci))]. Since the delay is recorded   with delays arising from transmission impairments. A new notion
+    as ⌈|a1a2|T  ⌉steps, there must be a state xi ∈αi(s) : |xi|jii > 0 [or   of KT -codiagnosability was proposed that extends the well-known
+    x′i ∈αi(sci) : |x′i|jii > 0].                                       K-codiagnosability to the distributed setting. Accordingly, a novel
+ 2) If no delay after ef1 (or ec1) is recorded, then there must be a state   delay recorder structure and a new diagnosis function were proposed to
+    xi ∈αi(s) : |xi|jii = ∞(or x′i ∈αi(sci) : |x′i|jii = ∞).             verify KT -codiagnosability. Future work could consider more complex
+   Since  PEi(s) = PEi(sci), we  have  (xi, x′i) ∈δi(s) ⊆Zi  in   diagnosis problems with transmission impairments, such as distributed
+MEi(Ri) with |xi|jii > 0, |x′i|jii > 0, |xi|f = K and |x′i|f = −1,   dynamic sensor activation.
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:57:56 UTC from IEEE Xplore. Restrictions apply.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 8, AUGUST 2024                                                             5515
+
+
+
+                    REFERENCES                                  [12] G. S. Viana and J. C. Basilio, “Codiagnosability of discrete event systems
+                                                                                               revisited: A new necessary and sufﬁcient condition and its applications,”
+ [1] M. Sampath, R. Sengupta, S. Lafortune, K. Sinnamohideen, and D.         Automatica, vol. 101, pp. 354–364, 2019.
+      Teneketzis, “Diagnosability of discrete-event systems,” IEEE Trans. Au-    [13] C. E. Nunes, M. V. Moreira, M. V. Alves, L. K. Carvalho, and J. C.
+     tom. Control, vol. 40, no. 9, pp. 1555–1575, Sep. 1995.                            Basilio, “Codiagnosability of networked discrete event systems subject
+ [2] C. G. Cassandras and S. Lafortune, Introduction to Discrete Event Systems.          to communication delays and intermittent loss of observation,” Discrete
+      Berlin, Germany: Springer, 2009.                                           Event Dyn. Syst., vol. 28, no. 2, pp. 215–246, 2018.
+ [3]  S. Lafortune, F. Lin, and C. N. Hadjicostis, “On the history of diagnos-    [14] G. Viana, M. V. S. Alves, and J. C. Basilio, “Codiagnosability of networked
+      ability and opacity in discrete event systems,” Annu. Rev. Control, vol. 45,          discrete event systems with timing structure,” IEEE Trans. Autom. Control,
+     pp. 257–266, 2018.                                                                   vol. 67, no. 8, pp. 3933–3948, Aug. 2022.
+ [4] X. Yin, J. Chen, Z. Li, and S. Li, “Robust fault diagnosis of stochastic    [15] C. Keroglou and C. N. Hadjicostis, “Distributed fault diagnosis in dis-
+      discrete event systems,” IEEE Trans. Autom. Control, vol. 64, no. 10,          crete event systems via set intersection reﬁnements,” IEEE Trans. Autom.
+     pp. 4237–4244, Oct. 2019.                                                      Control, vol. 63, no. 10, pp. 3601–3607, Oct. 2018.
+ [5] C. Keroglou and C. N. Hadjicostis, “Veriﬁcation of AA-diagnosability in    [16] M. Z. Veras, F. G. Cabral, and M. V. Moreira, “Distributed synchronous
+      probabilistic ﬁnite automata is PSPACE-hard,” in Proc. IEEE 58th Conf.         diagnosis of discrete event systems modeled as automata,” Control Eng.
+     Decis. Control, 2019, pp. 6712–6717.                                              Pract., vol. 115, 2021, Art. no. 104892.
+ [6] W. Wang, C. Gong, and D. Wang, “Optimizing sensor activation in a    [17] K. Rudie and J. C. Willems, “The computational complexity of decen-
+     language domain for fault diagnosis,” IEEE Trans. Autom. Control, vol. 64,          tralized discrete-event control problems,” IEEE Trans. Autom. Control,
+     no. 2, pp. 743–750, Feb. 2019.                                                       vol. 40, no. 7, pp. 1313–1319, Jul. 1995.
+ [7] Y. Hu, Z. Ma, and Z. Li, “Design of supervisors for active diagnosis in    [18] X. Yin and S. Lafortune, “Minimization of sensor activation in decentral-
+      discrete event systems,” IEEE Trans. Autom. Control, vol. 65, no. 12,         ized discrete-event systems,” IEEE Trans. Autom. Control, vol. 63, no. 11,
+     pp. 5159–5172, Dec. 2020.                                                     pp. 3705–3718, Nov. 2018.
+ [8] X. Yin and S. Lafortune, “A general approach for optimizing dynamic    [19]  F.  Cassez and  S.  Tripakis,  “Fault  diagnosis  with  static and  dy-
+     sensor activation for discrete event systems,” Automatica, vol. 105,        namic observers,” Fundam. Informaticae, vol. 88, no. 4, pp. 497–540,
+     pp. 376–383, 2019.                                                        2008.
+ [9] A. White, A. Karimoddini, and R. Su, “Fault diagnosis of discrete event    [20] F.Cassez,“Thecomplexityofcodiagnosabilityfordiscreteeventandtimed
+     systems under unknown initial conditions,” IEEE Trans. Autom. Control,         systems,” IEEE Trans. Autom. Control, vol. 57, no. 7, pp. 1752–1764,
+      vol. 64, no. 12, pp. 5246–5252, Dec. 2019.                                             Jul. 2012.
+[10] R. Debouk, S. Lafortune, and D. Teneketzis, “Coordinated decentralized    [21] L. B. Clavijo and J. C. Basilio, “Empirical studies in the size of diagnosers
+      protocols for failure diagnosis of discrete event systems,” Discrete Event         andveriﬁersfordiagnosabilityanalysis,”DiscreteEventDyn.Syst.,vol.27,
+     Dyn. Syst., vol. 10, no. 1/2, pp. 33–86, 2000.                                    pp. 701–739, 2017.
+[11] X. Yin and S. Lafortune, “Codiagnosability and coobservability under dy-
+     namic observations: Transformation and veriﬁcation,” Automatica, vol. 61,
+     pp. 241–252, 2015.
+
+
+
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:57:56 UTC from IEEE Xplore. Restrictions apply.

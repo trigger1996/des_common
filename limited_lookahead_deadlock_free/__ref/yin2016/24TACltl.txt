@@ -1,0 +1,1082 @@
+              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 1, JANUARY 2024                                               145
+
+   A Uniform Framework for Diagnosis of
+    Discrete-Event Systems With Unreliable
+     Sensors Using Linear Temporal Logic
+
+                   Weijie Dong    , Student Member, IEEE, Xiang Yin    , Member, IEEE,
+                         and Shaoyuan Li    , Senior Member, IEEE
+
+
+
+  Abstract—In this article, we investigate the diagnosabil-   logic and hybrid dynamics. For such large-scale systems, fail-
+ity veriﬁcation problem of partially-observed discrete-event   ures during their operations are very common as millions of their
+systems (DES) subject to unreliable sensors. In this setting,                                                       components or subsystems are working in parallel under uncer-
+upon the occurrence of each event, the sensor reading may
+                                                             tainenvironments.Therefore,failurediagnosisanddetectionarebe nondeterministic due to measurement noises or pos-
+sible sensor failures. Existing works on this topic mainly   crucial but challenging tasks in order to monitor the operation
+consider speciﬁc types of unreliable sensors such as the   conditions and to ensure safety for safety-critical CPSs.
+cases of intermittent sensors failures, permanent sensor     In this article, we investigate the fault diagnosis problem
+failures or their combinations. In this work, we propose                                                                    in the framework of discrete-event systems (DES), which is a
+a novel uniform framework for diagnosability of DES sub-
+                                                                    class of systems widely used in modeling the high-level logicalject to, not only sensor failures, but also a very general
+class of unreliable sensors. Our approach is to use lin-   behaviors of CPSs [1]. In the context of DES, the problem of
+ear temporal logic (LTL) with semantics on inﬁnite traces   fault diagnosis was initiated by [2] and [3], where the notion of
+to describe the possible behaviors of the sensors. A new   diagnosability was proposed. It is assumed that some events in
+notion of ϕ-diagnosability is proposed as the necessary                                                                 the system are observable, and a system is said to be diagnosable
+and sufﬁcient condition for the existence of a diagnoser,
+                                                                                      if the occurrence of fault event can always be detected within awhen the behaviors of sensors satisfy the LTL formula ϕ.
+An effective approach is provided to verify this notion. We   ﬁnite delay based on the observation sequence. In the past years,
+show that, our new notion of ϕ-diagnosability subsumes   fault diagnosis of DES remains a hot topic due to its importance;
+all existing notions of robust diagnosability of DES subject   see, e.g., some recent works [4], [5], [6], [7], [8], [9], [10], [11],
+to sensor failures. Furthermore, the proposed framework                                                                     [12], [13], [14]. The reader is referred to the comprehensive
+is user-friendly and ﬂexible since it supports an arbitrary
+                                                            survey paper and textbook [15], [16], [17] for more details onuser-deﬁned unreliable sensor type based on the speciﬁc
+scenario of the application. As examples, we provide two   this topic.
+new notions of diagnosability, which have never been in-     In the modeling of DES, the occurrences of events are es-
+vestigated in the literature, using our uniform framework.     sentially detected by the corresponding sensors. In practice,
+  Index Terms—Diagnosability,  discrete-event systems,   however, due to measurement noises, sensor failures, commu-
+fault diagnosis, linear temporal logic, sensor failure.          nication losses, or even malicious attacks, the sensor readings
+                                                         can be unreliable or nondeterministic so that the occurrences of
+                                                                   events, which can be detected perfectly in the ideal case, may
+                                I. INTRODUCTION
+                                                              not always be observed correctly. For example, the sensor for an
+A. Backgrounds and Motivations                            observable event may fail in the sense that the occurrence of the
+                                                             underlying event cannot be detected. The failures of the sensors
+    NGINEERING cyber-physical systems (CPSs), such as
+                                                         can be either intermittent or permanent depending on whether or
+     ﬂexible manufacturing systems and intelligent transporta-E                                                         not the failures can be recovered. Also, in the networked setting,
+tion systems, are very complex due to their intricate operation
+                                                         even when the sensors can always detect their underlying events,
+                                                                        their readings still need to be transmitted from the sensors to the
+  Manuscript received 28 November 2022; accepted 24 March 2023.   diagnoser via communication channels, in which packet losses
+Date of publication 10 April 2023; date of current version 29 December
+                                                                 are possible. Therefore, the unreliability of sensors are practical2023. This work was supported by the National Natural Science Foun-
+dation of China under Grant 62061136004, Grant 62173226, and Grant  and nonnegligible issues in the analysis of diagnosability.
+61833012. Recommended by Associate Editor K. Cai. (Corresponding
+author: Xiang Yin.)
+  The authors are with the Department of Automation and Key Lab   B. Literature Review on Diagnosis With Unreliable
+of System Control and Information Processing, Shanghai Jiao Tong  Sensors
+University, Shanghai 200240, China (e-mail: wjd_dollar@sjtu.edu.cn;
+yinxiang@sjtu.edu.cn; syli@sjtu.edu.cn).                               In the context of DES, robust fault diagnosis for systems sub-
+  Color versions of one or more ﬁgures in this article are available at
+https://doi.org/10.1109/TAC.2023.3266021.                               ject to unreliable sensors (or subject to sensor failures) has been
+   Digital Object Identiﬁer 10.1109/TAC.2023.3266021                  studied by many researchers. The reader is referred to the very
+
+               0018-9286 © 2023 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                          See https://www.ieee.org/publications/rights/index.html for more information.
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 02,2024 at 04:32:39 UTC from IEEE Xplore. Restrictions apply.
+
+146                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 1, JANUARY 2024
+
+
+recent comprehensive survey papers [18], [19] for more details     Motivated by the above observation, in this article, we propose
+on this topic. For example, in [20], the authors investigated the   a new uniform framework for fault diagnosis of DES subject to
+veriﬁcation of diagnosability for systems subject to intermittent   unreliable sensors. Mathematically, sensors can be modeled as a
+sensor failures, where for the sensor of each observable event   mappingfrominternal events toexternal events. By“unreliable,”
+may fail or recover freely at each time instant. The scenario  we mean that either the value of mapping or the mapping
+of intermittent sensor failures can be considered as an instance    itself may change (details about unreliable sensors are provided
+of nondeterministic observations [21], [22], [23]. For example,   in Section II-B). In contrast to existing works, our approach
+in [23], the authors proposed to use Mealy automata with   does not rely on any pre-speciﬁed type of sensors. Instead,
+nondeterministic output function to capture multiple possible  we propose to use linear temporal logic (LTL) formulae as a
+observations for the same transition.                            general tool to describe an arbitrary type of unreliable sensors.
+  Diagnosability analysis for systems subject to permanent  To this end, we ﬁrst adopt the model of Mealy automata with
+sensor failures were studied in [24], [25], [26], and [27]. In   nondeterministic output functions proposed in [23] and [38] as
+this context, once a sensor fails, it will never recover. In [24],   the unconstrained observation space of the sensors. Then, we
+the authors investigated the notion robust diagnosability by   further use an LTL formula ϕ, which is referred to as the sensor
+assuming that permanent sensor failures happen only before   constraintanditsspeciﬁcformisscenariodependent,todescribe
+the ﬁrst occurrence of underlying events. This assumption was  how sensors can behave within the unconstrained space. We
+relaxed by [25]. The results in [24] and [25] have been extended   propose a new diagnosability condition, called ϕ-diagnosability,
+to the decentralized setting by [26] and [27], respectively.        following an assumption based type of reasoning. That  is,
+  More recently, attempts have been made to unify the notions  whenever the sensors behave following the assumption ϕ, the
+of diagnosability for systems subject to intermittent sensor   diagnoser should be able to detect the fault within a ﬁnite number
+failures and permanent sensor failures. For example,  it was   of steps. We provide an effective procedure for verifying this
+showed in [19] that diagnosability for systems subject to both  new condition. In particular, the complexity of the veriﬁcation
+intermittent and permanent sensor failures can be transferred   procedure is exponential in the number of operators in LTL
+to the notion of general robust diagnosability under model   formula ϕ, but is only polynomial in the size of the plant
+uncertainty [28]. In practice, different sensors in the system may   model.
+belong to different failure types: Some may recover after the    Our uniform framework is developed based on an arbitrary
+failurebutsomemaynot.Toaddressthisissue,in[29],theauthor  LTL formula ϕ without its speciﬁc meaning. To show the gen-
+proposed a general framework for robust diagnosability analysis   erality of our framework, we further show how the proposed
+which supports both the case of intermittent sensor failures and   notion of ϕ-diagnosability subsumes existing notions of robust
+the case of permanent sensor failures uniformly.                  diagnosability by explicitly writing down ϕ for different scenar-
+  The effects of unreliable sensors are also closely related to the   ios of unreliable sensors. In particular, we show that existing
+topic of networked DES; see, e.g., [30], [31], [32], and[33]. In   notions of diagnosability for DES subject to 1) intermittent
+this setting, packet delays or losses in the communication chan-   sensor failures [20], [21], [23]; 2) permanent sensor failures [24],
+nels may also result in nondeterministic observations, which is   [25]; and 3) bounded sensor losses [34], can all be captured
+very similar to the effect of unreliable sensors. For example,   within our framework in a uniform manner.
+in [34], the authors studied the veriﬁcation of K-loss diag-     Furthermore, since our notion of ϕ-diagnosability is very
+nosability by assuming that the communication channel can   generic and LTL is a very expressive and human language-like
+only have a bounded number of consecutive observation losses.   approach for presenting linear-time properties; our framework,
+Besides diagnosability analysis, the effects of unreliable sensors   in fact, provides a general and user-friendly way to study diag-
+have also been studied for other state estimation problems [35],   nosability under arbitrary user-deﬁned or scenario-speciﬁed un-
+[36] as well as the supervisory control problem [37], [38],   reliable sensors. As examples, we further introduce two practical
+[39], [40].                                                      scenarios of unreliable sensors, which have never been studied
+                                                                    in the literature. One is the scenario of minimum dwell-time of
+                                                              sensor modes, i.e., whenever a sensor fails, it cannot recover
+C. Our Approach and Contributions
+                                                             immediately. Another is the scenario of output fairness in the
+  In the aforementioned existing works on diagnosability anal-   setting of nondeterministic observations, where each fair ob-
+ysis for DES subject to unreliable sensors, one needs to develop   servation symbol will eventually be observed if it has inﬁnite
+customized techniques for different types of sensor failures or   chances to be observed.
+sensor modes. For example, in [29], where intermittent and   We note that using linear temporal logic in diagnosabil-
+permanent sensor failures are uniﬁed, one needs to build the   ity analysis has been investigated in the literature. For ex-
+sensor automaton that captures all possible switching between   ample, [41], [42], and [43] investigated how to detect faults
+the normal mode and the failure mode. Here, we observe that,   speciﬁed by the violations of LTL formulae. In [44], [45], [46],
+each type of sensor failures is actually a constraint on how the  and [14], the veriﬁcation of standard diagnosability was solved
+behaviors of the sensors can change. Such a sensor constraint is   using LTL model checking techniques. However, here, we do not
+essentially a linear-time property on the sequence of the sensor  aim to detect fault described by LTL or to solve diagnosability
+modes. For example, the case of permanent sensor failures is   veriﬁcation using LTL model checking. The role of LTL in our
+actually a safety property requiring that once the sensor goes to  framework is very different from existing purposes. We use LTL
+a failure mode, it should not recover anymore.                  formulae as a general and systematic way to describe different
+
+    Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 02,2024 at 04:32:39 UTC from IEEE Xplore. Restrictions apply.
+
+DONG et al.: UNIFORM FRAMEWORK FOR DIAGNOSIS OF DISCRETE-EVENT SYSTEMS WITH UNRELIABLE SENSORS                             147
+
+
+types of unreliable sensors, which, to the best of our knowledge,   usually modeled by an observation mask
+has never been used in the literature.
+                                               O : Σ →Δ˙∪{ε}                     (1)
+
+D. Organizations                                      where Δ is a new set of observation symbols. That is, we observe
+                                                 O(σ) upon the occurrence of event σ ∈Σ. We say event σ ∈Σ
+  The rest of this article is organized as follows. Section II
+                                                                               is observable if O(σ) ∈Δ and unobservable if O(σ) = ε. The
+presents some basic preliminaries. In Section III, we describe
+                                                               observation mask is also extended to O : Σ+ →Δ+ by: For any
+how to use LTL formulae to model unreliable sensors. In Sec-
+                                                        s ∈Σ+, O(s) is obtained by replacing each event σ in string s
+tion IV, we introduce the notion of ϕ-diagnosability and its
+                                                               as O(σ).
+veriﬁcation algorithm is developed in Section V. In Section VI,
+we show explicitly how our uniform framework subsumes many
+                                                         B. Observations Under Unreliable Sensorsexisting notions as well as supports new types of unreliable
+sensors that have not been considered. Finally, Section VII con-    The observation mask as deﬁned in (1) corresponds to the case
+cludes the article. Our preliminary idea of using LTL formulae   of reliable sensors. That is, if event σ ∈Σ is observable, then the
+to described sensor behaviors was initially presented in [47].   sensor reading will always be O(σ) whenever it occurs. In many
+However, the framework in the present article is much more   real-world scenarios, however, sensors may be unreliable due to
+general, where the result in [47] is a now very special instance   multiple reasons. To capture the observations under unreliable
+as described in Section VI-D.                                     sensors, [23], [38] proposed to use the following state-dependent
+                                                                    (or transition-based) nondeterministic observation mapping:
+                               II. PRELIMINARIES                                           O : Q × Σ →2Δ∪{ε}.                  (2)
+A. Partially-Observed Discrete Event Systems
+                                                                 Speciﬁcally, Δ is the set of all possible observation symbols.
+  Let Σ be a ﬁnite set. A string s = σ1σ2 · · · σn(· · · ) is a ﬁnite   For any state q ∈Q and event σ ∈Σ, O(q, σ) denotes the set
+(or inﬁnite) sequence over Σ if σi ∈Σ for all i = 0, 1, . . . . For   of all possible observations if event σ occurs at state q, i.e.,
+a ﬁnite string s, we denote by |s| the length of s, which is the   the sensor reading may be any symbol o ∈Δ or ε in O(q, σ)
+number of components in it. We denote by Σ∗and Σω the set   nondeterministically.
+of all ﬁnite and inﬁnite strings over Σ, respectively. We write    The observation mapping O can also be extended to O : Q ×
+Σ+ = Σ∗∪Σω as the set of ﬁnite or inﬁnite strings. Note that Σ∗  Σ+ →2Δ+ by: for any state q ∈Q and string s = σ1σ2 · · · ∈
+includestheemptystringε.A∗-languageL ⊆Σ∗isasetofﬁnite  Σ+, we have o1o2 · · · ∈O(q, s) if
+strings and an ω-language L ⊆Σω is a set of inﬁnite strings. For
+                                                                   ∀i = 1, 2, · · · : oi ∈O(f(q, σ1 . . . σi−1), σi)       (3)any ∗-language L ⊆Σ∗, its preﬁx-closure is a ∗-language L =
+{s ∈Σ∗: ∃t ∈Σ∗s.t. st ∈L}.Foranyω-languageL ⊆Σω,its  where σ0 := ε. Since the observations are nondeterministic, in
+preﬁx-closure is deﬁned as the set of all its ﬁnite preﬁxes, which   general, O(q, s) ⊆Δ+ is not a singleton and each sequence in
+is ∗-language L = {s ∈Σ∗: ∃t ∈Σω s.t. st ∈L}. For inﬁnite  O(q, s) is called an observation realization of string s. For the
+string s ∈Σω, Inf(s) denotes the set of components appearing   sake of brevity, we use O(s) to denote O(q, s) if the state q is
+inﬁnite number of times in s.                                    the initial state, i.e., q = q0.
+  In this work, we consider a DES modeled by a deterministic    To incorporate the actual observation into the internal execu-
+ﬁnite-state automaton                                              tion of the system, it is convenient to deﬁne
+
+            G = (Q, Σ, δ, q0)                                Σe = Q × Σ × (Δ ∪{ε})
+
+where Q is the ﬁnite set of states, Σ is the ﬁnite set of events, δ :   as the set of extended events. Then, an extended string is a
+Q × Σ →Q is the partial deterministic transition function such   ﬁnite or inﬁnite sequence of extended events. We say an ex-
+that: For any q, q′ ∈Q, σ ∈Σ, δ(q, σ) = q′ means that there   tended string s = (q0, σ0, o0)(q1, σ1, o1) · · · ∈Σ+e  is generated
+exists a transition from state q to state q′ labeled by event σ,  by G if for any i = 1, 2, . . . , we have f(qi, σi) = qi+1 and
+and q0 ∈Q is the initial state. Note that, we do not consider   oi ∈O(qi, σi). We denote by Le(G) and Lωe (G) the set of all
+marked states in the system model since it is irrelevant to our   ﬁnite and inﬁnite extended strings generated by G, respectively.
+purpose of diagnosability veriﬁcation. The transition function   Essentially, an extended string contains three parts of infor-
+δ is also extended to δ : Q × Σ∗→Q recursively by: For any   mation: 1) the state sequence visited; 2) the event sequence
+q ∈Q, s ∈Σ∗and σ ∈Σ, we have δ(q, ε) = q and δ(q, sσ) =   generated; and 3) the output sequence observed. Then, for
+δ(δ(q, s), σ). Then, the ∗-language generated by G is deﬁned   any extended string s = (q0, σ0, o0)(q1, σ1, o1) · · · ∈Σ+e , we
+by L(G) = {s ∈Σ∗: δ(q0, s)!}, where “!” means “is deﬁned,”  deﬁne ΘQ(s) = q0q1 · · · ∈Q+, ΘΣ(s) = σ0σ1 · · · ∈Σ+, and
+and the ω-language generated by G is deﬁned by Lω(G) = {s ∈  ΘΔ(s) = o0o1 · · · ∈(Δ ∪{ε})+ as its corresponding state se-
+Σω : ∀s′ ∈{s}, δ(q0, s′)!}. We assume that system G is live,   quence, (internal) event string and output string, respectively.
+i.e., for any state q ∈Q, there exists an event σ ∈Σ such that   Clearly, for any s ∈Σ+e , we have ΘΔ(s) ∈O(ΘΣ(s)) because
+δ(q, σ)!.                                          ΘΔ(s) is a speciﬁc observation realization of ΘΣ(s).
+  In the partial observation setting, the occurrence of each event    Example 1: Let us consider system G1 shown in Fig. 1,
+may not be perfectly observed. The limited sensor capability is  where Σ = {a, b, c, f, u} and Δ = Σ. The output function O :
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 02,2024 at 04:32:39 UTC from IEEE Xplore. Restrictions apply.
+
+148                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 1, JANUARY 2024
+
+
+                                                           with a slight abuse of notation; otherwise, we call string s a
+                                                        normal string. We denote by LF (G) and LωF (G) as the sets of
+                                                                               all ﬁnite and inﬁnite faulty strings generated by G, respectively.
+                                                                    Similarly, we deﬁne Σe,F = Q × ΣF × (Δ ∪{ε}) ⊂Σe as the
+                                                                       set of extended fault events and we denote by Le,F (G) and
+                                            Lωe,F (G) as the sets of all ﬁnite and inﬁnite extended faulty
+                                                                     strings generated by G, respectively. Finally, we deﬁne Ψe(G)
+                                                               as the set of all ﬁnite extended faulty strings in which extended
+                                                                        fault events occur for the ﬁrst time, i.e.,
+
+                                                   Ψe(G) = {s ∈Le,F (G) : ∀t ∈{s} \ {s}, Σe,F /∈t}.
+
+                                                     To capture whether or not the occurrences of fault events can
+                                                        be always detected within a ﬁnite number of steps, the notion of
+                                                                 diagnosability (under nondeterministic observations) has been
+                                                          proposed in the literature [23].
+Fig. 1.  System G1.                                             Deﬁnition 1 (Diagnosability): System G is said to be diag-
+                                                           nosable w.r.t. mapping O and fault events ΣF if
+Q × Σ →2Δ∪{ε} is speciﬁed by the label of each transition,    (∀s ∈Ψe(G))(∃n ∈N)(∀st ∈Le(G))[|t| ≥n ⇒diag]  (5)
+where the LHS of “\” denotes the internal event and the
+                                                      where the diagnostic condition diag isRHS of “\” denotes the set of all possible output symbols.
+For example, b \ {b, ε} from state 3 to state 4 means that at         (∀v ∈Le(G))[ΘΔ(v) = ΘΔ(st) ⇒Σe,F ∈v].
+state 3, upon the occurrence of event b, the system moves to
+state 4, i.e., δ(3, b) = 4, and we may observe either b or noth-      Intuitively, the above deﬁnition says that, for any faulty ex-
+ing, i.e., O(3, b) = {b, ε}. Then, for ﬁnite string fab ∈L(G1),   tended string in which fault events appear for the ﬁrst time,
+the set of all possible observation realizations is O(fab) =   there exists a ﬁnite detection bound such that, for any of its
+{ab, a}. These two different observations lead to the follow-   continuation longer than the detection bound, any other extended
+ing two extended strings (1, f, ε)(2, a, a)(3, b, b) ∈Le(G) and   strings having the same observation must also contain fault
+(1, f, ε)(2, a, a)(3, b, ε) ∈Le(G), respectively.       □   events, which means we can claim for sure that fault events have
+  Remark 1: The nondeterministic observation mapping Q ×   occurred. Note that we consider extended strings Le(G) rather
+Σ →2Δ∪{ε} is quite general and subsumes many observation   than the internal strings L(G) in order to capture the issue of
+models in the literature. For example, for the standard natural   nondeterministicobservations.Also,wenotethat,forﬁnite-state
+projection,weassumethatΣo ⊆Σisthesetofobservableevents   automata, “∀s ∈Ψe(G)” and “∃n ∈N” in Deﬁnition 1 can be
+and let Δ = Σo. Then, one can deﬁne O by: O(q, σ) = {σ}  swapped [48], which means that if the system is diagnosable,
+for  all σ ∈Σo and O(q, σ) = {ε} for  all σ /∈Σo. Also,  it   then there exists a uniform detection bound for all fault strings.
+captures the so-called intermittent loss of observations [20],    Example 2: Again, we consider system G1 depicted in
+[30]. In this setting, the event set is usually partitioned as   Fig. 1 and we assume ΣF = {f}. Let us consider faulty ex-
+Σ = Σr ˙∪Σur ˙∪Σuo, where Σr is the set of reliable events whose   tended string (1, f, ε) ∈Ψe(G), which can be extended arbi-
+occurrences can always be observed directly, Σur is the set of   trarily long as sF = (1, f, ε)[(2, a, a)(3, b, ε)(4, c, c)]n. How-
+unreliable events whose occurrences may be observed but can   ever, for any n, we can ﬁnd a normal extended string sN =
+also be lost, and Σuo is the set of unobservable events whose   (1, u, ε)(5, a, a)(6, b, ε)[(7, c, c)(8, a, a)]n−1(7, c, c) such that
+occurrences can never be observed. This setting can be captured  ΘΔ(sF ) = ΘΔ(sN) = (ac)n. Therefore, system G1 is not di-
+by considering O such that Δ = Σr ∪Σur and for any q ∈Q   agnosable with respect to O and ΣF .            □
+and σ ∈Σ, we have
+           ⎧                                 D. Linear Temporal Logic
+           ⎨ {σ}      if σ ∈Σr
+           O(q, σ) =   {σ, ε}   if σ ∈Σur   .           (4)     Let AP be a ﬁnite set of atomic propositions. An LTL formula
+           ⎩                      {ε}      if σ ∈Σuo            ϕ is constructed based on a set of atomic propositions AP,
+                                                       Boolean operators, and temporal operators as follows:
+Note that, for the general case we consider here, the output
+symbols Δ can be different from the original event set Σ.          ϕ ::= true | p | ¬ϕ | ϕ1 ∧ϕ2 | ⃝ϕ | ϕ1 Uϕ2
+
+                                                      where p ∈AP is an atomic proposition, ¬ and ∧stand for logi-
+C. Fault Diagnosis                                                                    cal negation and disjunction, respectively, while ⃝and U denote
+  In the context of fault diagnosis of DES, it is assumed that the   “next” and “until,” respectively. Note that other Boolean opera-
+system is subject to faults, which are modeled by a set of fault   tors can be induced by ∧and ¬, e.g., ϕ1 ∨ϕ2 = ¬(¬ϕ1 ∧¬ϕ2)
+events ΣF ⊂Σ. For the sake of simplicity, we do not distinguish  and ϕ1 →ϕ2 = ¬ϕ1 ∨ϕ2. It is convenient to deﬁne temporal
+among different fault types in this work. We say a string s ∈Σ+   operators ♦“eventually” by ♦ϕ = trueUϕ and □“always”
+is faulty if it contains a fault event in ΣF and we write ΣF ∈s  by □ϕ = ¬♦¬ϕ.
+
+
+    Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 02,2024 at 04:32:39 UTC from IEEE Xplore. Restrictions apply.
+
+DONG et al.: UNIFORM FRAMEWORK FOR DIAGNOSIS OF DISCRETE-EVENT SYSTEMS WITH UNRELIABLE SENSORS                             149
+
+
+  LTL formulae are evaluated over inﬁnite strings of atomic   string in Le(G) will no longer be feasible:
+proposition sets, which are also referred to as inﬁnite words.
+                                                          sF = (1, f, ε)(2, a, a)(3, b, ε)(4, c, c)(2, a, a)(3, b, b)For any inﬁnite word s ∈(2AP)ω, we denote by s |= ϕ if it
+satisﬁesLTLformulaϕanduseword(ϕ)todenoteallstringssat-   because the occurrence of extended event (3, b, ε) means that
+isfying ϕ, i.e., word(ϕ) = {s ∈(2AP)ω : s |= ϕ}. The reader   the sensor corresponding to event b has already failed and it is
+is referred to [49] for more details on the semantics of LTL.   not possible to have extended event (3, b, b) thereafter.
+For example, let s = A0A1 · · · ∈(2AP)ω be an inﬁnite word    Such a simple scenario of permanent sensor failures cannot
+and φ be a Boolean formula without temporal operators. Then,   be modeled by nondeterministic mapping in the form of (2)
+s |= □♦φ means that proposition φ holds inﬁnitely often in s,   directly. To describe this scenario, different approaches have
+i.e., ∀i ≥0, ∃j > i : φ(Aj) = true, while s |= ♦□φ means   been developed in the literature [24], [25], [27] and the basic idea
+that proposition φ holds forever after some ﬁnite delays in s,    is to use additional states to capture the failure/normal status of
+i.e., ∃i ≥0, ∀j > i : φ(Aj) = true.                             unreliable sensors.
+  To capture all inﬁnite words satisfying ϕ, we introduce the    One of the motivations of our work is to provide a general
+nondeterministic Büchi automaton (NBA) as follows.          framework that uniﬁes the scenarios of intermittent and perma-
+  Deﬁnition 2 (Nondeterministic Büchi automaton): An NBA   nent sensors failures. However, our approach goes much beyond
+is a ﬁve-tuple B = (X, X0, ΣB, ξ, Xm), where X is a ﬁnite set   this basic objective and supports arbitrary user-speciﬁed sensor
+of states, X0 ⊆X is the set of initial states, ΣB is an alphabet,   behaviors. Speciﬁcally, the basic idea of our approach is as
+ξ : X × ΣB →2X is a nondeterministic transition function and   follows.
+Xm ⊆X is the set of accepting states.                              1) First, we use observation mapping O : Q × Σ →2Δ∪{ε}
+  Given an inﬁnite word s = σ0σ1 · · · ∈ΣωB, an inﬁnite path of          to generate the unconstrained observation space Le(G)
+B induced by s is an inﬁnite state sequence ρ = x0x1 · · · ∈Xω         without considering the speciﬁc setting of each sensor.
+such that x0 ∈X0 and xi+1 ∈ξ(xi, σi) for any i = 0, 1, · · · .      2) Then, by incorporating how each sensor should behave,
+An inﬁnite path ρ is said to be accepted by NBA B if it visits        which is referred to as the sensor constraint throughout
+accepting states Xm inﬁnitely often, i.e., inf(ρ) ∩Xm̸ = ∅. We         the article, we further restrict the unconstrained observa-
+say an inﬁnite word s is accepted by B if it induces an inﬁnite          tion space by eliminating those observations that are not
+path accepted by B. We denote by Lωm(B) the set of strings          feasible in the concrete setting.
+accepted by NBA B. The nondeterministic transition function    To realize the above idea, the key question is how to describe
+ξ can also be extended to ξ : X × Σ∗B →2X recursively in the   the behaviors of unreliable sensors for different contexts. Our
+usual manner. Also, we use notation L(B) ⊆Σ∗B to denote the   novelty here is that the user does not need to hand-code the
+set of all ﬁnite strings generated by B, i.e., L(B) = {s ∈Σ∗B :   feasible behaviors of the sensors. Instead, we provide a very
+∃x0 ∈X0 s.t. ξ(x0, s)̸ = ∅}.                                   generic and user-friendly way to describe the sensor constraints
+   It is well known that [49], for any LTL formula ϕ, we can   using LTL formulae.
+translate ϕ to an NBA B over event set ΣB = 2AP, such that
+Lωm(B) = word(ϕ), and we say such an NBA B is associated   B. Sensor Constraints as LTL Formulae
+with ϕ. There are efﬁcient tools in the literature to translate an
+                                                     To capture the sensor constraints using LTL formulae, weLTL formula to an NBA such as LTL2BA [50].
+                                                      deﬁne a labeling function
+
+                                                                                    label : Σe →2AP                    (6)
+   III. LTL-BASED DESCRIPTION OF UNRELIABLE SENSORS
+                                                                      that assigns each extended event a set of atomic propositions.
+A. Motivation and Main Idea                              For any inﬁnite extended string s = σ1σ2 · · · ∈Σωe , its trace is
+  In the previous section, we use nondeterministic observation  deﬁned by trace(s) = label(σ1)label(σ2) · · · ∈(2AP)ω. Let ϕ
+mapping O : Q × Σ →2Δ∪{ε} to capture all possible obser-   be an LTL formula specifying the sensor constraint. We say an
+vations. However, this model essentially provides the possi-   inﬁnite extended string s ∈Σωe is ϕ-compatible, if trace(s) |=
+ble observation space for the purpose of worst-case analysis.   ϕ. For simplicity, with a slight abuse of notation, we also write
+                                                        s |= ϕ whenever trace(s) |= ϕ. We deﬁneWhen the observation nondeterminism has a concrete physical
+meaning, the extended language Le(G) may contain observation            Lϕe (G) = {s ∈Lωe (G) : s |= ϕ}
+realizations that are not feasible in practice.
+  To motivate our developments, we take the scenario of per-   as the set of all ϕ-compatible inﬁnite extended strings in G.
+manent sensor failures as an example. As we have discussed in      Intuitively, the above deﬁnition says that if we assume that
+Remark 1, the nondeterministic observation mapping speciﬁed   the behaviors of the sensors satisfy LTL formula ϕ, then only
+in (4) can capture the scenario of intermittent sensor failures,   inﬁnite observations in Lϕe (G) are feasible in practice. Note
+i.e., for each event σ ∈Σur, we may observe σ when the sensor   that, we use inﬁnite observation in order to match the semantic
+is normal or ε when the sensor fails. However, in the context   of LTL. For the purpose of online diagnosis, we only observe
+of permanent sensor failures, once an unreliable sensor fails,   ﬁnite observations in Lϕe (G). In other words, it is impossible
+it will not be normal forever. Then, for system G1 in Fig. 1, in   to observe ﬁnite extended strings in Le(G) \ Lϕe (G) since they
+the context of permanent sensor failures, the following extended   cannot be extended to inﬁnite strings in Lϕe (G). Finally, we
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 02,2024 at 04:32:39 UTC from IEEE Xplore. Restrictions apply.
+
+150                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 1, JANUARY 2024
+
+
+also deﬁne Lϕe,F (G) = Lϕe (G) ∩Lωe,F (G) as the set of inﬁnite  where the ϕ-diagnostic condition ϕ-diag is
+extended faulty strings that are ϕ-compatible.
+                                                              (∀v ∈Lϕe (G))[ΘΔ(v) = ΘΔ(t) ⇒Σe,F ∈v].  Note that, how to select atomic propositions AP, labeling
+function label : Σe →2AP and LTL formula ϕ is application    The above deﬁnition says that, for any inﬁnite faulty extended
+dependent. In Section VI, we will elaborate on how they are   string s satisfying sensor constraint ϕ, there is a ﬁnite preﬁx t
+selected for different practical scenarios. Here, we consider the   such that for any ﬁnite extended string v that are possible as a
+scenario of permanent sensor failures to illustrate the choices of   preﬁx of some inﬁnite string satisfying the sensor constraint, if
+AP, label and ϕ, and use this scenario as a running example for   the outputs of v and t are equivalent, then the extended string
+the latter developments.                                   v must also be faulty. Intuitively, ϕ-diagnosability modiﬁes
+  Example 3 (Sensor constraints for permanent sensor fail-   the standard diagnosability by restricting our attention only to
+ures): We still consider system G1 shown in Fig. 1. However,   those inﬁnite extended strings satisfying the sensor constraint ϕ.
+now we further assume that the reason why event b may become   Clearly, by setting ϕ = true, our ϕ-diagnosability becomes to
+unobservable is due to a permanent sensor failure. This scenario   the standard diagnosability in Deﬁnition 1.
+can be described as follows. First, we choose the set of atomic    Example 4: Again, let us consider system G1 shown in Fig. 1
+propositions as AP = {m0, m1}, where m0 and m1 represent   with the same setting in Example 3. Note that there exists an
+that the sensor for event b is normal and faulty, respectively.   inﬁnite faulty extended string
+Then, we deﬁne the labeling function label : Σe →2AP by: for
+                                                               sF = (1, f, ε)((2, a, a)(3, b, ε)(4, c, c))ωany σe = (q, σ, o) ∈Σe
+          ⎧
+          ⎨ {m0},   if σ = b ∧o = b              with trace(sF ) = ∅(∅{m1}∅)ω |= ϕper,  i.e., sF ∈Lϕe,F (G).
+         label(σe) =  {m1},   if σ = b ∧o = ε   .       (7)   However, there exists an inﬁnite normal extended string
+          ⎩
+                          ∅,       otherwise                                                     sN = (1, u, ε)(5, a, a)(6, b, ε)((7, c, c)(8, a, a))ω
+Then, the sensor constraint can be written as
+                                                    whose trace is trace(sN) = ∅∅{m1}(∅∅)ω |= ϕper, i.e., sN ∈
+                  ϕper = □(m1 →□¬m0).                (8)  Lϕe (G), such that the output of sF and sN are the same, i.e.,
+                                              ΘΔ(sF ) = ΘΔ(sN) = (ac)ω. Therefore, for any ﬁnite preﬁxIntuitively, formula ϕper says that whenever atomic proposition
+                                                                         t ∈{sF }, there exists a normal extended string v ∈{sN}, suchm1 holds, which means that sensor for event b fails, atomic
+                                                                      that ΘΔ(t) = ΘΔ(v). Namely, there exists an inﬁnite faultyproposition m0, which means that sensor reads the occurrence
+                                                           extended string compatible to the sensor constraint ϕper suchof b normally, cannot hold anymore.
+                                                                      that for each of its preﬁx, there exists a normal extended string  Then, under the above described sensor constraint ϕper, we
+                                                           having the same output with the preﬁx. By Deﬁnition 3, systemknow that the following extended string is not ϕper-compatible:
+                                             G1 is not ϕper-diagnosable.                 □
+   sF = (1, f, ε)(2, a, a)(3, b, ε)((4, c, c)(2, a, a)(3, b, b))ω        Next, we show that the proposed notion of ϕ-diagnosability
+because trace(sF ) = ∅∅{m1}(∅∅{m0})ω̸ |= ϕper. Therefore,   indeed provides the necessary and sufﬁcient condition for the
+                                                                existence of a diagnoser that works “correctly” under sensorwith sensor constraint ϕper, it is impossible to observe ﬁnite
+sequence acab because                                            constraint ϕ. Formally, a diagnoser is a function
+   (1, f, ε)(2, a, a)(3, b, ε)(4, c, c)(2, a, a)(3, b, b) /∈Lϕe (G).      D : {ΘΔ(v) ∈O(L(G)) : v ∈Lϕe (G)} →{0, 1}
+
+                               □   that decides whether a fault has happened (by issuing “1”) or
+                                                              not (by issuing “0”) based on the output string. We say that a
+     IV. DIAGNOSABILITY UNDER SENSOR CONSTRAINTS       diagnoser works correctly under the sensor constraint ϕ if it
+                                                                   satisﬁes the following conditions.
+  In this section, we investigate diagnosability under sensor
+                                                        C1) The diagnoser will eventually issue a fault alarm for any
+constraints. Speciﬁcally, we formally propose the notion of
+                                                                    occurrence of fault events, i.e.,
+ϕ-diagnosability as the necessary and sufﬁcient condition of the
+existence of a diagnoser working correctly for DES subject to             (∀s ∈Lϕe,F (G))(∃t ∈{s}))[D(ΘΔ(t)) = 1].
+sensors constrained by speciﬁcation ϕ.
+                                                        C2) The diagnoser will not issue a false alarm if the execu-
+A. Deﬁnition of ϕ-Diagnosability                                        tion is still normal, i.e.,
+   First, we modify the existing deﬁnition of diagnosability              (∀s ∈Lϕe (G) : Σe,F /∈s)[D(ΘΔ(s)) = 0].
+in Deﬁnition 1 to a new notion of diagnosability, called ϕ-
+                                                     The following theorem says that there exists a diagnoser
+diagnosability, by taking the issues of the LTL sensor constraint
+                                                      which works “correctly” under sensor constraint ϕ, if and only
+ϕ into account.
+                                                                                      if the system is ϕ-diagnosable. All proofs hereafter are provided
+  Deﬁnition 3 (ϕ-Diagnosability): System G is said to be ϕ-
+                                                                    in the Appendix.
+diagnosable w.r.t. output function O, fault events ΣF and sensor
+                                                       Theorem 1: There exists a diagnoser satisfying conditions 1
+constraint ϕ, if and only if
+                                                       and 2, if and only if G is ϕ-diagnosable w.r.t. fault events ΣF ,
+           (∀s ∈Lϕe,F (G))(∃t ∈{s})[ϕ-diag]           (9)   output function O, and sensor constraint ϕ.
+
+
+    Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 02,2024 at 04:32:39 UTC from IEEE Xplore. Restrictions apply.
+
+DONG et al.: UNIFORM FRAMEWORK FOR DIAGNOSIS OF DISCRETE-EVENT SYSTEMS WITH UNRELIABLE SENSORS                             151
+
+
+B. Existence of Uniform Bound
+
+  In the deﬁnition of ϕ-diagnosability, since the assumption of
+LTL sensor constraint is imposed on inﬁnite strings, we can only
+guarantee that for any inﬁnite faulty string, there exists a ﬁnite
+detection bound. However, this does not imply that there exists
+a uniform detection bound for all faulty strings. For example,
+suppose that there is an indicator event that will occur inﬁnite
+number of times after fault events. If we assume that the sensor
+constraint ϕ for the indicator event is that it will not always fail,
+i.e., its occurrence will eventually be observed correctly, then
+the system is ϕ-diagnosable. However, this condition does not
+ensure when it will be observed since the satisfaction instant of
+“eventually” can be arbitrarily late.
+  Here, we identify a condition under which a uniform detection    Fig. 2.  Augment system ˜G1 of system G1. For simplicity, we also use
+bound exists. Formally, we deﬁne Ψϕe (G) as all preﬁxes of   σoq to denote the extended event (q, σ, o) ∈Σe.
+ϕ-compatible inﬁnite extended strings in which extended fault
+events occur for the ﬁrst time, i.e.,
+                                                                 the augmented system as a new-tuple
+Ψϕe (G)={s ∈Lϕe (G) :∀t ∈{s} \ {s}, Σe,F /∈t ∧Σe,F ∈s}.
+Then, we introduce the notion of ﬁnite ϕ-diagnosability.                                ˜G = ( ˜Q, ˜q0, Σe, ˜δ)                 (10)
+  Deﬁnition 4 (Finite ϕ-diagnosability): System G is said to
+be ﬁnite ϕ-diagnosable w.r.t. mapping O, fault events ΣF , and  where the variables are deﬁned as follows:
+sensor constraint ϕ if                                                       • ˜Q ⊆Q × {F, N} is the set of augmented states;
+                                                                               • ˜q0 = (q0, N) is the initial augmented state;
+(∃n ∈N)(∀s ∈Ψϕe (G))(∀st ∈Lϕe (G))[|t| ≥n ⇒ϕF -diag]                                                                               • Σe is the set of extended events;
+ where the ﬁnite ϕ-diagnostic condition ϕF -diag is                     •  ˜δ : ˜Q × Σe →˜Q  is the transition function deﬁned by:
+                                                                         for any ˜q = (q, l) ∈˜Q and ˜σ = (q, σ, o) ∈Σe, we have
+      (∀v ∈Lϕe (G))[ΘΔ(v) = ΘΔ(st) ⇒Σe,F ∈v].                       ˜δ(˜q, ˜σ)! whenever δ(q, σ)! and o ∈O(q, σ). Furthermore,
+                                                     when ˜δ(˜q, ˜σ)!, we have   Clearly, ﬁnite ϕ-diagnosability implies ϕ-diagnosability, but
+the converse direction is not true in general. Here, we show that
+                                                                                      (δ(q, σ), N)    if l = N ∧˜σ /∈Σe,Fthese two notions coincide when ϕ is a safety property [51].                 ˜δ(˜q, ˜σ) =                                                           .
+                                                                                      (δ(q, σ), F)   otherwiseFormally, a linear-time property P ⊆(2AP)ω is called a safety
+property if, for any s ∈(2AP)ω \ P, there exists a preﬁx s1 ∈
+{s}, such that P ∩{s′ ∈(2AP)ω : s1 ∈{s′}} = ∅. Intuitively,    The above constructed augmented system ˜G has the following
+the violation of a safety property can always be determined in a   properties.
+ﬁnite horizon. We say ϕ is a safety LTL formula if word(ϕ) is       • First, the augmented system ˜G generates extended strings.
+a safety property. Then, we have the following result.                   Essentially, it still tracks the original dynamic of the system
+  Theorem 2: Suppose that ϕ is a safety LTL formula. Then a       by putting both the output realization and the current state
+system is ﬁnite ϕ-diagnosable, if and only if it is ϕ-diagnosable.        information together with the internal event. Therefore, we
+                                                              have L( ˜G) = Le(G).
+           V. VERIFICATION OF ϕ-DIAGNOSABILITY                    • Second, each augmented state (q, l) ∈˜Q ⊆Q × {F, N}
+                                                                has two components. The ﬁrst component q is the actual
+  In this section, we provide a veriﬁable necessary and sufﬁcient                                                                              state in the original system G and the second component
+condition for the veriﬁcation of ϕ-diagnosability based on the                                                                                                l ∈{N, F} is a label denoting whether fault events have
+veriﬁcation system.                                                                     occurred. By the construction, the label will change from
+                                    N to F only when an extended fault event occurs and once
+A. Augmented Systems                                                                      the label becomes F, it will be F forever. We denote by
+  To verify ϕ-diagnosability, our ﬁrst step is to augment both       ˜QN = {(q, l) ∈˜Q : l = N} the set of normal augmented
+the state-space and the event-space of G such that:                       states and the set of faulty states ˜QF is deﬁned analogously.
+    • the information of whether or not a fault event has occurred    Example 5: Still, we consider system G1 in Fig. 1, which has
+      is encoded in the augmented state-space; and             been discussed in Example 3. The augmented system ˜G1 of G1
+    • the information of which state the event is enabled from    is depicted in Fig. 2 , where all states reachable via extended fault
+    and which speciﬁc output is observed are encoded in the   event (1, f, ε) are augmented with label F and we denote every
+    augmented event-space.                                 extended event (q, σ, o) ∈Σe by σoq. Furthermore, the transi-
+  Deﬁnition 5  (Augmented  systems): Given  system G =   tions of ˜G1 are deﬁned according to the actual transitions and the
+(Q, q0, Σ, δ), fault events ΣF , and output function O, we deﬁne   underlying observations of the original system G1. For example,
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 02,2024 at 04:32:39 UTC from IEEE Xplore. Restrictions apply.
+
+152                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 1, JANUARY 2024
+
+
+becauseδ(3, b) = 4andO(3, b) = {b, ε},wehavetwonewtran-
+sitions in ˜G1: ˜δ(3F, (3, b, b)) = 4F and ˜δ(3F, (3, b, ε)) = 4F;
+each for them represents a different observation realization. □
+
+
+B. Observation Constrained System                                                                               Fig. 3.  NBA Bper for speciﬁcation ϕper = □(m1 →□¬m0) with AP =
+  Recall that for any LTL formula ϕ, there exists an NBA B =   {m0, m1}, where accepting states are highlighted by double circles.                                                                    Here, we follow the standard abbreviation for drawing NBA over alphabet
+(X, X0, 2AP, ξ, Xm) such that Lωm(B) = word(ϕ). In order to   2AP. For example, transition ¬m1 is the abbreviation of {∅, {m0}} and
+capture all possible extended strings that can be observed under    transition ¬m0 ∧m1 is the abbreviation of {{m1}}.
+sensor constraint ϕ, we construct the observation constrained
+system.
+  Deﬁnition  6  (Observation  constrained  system): Given
+augmented  system   ˜G = ( ˜Q, ˜q0, Σe, ˜δ)  and  NBA  B =
+(X, X0, 2AP, ξ, Xm)  associated with LTL formula ϕ,  the
+observation constrained system is deﬁned as a new-tuple
+
+           T = (QT , Σe, δT , Q0,T , Qm,T )           (11)
+
+where the variables are deﬁned as follows:
+    • QT ⊆˜Q × X is the set of states;
+    • Σe is still the set of extended events;
+    • δT  : QT × Σe →2QT  is the nondeterministic transition
+     function deﬁned by: for any qT = (˜q, x) ∈QT and σe ∈
+     Σe, we have
+                                                                  ˜q′ = ˜δ(˜q, σe) and        δT (qT , σe) =    (˜q′, x′) :                                     ;
+                                      x′ ∈ξ(x, label(σe))
+                                                                               Fig. 4.  Observation constrained system T1 for system G1˜  with sensor
+    • Q0,T = {˜q0} × X0 is the set of initial states;                  constraint ϕper, where all states are accepting.
+    • Qm,T = {(˜q, x) ∈QT  : x ∈Xm} is the set of accepting
+      states.
+   Intuitively, the observation constrained system T  is con-                                                                Also, we denote by QN,T = {(q, N, x) ∈QT } and QF,T =
+structed by synchronizing the augmented system ˜G with the                                                                {(q, F, x) ∈QT } as the set of normal and faulty states in T, re-
+NBA B associated with ϕ according to the atomic proposi-                                                                     spectively. Then, for any s ∈Lϕe (G), we also have the following
+tions. Speciﬁcally, for any states qT = (˜q, x), q′T = (˜q′, x′) ∈                                                               equivalence:
+˜Q × X and extended event σe ∈Σe, we have q′T ∈δT (qT , σe)
+whenever (i) in the ﬁrst (plant model) component, the event       Σe,F ∈s ⇔∃q0 ∈Q0,T , δT (q0, s) ∩QF,T̸ = ∅.     (14)
+itself satisﬁes the dynamic of the system, i.e.,  ˜q′ = ˜δ(˜q, σe);
+                                        We illustrate the above concepts by the following example.and (ii) in the second (LTL formula) component, the atomic
+                                                       Example 6: Let us still consider system G1 in Fig. 1, whosepropositions of the event satisﬁes the transition rules of the
+Büchi automaton, i.e., x′ ∈ξ(x, label(σe)). Therefore, for any  augmented system ˜G1 has been given in Fig. 2. We  still
+string s = σ1σ2 · · · σn ∈L(T), we have s ∈Le(G) = L( ˜G)   consider sensor constraint ϕper in (8), which can be translated
+and trace(s) ∈L(B). Furthermore, by construction, a state   to NBA Bper as shown in Fig. 3. Based on ˜G1 and Bper, we
+(˜q, x) ∈QT is accepting if its second component x ∈Xm is an   construct the observation constrained system T1 as shown in
+accepting state in NBA B. Therefore, T essentially recognizes   Fig. 4, where we omit double circles as all states are accepting.
+all inﬁnite strings in G satisfying the sensor constraint ϕ, i.e.,    Since all states are accepting and the system is live, we know
+                                                                      that all states in T1 are feasible. For example, ﬁnite string
+               Lωm(T) = Lϕe (G).                 (12)   s = (1, f, ε)(2, a, a)(3, b, ε)(4, c, c)(2, a, a)(3, b, b) ∈L( ˜G),
+                                             we have s /∈L(T) since proposition m1 has already been  In Deﬁnition 3, we need to compare the observations of
+preﬁxes of those strings in Lϕe,F (G) with ﬁnite strings in Lϕe (G).   satisﬁed by (3, b, ε) and proposition m0 cannot hold thereafter;
+                                                                                          i.e., extended event (3, b, b) cannot be synchronized with BperUsing observation constrained system T, we know that ﬁnite
+                                                                                                                           e (G).  □string s ∈Lϕe (G) if its trace can reach a state in T from which  when constructing T1. Hence, we know that s /∈Lϕ
+accepting states can be visited inﬁnitely often. To this end,
+we say a state q ∈QT in T is feasible if Lωm(Tq)̸ = ∅, where  C. Veriﬁcation Structure
+Tq = (QT , Σe, δT , {q}, Qm,T ) is the NBA by setting the initial     According to Deﬁnition 3, a system is not ϕ-diagnosable if
+state of T as state q. We denote by Qfeas,T ⊆QT the set of   there exists an inﬁnite extended faulty string s ∈Lϕe,F (G) such
+feasible states. Then, we have the following equivalence
+                                                                      that for any preﬁx t ∈{s}, there is an extended normal string
+   s ∈Lϕe (G) ⇔∃q0 ∈Q0,T , δT (q0, s) ∩Qfeas,T̸ = ∅.   (13)  v ∈Lϕe (G) having the same output with t. Motivated by this
+
+
+    Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 02,2024 at 04:32:39 UTC from IEEE Xplore. Restrictions apply.
+
+DONG et al.: UNIFORM FRAMEWORK FOR DIAGNOSIS OF DISCRETE-EVENT SYSTEMS WITH UNRELIABLE SENSORS                             153
+
+
+observation, we construct the veriﬁcation system to capture all
+pairs of extended faulty strings and extended normal strings that
+have the same outputs and both satisfy the sensor constraint.
+  Deﬁnition7(Veriﬁcationsystem): GivensystemGandsensor
+constraint ϕ, its veriﬁcation system is a new tuple
+
+          V = (QV , ΣV , δV , Q0,V , Qm,V )          (15)
+
+where the variables are deﬁned as follows:
+    • QV ⊆QT × QT is the ﬁnite set of states;
+    • ΣV = ΣoV ∪ΣuoV  is the ﬁnite set of events, where
+           - ΣoV = {(σ1, σ2) ∈Σe × Σe : ΘΔ(σ1) =
+         ΘΔ(σ2)̸ = ε};
+           - ΣuoV = {(σ1, ε) ∈Σe × {ε} : ΘΔ(σ1) = ε} ∪           Fig. 5.   Veriﬁcation system V1.
+           {(ε, σ2) ∈{ε} × Σe : ΘΔ(σ2) = ε};
+    • δV  : QV × ΣV →2QV  is the nondeterministic transition
+     function deﬁned by: for any qV = (q1, q2) ∈QV  and
+                                                                  there exists a ﬁnite string s ∈L(V ) and q0,V ∈Q0,V such that
+    σV = (σ1, σ2) ∈ΣV , we have
+                                                            q1V ∈δV (q0,V , s).
+            δV (qV , σV ) = δT (q1, σ1) × δT (q2, σ2);         We are now ready to present the main theorem.
+                                                       Theorem 3: System G is not ϕ-diagnosable w.r.t. fault events
+    • Q0,V = Q0,T × Q0,T is the set of initial states;
+                                           ΣF , output function O, and sensor constraint ϕ, if and only if
+    • Qm,V ⊆QV is the set of accepting states deﬁned by                                                                    in the veriﬁcation system V , there exists a reachable cycle
+                                   q1 ∈Qm,T ∩QF,T                                                                                          .                         σ1V      σ2V      σn−1V    Qm,V =   (q1, q2) ∈QV  :                            and q2 ∈Qfeas,T ∩QN,T               π = q1V −−→q2V −−→· · · −−−→qnV
+
+   Intuitively, each state qV = (q1, q2) in the veriﬁcation system   such that
+V is a pair of states in system T. The event set ΣV is divided into      1) θ1(σiV )̸ = ε for some i = 1, . . . , n; and
+two categories: ΣV = ΣoV ∪ΣuoV  , event (σ1, σ2) is in ΣoV if both      2) qjV ∈Qm,V for some j = 1, . . . , n.
+σ1 and σ2 have the same nonempty output, and event (σ1, σ2)    The intuition of the above theorem is as follows. Since π is
+is in ΣuoV  if the output of σ1(σ2) is empty and σ2(σ1) is empty.   a reachable cycle, we know that we can ﬁnd an inﬁnite string
+Essentially, V  is obtained by synchronizing T with its copy   s = t(σ1V · · · σNV )ω in V , where t is some string entering the
+accordingtotheiroutputs.Then,foreventσV = (σ1, σ2),wede-   cycle. Then the two conditions ensure that: 1) its ﬁrst component
+note by θ1(σV ) = σ1 and θ2(σV ) = σ2 its ﬁrst and second com-   θ1(s) is indeed an inﬁnite extended string in Lω( ˜G) that is both
+ponents, respectively; the notation is also extended to a string   faulty and satisfying ϕ; and 2) its second component θ2(s) is an
+s = σ1V σ2V · · · ∈Σ∗V ∪ΣωV by θ1(s) = θ1(σ1V )θ1(σ2V ) · · · and   extended string such that any of its ﬁnite preﬁx is normal and
+θ2(s) = θ2(σ1V )θ2(σ2V ) · · · . By the construction, T has the fol-   can be extended to an inﬁnite string satisfying ϕ, i.e., θ2(s) ∈
+lowing properties.                                Lϕe (G). Moreover, the construction of V ensures that θ1(s) and
+   1) For any s ∈L(V ), we have s1 = θ1(s), s2 = θ2(s) ∈   θ2(s) have the same output. Therefore, the existence of such a
+     L(T) and ΘΔ(s1) = ΘΔ(s2).                            cycle falsiﬁes ϕ-diagnosability. The detailed proof is provided in
+   2) For any pair of extended strings s1, s2 ∈L(T) such that   the Appendix. Here we illustrate this theorem by the following
+     ΘΔ(s1) = ΘΔ(s2), there exists a string s ∈L(V ) such   example.
+       that θ1(s) = s1 and θ2(s) = s2.                        Example 7: Let us still consider the running example G1
+  Regarding the accepting conditions Qm,V , intuitively, a state   in Fig. 1 with the same setting in Example 3. As we have
+qV = (q1, q2) is accepting if: 1) its ﬁrst component q1 is a faulty   discussed in Example 4, this system is not ϕper-diagnosable.
+accepting state in T; and 2) its second component q2 is normal   Here, we analyze this more formally by Theorem 3. Based
+and feasible. The ﬁrst condition says that by repeatedly visiting  on  its observation constrained system T1, we construct the
+state qV ∈Qm,V , the ﬁrst component of the string will be an   veriﬁcation system V1, which is partially shown in Fig. 5,
+inﬁnite faulty string satisfying ϕ. The second condition says that  where accepting states are marked by double circles, e.g., state
+for any ﬁnite string reaching qV ∈Qm,V , the second component   {(4F, B), (7N, B)} is in Qm,V as (4F, B) ∈Qm,T ∩QF,T and
+of the string is a normal string in Lϕe (G).                    (7N, B) ∈Qfeas,T ∩QN,T . Here, we only focus on the reach-
+                                                               able cycle satisfying conditions in Theorem 3 and omit other
+D. Checking ϕ-Diagnosability                                  parts without loss of generality for the purpose of veriﬁcation.
+                                                                 Speciﬁcally, we consider the cycle as highlighted with red lines  Now, we present how to verify ϕ-diagnosability using the ver-
+                                                                    in the Fig. 3, i.e.,iﬁcation system V . To this end, we ﬁrst introduce some concepts.
+                                        σ1V      σ2V      σn−1V                                    (cc4,cc7)                        (aa2,aa8)
+A run in V  is a ﬁnite sequence π = q1V −−→q2V −−→· · · −−−→     {(4F, B), (7N, B)} −−−−→{(2F, B), (8N, B)} −−−−→
+qnV , where qiV ∈QV , σiV ∈ΣV and qi+1V  ∈δV (qiV , σiV ). A run                                           (bε3,ε)
+π is called a cycle if q1V = qnV ; a cycle π is said to be reachable if             {(3F, B), (7N, B)} −−−→{(4F, B), (7N, B)}.
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 02,2024 at 04:32:39 UTC from IEEE Xplore. Restrictions apply.
+
+154                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 1, JANUARY 2024
+
+
+Note that all states in the cycle are accepting states and there  where the variables are deﬁned as follows:
+exist events (cc4, cc7) and (aa2, aa8) such that θ1((cc4, cc7))̸ = ε      1) Tuo are transitions that can never be observed;
+and θ1((aa2, aa8))̸ = ε. Thus, system G1 is not ϕper-diagnosable      2) To are transitions that can always be observed;
+according to Theorem 3.                   □      3) Tint are transitions subject to intermittent sensor failures;
+  Remark 2: We conclude this section by discussing the com-      4) Tper are transitions subject to permanent sensor failures.
+plexity of checking ϕ-diagnosability. First, we note that the     Similar to (4), we deﬁne an observation mapping O : Q ×
+augmented system ˜G consists of at most 2|Q| states, where |Q|  Σ →2Σ∪{ε} by: for any q ∈Q and σ ∈Σ, we have
+denotes the number of states in system G. Second, we obtain          ⎧
+                                       ⎨ {ε}      if (q, σ) ∈Tuothe observation constrained system T by composing augmented
+system ˜G with Büchi automaton B that is translated from the         O(q, σ) = ⎩ {σ}      if (q, σ) ∈To              .    (16)
+                                                                               {σ, ε}   if (q, σ) ∈Tint ∪TperLTL formula ϕ. Therefore, T has at most 2 · |Q| · |X| states,
+where |X| is the number of states in the Büchi automaton. In     Note that, for those transitions subject to intermittent sensor
+general, for any LTL formula ϕ, the NBA B associated with ϕ   failures, there is no need to put additional sensor constraints
+has at most 2|ϕ| · |ϕ| number of states, where |ϕ| is the number   since they are freely to fail or recover. However, we need to use
+of operators in formula ϕ [49]. Then, the veriﬁcation system V  LTL formula to constrain the behavior of those sensors subject to
+has at most 4 · |Q|2 · |X|2 states. Finally, checking the existence   permanent sensor failures. To this end, we choose the following
+of the particular cycle in Theorem 3 is simply a cycle search   set of of atomic propositions
+problem which can be done in polynomial-time in the size of
+V [52]. Overall, our approach is polynomial in the size of the         APper = {m(q,σ)i      : i ∈{0, 1}, (q, σ) ∈Tper}    (17)
+system model G and exponential in the length of the sensor
+constraint formula ϕ.                                     where m(q,σ)0   means that the sensor observes event σ success-
+                                                                      fully for transition (q, σ), i.e., the corresponding sensor is nor-
+     VI. APPLICATIONS OF THE UNIFORM FRAMEWORK        mal, while m(q,σ)1   means that the sensor misses the observation
+                                                                    for transition (q, σ),  i.e., the corresponding sensor is faulty.
+  Our framework consists of the following four steps:
+                                                         Then, the labeling function labelper : Σe →2APper is deﬁned
+   1) Choose atomic propositions AP and labeling function
+                                                              by: for any σe = (q, σ, o) ∈Σe, we have
+      label : Σe →2AP;                                     ⎧
+   2) Describe the sensor constraint by LTL formula ϕ;            ⎪⎨ {m(q,σ)0    },   if (q, σ) ∈Tper ∧o = σ
+   3) Construct the observation constrained system T and the                                                                 labelper(σe) =                                                                             {m(q,σ)1    },   if (q, σ) ∈Tper ∧o = ε   (18)      veriﬁcation system V ;                                     ⎪⎩                                                                                            ∅,      otherwise.
+   4) Check ϕ-diagnosability based on V by Theorem 3.
+  In the previous sections, we have shown how to implement   Then,  the  sensor  constraint  for  the  scenario  of  intermit-
+Steps 3 and 4. However, Steps 1 and 2 are more application-   tent/permanent failures can be written as
+dependent, i.e., one needs to carefully choose AP and label, and
+write down ϕ based on the speciﬁc scenario of the system. In             ϕint∧per =        □(m(q,σ)1   →□¬m(q,σ)0    ).    (19)
+this section, we show explicitly how the proposed new notion of                          (q,σ)∈Tper
+ϕ-diagnosability subsumes existing notions of 1) diagnosabil-
+                                                     Remark 3: If we only consider the case of intermittent sensority under intermittent sensor failures; 2) diagnosability under
+                                                                         failures,  i.e., Tper = ∅, then the above formulation becomespermanent sensor failures; and 3) K-loss diagnosability. Fur-
+                                                   APper = ∅, labelper(σe) = ∅, ∀σe ∈Σe and ϕint∧per = true.thermore, we introduce two new types of diangsability called
+                                                         Then, the Büchi automaton Bint∧per associated with ϕint∧per only1) diagnosability under output fairness; and 2) diagnosability
+                                                               contains a single state with a self-loop labeled with true.under unreliable sensors with minimum dwell-time, using the
+                                                               Therefore, such an NBA Bint∧per will not restrict the behavior ofgeneral notion of ϕ-diagnosability.
+                                                                   ˜G at all, and the veriﬁcation system V essentially becomes to
+                                                                 the standard structures in [20].
+A. Diagnosability Subject to Sensor Failures
+                                                     Remark 4: An approach for the uniﬁcation of diagnosabil-
+  In Remark 1, we have discussed how to capture the notion   ity of DES subject to both intermittent and permanent sen-
+of robust diagnosability subject to intermittent sensor failures   sor failures has been recently proposed by [29]. The above
+in our framework. Furthermore, we have shown, by the running   presented proposed further generalized the result in [29] by
+example, that how to model the notion of robust diagnosability   supporting state-dependent (or transition-based) observations.
+subject to permanent sensor failures in our framework for the   Furthermore, the result in [29] is an instance of our general
+special case of a single failure sensor. Here we formally present a   framework, which, as we will further show later, supports much
+uniﬁed way that supports both intermittent and permanent sensor  more user-speciﬁed scenarios.
+failures using our framework.
+  Let G = (Q, Σ, δ, q0) be the system model. We assume that                                                         B. K-Loss Robust Diagnosability
+transitions T ⊆Q × Σ are partitioned as follows:
+                                                                  Recently, in [34], the authors proposed a new notion of K-
+           T = Tuo ˙∪To ˙∪Tint ˙∪Tper                       loss diagnosability in order to capture the scenario of bounded
+
+
+    Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 02,2024 at 04:32:39 UTC from IEEE Xplore. Restrictions apply.
+
+DONG et al.: UNIFORM FRAMEWORK FOR DIAGNOSIS OF DISCRETE-EVENT SYSTEMS WITH UNRELIABLE SENSORS                             155
+
+
+losses in observation channels. In this setting,1  it is assumed  means that the jth channel will have two consecutive losses.
+that the event set is partitioned as Σ = Σo ∪Σuo. Observable   Therefore, by induction, Φj(k) means that the observations in
+events in Σo are transmitted from the sensors to the diagnoser   the jth channel will have k + 1 consecutive losses. Then, the
+via n ≤|Σo| communication channels. To this end, the set of   requirement that “starting from any instant, the jth observation
+observable events Σo is further partitioned as                   channel cannot have kj + 1 consecutive losses” can be captured
+                                                     by the LTL formula □¬Φj(kj) = ¬♦Φj(kj).Since we require
+            Σo = Σo,1 ˙∪Σo,2 ˙∪· · · ˙∪Σo,n                                                                      that all n channels satisfy the K-loss assumption, the sensor
+where for each i ∈{1, . . . , n}, Σo,i is the set of events whose   constraint for this scenario is given by
+observations are transmitted via the ith communication channel.
+                                                                                        ϕK-loss =        □¬Φj(kj).           (24)Furthermore, it is assumed that for each observation channel
+i ∈{1, . . . , n}, integer ki ∈N  is the maximum number of                                   j∈{1,...,n}
+consecutive losses of observations. That is, if event σ ∈Σo,i   We use the following example to illustrate this scenario.
+occurs ki + 1 times consecutively and the diagnoser does not    Example 8: We consider the system G2, shown in Fig. 6(a),
+receive its ﬁrst ki occurrences due to losses in the observation  where the observable events Σo = {a, b, c} are partitioned into
+channel, then its ki + 1th occurrence will be received by the  two observation channels with Σo,1 = {a, c} and Σo,2 = {b}.
+diagnoser for sure. We denote by K = (k1, . . . , kn) the tuple  We assume that k1 = 0 and k2 = 1, i.e., the ﬁrst channel for
+of all maximum numbers of consecutive loss for all channels.   Σo,1 is reliable without observation loss and the second chan-
+The notion of K-loss (co)diagnosability was introduced in [34]   nel for Σo,2 can only have at most one consecutive obser-
+as the necessary and sufﬁcient condition for the existence of a   vation loss. Then, the set atomic propositions is APK-loss =
+diagnoser under such a setting.                        {m10, m11, m20, m21}, the labeling function is speciﬁed in (22) and
+  Now, we discuss how to formulate K-loss diagnosability in   the sensor constraint is
+terms of our general notion of ϕ-diagnosability. For system G =
+(Q, Σ, f, q0), we deﬁne observation mapping O : Q × Σ →            ϕK-loss = □¬m11 ∧□¬(m21 ∧⃝(¬m20Um21)).
+2Σo∪{ε} by: For any q ∈Q and σ ∈Σ, we have                                                   The Büchi automaton BK-loss associated with ϕK-loss is shown
+                    {ε}      if (q, σ) ∈Σuo                  in Fig. 6(b). We construct the veriﬁcation system V2, which
+          O(q, σ) =                                        .       (20)
+                       {σ, ε}   if (q, σ) ∈Σo                       is partially depicted in Fig. 6(c). Due to the sensor constraint
+                                                                         ϕK-loss, if the event bε3 or bε6 occurs in G2, the next occurrence ofThen, we choose the set of atomic propositions by
+                                                                 bε3 or bε6 is possible only after bb3 or bb6 occurs. For example,
+        APK-loss = {mji  : i ∈{0, 1}, j ∈{1, . . . , n}}    (21)  from state 3, if the event bε3 occurs, we can only obtain the
+                                                           extended string bε3cc4aa2bb3 rather than bε3cc4aa2bε3 since the latter
+where mj0 means that an event σ ∈Σo,j occurs and it is transmit-   corresponds to the case of two consecutive losses in channel
+ted successfully in the jth channel and mj1 means that an event   Σo,2. Furthermore, for the ﬁrst communication channel, since
+transmission in the jth channel is lost. To capture the above    its maximum failure bound is k1 = 0, i.e., if it is reliable, the ex-
+meanings, we deﬁne a labeling function labelK-loss by: for any   tended events such as aε2 and cε4 will not be feasible. In Fig. 6(c),
+σe = (q, σ, o) ∈Σe, we have                         we see that the system is blocked at state {(3F, B), (7N, A)}.
+          ⎧                                                           This is because that the ﬁrst component (3F, B) means that          ⎨ {mj0},   if σ ∈Σo,j ∧o̸ = ε
+                                                                 the second communication channel has lost an observation and,    labelK-loss(σe) =  {mj1},   if σ ∈Σo,j ∧o = ε     (22)          ⎩                                           therefore, has to transit next observation successfully. However,
+                         ∅,       otherwise
+                                                           only event bb3 can occur from state (3F, B), while only event cc7
+where j ∈{1, . . . , n}.                                      can occur at state (7N, A). With the similar reason, one can also
+  To formalize the sensor constraint for K-loss diagnosabil-   complete the remaining part of V2 in which no reachable cycle
+ity, we need to exclude the scenario, where there are more   satisfying the conditions in Theorem 3 can be found. Therefore,
+than kj consecutive observation losses for some channel j ∈   system G2 is ϕK-loss-diagnosable.              □
+{1, . . . , n}. To this end, for each j ∈{1, . . . , n}, we deﬁne a
+sequence of LTL formulae Φj(0), . . . , Φj(kj) as follows:       C. Unreliable Sensors With Minimum Dwell-Time
+           Φj(0) = mj1,                          We have shown that both intermittent sensor failures and                                                         (23)
+          Φj(k) = mj1 ∧⃝(¬mj0UΦj(k −1))             permanent sensor failures can be captured in our uniﬁed frame-
+                                                          work. Note that, in the existing framework of intermittent sensor
+where k ≥1. Intuitively, Φj(0) = mj1 means that the current   failures, those unreliable sensors can fail and recover arbitrarily
+observation in the jth channel is lost. Then Φj(1) = mj1 ∧   at any instant. Here, we show how our LTL-based approach can
+⃝(¬mj0Umj1) means that the current observation in the jth   describe a more general scenario, where sensors may switch
+channel is lost and the no event Σo,j in the jth channel can be   between failure mode and normal mode but with minimum
+observed until the next observation loss in the jth channel, which   dwell-time for each mode. This is motivated by the practical
+                                                               scenario that whenever a normal sensor breaks down, it will take
+  1Results in [34] considers the decentralized setting. Here, we just review its  some time to recover, and whenever a sensor failure is ﬁxed, it
+centralized counterpart.                                         can ensure to work normally for some periods.
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 02,2024 at 04:32:39 UTC from IEEE Xplore. Restrictions apply.
+
+156                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 1, JANUARY 2024
+
+
+
+
+
+Fig. 6.  Example of K-loss robust diagnosability. For system G2: Σo = Σo,1 ∪Σo,2, Σo,1 = {a, c}, and Σo,2 = {b}. (a) System G2. (b) B¨uchi
+automaton BK-loss. (c) Veriﬁcation system V2.
+
+
+   Still, we consider system G = (Q, Σ, δ, q0) and assume that   Intuitively, Φσnor(1) means that, σ is observed currently with a
+the event set is partitioned as Σ = Σo ˙∪Σuo ˙∪Σur, where Σur   normal sensor, and there is no occurrence of σ until its sensor
+is the set of events whose sensors are unreliable. We denote    fails. Therefore, this formula captures the scenario where the
+by kN ∈N the minimum dwell-time for the normal mode (or   sensor of event σ remains normal for one time of use before
+simply, normal dwell-time), which means that whenever a sensor   switching to the failure mode. By induction, Φσnor(k) means that
+recovers from failure to normal, it will remain normal at least for   the sensor of event σ has remained normal for k times of use
+the next kN uses of the sensor. Similarly, we denote by kF ∈N   before switching to the failure mode.
+the minimum dwell-time for the failure mode (or simply, failure     Since the dwell-time of normal mode is counted starting from
+dwell-time), which means that whenever a sensor breaks down   thetransitionfromfailuremodetonormalmode,wecandescribe
+from normal to failure, it will remain failure at least for the next   the scenario where sensor switches from failure mode to normal
+kF uses of the sensor.                                mode and remains at normal mode for k uses before switching
+  To formalized the above setting in our framework, we deﬁne   back to failure mode by the following formula:
+an observation mapping O : Q × Σ →2Σo∪Σur∪{ε} by: For any
+                                                    Φσnor,dwell(k) = mσ1 ∧⃝(¬mσ0UΦσnor(k)).      (29)q ∈Q and σ ∈Σ, we have
+           ⎧
+           ⎨ {ε}      if σ ∈Σuo                However, the minimum normal dwell-time kN requires that
+           O(q, σ) =  {σ}      if σ ∈Σo     .         (25)   the above formula should not be satisﬁed for any k ≤kN −1;
+           ⎩
+                         {σ, ε}   if σ ∈Σur                   otherwise, it means that the sensor fails again when it switches
+                                                        back to normal for less than kN times of uses. Therefore, the
+The set of atomic propositions is chosen as                                                                       overall, normal dwell-time constraint is given by
+           APdwell = {mσi  : i = 0, 1, σ ∈Σur}        (26)
+                                                                                 Φnor,dwell =            □¬Φσnor,dwell(k).     (30)
+where mσ0 means that event σ ∈Σur occurs and its sensor is                  σ∈Σur k=1,...,kN−1
+normal, while mσ1 means that event σ ∈Σur occurs and its
+                                                                 Similar to the case of normal dwell-time, we can deﬁne the
+sensor is failing. The labeling function labeldwell is deﬁned by:
+                                                              sensor constraint for failure dwell-time by
+For any σe = (q, σ, o) ∈Σe, we have
+          ⎧
+          ⎨ {mσ0},   if σ ∈Σur ∧o̸ = ε                             Φfail,dwell =           □¬Φσfail,dwell(k)    (31)
+    labeldwell(σe) =  {mσ1},   if σ ∈Σur ∧o = ε   .    (27)                     σ∈Σur k=1,...,kF −1          ⎩
+                        ∅,       otherwise                                                      where we have
+                               ⎧  To capture the sensor constraint of normal dwell-time, we ﬁrst
+                               ⎪⎨ Φσfail,dwell(k) = mσ0 ∧⃝(¬mσ1UΦσfail(k))need to exclude the scenarios where a sensor switches from the
+                                                Φσfail(1) = mσ1 ∧⃝(¬mσ1Umσ0)                            .  (32)failure mode to the normal mode and remains normal for less  ⎪⎩
+than kN uses, before the next switch back to the failure mode.     Φσfail(k) = mσ1 ∧⃝((¬mσ1 ∧¬mσ0)UΦσfail(k −1)
+To this end, we deﬁne a sequence of LTL formulae inductively
+                                                                 Therefore, the overall sensor constraint for both normal and
+as follows:
+                                                                       failure dwell-times is given by
+  Φσnor(1) = mσ0 ∧⃝(¬mσ0Umσ1)                                                                                  .  (28)
+  Φσnor(k) = mσ0 ∧⃝((¬mσ0 ∧¬mσ1)UΦσnor(k −1))                              ϕdwell = Φnor,dwell ∧Φfail,dwell.            (33)
+
+
+
+    Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 02,2024 at 04:32:39 UTC from IEEE Xplore. Restrictions apply.
+
+DONG et al.: UNIFORM FRAMEWORK FOR DIAGNOSIS OF DISCRETE-EVENT SYSTEMS WITH UNRELIABLE SENSORS                             157
+
+
+
+
+
+Fig. 7.  Example of diagnosability with output fairness. For system G3: Σ = {a, b, f, u} and Δ = {o1, o2}. (a) System G3. (b) B¨uchi automaton
+Bfair. (c) Veriﬁcation system V3.
+
+
+
+D. Diagnosability With Output Fairness                                                      where m(q,σ)o   means that the output of transition (q, σ) ∈Tfair
+  In the previous three subsections, we have Δ ⊆Σ in the    is o ∈O(q, σ). For brevity, for each transition (q, σ) ∈Tfair, we
+observation mapping due to the speciﬁc meanings of sensor   denote by m(q,σ) the proposition that transition (q, σ) occurs,
+failures or observation losses. Here, we further consider the    i.e., m(q,σ) =   o∈O(q,σ) m(q,σ)o      .
+general case where Δ and Σ are different.                      Based on APfair, we deﬁne the labeling function by: For any
+  As a motivating example, consider system G3 shown in   σe = (q, σ, o) ∈Σe, we have
+Fig. 7(a) with Σ = {a, b, f, u}, ΣF = {f} and Δ = {o1, o2}.
+                                                                                {m(q,σ)o    },   if (q, σ) ∈TfairThe  output  function O : Q × Σ →2Δ∪{ε}  is  speciﬁed  in                                                                                                                                                                           .     (35)                                                                            labelfair(σe) =
+                                                                                                ∅,      otherwiseFig. 7(a). Without any sensor constraint, the system is not
+diagnosable according to Deﬁnition 1 as deﬁned in [23]. This                                                         Then, the sensor constraint for the scenario of fairness assump-
+is because one can observe output sequence o1(o1o2)n for an   tion can be written as
+arbitrary large n for which we cannot determine whether the          ⎛               ⎞
+underlying internal string is faulty or normal.
+                                                                                    ϕfair :=       ⎝□♦m(q,σ) →       □♦m(q,σ)o  ⎠.  (36)  However, this above issue of nondiagnosability is not very
+practical since  it is unfair for output o2 at transition (2, a).                (q,σ)∈Tfair                 o∈O(σ,q)
+Speciﬁcally, the reason why we may observe output sequence   We use the following example to illustrate this scenario.
+o1(o1o2)ω is that, after the occurrence of fault event f, every    Example 9: Still we consider system G3, which is shown to be
+time the system ﬁres transition (2, a), output symbol o2 loses   nondiagnosable according to Deﬁnition 1. Now we show that the
+its opportunity to be observed. However, if we assume that the   system is actually ϕ-diagnosable under the fairness assumption
+occurrences of o1 and o2 are purely random with some (un-   for outputs. Speciﬁcally, we deﬁne Tfair = {(2, a)} as the set of
+known but nonzero) probabilities, then o2 will be observed with   fair transition. Then, the set of atomic propositions is APfair =
+probability one at the system goes on and upon its occurrence,   {m(2,a)o1    , m(2,a)o2   }. Then, the sensor constraint for output fairness
+we can detect the fault.                                                         can be written as
+  Instead of going to a probability framework to resolve the
+above issue [21], [22], here we propose to use fairness condition,    ϕfair
+which is a widely used assumption in reactive systems, to rule
+                                   =  □♦(m(2,a)o1  ∨m(2,a)o2   ) →  (□♦m(2,a)o1   ) ∧(□♦m(2,a)o2   )out those unrealistic inﬁnite behaviors of the sensors. Formally,
+still let G = (Q, Σ, δ, q0) be the system model with an arbitrary
+                                                      which means that if transition (2, a) occurs inﬁnitely, then weoutput function O : Q × Σ →2Δ∪{ε}. We assume that
+                                                                    will observe each possible output in O(2, a) = {o1, o2} for inﬁ-
+                              Tfair ⊆Q × Σ                             nite number of times. The Büchi automaton Bfair associated with
+                                              LTL formula ϕfair is shown in Fig. 7(b). It is worth noticing that,
+is the set of transitions for which all of its outputs are fair in the   in contrast to Büchi automata in the previous examples, where all
+sense that if transition (q, σ) ∈Tfair is ﬁred for inﬁnite number   states are accepting, here only some states in Bfair are accepting.
+of times, then all of its observations o ∈O(q, σ) can be observed   This is because that fairness condition ϕfair is an liveness type
+for inﬁnite number of times. To formalize this requirement, we   of property, while all previous conditions ϕint∧per, ϕK-loss, and
+choose the set of atomic propositions by                            ϕdwell belong to the category of safety properties. To verify
+                                                                       ϕfair-diagnosability, we construct the veriﬁcation system V3
+     APfair = {m(q,σ)o      : (q, σ) ∈Tfair, o ∈O(q, σ)}      (34)   of system G3, which is partially depicted in Fig. 7(b). Note
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 02,2024 at 04:32:39 UTC from IEEE Xplore. Restrictions apply.
+
+158                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 1, JANUARY 2024
+
+
+                                                                (bo23 ,bo25 )   such that for any preﬁx t ∈{s}, there exists an extended nor-that, although there  is a cycle{(3F, D), (5N, E)} −−−−−→
+                        (ao12 ,ao14 )                             mal string w ∈Lϕe (G) having the same observation with t.
+{(2F, D), (4N, E)} −−−−−−→{(3F, D), (5N, E)}  in  V3,  it   Since diagnoser D satisﬁes condition C2, for any t ∈{s}, we
+does not satisfy the conditions in Theorem 3 since the states in                                                         have D(ΘΔ(t)) = 0; otherwise,  if D(ΘΔ(t)) = 1, we have
+the cycle are not accepting. Essentially, this cycle corresponds  D(ΘΔ(v)) = D(ΘΔ(t)) = 1, which  violates condition C2.
+to the unfair extended string making the system not diagnos-                                                               Therefore, ∀t ∈{s} : D(ΘΔ(t)) = 0, i.e., condition C1 does
+able without fairness assumption. One can check that, in the                                                              not hold for diagnoser D, which contradicts the assumption.
+remaining part of V3, there is no cycle satisfying the conditions    (⇐) Suppose that system G is ϕ-diagnosable. We consider
+in Theorem 3, i.e., G3 is ϕfair-diagnosable.          □   a diagnoser D : {ΘΔ(v) ∈O(L(G)) : v ∈Lϕe (G)} →{0, 1}
+  Remark 5: We note that the veriﬁcation of diagnosability                                                      deﬁned by: for any o ∈{ΘΔ(v) ∈O(L(G)) : v ∈Lϕe (G)}
+of fair DES has been investigated by [45], [53], and [54].
+However, the notion of fairness is different from our setting
+here. Speciﬁcally, existing works assume that the dynamic of the           1   if ∀s ∈Lϕe (G) : o = ΘΔ(s) ⇒Σe,F ∈ΘΣ(s)                                                  D(o) =
+system is fair in the sense that each transition can be executed           0  otherwise.
+for inﬁnite number of times whenever it is enabled inﬁnitely.
+                                         We claim that diagnoser D satisﬁes conditions C1 and C2.However, the observation mappings considered therein are still
+                                        We ﬁrst show that the diagnoser satisﬁes condition C2. For anystatically modeled as a natural projection. In contrast, we impose
+                                                           extended normal string s ∈Lϕe (G) and Σe,F /∈ΘΣ(s), we havefairness constraint on the observation mapping rather than the
+                                                D(ΘΔ(s)) = 0, i.e., C2 holds. To see that C1 holds, we considerinternal behavior of the system the system’s dynamic. Further-
+                                                        an extended faulty string s ∈Lϕe,F (G). By ϕ-diagnosability,more, diagnosability with output fairness has been studied in
+our preliminary work [47]. However, the veriﬁcation algorithm   there exists a ﬁnite preﬁx t ∈{s} such that any ﬁnite extended
+in [47] is customized only to the case of output fairness. Here,   string v having the same observation with t is faulty,  i.e.,
+we address this problem within our general framework using the   Σe,F ∈ΘΣ(v). Then, we have D(ΘΔ(t)) = 1, i.e., condition
+uniﬁed veriﬁcation procedure.                         C1 also holds.                        □
+  Remark 6: One can verify that the LTL formulae in Sec-     Proof of Theorem 3
+tions VI-A–C are all safety properties. Therefore, for each     Proof: (⇐) Assume that there exists a reachable cycle π′ =
+corresponding notion of ϕ-diagnosability, a uniform detection       σ1V      σ2V      σn−1V                                                            q1V −−→q2V −−→· · · −−−→qnV in the veriﬁcation system V such
+bound always exists if the system is ϕ-diagnosable. On the                                                                      that qiV ∈Qm,V and θ1(σjV )̸ = ε for some i, j ∈{1, 2, . . . , n},
+other hand, the LTL formula ϕfair here is not a safety property,                                                               but the system G is ϕ-diagnosable. Without loss of generality,
+which means that one cannot ensure the existence of a uniform                                                                               let q1V = (q1, q2) ∈Qm,V , i.e., i = 1, and s2 = σ1V σ2V · · · σn−1V    .
+detection bound.                                                           Since cycle π′ is reachable, we can ﬁnd a string s1 ∈L(V )
+                                                          such that q1V ∈fV (q0,V , s1), where q0,V ∈Q0,V . After repeat-
+                        VII. CONCLUSION                                                              ing the cycle for inﬁnite number of times, we obtain an in-
+  In this article, we developed a uniform framework for di-   ﬁnite string s = s1(s2)ω ∈Lω(V ), over which we get a run
+agnosability analysis of DES subject to unreliable sensors. To            σ0V          σ1V      σ2V      σn−1V
+                                              π = q0V −−→· · · (q1V −−→q2V −−→· · · −−−→qnV )ω. Along run π,
+this end, we used LTL formulae as a general and user-friendly
+                                             we can extract a path ρ = q0V · · · (q1V · · · qnV )ω, where accepting
+tool to model unreliable sensors without restricting to speciﬁc
+                                                                        state q1V ∈Qm,V  appears for inﬁnite number of times,  i.e.,
+sensor types. We proposed a new notion of ϕ-diagnosability
+                                                                  Inf(ρ) ∩Qm,V̸ = ∅. Since there exists i ∈{1, 2, . . . , n} such
+as well as its effective veriﬁcation procedure. Our approach
+                                                                      that θ1(σiV )̸ = ε, the ﬁrst component of sequence sl = θ1(s)
+leverages the automated transformation from LTL formulae to
+                                                                               is also an inﬁnite extended string. By q1V = (q1, q2) ∈Qm,V ,
+Büchi automata, which avoids hand-coding the sensor automata
+                                             we know that q1 is included in Qm,T ∩QF,T which means
+case-by-case. Our framework not only uniﬁes different existing
+                                                                 inﬁnite extended string sl is faulty and accepting in system T,
+notions of robust diagnosability of DES subject to unreliable                                                                      that is, sl ∈Lϕe,F (G). On the other hand, q2 ∈Qfeas,T ∩QN,T
+sensors, but also supports new scenarios of unreliable sensors
+                                                       and by (13), the second component of sequence sr = θ2(s) is
+for which the diagnosability veriﬁcation problems have never
+                                                        normal and every preﬁx of sr is a preﬁx of an accepting extended
+been considered. In the future, we would like to extend our                                                                         string, i.e., ∀v ∈{sr}, v ∈Lϕe (G) and Σe,F /∈sr. Thus, by the
+framework to the decentralized setting with multiple local di-                                                                    ﬁrst property of the veriﬁcation system, for any ﬁnite preﬁx
+agnosers. Also, we would like to further investigate the active                                                                         t ∈{sl},thereexistsv ∈{sr} ⊂Lϕe (G)andΣe,F /∈v suchthat
+diagnosis problem for DES subject to unreliable sensors within
+                                                  ΘΔ(t) = ΘΔ(v), i.e., G is not ϕ-diagnosable.
+our uniform framework.                                              (⇒) Suppose that system G is not ϕ-diagnosable. That is,
+                                                                  there exists an inﬁnite faulty extended string s ∈Lϕe,F (G) such
+                    APPENDIX
+                                                                      that for any preﬁx t ∈{s}, we have a normal extended string
+  Proof of Theorem 1                                                       v ∈Lϕe (G) with the same observation of t, i.e.,
+  Proof: (⇒) Suppose that there exists a diagnoser D sat-
+isfying conditions C1 and C2, while, for the sake of con-        (∃s ∈Lϕe,F (G))(∀t ∈{s}) :
+tradiction that system G  is not ϕ-diagnosable. This means
+                                                                                     e (G))[ΘΔ(w) = ΘΔ(t) ∧Σe,F /∈w].      (37)that there exists an inﬁnite extended faulty string s ∈Lϕe,F (G)        (∃v ∈Lϕ
+    Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 02,2024 at 04:32:39 UTC from IEEE Xplore. Restrictions apply.
+
+DONG et al.: UNIFORM FRAMEWORK FOR DIAGNOSIS OF DISCRETE-EVENT SYSTEMS WITH UNRELIABLE SENSORS                             159
+
+
+Thus, for inﬁnite extended faulty string s ∈Lϕe,F (G), there  Qm,V . Furthermore, since |{(q1, q2) : q2 ∈QN,T }| ≤|QN,T |
+exists a path ρ along string s in system T such that Inf(ρ) ∩  and  |{(σ1V , σ2V ) ∈ΣV  : σ1V̸ = ε}| ≤|Σe| × (|Σe ∪{ε}|), by
+Qm,T ∩QF,T̸ = ∅. By the accepting condition of Büchi au-                                                    σ1V      σ2V                                                                 the axiom of choice, there exists a cycle π = q1V −−→q2V −−→
+tomata, we can select a state q1 ∈Inf(ρ) ∩Qm,T ∩QF,T such       σn−1V
+that there is a ﬁnite faulty preﬁx t ∈{s}, over which the path    · · · −−−→qnV  such  that  there  exist  i, j ∈{1, 2, . . . , n −1}
+can reach state q1 exceeding |Σe| × (|Σe ∪{ε}|) × |QT | times.   satisfying qiV ∈Qm,V and θ1(σjV )̸ = ε. By Theorem 2, we
+By (37), there exists a normal extended string v ∈Lϕe (G) hav-   conclude that the system is not ϕ-diagnosable.        □
+ing the same observation with t. By (13), set δT (Q0,T , v) ∩
+Qfeas,T ∩QN,T  is not empty. Thus, by the second property
+                                                                REFERENCES
+of the veriﬁcation system, there exists a string sV ∈L(V ) in
+veriﬁcation system V such that θ1(sV ) = t, θ2(sV ) = v and the     [1] C. Cassandras and S. Lafortune, Introduction to Discrete Event Systems.
+                                                                                          Berlin, Germany: Springer, 2021, vol. 3.
+run π′ over sV visits state qV ∈{(q1, q2) : q2 ∈δT (Q0,T , v) ∩     [2]  F. Lin, “Diagnosability of discrete event systems and its applications,”
+Qfeas,T ∩QN,T } by event σ ∈{(σ1V , σ2V ) ∈ΣV  : σ1V̸ = ε} ex-         Discrete Event Dyn. Syst., vol. 4, no. 2, pp. 197–212, 1994.
+ceeding |Σe| × (|Σe ∪{ε}|) × |QT | times,  i.e., the structure     [3] M. Sampath, R. Sengupta, S. Lafortune, K. Sinnamohideen, and D.
+σ−→qV  appears in π′ exceeding |Σe| × (|Σe ∪{ε}|) × |QT |         Teneketzis,tom. Control,“Diagnosabilityvol. 40, no. 9, pp.of discrete-event1555–1575, Sep.systems,”1995. IEEE Trans. Au-
+times. By deﬁnition of set Qm,V , we know that state qV      [4]  F. Lin et al., “N-diagnosability for active on-line diagnosis in discrete event
+is included in Qm,V . Since |{(q1, q2) : q2 ∈δT (Q0,T , v) ∩         systems,” Automatica, vol. 83, pp. 220–225, 2017.
+                                                                                      [5] X. Yin and S. Lafortune, “On the decidability and complexity of diagnos-
+Qfeas,T ∩QN,T }| ≤|QT | and |{(σ1V , σ2V ) ∈ΣV  : σ1V̸ = ε}| ≤          ability for labeled Petri nets,” IEEE Trans. Autom. Control, vol. 62, no. 11,
+|Σe| × (|Σe ∪{ε}|), by the Pigeonhole principle, there exists         pp. 5931–5938, Nov. 2017.
+                σ1V      σ2V      σn−1V                                         [6]  F. Basile, M. Cabasino, and C. Seatzu, “Diagnosability analysis of labeled
+a cycle π = q1V −−→q2V −−→· · · −−−→qnV , such that there exist         time petri net systems,” IEEE Trans. Autom. Control, vol. 62, no. 3,
+i, j ∈{1, 2, . . . , n −1}satisfyingqiV ∈Qm,V andθ1(σjV )̸ = ε.     [7] D.pp.Lefebvre1384–1396,andMar.C. Delherm,2017.   “Diagnosis of DES with petri net models,”
+□                                                               IEEE Trans. Automat. Sci. Eng., vol. 4, no. 1, pp. 114–118, Jan. 2007.
+  Proof of Theorem 2                                                          [8]  S. Takai and R. Kumar, “A generalized framework for inference-based
+  Proof: Since ﬁnite ϕ-diagnosability implies ϕ-diagnosability,         diagnosis of discrete event systems capturing both disjunctive and con-
+                                                                                         junctive decision-making,” IEEE Trans. Autom. Control, vol. 62, no. 6,
+we focus on the other direction. Suppose that system G is not         pp. 2778–2793, Jun. 2017.
+ﬁnite ϕ-diagnosable, i.e.,                                                      [9] N. Ran, H. Su, A. Giua, and C. Seatzu, “Codiagnosability analysis
+                                                                                     of bounded petri nets,” IEEE Trans. Autom. Control, vol. 63, no. 4,
+    (∀n ∈N)(∃s ∈Ψϕe (G))(∃st ∈Lϕe (G)) : [(|t| ≥n)∧               pp. 1192–1199, Apr. 2018.                                                                               [10] X. Yin, J. Chen, Z. Li, and S. Li, “Robust fault diagnosis of stochastic
+                                                                                           discrete event systems,” IEEE Trans. Autom. Control, vol. 64, no. 10,
+    (∃v ∈Lϕe (G))[ΘΔ(v) = ΘΔ(st) ∧Σe,F /∈v]].      (38)         pp. 4237–4244, Oct. 2019.
+                                                                               [11] G. Viana and J. Basilio, “Codiagnosability of discrete event systems
+According to [51, Th. 1], word(ϕ) is a safety property, if and          revisited: A new necessary and sufﬁcient condition and its applications,”
+only  if,  it can be accepted by a Büchi automaton in which         Automatica, vol. 101, pp. 354–364, 2019.
+                                                                               [12] Y. Hu, Z. Ma, Z. Li, and A. Giua, “Diagnosability enforcement in la-
+all states are accepting, i.e., B = (X, X0, ΣB, ξ, Xm), where         beled petri nets using supervisory control,” Automatica, vol. 131, 2021,
+Xm = X. For example, Büchi automata in Figs. 3 and 6(b)          Art. no. 109776.
+are all such automata, which means that ϕper and ϕK-loss are    [13] Z. Ma, X. Yin, and Z. Li, “Marking diagnosability veriﬁcation in labeled
+                                                                                                petri nets,” Automatica, vol. 131, 2021, Art. no. 109713.
+both safety LTL. Since Xm = X, we know that all states in the    [14] Y. Pencolé and A. Subias, “Diagnosability of event patterns in safe labeled
+observation constrained system are also accepting, i.e., Qm,T =         time petri nets: A model-checking approach,” IEEE Trans. Automat. Sci.
+{(˜q, x) ∈QT  : x ∈Xm} = QT , and we also have Qfeas,T =         Eng., vol. 19, no. 2, pp. 1151–1162, Apr. 2022.
+                                                                               [15]  J. Zaytoon and S. Lafortune, “Overview of fault diagnosis methods for
+QT . In this case, accepting states in the veriﬁcation system can          discrete event systems,” Annu. Rev. Control, vol. 37, no. 2, pp. 308–320,
+be reduced as                                                               2013.
+                                                                               [16]  S. Lafortune, F. Lin, and C. Hadjicostis, “On the history of diagnosability
+                                 q1 ∈Qm,T ∩QF,T                  and opacity in discrete event systems,” Annu. Rev. Control, vol. 45,
+  Qm,V =   (q1, q2) ∈QV  :
+                          and q2 ∈Qfeas,T ∩QN,T                 pp. 257–266, 2018.
+                                                                               [17]  J. Basilio, C. Hadjicostis, and R. Su, “Analysis and control for resilience
+                                q1 ∈QF,T                               of discrete event systems: Fault diagnosis, opacity and cyber security,”
+     =   (q1, q2) ∈QV  :                              .                     Foundations Trends Syst. Control, vol. 8, no. 4, pp. 285–443, 2021.
+                          and q2 ∈QN,T                       [18] A. Boussif, M. Ghazel, and J. Basilio, “Intermittent fault diagnosability
+                                                                                     of discrete event systems: An overview of automaton-based approaches,”
+Consider   detection  delay  n > |QF,T | × |QN,T | × |Σe| ×         Discrete Event Dynamic Syst., vol. 31, no. 1, pp. 59–102, 2021.
+(|Σe ∪{ε}|)  in  (38).  Let ρ  be  the  path  visited  along    [19] L. Carvalho, M. Moreira, and J. Basilio, “Comparative analysis of related
+                                                                                    notions of robust diagnosability of discrete-event systems,” Annu. Rev.
+extended  faulty  string st  in T. By the axiom of choice,                                                                                     Control, vol. 51, pp. 23–36, 2021.
+there  is at least one state q1 ∈QF,T  that appears at least    [20] L.Carvalho,J.Basilio,andM.Moreira,“Robustdiagnosisofdiscreteevent
+|QN,T | × |Σe| × (|Σe ∪{ε}|) times in path ρ. By the second        systems against intermittent loss of observations,” Automatica, vol. 48,
+                                                                                     no. 9, pp. 2068–2078, 2012.
+property  of  the  veriﬁcation  system,  there  exists a  string                                                                               [21] D. Thorsley, T. Yoo, and H. Garcia, “Diagnosability of stochastic discrete-
+sV ∈L(V ) in system V such that θ1(sV ) = st, θ2(sV ) = v         event systems under unreliable observations,” in Proc. Amer. Control
+and the run π′ over sV visits state qV ∈{(q1, q2) : q2 ∈QN,T }         Conf., 2008, pp. 1158–1165.
+                                                                               [22] E. Athanasopoulou, L. Li, and C. Hadjicostis, “Maximum likelihood
+by    event   σ ∈{(σ1V , σ2V ) ∈ΣV  : σ1V̸ = ε}    exceeding          failure diagnosis in ﬁnite state machines under unreliable observations,”
+|QN,T | × |Σe| × (|Σe ∪{ε}|) times. Note that, we have qV ∈       IEEE Trans. Autom. Control, vol. 55, no. 3, pp. 579–593, Mar. 2010.
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 02,2024 at 04:32:39 UTC from IEEE Xplore. Restrictions apply.
+
+160                                                           IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 1, JANUARY 2024
+
+
+
+[23]  S. Takai and T. Ushio, “Veriﬁcation of codiagnosability for discrete event    [49] C. Baier and J. Katoen, Principles of Model Checking. Cambridge, MA,
+     systems modeled by mealy automata with nondeterministic output func-       USA: MIT Press, 2008.
+      tions,” IEEE Trans. Autom. Control, vol. 57, no. 3, pp. 798–804, Mar. 2012.    [50] D. Giannakopoulou and F. Lerda, “From states to transitions: Improving
+[24] L. Carvalho, M. Moreira, J. Basilio, and S. Lafortune, “Robust diagnosis          translation of LTL formulae to büchi automata,” in Proc. Int. Conf. Formal
+      of discrete-event systems against permanent loss of observations,” Auto-         Techn. Networked Distrib. Syst., Springer, 2002, pp. 308–326.
+     matica, vol. 49, no. 1, pp. 223–231, 2013.                                  [51] B. Alpern and F. B. Schneider, “Recognizing safety and liveness,” Distrib.
+[25] N. Kanagawa and S. Takai, “Diagnosability of discrete event systems        Comput., vol. 2, no. 3, pp. 117–126, 1987.
+      subject to permanent sensor failures,” Int. J. Control, vol. 88, no. 12,    [52] R. Tarjan, “Depth-ﬁrst search and linear graph algorithms,” SIAM J.
+     pp. 2598–2610, 2015.                                                     Comput., vol. 1, no. 2, pp. 146–160, 1972.
+[26]  J. Tomola, F. Cabral, L. Carvalho, and M. Moreira, “Robust disjunctive-    [53]  S. Biswas, D. Sarkar, S. Mukhopadhyay, and A. Patra, “Fairness of
+      codiagnosability of discrete-event systems against permanent loss of ob-          transitions in diagnosability of discrete event systems,” Discrete Event
+      servations,” IEEE Trans. Autom. Control, vol. 62, no. 11, pp. 5808–5815,        Dyn. Syst., vol. 20, no. 3, pp. 349–376, 2010.
+     Nov. 2017.                                                               [54] V. Germanos, S. Haar, V. Khomenko, and S. Schwoon, “Diagnosability
+[27] A. Wada and S. Takai, “Decentralized diagnosis of discrete event systems        under weak fairness,” ACM Trans. Embedded Comput. Syst., vol. 14, no. 4,
+      subject to permanent sensor failures,” Discrete Event Dyn. Syst., pp. 1–35,         pp. 1–19, 2015.
+     2021.
+[28] L. Carvalho, M. Moreira, and J. Basilio, “Generalized robust diagnos-
+      ability of discrete event systems,” IFAC Proc. Volumes, vol. 44, no. 1,
+     pp. 8737–8742, 2011.
+[29]  S. Takai, “A general framework for diagnosis of discrete event systems
+      subject to sensor failures,” Automatica, vol. 129, 2021, Art. no. 109669.                                                                                           Weijie Dong (Student Member, IEEE) was born
+[30]  F. Lin, “Control of networked discrete event systems: Dealing with com-                                                                                                                in Xinjiang, China, in 1996. He received the B.S.
+     munication delays and losses,” SIAM J. Control Optim., vol. 52, no. 2,                                                                                    degree in water conservancy and hydropower
+     pp. 1276–1298, 2014.                                                                                           engineering from Huazhong University of Sci-
+[31] C. Nunes, M. Moreira, M. Alves, L. Carvalho, and J. Basilio, “Codiag-                                                                                ence and Technology in 2019. He is currently
+      nosability of networked discrete event systems subject to communication                                                                                        working toward the Ph.D. degree  in  control
+     delays and intermittent loss of observation,” Discrete Event Dyn. Syst.,                                                                                          science and engineering with the Department
+      vol. 28, no. 2, pp. 215–246, 2018.                                                                                                        of Automation, Shanghai Jiao Tong University,
+[32] Y. Sasi and F. Lin, “Detectability of networked discrete event systems,”                                                                                       Shanghai, China.
+     Discrete Event Dyn. Syst., vol. 28, no. 3, pp. 449–470, 2018.                                                                                            His current research interests include fault di-
+[33] R.  Tai, L. Lin, Y. Zhu, and R. Su, “A new modeling framework                                                                                              agnosis, state estimation of discrete event sys-
+      for networked discrete-event systems,” Automatica,  vol. 138, 2022,                                                                    tems.
+      Art. no. 110139.
+[34] V. Oliveira, F. Cabral, and M. Moreira, “K-loss robust codiagnosability of
+      discrete-event systems,” Automatica, vol. 140, 2022, Art. no. 110222.
+[35] X. Yin, “Initial-state detectability of stochastic discrete-event systems with
+      probabilistic sensor failures,” Automatica, vol. 80, pp. 127–134, 2017.
+[36] Y. Tong, J. Luo, and C. Seatzu, “State estimation of discrete-event systems
+      subject to intermittent and permanent loss of observations,” in Proc. IEEE                      Xiang Yin (Member, IEEE) was born in Anhui,
+     60th Conf. Decis. Control, 2021, pp. 1048–1053.                                             China, in 1991. He received the B.Eng. degree
+[37] K. Rohloff, “Sensor failure tolerant supervisory control,” in Proc. IEEE                        from Zhejiang University, Zhejinag, China, in
+     44th Conf. Decis. Control, 2005, pp. 3493–3498.                                           2012, and the M.S. and Ph.D. degrees from
+[38]  T. Ushio and S. Takai, “Nonblocking supervisory control of discrete                          the University of Michigan, Ann Arbor, MI, USA,
+     event systems modeled by mealy automata with nondeterministic output                               in 2013 and 2017, respectively, all in electrical
+      functions,” IEEE Trans. Autom. Control, vol. 61, no. 3, pp. 799–804,                          engineering.
+     Mar. 2016.                                                                            Since 2017, he has been with the Department
+[39] X. Yin, “Supervisor synthesis for mealy automata with output functions:                             of Automation, Shanghai Jiao Tong University,
+   A model transformation approach,” IEEE Trans. Autom. Control, vol. 62,                        Shanghai, China, where he  is an Associate
+     no. 5, pp. 2576–2581, May 2017.                                                              Professor. His research interests include formal
+[40] M. Alves, A. Cunha, L. Carvalho, M. Moreira, and J. Basilio, “Robust   methods, discrete-event systems, and cyber-physical systems.
+     supervisory control of discrete event systems against intermittent loss of      Dr. Yin was the recipient of the IEEE Conference on Decision and
+      observations,” Int. J. Control, vol. 94, no. 7, pp. 2008–2020, 2021.         Control (CDC) Best Student Paper Award Finalist in 2016. He is serving
+[41]  S. Jiang and R. Kumar, “Failure diagnosis of discrete-event systems with   as the co-chair of the IEEE CSS Technical Committee on Discrete
+      linear-time temporal logic speciﬁcations,” IEEE Trans. Autom. Control,   Event Systems, an Associate Editor for the Journal of Discrete Event
+      vol. 49, no. 6, pp. 934–945, Jun. 2004.                            Dynamic Systems: Theory & Applications, and a Member of the IEEE
+[42]  S. Jiang and R. Kumar, “Diagnosis of repeated failures for discrete event  CSS Conference Editorial Board.
+     systems with linear-time temporal-logic speciﬁcations,” IEEE Trans. Au-
+     tomat. Sci. Eng., vol. 3, no. 1, pp. 47–59, Jan. 2006.
+[43]  J. Chen and R. Kumar, “Fault detection of discrete-time stochastic systems
+      subject to temporal logic correctness requirements,” IEEE Trans. Automat.
+      Sci. Eng., vol. 12, no. 4, pp. 1369–1379, Oct. 2015.
+[44] F.Cassez,“Thecomplexityofcodiagnosabilityfordiscreteeventandtimed
+     systems,” IEEE Trans. Autom. Control, vol. 57, no. 7, pp. 1752–1764,                    Shaoyuan Li (Senior Member, IEEE) was born
+      Jul. 2012.                                                                                                in Hebei, China, in 1965. He received the B.S.
+[45] B. Bittner, M. Bozzano, A. Cimatti, M. Gario, S. Tonetta, and V. Vozarova,                      and M.S. degrees in automation from the Hebei
+     “Diagnosability of fair transition systems,” Artif. Intell., vol. 309, 2022,                           University of Technology, Tianjin, China, in 1987
+      Art. no. 103725.                                                              and 1992, respectively, and the Ph.D. degree in
+[46]  T. Tuxi, L. Carvalho, E. Nunes, and A. da Cunha, “Diagnosability veri-                            control science from Nankai University, Tianjin,
+     ﬁcation using LTL model checking,” Discrete Event Dyn. Syst., vol. 32,                         China, in 1997.
+     no. 3, pp. 399–433, 2022.                                                                Since 1997, he has been with the Depart-
+[47] W. Dong, S. Gao, X. Yin, and S. Li, “Fault diagnosis of discrete-event                      ment of Automation, Shanghai Jiao Tong Uni-
+     systems under non-deterministic observations with output fairness,” in                                versity, Shanghai, China, where he is currently
+     Proc. 61th IEEE Conf. Decis. Control, 2022, pp. 4256–4262.                              a Professor. His current research interests in-
+[48]  T. Yoo and H. Garcia, “Event diagnosis of discrete-event systems with   clude model predictive control, dynamic system optimization, and cyber-
+     uniformly and nonuniformly bounded diagnosis delays,” in Proc. Amer.   physical systems.
+     Control Conf., vol. 6, 2004, pp. 5102–5107.                                 Dr. Li is the Vice President of the Chinese Association of Automation.
+
+
+    Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on January 02,2024 at 04:32:39 UTC from IEEE Xplore. Restrictions apply.

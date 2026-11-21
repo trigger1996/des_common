@@ -1,0 +1,853 @@
+                                                            Automatica 164 (2024) 111644
+
+
+                                            Contents lists available at ScienceDirect
+
+                              Automatica
+
+
+                                         journal homepage: www.elsevier.com/locate/automatica
+
+
+On the verification of detectability for timed discrete event systems✩
+                                                                                     a,b,∗Weijie Dong a,b, Kuize Zhang c, Shaoyuan Li a,b, Xiang Yin
+a Department of Automation, Shanghai Jiao Tong University, Shanghai 200240, China
+b Key Laboratory of System Control and Information Processing, Ministry of Education of China, Shanghai 200240, China
+c Department of Computer Science, University of Surrey, Guildford GU2 7XH, UK
+
+
+a r t i c l e    i n f o             a b s t r a c t
+
+
+Article history:                                   In this paper, we investigate the problem of state estimation and detection in the context of timed
+Received 8 February 2023                       discrete-event systems. Specifically, we study the verification of detectability, a fundamental state es-
+Received in revised form 8 January 2024          timation property for dynamic systems. Existing works on this topic mainly focus on untimed DESs. In
+Accepted 14 February 2024                 some applications, however, real-time information is critical for the purpose of system analysis. To this
+Available online 30 March 2024
+                                             end, in this paper, we investigate the verification of detectability for timed DESs modeled by partially-
+Keywords:                                  observed timed automata. Three notions of detectability, strong detectability, weak detectability and
+State estimate                               delayed detectability, are studied in a dense-time setting, which characterizes detectability by time
+Detectability                                   elapsing rather than event updating steps. We show that verifying strong detectability and delayed
+Partially-observed timed automata                 detectability for partially-observed timed automata is decidable by providing verifiable necessary and
+                                                   sufficient conditions. Furthermore, we show that weak detectability is undecidable in the timed setting
+                                       by reducing the language universality problem for timed automata to the verification problem of weak
+                                                   detectability. Our results extend the detectability analysis of DESs from the untimed setting to a timed
+                                                   setting.
+                                                              © 2024 Elsevier Ltd. All rights reserved.
+
+
+
+
+1. Introduction                                              used in modeling the high-level logical dynamics in CPSs (Cassan-
+                                                                  dras & Lafortune, 2021). In the context of DESs, state estimation
+   Engineering cyber–physical systems (CPSs), such as flexible    problem was initiated by Caines, Greiner, and Wang (1988) and
+manufacturing systems, intelligent transportation systems and    Ramadge (1986), where the concepts of observability was pro-
+power systems, are generally very complex and operate in open    posed and the observer structure was constructed to check if one
+environments. In practice, the user cannot directly obtain the    can determine the state of the system uniquely by observations.
+full state information of the system due to observation uncer-     Later in the work of Shu, Lin, and Ying (2007), detectability
+tainties or nondeterminism of the system dynamics. Therefore,    was systematically investigated for DESs, where four different
+one turns to take state estimation process to obtain precise state    types of detectability as well as their verification algorithms
+information so that some subsequent tasks, which rely on state    were provided. To further characterize different state estimation
+information, can be performed. To this end, it is of our interest    requirements, several variations of detectability have also been
+to know whether or not the system has some desired properties,    proposed in the literature, including,  e.g., delayed detectabil-
+which  is referred to as detectability, so that  it has sufficient     ity (Shu & Lin, 2012), K-detectability (Hadjicostis & Seatzu, 2016),
+information to distinguish state under imperfect information.         I-detectability (Shu & Lin, 2013b), D-detectability (Balun & Ma-
+   In this paper, we investigate the state estimation problem in     sopust, 2021) and trajectory detectability in Yin, Li, and Wang
+the framework of discrete-event systems (DESs) which are widely     (2018). The enforcement of detectability, accomplished by su-
+                                                                   pervisory control, has been investigated in Shu and Lin (2013a).
+ ✩This work was supported by the National Natural Science Foundation of     Recently, detectability verification has been extended to more
+China (62173226, 62061136004) and the Alexander von Humboldt Foundation.    complex DESs models, including,  e.g., labeled Petri nets (Lan,
+The material  in  this paper was  partially presented  at the 2022 American     Tong., & Seatzu, 2021; Masopust & Yin, 2019; Zhang & Giua, 2018,
+Control Conference, June 8-10, 2022, Atlanta, Georgia, USA. This paper was    2020), probabilistic automata (Keroglou & Hadjicostis, 2015, 2017),
+recommended for publication in revised form by Associate Editor Michel Reniers    unambiguous weighted automata (Lai, Lahaye, & Giua, 2020) and
+under the direction of Editor Christos G. Cassandras.                         hybrid systems (Lin, Wang, Yin, Polis, & Chen, 2022). The reader  ∗Corresponding author at: Department of Automation, Shanghai Jiao Tong
+                                                                                       is referred to the comprehensive textbook (Hadjicostis, 2020) for
+University, Shanghai 200240, China.
+     E-mail addresses:  wjd_dollar@sjtu.edu.cn (W. Dong),                  more details on this topic.
+kuize.zhang@surrey.ac.uk (K. Zhang), syli@sjtu.edu.cn (S. Li),                    The above mentioned works only consider DESs without real-
+yinxiang@sjtu.edu.cn (X. Yin).                                           time  information.  In  practice, many  real-world  engineering
+
+
+https://doi.org/10.1016/j.automatica.2024.111644
+0005-1098/© 2024 Elsevier Ltd. All rights reserved.
+
+W. Dong, K. Zhang, S. Li et al.                                                                                                   Automatica 164 (2024) 111644
+
+systems have time constraints when generating events and ad-   & An, 2018; Zhang, 2021). However, these notions are incom-
+ditional time information is also readily available for the purpose    parable to detectability, which has been argued in the untimed
+of state estimation. Thus, it is necessary to model and analyze     setting (Shu et al., 2007). Particularly, for general timed automata
+executions of the system with time constraints. Such a real-time     that we consider in this work, it has been shown by Cassez (2009)
+issue can be captured by timed automata proposed in the seminal     that verification of opacity is undecidable. However, our result
+work of Alur and Dill (1994). In the context of detectability     reveals that several versions of detectability are still decidable for
+analysis, if one can ‘‘measure’’ the time execution, e.g., by having    general timed automata. To the best of our knowledge, detectabil-
+a global clock, then additional information can be obtained to     ity for timed automata has not been systematically investigated
+improve the capability of estimating the system. However, this     in the literature.
+critical time information is ignored in the purely untimed setting.      The outline of this paper is as follows. In Section 2, we provide
+   In this paper, we study the detectability verification problems     basic background on timed DESs modeled by partially-observed
+for timed DESs modeled by partially-observed timed automata.    timed automata. In Section 3, three typical detectability notions,
+The main contributions of this work are as follows.                 strong detectability, weak detectability and delayed detectability,
+                                                                   are introduced for partially-observed timed automata. Verifica-
+  • First, we introduce the notions of strong detectability, weak
+                                                                      tion algorithm for strong detectability is provided in Section 4.
+     detectability and delayed detectability for timed automata.
+                                                                       In Section 5, we establish the undecidability result for weak
+     Different from the existing notions in the untimed set-
+                                                                           detectability. Section 6 shows how to verify delayed detectabil-
+     ting (Shu & Lin, 2012; Shu et al., 2007), where the number
+                                                                                ity for partially-observed timed automata. Finally, we conclude
+     of observable events is used to count the observation delays,
+                                                                 the paper in Section 7. A preliminary version of some results
+     here we directly utilize the real time information to describe
+                                                                        in this paper are presented in Dong, Yin, Zhang, and Li (2022)
+      detectability, which provides a more natural and realistic
+                                                              without proofs. In this work, we provide complete proofs with
+    measure for delays.
+                                                     more detailed examples. Furthermore, Dong et al. (2022) only
+  • Second, we present effective algorithms for checking strong
+                                                                  studied strong detectability and weak detectability, while the
+     detectability and delayed detectability for timed automata,
+                                                                 present work further extends the results to the case of delayed
+     respectively. Our approach is to first construct a verification
+                                                                           detectability.
+     structure based on the original system. Then for each prop-
+      erty, we reduce the detectability verification problem to a
+                                                                             2. Preliminaries
+     state search problem in the region graph of the constructed
+      verification structure.
+  • Third, we show that the verification of weak detectability      2.1. System model
+       is undecidable in the timed setting. This result  is quite
+                                                                         Let R≥0 be the set of non-negative real numbers and N be the     different from the untimed setting (Masopust, 2018; Shu
+                                                                        set of natural numbers. A clock is a variable whose codomain is     et al., 2007; Zhang, 2017), where weak detectability for fi-
+                                                        R≥0 and we denote by X a finite set of clocks. A valuation on X     nite state automata models is shown to be PSPACE-complete
+                                                                                       is a function v  : X →R≥0 that assigns to each clock x ∈X    and hence can be verified in exponential time.
+                                                               a real value v(x) ∈R≥0. We denote by VX the set of all clock
+  We note that state estimation for timed DESs modeled by     valuations on X. Given a valuation v ∈VX and a subset Y ⊆X of
+special subclasses of partially-observed timed automata has been     clocks, we denote by v[Y←0] the valuation that sets all clocks in Y
+investigated recently by many researchers (Basile & Ferrara, 2021;     to zero, i.e., v[Y←0](x) = 0 if x ∈Y and v[Y←0] = v(x) otherwise.
+Gao, Lefebvre, Seatzu, Li, & Giua, 2020; Li, Lefebvre, Hadjicostis,   We denote by 0X the valuation in which all clocks are zero. For
+&  Li, 2022). For example, Gao et al. (2020) discussed how to   ∆∈R≥0, we define the valuation function v + ∆by: for every
+perform state estimation for timed automata using λ-observers    x ∈X, (v + ∆)(x) = v(x) + ∆.
+and, in Li et al. (2022), Li et al. proposed observer construction for      An atomic constraint is of form x ∼c, where x ∈X is a clock,
+constant-time labeled automata (CTLA) to investigate state esti-     c ∈N is a constant and ∼∈{≤, <, ≥, >, =}. Given a valuation v,
+mation problem of CTLA. However, both Gao et al. (2020) and Li   we say v satisfies the atomic constraint x ∼c if v(x) ∼c. Then
+et al. (2022) do not consider the detectability verification problem    a clock constraint or a guard is a conjunction of a finite number
+as we investigate in this work. Also, our technical approach is dif-     of atomic constraints and we denote by C(X) the set of all clock
+ferent from Gao et al. (2020) and Li et al. (2022), since we do not     constraints (guards) over X. For any clock constraint g ∈C(X)
+require the subset construction for observer. Furthermore, Gao    and valuation v ∈VX , we denote that v satisfies g by v |H g.
+et al. (2020) and Li et al. (2022) considers timed automata with        In this paper, we consider timed systems modeled by partially-
+only single clock reset at each event transition. Therefore, both of    observed timed automata (Alur & Dill, 1994; Henzinger, Nicollin,
+our system model and observation model are more general and     Sifakis, & Yovine, 1994). Formally, a timed automaton (TA) is a
+subsume the models in Gao et al. (2020) and Li et al. (2022). In Lai,     six-tuple
+Lahaye, and Giua (2019) and Lai, Lahaye, and Komenda (2022), Lai
+et al. investigated the observer construction for timed systems    A = (Q, q0, Σ, X, inv, E),
+by interpreting time into weights and using max-plus automata                                                       where
+to model timed systems. In Basile, Cabasino, and Seatzu (2015)
+and Ma, Li, and Giua (2019), authors investigated state estimation      • Q is a finite set of discrete states;
+for timed Petri nets. In Lin et al. (2022), detectability of hybrid      • q0 ∈Q is the initial discrete state;
+systems was investigated, where hybrid systems were modeled      • Σ is a finite alphabet;
+by hybrid machines and they did not consider the influence of      • X is a finite set of clocks;
+real-time constraints.                                          • inv : Q →C(X) is an invariant function that assigns to each
+   In the context of property verification of timed systems, effec-          state q a clock constraint inv(q) constraining the time region
+tive   algorithms   have   been   proposed    for   checking         the system is allowed to stay in q;
+(co)diagnosability (Cassez, 2012; Tripakis, 2002). More recently,      • E ⊆Q × C(X) × Σ × 2X × Q  is the set of transitions.
+verification for opacity has also been investigated for timed sys-           Specifically, each transition is of form e = (q, g, σ, Y, q′),
+tems (Ammar, El Touati, Yeddes, & Mullins, 2021; Wang, Zhan,        where q ∈ Q and q′ ∈ Q  are, respectively, the initial
+
+                                                                   2
+
+W. Dong, K. Zhang, S. Li et al.                                                                                                   Automatica 164 (2024) 111644
+
+    and final discrete states of the transition, σ ∈Σ  is the       For any finite path s = s0s1 · · · sn, we denote by last(s) the
+     corresponding event of the transition, g ∈C(X) is the guard     last state in the path. The set of timed words generated by A
+     specifying the time when the transition can be enabled and      is TW(A) = {ρπ   : π ∈Run(A)}; TWω(A) and TW∗(A) denote,
+    Y ⊆X is the set of clocks that should be reset to zero after     respectively, the sets of infinite and finite timed words generated
+      this transition.                                         by A. The untimed language of A is utw(TW(A)) = {utw(ρ) : ρ ∈
+                                                                TW(A)}. The set of runs induced by a timed word ρ ∈TW(A)
+   Given a timed automaton A, a timed state (or simply a state) is                                                                                       is Run(ρ) = {π ∈Run(A)  : ρπ = ρ}. With a slight abuse of
+a pair s = (q, v), where q ∈Q is a discrete state and v ∈VX is a                                                                      notation, we define the set of last states induced by ρ is last(ρ) =
+clock valuation such that v |H inv(q). We denote by S(A) = Q ×VX                                                                            {(q, v) ∈S(A) : ∃π ∈Run(ρ) s.t. (q, v) = last(sπ)}. For the sake of
+the set of all states in A. In particular, the initial state of A is                                                                          simplicity, we denote by lastd(·) = dis(last(·)) the discrete states
+defined by (q0, 0X ). Given a state s = (q, v), its discrete state     of last(·), where ‘‘·’’ can be a finite path or a finite timed word.
+component is denoted by dis(s) = q.                                                               Given a TA A, an infinite run π ∈Runω(A) is said to be non-
+  A finite (infinite) word over Σ is a finite (infinite) sequence                                                                zeno if time(ρπ) = ∞; otherwise, it is zeno. A zeno run describes
+σ1 . . . σn(. . . ); we denote by Σ∗and Σω, respectively, the set of fi-    the phenomenon that infinite events are enabled in a finite time.
+nite words and the set of infinite words over Σ and define Σ+ =                                                 A state s = (q, v) ∈S(A) is said to be a timelock if all infinite runs
+Σ∗\{ε}, where ε denote the empty word. A timed word over Σ                                                                         starting from s are zeno. For the sake of simplicity, we assume
+is a word over R≥0 × (Σ ∪{ε}), e.g., ρ = (∆0, σ0)(∆1, σ1) · · · ,     that the TA is timelock-free (Tripakis, 2002) in the sense that
+where (∆0, σ0) denotes that event σ0 occurs after the system has    there is no timelock state reachable. This assumption holds for
+been started after ∆0 time elapsing, and (∆i, σi), i ∈{1, 2, . . .}    most of the engineering systems as a timelock state will prevent
+means that event σi occurs ∆i time elapsing after the previous    time progressing, which is not realistic in real-world systems.
+event σi−1. Note that (∆, ε) ∈R≥0 × {ε} denotes that there is    Furthermore, we will discuss how to relax this assumption later
+only ∆time elapsing but has no event occurrence. Thus, if there     in Remark 3.
+is an event (∆′, σ ′) ∈R≥0 × Σ after (∆, ε) in a timed word,
+we combine them by summing up the time elapsing and erasing                                                                                   2.2. Region automata
+event (∆, ε), i.e., (∆, ε)(∆′, σ ′) = (∆+ ∆′, σ ′); if there are two
+events (∆, ε), (∆′, ε) in a row, it is equivalent to replacing them                                                                    For later technical developments, here we briefly review the
+by (∆+ ∆′, ε), i.e., (∆, ε)(∆′, ε) = (∆+ ∆′, ε). Given a timed    region automata (Alur & Dill, 1994), which are widely used as
+word ρ, we denote by |ρ| the length of ρ, which is the number of     finite abstractions of timed automata for the purpose of verifi-
+events (∆, σ) ∈R≥0 × Σ appearing in ρ. We denote by TW∗(Σ)     cation. The reader is referred to Alur and Dill (1994) and Baier
+and TWω(Σ), respectively, the set of all finite timed words and    and Katoen (2008) for more details.
+the set of all infinite timed words over Σ; we use TW(Σ) =       Given a timed automaton A =  (Q, q0, Σ, X, inv, E), each
+TW∗(Σ) ∪TWω(Σ) to denote all timed words. For any timed     region of A is an equivalence class of time valuations; we denote
+word ρ = (∆0, σ0)(∆1, σ1) . . . , we define time(ρ) = ∑|ρ|i=0 ∆i    the set of regions of A by R and use [v]R to denote the unique
+as the total time elapsing in ρ and define utw(ρ) = σ0σ1 . . . as    region to which valuation v belongs. The region automaton of A is
+its untimed word. Given a timed word ρ ∈TW(Σ), we define    a 4-tuple
+Pre(ρ) = {ρ′ ∈TW∗(Σ) : ∃ρ′′ ∈TW(Σ) s.t. ρ′ρ′′ = ρ∧time(ρ′) <
+∞} as the set of all finite prefixes of timed word ρ.                RG(A) = (Q R, qR0, ΣR, ER),
+   In timed automata, there are two types of transitions: delay                                                       where Q R = Q × R is the set of states, qR0 = (q0, [0X]R) is the
+state transitions and discrete state transitions. Formally, for any                                                                                           R
+                                                                                    initial state, ΣR = Σ∪{τ} is set of events and ER : Q R×ΣR →2Q
+states s = (q, v), s′ = (q′, v′) ∈S(A), time delay ∆∈R≥0 and
+                                                                                       is the non-deterministic transition function defined by: for any
+event σ ∈Σ,                                                                            (q, r), (q′, r′) ∈Q R, σ ∈ΣR, we have (q′, r′) ∈ER((q, r), σ) if
+                                               (∆,ε)
+  • a delay state transition (q, v) −−→(q,                                      v + ∆) is defined if      (i) σ ∈Σ and there is a transition (q, g, σ, Y, q′) ∈E such
+    v + ∆|H inv(q);                                                that v  |H  g and v[Y←0] ∈  r′ for any v ∈  r; or  (ii) σ =
+                                                      (0,σ)                             τ, q =  q′ and  r′  is a time successor region of  r, which  is
+  • a discrete state transition (q, v) −−→(q′, v′) is defined if
+                                                                obtained by time elapsing. Details about region abstraction and
+     there is a transition (q, g, σ, Y, q′) ∈E such that v |H g,                                                how transition function ER is defined can be found in Alur and
+      v′ = v[Y←0] and v′ |H inv(q′).                                                                                Dill (1994) and Baier and Katoen (2008). Function ER is extended
+Intuitively, a delay state transition represents the dwell time in     to Q R × (ΣR)∗in the usual way. The language generated by
+a discrete state for ∆time elapsing, while a discrete transition    RG(A) is L(RG(A)) = {ρ ∈(ΣR)∗∪(ΣR)ω  : ER(qR0, ρ)!}, where !
+corresponds to a switch between two discrete states caused by    means ‘‘is defined’’. A run in RG(A) is a finite (or infinite) sequence
+occurrence of event σ. For simplicity, we write s −−−→s′(∆,σ)     if there   π = qR1σ1qR2σ2 · · · qRn(· · · ), where qRi ∈Q R, σi ∈ΣR and qRi+1 ∈
+                                     (∆,ε)                (0,σ)                     ER(qRi , σi), i = 1, 2, . . . , n(, . . . ). In order to more clearly representexists a state s′′ such that s −−→s′′ and s′′ −−→s′.
+                                                                        transitions in a run π = qR                                                                                                                                                         · · · qRn(· · · ) of region automaton,                                                                                         1σ1qR2σ2  A run of time automaton A starting at state s ∈S(A) is a                                                                                                                  σ1                                                                                                                           σ2
+sequence                                         we write it as π = qR1 −→qR2 −→· · · qRn(· · · ). A run can also be
+                                                                                                                                        ρ1       ρ2
+                                                            extended by events string that is π = qR1 −→qR2 −→· · · qRn(· · · )π = s0(∆0, σ0)s1(∆1, σ1)s2(∆2, σ2)s3 · · · ,                      (1)                                                       where ρi ∈(ΣR)∗, qRi+1 ∈ER(qRi , ρi) and i = 1, 2, . . . , n(. . . ).
+where s0 = s, for any i ≥0, si ∈S(A), (∆i, σi) ∈R≥0 × (Σ ∪{ε})         Intuitively, event τ represents the time elapsing by abstracting
+            (∆i,σi)                                                     the precise time. Although the region automaton abstracts the
+and  si −−−→si+1 holds. For any run π, we denote by ρπ =                                                             time information away from the original timed automaton, their
+(∆0, σ0)(∆1, σ1)(∆2, σ2) · · · its corresponding timed word and by                                                          untimed languages are equivalent. Formally, let utwR(RG(A)) be
+sπ = s0s1s2 · · ·  its corresponding state sequence, which is also                                                                 the untimed language of RG(A) by erasing all events τ of each
+referred to as a path. A run π is said to be infinite if its |ρπ| is                                                                         string in L(RG(A)). Then, we have the following relation between
+infinite; otherwise π is finite. We denote by Runω(A) and Run∗(A),
+                                                     A and RG(A) (Alur & Dill, 1994):
+respectively, the set of infinite runs and finite runs in A starting
+at (q0, 0X ). The set of all runs in A is Run(A) = Runω(A)∪Run∗(A).    utw(TW(A)) = utwR(RG(A)).                                     (2)
+
+                                                                   3
+
+W. Dong, K. Zhang, S. Li et al.                                                                                                   Automatica 164 (2024) 111644
+
+Based on the relation in Eq. (2), the region automata preserves    estimation problem, Shu and Lin proposed the notion of (k1, k2)-
+reachability of discrete state in the original system A, that  is,     detectability (delayed detectability) in Shu and Lin (2012). Specif-
+there exists a timed word ρ leading to a discrete state q ∈Q ,      ically, (k1, k2)-detectability (delayed detectability) requires that
+i.e., q ∈lastd(ρ), if and only if there is a word ρR and a state     after obtaining k1 observations, system state can always be de-
+(q, r) ∈Q R in RG(A) such that (q, r) ∈ER(qR0, ρR).                   termined with the assistance of another k2 observation delays.
+                                                           However, the above original definitions by Shu and Lin are pro-
+3. Detectability for partially-observed timed automata           posed for untimed finite-state automata without utilizing time
+                                                                    information. Here, we extend these notions to the timed setting
+   In the state estimation problem, we assume that not all events    as follows.
+in Σ can be observed. To this end, we assume the event set is
+partitioned into two disjoint sets                                   Definition 1. Let A = (Q, q0, Σ, X, inv, E) be a timed DESs with
+                                                                 observable events Σo ⊆Σ. We say system A is
+Σ = Σo ∪Σuo,
+                                                            • strongly detectable if we can always determine the current
+where Σo is the set of observable events and Σuo is the set of                                                             and subsequent states of the system unambiguously after
+unobservable events. Furthermore, in the timed setting, we as-
+                                                         some finite time elapse, i.e.,
+sume that time information can also be measured by, e.g., having
+a global timer. Therefore, we define the natural projection for       (∃∆∈R≥0)(∀π ∈Run(A) : time(ρπ) = ∞)
+timed word                                                              (∀ρ′ ∈Pre(ρπ))[time(ρ′) ≥∆⇒|Reach(P(ρ′))| = 1].
+P : TW∗(Σ) →TW∗(Σo)                                                            • weakly detectable if we can determine the current and sub-
+such that, for any timed word ρ =  (∆0, σ0) . . . (∆n, σn) ∈         sequent states of the system unambiguously for some timed
+TW∗(Σ), the projection removes events in Σuo and keeps the time        words after some finite time elapse, i.e.,
+elapsing until the next observable event. Formally, P is defined
+                                                       (∃∆∈R≥0)(∃π ∈Run(A) : time(ρπ) = ∞)
+recursively by:
+                                                                          (∀ρ′ ∈Pre(ρπ))[time(ρ′) ≥∆⇒|Reach(P(ρ′))| = 1].
+  • for (∆, σ) ∈R≥0 × (Σ ∪{ε}), we have
+              {(∆, σ)    if σ ∈Σo                              Definition 2.  Let A = (Q, q0, Σ, X, inv, E) be a timed system
+     P((∆, σ)) =                                              with observable events Σo ⊆Σ. We say system A is (k1, k2)-                 (∆, ε)   otherwise
+                                                                        detectable if after k1+k2 time elapsing, we can determine the state
+  • for any (∆, σ0)(∆1, σ1)ρ ∈TW∗(Σ), we have                    of the system unambiguously k2 time delays ago for all timed
+                                                               words, i.e.,
+                                                            (∀ρ ∈TW(A))(∀ρ′ρ′′ ∈Pre(ρ))[time(ρ′) ≥k1                    {(∆0, σ0)P((∆1, σ1)ρ)    if σ0 ∈Σo
+P((∆0, σ0)(∆1, σ1)ρ) =                                                                  ∧time(ρ′′) ≥k2 ⇒|Reachd(P(ρ′), P(ρ′′))| = 1].                      P((∆0 + ∆1, σ1)ρ)    otherwise
+For example, if Σo = {a, b} and Σuo = {u}, then for timed word   Remark 1. Here, we assume that parameters k1 and k2 in delayed
+ρ = (1, a)(2, u)(3, b), its natural projection is P(ρ) = (1, a)(5, b).     detectability for timed systems are integers. This assumption does
+Note that, for any timed word ρ ∈TW∗(Σ), we have time(ρ) =    not reduce the generality when k1 and k2 are rational num-
+time(P(ρ)). For simplicity, we also extend natural projection to     bers. For example, let m be the least common denominator of
+P : 2TW∗(Σ) →2TW∗(Σo) in the usual manner.                          k1 and k2. Then we can construct a new timed automaton A′
+   Given a timed automaton A and suppose that a projected    by multiplying each clock constraint c in timed automaton A
+timed word t ∈P(TW∗(A)) is observed. Then the current-state    by m. Then we know that utw(TW(A)) = utw(TW(A′)). There-
+estimate is defined as the set of discrete states the system can     fore, verifying (k1, k2)-detectability for system A is equivalent to
+possibly reach after observing t, i.e.,                                   verifying(k1 m, k2 m)-detectability for system A′. However, if k1
+        {          ∃ρ ∈TW∗(A) s.t.  }                 and k2 are irrational numbers, then our approach does not apply
+Reach(t) =  q ∈Q  :                                           .                      directly; one may need to approximate the irrational numbers as
+                     P(ρ) = t ∧lastd(ρ) = q                                                                        rational numbers first.
+After observing timed word  t, we may further observe timed
+                                           We illustrate the definitions of detectability by the followingword  t′. Then, we can update the state estimate Reach(t) for
+                                                               examples.observation t by the information from t′. The delay state estimate
+of the system at instant time(t) upon the occurrence of tt′ ∈
+P(TW∗(A)) is defined as                                    Example 1.  Let us consider partially-observed timed automata
+                                                                A1 shown in Fig. 1(a), where the alphabet is Σ = {a, b, c, d, e}
+Reachd(t, t′) =                                                with Σo = {a, d, e}; the set of clock is X = {x}; and invariant
+{         ∃ρ1ρ2 ∈TW∗(A) s.t. P(ρ1) = t∧ }                         of each discrete state is the conjunction of all elements in the
+  q ∈Q  :                                                       .                        set next to the discrete state and is omitted if it is true. Note
+              P(ρ2) = t′ ∧lastd(ρ1) = q                                                                     that in the untimed setting, this system is not (either strongly
+In the seminal work of Shu et al. (2007), strong detectability    or weakly) detectable because time information is not utilized.
+and weak detectability were proposed to capture different state     This is because along the only possible observation adeee · · · , we
+estimation requirements. In particular, strong detectability is the    can never distinguish between states 5 and 6. However, with the
+stronger one requiring that the precise state of the system can     assistance of time information, this system is strongly detectable
+always be determined after a finite number of observations, while     (hence, also weakly detectable). Specifically, by the timed setting
+weak detectability requires that the precise state can be de-    shown in Fig. 1(a), we argue that we can always determine the
+termined for some observations. In some applications, we are    current state after three time units. To see this, first we note that
+interested in detecting the previous state with some information    the invariant of discrete state 1 is x ≤1, which means that the
+delays rather than the current state. To consider this delay state    system should depart from state 1 to 2 within one time unit. Since
+
+                                                                   4
+
+W. Dong, K. Zhang, S. Li et al.                                                                                                   Automatica 164 (2024) 111644
+
+                                                                  For each of the above three cases, after observing event a,  it
+                                                                   takes at most two time units to determine system state uniquely.
+                                                                Consider the largest time delay to reach state 2, i.e., one time unit,
+                                               we can accurately detect the system state after three time units
+                                                                        (or any time delays larger than two time units) in total. Thus, A1
+                                                                                       is strongly detectable.
+
+                                                      Example 2.  Let us consider timed system A2 shown in Fig. 1(b)
+                                                             with Σo = {a, d, e, f }. For this system, there exists a run such
+                                                                     that we cannot distinguish states 2 and 4 after any finite time of
+                                                                  observations even by utilizing the time information. For example,
+                                                                          for any ∆∈N, there is a run
+
+                                                π = 1(1, a)[2(0.5, c)4(0.5, f )]∆∈Run(A2)
+
+                                                             such that time(ρπ) ≥ ∆and Reach(P(ρπ)) =  {2, 4}. Thus,
+                                                                 the system A2 is not strongly detectable. However, we can find
+                                                               another run
+
+                                                                 π′ = 1(1, a)2(1.5, b)3(0.2, d)[5(1, e)]ω
+
+                                                             such that for any ρ ∈  Pre(ρπ′) satisfying time(ρ) ≥ (∆0 +
+                                                                       2.7) where ∆0 >  0, we can uniquely determine the state,
+                                                                                                          i.e., Reach(P(ρ)) = {5}. Thus, system A2 is only weakly detectable.
+
+                                                      Example 3.  Let us consider timed system A3 shown in Fig. 1(c)
+                                                             with Σo = {a, d, c}. For this system, let us consider the following
+                                                      two runs
+
+                                                            π1 = 1(1, u)2(0.4, a)4(1.1, b)5(3, c),
+                                                            π2 = 1(0.7, u)2(0.7, a)4(1.1, b)5(3, c),
+                                                         and we have ρ′1 =  (1, ε) ∈  Pre(ρπ1), ρ′′1 =  (0, u)(0.4, a)
+                                                                         (1.1, b)(3, c), ρ′2 = (0.7, u)(0.3, ε) ∈Pre(ρπ2) and ρ′′2 = (0.4, a)
+                                                                         (1.1, b)(3, c) such that P(ρ′1) = P(ρ′2) = (1, ε), P(ρ′′1) = P(ρ′′2) =
+                                                                         (0.4, a)(1.1, b)(3, c), time(ρ′1) = time(ρ′2) ≥1 and time(ρ′′1) =
+                                                                          time(ρ′′2) ≥2. Clearly, both states 1 and 2 can be reached after
+                                                                 observing (1, ε) and from these two states, observable timed
+                                                     word (0.4, a)(1.1, b)(3, c) can be generated. Thus, system A3 is not
+                                                                          (1, 2)-detectable.
+                                                             However, system A3 is (2, 1)-detectable, since for any timed
+                                                     word ρ ∈ TW(A) and every prefix ρ′ρ′′ ∈  Pre(ρ) such that
+Fig. 1. Three timed DESs A1, A2 and A3 in (a), (b) and (c) respectively. We use     time(ρ′) ≥2 and time(ρ′′) ≥1, we have |Reachd(P(ρ′), P(ρ′′))| =
+⊤to denote the true guard, which means that there is no time constraint and                                                                                1. For example, let us consider run
+it allows arbitrary time elapses. The invariant of a discrete state is conjunction
+of all elements in the set next to the discrete state and we omit the invariant    π3 = 1(1, u)2(0.9, a)4(1.1, b)5(3, c),if it is true.
+                                                         and prefixes ρ′ = (1, u)(0.9, a)(0.1, ε) and ρ′′ = (1, b)(3, c).                                                                                                π3                                   π3
+                                                                      States that can be reached after observing timed word P(ρ′π3) =transition 2 →3 has guard x > 1 but transition 2 →4 can occur                                                                         (1.9, a)(0.1, ε) are 3 and 4. From state 3, event b is able to occur
+for any 0 ≤x ≤1, we know that the system may be either at state                                                                within one time unit, while from state 4, event b can only occur
+2 or state 4 after observing the first event a. Therefore, we cannot                                                                           after one time unit. We have Reachd(P(ρ′π3), P(ρ′′π3)) = {4}. Thus,
+distinguish states 2 and 4 within one time unit after observing
+                                                               although we observe the same event label, we can still use time
+the first event a without any further observation. Since transitions
+                                                                 information to distinguish state 3 and 4.along 2 →3 →5 require more than one but no more than two
+time units, while transitions along 2 →4 →6 is feasible only
+within one time unit, there are three possibilities:                     4. Verification of strong detectability
+  • If we observe event d within one time unit after observing
+      a, then we know for sure that the system is at state 6;             In this section, we investigate the verification of strong de-
+  • If we observe event d between one to two time units after     tectability. First, we construct a verification system that captures
+     observing a, then we know for sure that the system is at      all pairs of runs with the same observation (both projected events
+     state 5;                                              and time elapsing). Then a necessary and sufficient condition
+  • If we observe nothing within two time units after observing     for strong detectability is derived based on the region graph of
+      a, then we know for sure that the system will stay at 2    the verification system, which yields the decidability of strong
+     forever because the invariant of state 3 is x ≤2.                 detectability.
+
+                                                                   5
+
+W. Dong, K. Zhang, S. Li et al.                                                                                                   Automatica 164 (2024) 111644
+
+4.1. Construction of the verification system                          • For any finite run π in V(A),
+                                                   π =[(q0, q′0), v0](∆0, σ0)[(q1, q′1), v1](∆1, σ1)   According to Definition 1, a system is not strongly detectable
+if for any arbitrarily long time elapsing, there exists a pair of                 · · ·[(qn, q′n), vn]
+two runs such that they have the same observation but result
+                                                                       there exist two runs π1, π2 ∈Run(A) such that lastd(sπ1) =in different discrete states. Motivated by this observation, we                                                                            qn, lastd(sπ2) = q′n and P(ρπ) = P(ρπ1) = P(ρπ2);
+construct a verification system that captures all pairs of runs with
+                                                            • For any pair of finite runs π1, π2 in A with the same obser-the same (timed) observation and can distinguish if a timed word
+                                                                              vation, there exists a finite run π in V(A) having the same
+has finite or infinite time elapsing. Given a timed automaton
+                                                                       observation and the discrete part of the last state of π  is
+A = (Q, q0, Σ, X, inv, E), the verification system of A is a new
+timed automaton                                                                  (dis(last(sπ1)), dis(last(sπ2))), i.e.,
+                                                                     (∀π1, π2 ∈Run(A) : P(ρπ1) = P(ρπ2))V(A) = (QV, qV0, ΣV, XV, invV, EV ),
+                                                                (∃π ∈Run(V(A)))[(P(ρπ) = P(ρπ1) = P(ρπ2)
+where
+                                                                        ∧lastd(sπ) = (lastd(sπ1), lastd(sπ2)))].
+  • QV = Q × Q is the set of discrete states;
+  • qV0 = (q0, q0) is the initial discrete state;                            4.2. Verifying strong detectability
+  • ΣV = Σ ∪{λ} is a finite set of events, where λ /∈Σ is a new
+     event;                                                              Recall that strong detectability requires that we can determine
+  • XV = X ∪ˆX ∪{xv} is a finite set of clocks, where ˆX = {ˆx :    the current and subsequent state uniquely after finite time for
+     x ∈X} is a copy of the original clock set X and xv is a new      all runs. To this end, we call a discrete state (q1, q2) ∈QV an
+     clock;                                                   ambiguous state if q1̸ = q2 and we denote by AM = {(q1, q2) ∈
+  • invV  : QV →C(XV ) is the invariant function defined by: for    QV  : q1̸ = q2} the set of all ambiguous states. By the properties of
+    any (q1, q2) ∈QV , invV (q1, q2) = inv(q1) ∧ˆinv(q2) ∧xv ≤1,    the verification systems, an ambiguous state is reached if there    where inv(q) simply replaces each x ∈X in inv(q) by ˆx ∈ˆX;    are two observationally equivalent runs in V reaching different
+     ˆ
+  • EV ⊆QV × ΣV × C(XV ) × 2XV × QV is the transition relation     discrete states. Furthermore, when an ambiguous state is reached,
+     defined by: for any (q1, q2) ∈QV ,                     we cannot distinguish which state the system is actually in by the
+                                                                     observation. Therefore, to test strong detectability, it suffices to
+          -  if σ ∈Σo, then                                                test whether or not an ambiguous state in V(A) can be reached
+              (q1, σ, g1, Y1, q′1), (q2, σ, g2, Y2, q′2) ∈E               by runs with arbitrarily large time elapsing. However, this cannot
+                                                           be tested directly based on V(A) because it has infinite reachable
+         ⇒((q1, q2), σ, g1 ∧ˆg2, Y1 ∪ˆY2, (q′1, q′2)) ∈EV        (3)     states in general. Our approach is to consider the region automa-
+          -  if σ ∈Σuo, then                                       ton of V(A) denoted by V R(A) = (Q R, qR0, ΣR, ER). Similarly, we
+                                                                   define the set of ambiguous states in V R(A) as AMR = {(q, r) ∈
+           (q1, σ, g1, Y1, q′1) ∈E ⇒                        Q                                                                                 R : q ∈AM}.
+            ((q1, q2), σ, g1, Y1, (q′1, q2)) ∈EV,                        The following theorem shows that the region automaton V R(A)
+           (q2, σ, g2, Y2, q′2) ∈E ⇒                                   abstracts sufficient information of V(A) for verifying strong de-
+                                                                               tectability.
+            ((q1, q2), σ, ˆg2, ˆY2, (q1, q′2)) ∈EV                     (4)
+                                                    Theorem 1.  System A is not strongly detectable with respect to Σo,          -  if σ = λ, then
+                                                                                                               if and only if, in the region automaton V R(A) of V(A), there exists a
+            ((q1, q2), σ, xv = 1, {xv}, (q1, q2)) ∈EV,              (5)    run
+                                                                                              σ1      σ2                              σn    where ˆg2 and ˆY2 are the copies of g2 and Y2, respectively, to   π = qR0 −→qR1 −→· · · σi−→qRi · · · σj−→qRj · · · −→qRn
+    new clock set ˆX.
+                                                            where i < j such that
+   Intuitively, in the verification system V(A), each discrete state
+                                                                                                  (i) qRn ∈AMR; andis a pair of discrete states of the original system A. Since each
+                                                                                                      (ii) qRi = qRj ; anddiscrete state in V(A) corresponds to two discrete states in A, the
+clock set is the union of the original two clock sets, where we use         (iii) ∃i < k ≤j : σk = λ.
+a copy ˆX to distinguish them from X. The invariant for each state
+is the conjunction of invariants of its two components in the state.    Proof. (⇐) Assume there exists a run π′ in V R(A) satisfying condi-
+In addition, we add a new event λ and a new clock xv to measure     tions (i)–(iii). For any ∆∈R≥0, we use ⌈∆⌉to denote the smallest
+the time elapsing explicitly. Specifically, we assign an additional     integer greater than ∆. Thus, we have ⌈∆⌉≥∆. Based on con-
+invariant xv ≤1 to each discrete state, which means that clock     dition (ii), we can obtain a word ρR = σ1σ2 · · · σi−1(σi · · · σj)⌈∆⌉
+xv cannot be greater than 1 for each discrete state. The transition     σj+1 · · · σn by repeating transitions from qRi  to qRj  in π′ for ⌈∆⌉
+rule for event λ is specified by Eq. (5), which says that event λ     times. By condition (iii), the number of event λ in ρR is at least
+can only occur whenever clock xv equals to 1. Therefore, event λ    ⌈∆⌉. Because the last state of π′ is included in AMR, we have
+will occur whenever one time unit elapses, which is used as an     ER(qR0, ρR) ∩AMR̸ = ∅. By Eq. (2), there exists a run π in V(A)
+auxiliary time measurement in later verification algorithms. Also,    such that ρπ has at least ⌈∆⌉number of event λ and the last state
+for any state (q1, q2) ∈QV , if σ ∈Σo, then σ must be enabled     of π is ambiguous, i.e., time(ρπ) ≥⌈∆⌉and lastd(sπ) ∈AM. By
+simultaneously at q1 and q2 to ensure observational equivalence.    the first property of the verification system, there are two runs
+On the other hand, if σ ∈Σuo, then event σ can be enabled either    π1, π2 ∈Run(A) such that lastd(sπ1)̸ = lastd(sπ2) and P(ρπ1) =
+at q1 or q2 while the other component remains unchanged.          P(ρπ2). We cannot determine the state by observation P(ρπ1),
+   Therefore, the construction of V(A) guarantees that it (only)       i.e., |Reach(P(ρπ1))|̸ = 1. Therefore, A is not strongly detectable.
+tracks all pairs of runs in V having the same observation. For-      (⇒) Assume A is not strongly detectable. That is, for any ∆∈
+mally, we have following properties (Tripakis, 2002):               R≥0, there are two runs π1, π2 ∈Run(A) such that P(ρπ1) =
+
+                                                                   6
+
+W. Dong, K. Zhang, S. Li et al.                                                                                                   Automatica 164 (2024) 111644
+
+
+
+
+
+Fig. 2. In the above figures, double circles denote ambiguous states. We omit transition (xv = 1, λ, {xv}) at each discrete state. The invariant of a discrete state is
+conjunction of all elements in the set next to the discrete state, e.g., {x1 ≤2, x2 ≤1, xv ≤1} represents x1 ≤2 ∧x2 ≤1 ∧xv ≤1, and we omit the invariant if it is
+true. For each guard, the abbreviation of true is denoted by ⊤.  (For interpretation of the references to color in this figure legend, the reader is referred to the web
+version of this article.)
+
+P(ρπ2), lastd(sπ1)̸ = lastd(sπ2) and time(ρπ1) = time(ρπ1) ≥∆.     find all cycles that contain event λ in V R(A) and then, to check
+According to the second property of verification system, there     reachability from these cycles to ambiguous states. Both of above
+exists a run π in V(A) such that lastd(sπ) ∈AM and P(ρπ) =     steps can be done in time polynomial in the number of states in
+P(ρπ1) = P(ρπ2). As a result of time(ρπ) ≥∆, ρπ has at least    V R(A). Therefore, the whole complexity mainly relies on the size
+⌈∆⌉number of event λ. Then, we obtain the region automaton                                                                        of the region automaton V R(A).
+V R(A) = (Q R, qR0, ΣR, ER). By Eq. (2), there is a run π′ in V R(A)
+whose last state is in AMR and π′ has at least ⌈∆⌉number of
+                                                   Remark 3.   Recall that, in Section 2.1, we have assumed that
+event λ. Let ∆> |Q R|. Because V R(A) is finite, run π′ must firstly
+                           σi+1                                          the TA is timelock-free. In fact, with some slight modification,
+go through a run qRi −−→· · · σj−→qRj in V R(A) which forms a loop,    Theorem 1 can still apply when this assumption does not hold.
+i.e., qRi = qRj , and has at least one λ in it, i.e., ∃i < k ≤j : σk = λ.     Specifically, suppose that TA A contains a timelock state. Then it
+                                    σ1      σ2                              σn
+                                                                                       is not strongly detectable, if and only if, in the region automatonNamely, there exists a run qR0 −→qR1 −→· · · σi−→qRi · · · σj−→qRj · · · −→
+qRn in V R(A) satisfying conditions (i)–(iii).  □                   V R(A) of V(A), there exists a run
+                                σ1      σ2                              σn                   σ1      σ2                              σn                                                        −→· · · σi−→qRi · · · σj−→qRj · · · −→qRn   Intuitively, run π = qR0 −→qR1 −→· · · σi−→qRi · · · σj−→qRj · · · −→qRn   π =qR0 −→qR1
+in Theorem 1 is equivalent to the existence of a reachable cycle      −−→·σn+1    · · −→qRσm  m −−→·σm+1    · · −→qRσm′   m′
+π′ from the initial state, i.e., the part π′ = qRi · · · σj−→qRj , in which
+there exists at least one event λ and we can reach an ambiguous    such that, in addition to the satisfactions of conditions (i)–(iii) in
+state from the cycle, i.e., from state qRi to state qRn. Then cycle π′    Theorem 1, we further require that qRm = qRm′ and there exists
+and event λ in it can be extended to any time elapsing, and the   m < k′ ≤m′ such that σk′ = λ. Intuitively, the new requirements
+reachability from qRj to an ambiguous state qRn prevents us from    say that the region automaton V R(A) can reach a cycle π′′ =
+determining states unambiguously. Therefore, that system A is         σm+1       σm′
+                                                                    qRm −−→· · · −→qRm′ in which there is at least one event λ fromnot strongly detectable means that we can find a run satisfying
+                                                                         state qRn. Since cycle π′′ can be extended to any time elapsing byconditions (i)–(iii) in Theorem 1.
+                                                                  repeating it, it excludes runs that terminate at timelock states.
+
+Remark 2.   Let us discuss the complexity of checking strong
+detectability for a timed system A = (Q, q0, Σ, X, inv, E). For    Example 4.  Let us consider timed system A1 shown in Fig. 1(a)
+any clock x ∈X, we use cx to denote the maximum integer    with observable event set Σo =  {a, d, e}. We obtain the ver-
+c such that x ∼  c ∈ C(X) is a subformula appearing in A,     ification system V(A1) by the aforementioned steps, which is
+where ∼∈{≤, <, ≥, >, =}. The verification system V(A) has at    depicted in Fig. 2(a) and for simplicity, we omit the transition
+most |Q|2 states and |Q|2(|Q|2 −1) transitions, where |Q| is the     (xv =  1, λ, {xv}) at each discrete state. One can compute the
+number of states in A. Since its clocks consist of two copies of    region automaton V R(A1) for V(A1), in which there does not exist
+the original clocks and a new clock, the number of clocks in V(A)    a run satisfying the conditions in Theorem 1. Thus, A1 is strongly
+is |XV| = 2|X| + 1, where |X| is the clock number of A. By Alur                                                                                                                                   |      detectable.and Dill (1994), the number of regions is bounded by |XV|!·2|XV  ·
+∏  x∈XV (2cx+2). Thus, there are at most (|Q|2·(|Q|2−1)·|XV|!·2|XV |·    Example 5. However, system A2 shown in Fig. 1(b), where Σo =
+∏  x∈XV (2cx + 2)) states in V R(A) and we can construct the region     {a, d, e, f }, is not strongly detectable. To see this, first, we obtain
+automaton V R(A) within time O(|Q|4·|XV|!·2|XV |·∏x∈XV (2cx+2)).    the verification system V(A2) shown in Fig. 2(b), and based on
+According to Theorem 1, verifying strong detectability requires to    which we construct the region automaton V R(A2) of V(A2).  Part
+
+                                                                   7
+
+W. Dong, K. Zhang, S. Li et al.                                                                                                   Automatica 164 (2024) 111644
+
+                                                            needs to test whether or not the time is divergent after some
+                                                                         faulty events. This condition can be formulated as the Büchi
+                                                              emptiness condition based on the verification system directly.
+                                                           However, in the context of strong detectability, there is no faulty
+                                                                      indicator from which one needs to count the time. Instead, here
+                                               we need to test if an ambiguous state can be reached following an
+                                                                             arbitrarily long prefix. This condition cannot be captured directly
+                                                          by standard Büchi condition in the verification system, which
+                                                                motivates the use of region automata to test the conditions.
+
+
+                                                   Remark 5.   In  fact, the verification condition for strong de-
+                                                                            tectability in Theorem 1 can be captured by a computation tree
+                                                                          logic (CTL) model checking problem (Emerson & Clarke, 1982)
+                                                               over the region automaton of the verification system. Specifically,
+                                                                         starting from an arbitrary state, both the existence of a path to
+                                                          an ambiguous state and the existence of a cycle containing λ can
+                                                           be captured by CTL formulae. Then one just needs to check the
+                                                                       reachability of such state with the above two properties, which
+                                                                 again can be captured by CTL formula. Therefore, our condition
+Fig.  3. Part of the region automaton V R(A2). The cycle highlighted in red     in Theorem 1 can be implemented by existing tools as follows.
+contains event λ and an ambiguous state ((4, 2), {x1 = x2 = 1, xv = 0}).  (For     First build the region automaton of the verification system. Then,
+interpretation of the references to color in this figure legend, the reader  is    perform a CTL model checking for the above described formula
+referred to the web version of this article.)
+                                                               over the region automaton.
+
+                                                                             5. Undecidability of weak detectability
+of the region automaton V R(A2) is shown in Fig. 3. Here, we can
+find the following run                                                   In this section, we investigate the verification of weak de-
+                                                                            tectability for timed systems. Unfortunately, we prove that weakπ =((1, 1), {x1 = x2 = xv = 0}) a−→
+                                                                         detectability is undecidable by reducing the universality problem,
+     ((2, 2), {x1 = x2 = xv = 0}) τ−→                             which is known to be undecidable for timed automata, to the
+                                                                          verification of weak detectability.     ((2, 2), {0 < x1 = x2 = xv < 1}) τ−→                                                               Given a timed automaton A, the universality problem asks
+     ((2, 2), {x1 = x2 = xv = 1}) λ−→                             whether or not  all strings in TW(Σ) can be generated by A,
+                                                                                                          i.e., decide whether or not we have
+     ((2, 2), {x1 = x2 = 1, xv = 0}) c−→
+                                                        TW(A) = TW(Σ).
+     ((4, 2), {x1 = x2 = 1, xv = 0}) c−→
+                                                                       In Alur and Dill (1994), Alur and Dill showed that the universality
+     ((4, 4), {x1 = x2 = 1, xv = 0}) f−→                           problem is undecidable for timed automata. We will use this
+                                                                         result to show the undecidability of weak detectability for TA.     ((2, 2), {x1 = x2 = xv = 0}) c−→
+                                                               Given a TA A = (Q, q0, Σ, X, inv, E), we construct a new TA
+     ((4, 2), {x1 = x2 = xv = 0}),
+                                                 G = (QG, qini, ΣG, X, invG, EG),
+such that qR7 = ((4, 2), {x1 = x2 = xv = 0}) ∈AMR. Furthermore,
+run π contains a cycle part as highlighted in Fig. 3, where qR1 =    where
+qR6 =  ((2, 2), {x1 =  x2 =  xv =  0}) and σ4 =  λ. Thus, run      • QG = Q ˙∪{qini, qB}, where qint and qB are two new discrete
+π  satisfies all conditions in Theorem 1, which means that A2           states;
+is not strongly detectable. In fact, the cycle found in the above      • qini ∈QG is the initial discrete state;
+run π corresponds to a cycle in the verification structure V(A2)      • ΣG = Σ ˙∪{σo}, where σo /∈Σ is a new event;
+as highlighted by red color in Fig. 2(b). Based on the cycle, we      • X is the clock set the same as A;
+can actually extract a timed word ρ = (0, a)[(1, c)(0, f )]n with      • invG is the same as inv for states in Q and for states qini and
+time elapsing time(ρ) = n where n is an arbitrary integer in           qB, invariants are defined by: invG(qini) is x ≤1, where x ∈X
+N. Because event c  is unobservable, we can never distinguish            is an arbitrary clock in system A, and invG(qB) is true;
+between system states 2 and 4.                                  • EG is the set of transitions defined by
+                                                                      EG = E ∪{(qB, σ, true, X, qB) : σ ∈Σ}∪
+Remark 4.  The basic idea of the verification system V(A) is
+                                                                                               {(qini, σo, x = 1, X, q0), (qini, σo, x = 1, X, qB)}            (6)motivated by the construction for the verification of diagnos-
+ability in untimed DESs (Jiang, Huang, Chandra, & Kumar, 2001;      The construction of G is conceptually illustrated in Fig. 4. Intu-
+Yoo & Lafortune, 2002) and timed DESs (Cassandras & Lafortune,      itively,  G   starts  from  a  new   initial   state    qini  and
+2021; Tripakis, 2002), where it is termed as the twin-plant or     non-deterministically goes to either the initial state of the original
+the verifier. Our construction of the verification system itself is    system A, i.e., q0, or a new state qB, via the same event σo. Here,
+also similar to the parallel composition of timed automata with   we use a new auxiliary event σo /∈Σ as the initial prefix that
+guards in Cassandras and Lafortune (2021) and Tripakis (2002).    matches the initial conditions of strings in A and strings in TW(Σ).
+In particular, the new auxiliary event λ and self-loops can also be     Specifically, we assign invariant x ≤1 to the initial state qini,
+added to each state after constructing the parallel composition    where clock x is an arbitrary clock in X. Thus, G can only stay
+system. However, the necessary and sufficient condition derived     at state qini for at most 1 time unit. As described in Eq. (6), there
+is quite different. In particular, in diagnosability analysis, one    are only two transitions from qini, i.e., (qini, σo, x = 1, X, q0) and
+
+                                                                   8
+
+W. Dong, K. Zhang, S. Li et al.                                                                                                   Automatica 164 (2024) 111644
+
+                                                                             6. Verifying delayed detectability
+
+
+                                                              Note that strong detectability and weak detectability are both
+                                                             concerned with the current-state estimate of the system. Delayed
+                                                                           detectability, however, is concerned with the delay state esti-
+                                                               mate. In this section, we show that delayed detectability can also
+                                                           be effectively verified based on the verification system proposed
+                                                                        in Section 4.1.
+                                                         Compared with strong detectability, delayed detectability re-
+                                                                    quires that even if we cannot distinguish two current states after
+Fig. 4. Illustration of the construction of G. Edge (⊤, Σ, X) attached to qB     k1 time elapsing, this disambiguation should be resolved after
+represents the set of all edges in {(⊤, σ, X) : σ ∈Σ}.                       another k2 elapsing from the current instant. This implies that
+                                                                 non-existence of two observational equivalent strings with k2
+                                                                    elapsing from these two indistinguishable states. This observa-
+(qini, σo, x = 1, X, qB), which have guard x = 1 and reset all clocks     tion leads to the following necessary and sufficient condition
+in X. As a result, only (1, σo) can occur from initial state qini and     characterizing delayed detectability.
+the valuation of all clocks are the same after the occurrence of
+σo. Then, from state q0, G will follow exactly the same dynamic   Theorem 3. A timed system A is not (k1, k2)-detectable with respect
+of A. On the other hand, from state qB, all events in Σ can occur     to Σo, if and only if, in the region automaton V R(A) of the verification
+freely, which actually corresponds to a TA satisfying universality    system V(A), there exists a run
+requirement.
+                                                                                                           ρR                                                                                                                    ρR                                                                                                ρR                                                                                       ρR0                                                                                                                        k1+k2−1                                                                                                     k1−1
+                                                      −→·                                                                                                                                        k1    · · −−−−−→qR                                                                                                                          · · −−−→qR  Now, we make the following observations from the construc-   π = qR0 −→·                                                                                                                          k1+k2,                                                                                                                         k1tion of the new system G. First, we note that, starting from state
+qB, all timed words ρ ∈TW(Σ) can be generated. Therefore,    where ∀0 ≤i ≤k1 + k2 : qRi ∈QR ∧ρRi ∈(ΣR)∗such that
+for any timed word (1, σo)ρ, it may end up with discrete state
+qB. Similarly,  if A is universal, then timed word (1, σo)ρ may          (i) ∀0 ≤i ≤k1 + k2 −1 : λ ∈ρRi ; and
+also end up with a state in Q . By assuming that all events in G          (ii) qRk1 ∈AMR.
+are observable, then upon the occurrence of (1, σo)ρ, we cannot
+distinguish between state qB from some state in Q . On the other    Proof. (⇒) Assume that timed system A is not (k1, k2)-detectable.
+hand, if A is not universal, then there exists a timed word (1, σo)ρ    According to Definition 2, we know that the following equation
+such that ρ is not feasible from q0 but is feasible from qB. Since we    holds
+assume all events are observable, we can determine for sure that
+the system is at qB upon the occurrence of (1, σo)ρ. Furthermore,    (∃ρ ∈TW(A))(∃ρ′ρ′′ ∈Pre(ρ))[time(ρ′) ≥k1
+we know the state forever since qB only has self-loops, which     ∧time(ρ′′) ≥k2 ∧|Reach(P(ρ′), P(ρ′′))|̸ = 1].                 (7)
+means that G is weakly detectable. The above observations lead
+to the following main theorem.                                    Thus, there is a run π1 such that word ρπ1 has a prefix ρ′ρ′′ satis-
+                                                                      fying time(ρ′) ≥k1, time(ρ′′) ≥k2 and |Reach(P(ρ′), P(ρ′′))|̸ = 1.
+Theorem 2. Weak detectability is undecidable for timed automata.    Corresponding to ρ′ρ′′, we can extract the run π′1π′′1 from π1 such
+                                                                     that ρπ′1 =  ρ′ and ρπ′′1 =  ρ′′. By |Reach(P(ρ′), P(ρ′′))|̸ =  1,
+Proof.   It suffices to show that the universality problem for    there exists another run π′2π′′2 such that P(ρπ′2) = P(ρ′), P(ρπ′′2 ) =
+TA, which is undecidable, can be reduced to an instance of the
+                                                                             P(ρ′′) and lastd(ρπ′2)̸ = lastd(ρπ′1). Thus, by the second propertyweak detectability verification problem for TA. Specifically, given
+a timed automaton A = (Q, q0, Σ, X, inv, E) for which we want     of the verification system, there is a run π′Vπ′′V ∈  Run(V(A))
+to decide whether or not TW(A) = TW(Σ), we construct TA G by    such that P(ρπ′V ) =  P(ρ′), P(ρπ′′V ) =  P(ρ′′) and lastd(sπ′V ) =
+steps aforementioned. Next, we show that TW(A) = TW(Σ) iff G     (lastd(sπ′1), lastd(sπ′2)). Because time(ρπ′V ) = time(ρ′) ≥k1 and
+is not weakly detectable with respect to ΣG.
+                                                                          time(ρπ′′V ) = time(ρ′′) ≥k2, event λ occurs for at least k1 times   Suppose that G is weak detectable. Then we know that there
+exists a time elapsing ∆∈R≥0 and an infinite run π ∈Runω(G)     in ρπ′V and for at least k2 times in ρπ′′V . In the region automaton
+such that                                                                                                                            ρR0         ρRk1−1
+                                                     V R(A), by Eq. (2), there exists a run π =  qR0 −→· · · −−−→
+(∀ρ ∈Pre(ρπ) : time(ρ) ≥∆)[|Reach(P(ρ))| = 1].                             ρRk1         ρRk1+k2−1
+                                                                    qR                                   −→· · · −−−−−→  qR                                                                                         such that each ρRi , where  i ∈                                                                                             k1                                                                                                           k1+k2Since we assume  all events  in G are observable, we have
+Reach(P(ρ)) = lastd(ρ). Therefore, there exists ρ = (1, σo)ρ′ ∈     {0, . . . , k1+k2−1}, contains at least one event λ and the k1th state
+TW(G) such that |lastd((1, σo)ρ′)| = 1 for some continuation     qRk1 = ((q1, q2), r) satisfies q1 = lastd(sπ′1) and q2 = lastd(sπ′2). That
+ρ′. Since qB ∈  lastd((1, σo)ρ′) and qB   /∈ Q , we know that       is, there exists a run satisfying conditions (i) and (ii).
+lastd((1, σo)ρ′) ∩Q = ∅. This means that ρ′ /∈TW(A), i.e., A is      (⇐) Assume that there is a run π satisfying conditions (i)
+not universal.                                              and (ii) in region automaton V R(A). Based on condition (i), we
+   Similarly,  if A  is not universal, we can find ρ   /∈  TW(A).   know that the number of event λ in word ρ′R = ρR0 . . . ρRk1  is
+This means lastd((1, σo)ρ) = {qB}. Furthermore, once the system     at least k1 and in word ρ′′R = ρRk1 . . . ρRk1+k2−1 is at least k2. By
+reaches              stays forever.                            Therefore,                                          for any                                           event                                          we                                         σ ∈Σ,         qB, it                                                                      Eq. (2), there exists a run π′Vπ′′V in V(A) such that utw(ρπ′V ) =have                                            there                                                       exists                                                     a time                     σ)n) =      lastd((1,             σo)ρ(1,                                 {qB}. Therefore,
+                                                                  utwR(ρ′R), utw(ρπ′′V ) = utwR(ρ′′R). By the construction of region au-elapsing ∆= 1 and an infinite run π = qini(1, σo)[qB(1, σ)]ω ∈
+Runω(G) such that                                                tomata, the discrete component of last state of sπ′V is ambiguous,
+                                                                        ρπ′V has at least k1 number of λ events and ρπ′′V has at least k2 λ
+(∀ρ ∈Pre(ρπ) : time(ρ) ≥∆)[|Reach(P(ρ))| = |lastd(ρ)| = 1].
+                                                                      events, i.e. lastd(sπ′V ) ∈AM, time(ρπ′V ) ≥k1 and time(ρπ′′V ) ≥k2.
+This completes the proof.  □                                By the first property of the verification system, there exist two
+
+                                                                   9
+
+W. Dong, K. Zhang, S. Li et al.                                                                                                   Automatica 164 (2024) 111644
+
+
+
+
+
+Fig. 5. Verification system V(A3) of timed system A3. We omit transition (xv =
+1, λ, {xv}) at each discrete state.  (For interpretation of the references to color
+in this figure legend, the reader is referred to the web version of this article.)
+
+
+runs π′1π′′1 , π′2π′′2 ∈Run(A) such that (i) for two runs π′1 and
+π′2, P(ρπ′1) =  P(ρπ′2) =  P(ρπ′V ), time(ρπ′1) =  time(ρπ′2) ≥k1
+and lastd(sπ′1)̸ = lastd(sπ′2); (ii) for two runs π′′1 and π′′2 , we have
+P(ρπ′′1 ) = P(ρπ′′2 ) = P(ρπ′′V ) and time(ρπ′′1 ) = time(ρπ′′2 ) ≥k2.
+Thus, for the timed word ρπ′1ρπ′′1 , when k1 time units elapse,
+we cannot determine the discrete state even considering k2 time                          Fig. 6. Part of the region automaton V R(A3).
+units delayed information, because |Reach(P(ρπ′1), P(ρπ′′1 ))|̸ = 1.
+Thus, the system is not (k1, k2)-detectable.  □
+                                ρR0       ρRk1−1       ρRk1       ρRk1+k2−1     Then, we construct the region automaton V R(A3) of V(A3). Part of
+   Intuitively, run π = qR0 −→· · · −−−→qRk1 −→· · · −−−−−→    the region automaton V R(A3) is shown in Fig. 6, where we can
+qR       in Theorem 3 reveals the existence of an ambiguous state     find a run k1+k2
+qR   which can be reached after at least k1 number of λ event  k1                                                            π1 =((1, 1), {x1 = x2 = xv = 0}) −−→ττλu
+and from which the run can still execute event λ for at least                                             uτaττλ
+k2 times. Ambiguous state qRk1 means that we cannot determine           ((2, 1), {x1 = xv = 0, x2 = 1}) −−−−→
+the current state after k1 time elapsing. Furthermore, the part           ((4, 4), {0 < x1 = x2 < 1, xv = 0}) −−→ττλ      ρR          ρR
+qR −→·k1      · · −−−−−→k1+k2−1   qR    means that from two different           ((4, 4), {1 < x1 = x2 < 2, xv = 0}),  k1                           k1+k2
+discrete components in qk1, there  still exist two observation-    such that qR1 = ((2, 1), {x1 = xv = 0, x2 = 1}) ∈AMR. Further-
+equivalent executions having more than k2 time elapsing, that    more, for ρ0, ρ1 and ρ2, each of them contains an event λ. That is,
+is, we cannot distinguish the ambiguous discrete components                                                            run π1 satisfies all conditions in Theorem 3 and we can conclude
+in qR      even with another k2 time units’ information. Therefore.     k1                                                                     that A3 is not (1, 2)-detectable. In fact, run π1 corresponds to
+the existence of a run satisfying conditions (i)–(ii) in Theorem 3
+                                                                 the execution in the verification structure V(A2) as highlighted
+means that the system is not (k1, k2)-detectable.                                                          by red color in  Fig.  5. We can extract a timed word ρ =
+                                                                          (1, u)(0.5, a)(1.5, ε) such that Reach((1, u), (0.5, a)(1.5, ε)) =
+Remark 6.  Let us discuss the complexity of checking (k1, k2)-                                                                       {1, 2}, time((1, u)) = 1 and time((0.5, a)(1.5, ε)) =  2. That is,
+detectability for a timed system A = (Q, q0, Σ, X, inv, E). Similar
+                                               we cannot determine the current state after one time elapsingin Remark 2, for any clock x ∈X, we use cx to denote the maxi-
+                                                               event with the assistance of two time units delayed information.mum integer c such that x ∼c ∈C(X) is a subformula appearing
+                                                                                                                                           ρR0       ρR1in A. As mentioned                    in Remark 2, the complexity of V R(A) is O(|Q|4·    However, since there does not exist a run π = qR0 −→qR1 −→                       |
+|XV|! · 2|XV  · ∏x∈XV (2cx + 2)). To check (k1, k2)-detectability for         ρR2
+system A by Theorem 3, we construct V R(A) = (Q R, qR0, ΣR, ER)     qR2 −→qR3 such that qR2 ∈AMR and each ρRi , i ∈{0, 1, 2} contains at
+and compute the state set list Q0, . . . , Qk1, . . . , Qk1+k2 where Q0 =     least event λ, system A3 is (2, 1)-detectable. For example, consider
+{qR0}, Qk1 ⊆AMR and for i ∈{0, . . . , k1 + k2 −1}, Qi+1 = {q ∈Q R :    the run
+(∃q′ ∈Qi)(∃ρ ∈(ΣR)+\(ΣR\{λ})+)[q ∈ER(q′, ρ)]}. If set Qk1+k2                                                            π2 =((1, 1), {x1 = x2 = xv = 0}) −−→ττλu
+is empty, then system A is (k1, k2)-detectable; otherwise it is not
+(k1, k2)-detectable. The calculation cost of Qi+1 from Qi is at most           ((2, 1), {x1 = xv = 0, x2 = 1}) −−−→τaττλ
+the size of V R(A) and we need to repeat this procedure for k1 +k2                                                                                  ((4, 3), {0 < x1 = x2 < 1, xv = 0}).times. Thus, verifying (k1, k2)-detectability can also be solved in
+polynomial-time in the number of states in V R(A).                 Although state qR2 =  ((4, 3), {0 < x1 = x2 < 1, xv = 0}) is
+                                                             ambiguous, there is no path from qR2 that contains event λ.
+Example 6. Consider system A3 shown in Fig. 1(c), where Σo =
+{a, d, c}. We claim that system A is not (1, 2)-detectable. To see         Finally, we illustrate our approach by a more complex timed
+this, we first obtain the verification system V(A3) shown in Fig. 5.    automaton with two clocks and loop structures.
+
+                                                                   10
+
+W. Dong, K. Zhang, S. Li et al.                                                                                                   Automatica 164 (2024) 111644
+
+                                                               delayed detectability for A4. First, we construct its verification
+                                                            system V(A4) as depicted in Fig. 7(b). Then, based on the veri-
+                                                                           fication system V(A4), we compute the region automaton V R(A4),
+                                                         which is partially shown in Fig. 7(c). Particularly, we can find the
+                                                                   following run
+                                                            π1 =((1, 1), {x1 = x2 = y1 = y2 = xv = 0}) −−→ττλτ
+                                                                                  ((1, 1), {x1 > 1, x2 > 1, y1 > 1, y2 > 1, 0 < xv < 1}) −−→τλτ
+                                                                                  ((1, 1), {x1 > 1, x2 > 1, y1 > 1, y2 > 1, 0 < xv < 1})
+                                                          −−→((3,τλau      2), {x1 = x2 = y1 = y2 = xv = 0}),
+                                                             such that qR12 = ((3, 2), {x1 = x2 = y1 = y2 = xv = 0}) ∈AMR
+                                                         and there exists a cycle as highlighted in Fig. 7(c), where qR5 =
+                                                                    qR10 = ((1, 1), {x1 > 1, x2 > 1, y1 > 1, y2 > 1, 0 < xv < 1}) and
+                                                                σ6 = λ. Thus, run π1 satisfies the condition in Theorem 1, which
+                                                      means that A4 is not strong detectable. On the other hand, for any
+                                                                        k1, k2 ∈N we can find another run
+                                                            π2 = ((1, 1), {x1 = x2 = y1 = y2 = xv = 0})
+
+                                                                                      ττλτ(τλτ)k1 τλau
+                                                  −−−−−−−−−→
+                                                                             ((3, 2), {x1 = x2 = y1 = y2 = xv = 0})
+
+                                                                                    τbτλτ(aτbτλτττ)k2
+                                                 −−−−−−−−−−→
+                                                                             ((4, 4), {x1 > 1, x2 > 1, y1 > 1, y2 > 1, 0 < xv < 1})
+
+                                                             such that state ((3, 2), {x1 = x2 = y1 = y2 = xv = 0}) ∈AMR.
+                                                                     Therefore, run π2 also satisfies the condition in Theorem 3, which
+                                                      means that system A4 is not (k1, k2)-detectable for any k1, k2 ∈N.
+
+                                                                             7. Conclusion
+
+                                                                          In this paper, we investigated the verification of detectability
+                                                                          for timed discrete-event systems in the dense-time framework.
+                                         We extended three types of classical detectability: strong de-
+                                                                               tectability, weak detectability and delayed detectability to the
+                                                            timed setting. Specifically, to verify strong detectability, we con-
+                                                                    structed the verification system based on the original system,
+                                                         and then provided a necessary and sufficient condition for strong
+                                                                         detectability based on region automaton of the verification sys-
+                                                               tem. Furthermore, we showed that weak detectability is unde-
+                                                                     cidable in the timed setting by reducing the universality problem
+                                                                          for timed automata to the weak detectability verification prob-
+                                                                 lem. Based on the verification system constructed for strong
+                                                                           detectability, we also provided a necessary and sufficient condi-
+                                                                      tion to verify delayed detectability. In the future, we would like
+                                                                     to investigate enforcement of detectability in the timed setting.
+                                                                          Also, we are interested in investigating detectability verification
+                                                                          for discrete-time linear or nonlinear dynamical systems with
+                                                               continuous state spaces.
+
+                                                      Acknowledgments
+
+                                                            The authors would like to thank the anonymous reviewers for
+                                                                         their useful comments that improved this paper. In particular,
+                                                               they sincerely thank an anonymous reviewer who pointed out
+                                                                     that the verification conditions in Theorem 1 can be described
+                                                          by CTL formulae.
+
+                                                              References
+             Fig. 7. An example for timed automaton with 2 clocks.
+
+                                                                                            Alur,  R., & Dill, D. (1994). A theory of timed automata. Theoretical Computer
+                                                                                                  Science, 126(2), 183–235.
+Example 7.   Let us consider timed automaton A4 shown in    Ammar,  I., El Touati, Y., Yeddes, M., & Mullins,  J. (2021). Bounded opacity for
+Fig. 7(a), which has two clocks, i.e., X = {x, y}, and observable         102926.timed systems. Journal of Information Security and Applications, 61, Article
+events Σo = {a, b, c}. We verify both strong detectability and      Baier, C., & Katoen,  J. (2008). Principles of model checking. MIT Press.
+
+                                                                   11
+
+W. Dong, K. Zhang, S. Li et al.                                                                                                   Automatica 164 (2024) 111644
+
+
+Balun,  J., & Masopust, T. (2021). On verification of D-detectability for discrete      Yin,  X.,  Li,  Z., & Wang, W. (2018). Trajectory detectability of discrete-event
+    event systems. Automatica, 133, Article 109884.                                    systems. Systems & Control Letters, 119, 101–107.
+Basile,  F., Cabasino, M., & Seatzu, C. (2015). State estimation and fault diag-     Yoo,  T., & Lafortune, S. (2002). Polynomial-time verification of diagnosability
+    nosis of labeled time Petri net systems with unobservable transitions. IEEE          of partially observed discrete-event systems. IEEE Transactions on Automatic
+    Transactions on Automatic Control, 4(60), 997–1009.                                     Control, 47(9), 1491–1495.
+Basile,  F., & Ferrara,  L. (2021). Finite-time accuracy of timed discrete event     Zhang, K. (2017). The problem of determining the weak (periodic) detectability
+    systems. In 60th IEEE conference on decision and control (pp. 1744–1749).             of discrete event systems is PSPACE-complete. Automatica, 81, 217–220.
+Caines, P., Greiner, R., & Wang, S. (1988). Dynamical logic observers for finite     Zhang, K. (2021). State-based opacity of real-time automata. In 27th IFIP WG 1.5
+    automata. In 27th IEEE conference on decision and control (pp. 226–233).              international workshop on cellular automata and discrete complex systems.
+Cassandras,  C., & Lafortune,  S. (2021). Introduction to discrete event systems.     Zhang, K., & Giua, A. (2018). Weak (approximate) detectability of labeled Petri
+    Springer Nature.                                                                 net systems with inhibitor arcs. IFAC-PapersOnLine, 51(7), 167–171.
+Cassez, F. (2009). The dark side of timed opacity. In International conference on     Zhang, K., & Giua, A. (2020). On detectability of labeled Petri nets and finite
+    information security and assurance (pp. 21–30). Springer.                           automata. Discrete Event Dynamic Systems, 30, 465–497.
+Cassez, F. (2012). The complexity of codiagnosability for discrete event and timed
+    systems. IEEE Transactions on Automatic Control, 57(7), 1752–1764.
+Dong, W., Yin, X., Zhang, K., & Li, S. (2022). On the verification of detectability
+    for timed systems. In American control conference (pp. 3752–3758).                                    Weijie Dong was born in Xinjiang, China, in 1996.
+Emerson,  E., &  Clarke,  E.  (1982). Using branching time temporal  logic  to                       He received the B.S. degree from Huazhong University
+    synthesize synchronization skeletons. Science of Computer Programming, 2(3),                                of Science and Technology in 2019. He  is pursuing
+   241–266.                                                                                            the Ph.D. degree at Shanghai Jiao Tong University in
+Gao, C., Lefebvre, D., Seatzu, C., Li, Z., & Giua, A. (2020). A region-based approach                             the Department of Automation. His current research
+    for state estimation of timed automata under no event observation. In 25th                                 interests include  fault diagnosis, state estimation of
+    IEEE international conference on emerging technologies and factory automation                                discrete event systems.
+    (pp. 799–804).
+Hadjicostis, C. (2020). Introduction to estimation and inference in discrete event
+    systems. In Estimation and inference in discrete event systems (pp. 1–14).
+    Springer.
+Hadjicostis, C., & Seatzu, C. (2016). K-detectability in discrete event systems. In                           Kuize Zhang received the B.S. and Ph.D. degrees in
+    55th IEEE conference on decision and control (pp. 420–425).                                          Mathematics and Control Science and Engineering from
+Henzinger, T., Nicollin, X., Sifakis, J., & Yovine, S. (1994). Symbolic model checking                            Harbin Engineering  University,  China,  in 2009 and
+    for real-time systems. Information and Computation, 111(2), 193–244.                                   2014, respectively. He is currently a lecturer at Depart-
+Jiang,  S., Huang,  Z., Chandra, V., & Kumar, R. (2001). A polynomial algorithm                        ment of Computer Science, University of Surrey, UK. He
+    for testing diagnosability of discrete-event systems. IEEE Transactions on                        was an Alexander von Humboldt Fellow at Technical
+    Automatic Control, 46(8), 1318–1321.                                                                      University of Berlin, Germany, from July 2020 to April
+Keroglou, C., & Hadjicostis, C. (2015). Detectability in stochastic discrete event                             2022. He held postdoc positions at KTH Royal Institute
+    systems. Systems & Control Letters, 84, 21–26.                                                                of Technology, Sweden (2017-2020) and Technical Uni-
+Keroglou, C., & Hadjicostis, C. (2017). Verification of detectability in probabilistic                                versity of Munich, Germany (2016-2017). His current
+    finite automata. Automatica, 86, 192–198.                                                               research interests include Boolean control networks,
+Lai, A., Lahaye, S., & Giua, A. (2019). State estimation of max-plus automata with       finite automata, Petri nets, weighted automata over monoids, timed automata,
+   unobservable events. Automatica, 105, 36–42.                                               etc., in theoretical computer science and control theory, with applications to
+Lai, A., Lahaye, S., & Giua, A. (2020). Verification of detectability for unambiguous     systems biology, etc. He is a senior member of IEEE (2017-). He has co-authored
+   weighted automata. IEEE Transactions on Automatic Control, 66(3), 1437–1444.     one monograph in Springer Nature and authored one monograph in Foundations
+Lai, A., Lahaye, S., & Komenda, J. (2022). Observer construction for polynomially       ®                                                                       and Trends   in Systems and Control.
+   ambiguous max-plus automata. IEEE Transactions on Automatic Control, 67(3),
+   1582–1588.
+Lan, H., Tong., Y., & Seatzu, C. (2021). Analysis of strong and strong periodic de-                         Shaoyuan Li was born in Hebei, China, in 1965. He
+    tectability of bounded labeled Petri nets. Nonlinear Analysis. Hybrid Systems,                              received the B.S. and M.S. degrees in automation from
+    42, Article 101087.                                                                                   the Hebei  University  of Technology,  Tianjin,  China,
+Li,  J., Lefebvre, D., Hadjicostis, C., & Li, Z. (2022). Observers for a class of timed                                in 1987 and 1992,  respectively, and the Ph.D. de-
+   automata based on elapsed time graphs. IEEE Transactions on Automatic                             gree from Nankai University, Tianjin, in 1997. Since
+    Control, 67(2), 767–779.                                                                             1997, he has been with the Department of Automa-
+Lin, F., Wang, L., Yin, G., Polis, M., & Chen, W. (2022). On detectability of a class                                   tion, Shanghai Jiao Tong University, Shanghai, China,
+    of hybrid systems. IEEE Transactions on Automatic Control, 1–12.                                  where he is currently a Professor. His current research
+Ma, Z., Li, Z., & Giua, A. (2019). Marking estimation in a class of time labeled                                 interests include model  predictive  control, dynamic
+    Petri nets. IEEE Transactions on Automatic Control, 65(2), 493–506.                                    system optimization, and cyber–physical systems. He
+Masopust,  T. (2018). Complexity of deciding detectability in discrete event                                       is the vice-president  of the Chinese Association  of
+    systems. Automatica, 93, 257–261.                                           Automation.
+Masopust,  T., & Yin, X. (2019). Deciding detectability for labeled Petri nets.
+    Automatica, 104, 238–241.
+Ramadge, P. (1986). Observability of discrete event systems. In 25th IEEE conf.                          Xiang Yin was born in Anhui, China, in 1991. He
+    decision and control (pp. 1108–1112).                                                                    received the B.Eng degree from Zhejiang University in
+Shu,  S., & Lin, F. (2012). Delayed detectability of discrete event systems. IEEE                             2012, the M.S. degree from the University of Michigan,
+    Transactions on Automatic Control, 58(4), 862–875.                                           Ann Arbor, in 2013, and the Ph.D degree from the
+Shu,  S., & Lin, F. (2013a). Enforcing detectability in controlled discrete event                               University  of Michigan, Ann Arbor,  in 2017,  all  in
+    systems. IEEE Transactions on Automatic Control, 58(8), 2125–2130.                                             electrical engineering. Since 2017, he has been with
+Shu,  S., &  Lin,  F.  (2013b).  I-Detectability  of  discrete-event  systems.  IEEE                             the Department  of Automation, Shanghai  Jiao Tong
+    Transactions on Automation Science and Engineering, 10(1), 187–196.                                         University, where he is an Associate Professor. His re-
+Shu, S., Lin, F., & Ying, H. (2007). Detectability of discrete event systems. IEEE                             search interests include formal methods, discrete-event
+    Transactions on Automatic Control, 52(12), 2356–2359.                                               systems and cyber–physical systems.
+Tripakis,  S. (2002). Fault diagnosis for timed automata. In International sym.                                    Dr. Yin  is serving as the chair of the IEEE CSS
+    formal  techniques  in  real-time and  fault-tolerant  systems  (pp. 205–221).      Technical Committee on Discrete Event Systems, an Associate Editor for the
+    Springer.                                                                         Journal  of Discrete Event Dynamic Systems: Theory & Applications, and a
+Wang,  L., Zhan, N., & An,  J. (2018). The opacity of real-time automata. IEEE    member of the IEEE CSS Conference Editorial Board. Dr. Yin received the IEEE
+    Transactions on Computer-Aided Design  of Integrated  Circuits and Systems,     Conference on Decision and Control (CDC) Best Student Paper Award Finalist in
+    37(11), 2845–2856.                                                          2016.
+
+
+
+
+
+                                                                   12

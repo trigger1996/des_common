@@ -1,0 +1,246 @@
+Preprints of the 20th World Congress
+The International Federation of Automatic Control
+Toulouse, France, July 9-14, 2017
+
+
+
+          DPO-SYNT: Discrete Control Synthesis for
+                                                   ⋆                     Partially-Observed Systems
+
+                        Xiang Yin ∗Maxwell Morrison ∗Siyuan Sheng ∗
+                                        St´ephane Lafortune ∗
+
+                        ∗Department of Electrical Engineering and Computer Science,
+                                University of Michigan, Ann Arbor, MI 48109, USA.
+                            (e-mail:{xiangyin,morrimax,ssyssy,stephane}@umich.edu)
+
+
+          Abstract: This paper describes DPO-SYNT, a C++ based software toolbox for property
+           enforcement in partially-observed Discrete Event Systems. DPO-SYNT implements a recently
+           developed uniform framework for synthesizing maximally-permissive supervisors and optimal
+            sensor activation policies. It can handle the enforcement/synthesis problems for a large variety
+             of properties, including safety, opacity, diagnosability, and detectability, in a uniform manner.
+
+           Keywords: Synthesis Tools, Discrete Event Systems, Partial Observation, Supervisory Control,
+           Sensor Activation.
+
+                    1. INTRODUCTION                     [Ricker et al. 2006], SUPREMICA [˚Akesson et al. 2006], TCT
+                                                         [Feng and Wonham 2006], LibFAUDES [Moor et al. 2008],
+The DPO-SYNT software toolbox  is designed  for the   DESLAB [Clavijo et al. 2012], DESPOT [Leduc 2015], and
+synthesis of supervisors and sensor activation policies for   IDES [Rudie 2006]. Compared with the above mentioned
+partially-observed Discrete Event Systems (DES) modeled    tools, DPO-SYNT has the following distinguishing fea-
+by ﬁnite-state automata. It  is based upon the recently   tures: (1)  it solves a large class of control problems in
+developed framework presented in [Yin and Lafortune   addition to the standard supervisory control problem; (2)
+2015, 2016b,a, 2017] that handles the supervisory control    it handles the issue of non-blockingness under the par-
+problem and the sensor activation problem in a uniform    tial observation setting; (3) it synthesizes optimal sensor
+manner. DPO-SYNT can be used to solve a large class   activation policies. These capabilities extend the state-of-
+of supervisory control problems under the partial observa-   the-art in FSA-based DES tools.
+tion setting, including but not restricted to, the standard
+supervisory control problem, the active diagnosis problem,                2. DESCRIPTION OF DPO-SYNT
+the discrete stabilization problem, and the opacity enforce-
+ment problem. For all of the above mentioned problems,   2.1 Theoretical Foundations
+the non-blockingness requirement can also be guaranteed.
+When the property under consideration is safety, DPO-  The main computational object in DPO-SYNT is a DES
+SYNT guarantees the minimal behavior achieved by solv-   modeled as a deterministic FSA, as a special case of a la-
+ing a range control problem. DPO-SYNT can also handle   beled transition system. DPO-SYNT can handle two types
+the sensor activation policy synthesis problem in a similar    of synthesis problems: the supervisory control problem and
+manner. This allows the use of DPO-SYNT to synthe-   the dynamic sensor activation problem. We brieﬂy review
+size optimal sensor activation policies for the purposes of   the theoretical foundations of DPO-SYNT; the reader
+supervisory control, fault diagnosis, and fault prognosis.    is referred to the publications [Yin and Lafortune 2015,
+DPO-SYNT implements the algorithms in [Yin and Lafor-   2016b,a, 2017] for more technical details.
+tune 2015, 2016b,a, 2017] in an explicit manner, without
+                                                          In our recent work [Yin and Lafortune 2016b,a], a two-using symbolic methods. As such, it is a useful educational
+                                                            stage approach for synthesizing non-blocking and property-and research tool for systems of small or moderate size.
+                                                            enforcing supervisors was proposed. The class of proper-
+DPO-SYNT can be downloaded from                           ties under consideration are so-called Information-State-
+https://gitlab.eecs.umich.edu/M-DES-tools/DPO-SYNT based.      (or IS-based) properties. Speciﬁcally, an IS-based
+                                                         property is a predicate ϕ : 2X →{0, 1}, where X is the set
+1.1 Related Software Tools                                     of states of the FSA. It was shown by Yin and Lafortune
+                                                            [2016b] that many important system-theoretic properties
+Several software tools have been developed for solving   such as safety, K-diagnosability, and opacity, can be for-
+analysis and synthesis problems for DES modeled as ﬁnite-   mulated as IS-based properties. The key of the uniform
+state automata (FSA). Among them, we mention DESUMA   computational approach is the construction of two discrete
+⋆This work was partially supported by NSF grants CCF-1138860   structures called the All Enforcement Structure (AES) and
+(Expeditions in Computing project ExCAPE: Expeditions in Com-   the Non-Blocking All Enforcement Structure (NB-AES).
+puter Augmented Program Engineering), CNS-1421122, and CNS-   Based on the (NB-)AES, a maximally-permissive (non-
+1446298.                                                    blocking) supervisor satisfying ϕ can be synthesized.
+
+
+Copyright by the                                          6026
+International Federation of Automatic Control (IFAC)
+
+Preprints of the 20th IFAC World Congress
+Toulouse, France, July 9-14, 2017
+
+
+                      System: 𝑮      Property: 𝝋            Control or Sensing            Minimal Behavior                                                         Non-blocking Required?             Required?
+
+
+
+                                           Control or
+                                Sensing   Sensing ?             Control
+
+                                                       Non-blocking?
+                                               Yes                  No
+
+                                                                        Minimal
+                                                                             Behavior?                                                   No                        Yes
+                                                                                                                                  (Safety Only)
+
+             MPO        NB-AES                AES                     CSR
+
+
+
+                 Sensor Activation    Non-Blocking              Supervisor                  Supervisor for 𝝋
+                      Policy for 𝝋     Supervisor for 𝝋                 for 𝝋                 with Minimal Behavior
+
+Fig. 1. The architecture of DPO-SYNT
+
+
+
+                                                             ⟨number of states⟩⟨number of events⟩
+
+                                                                             ⟨state 1⟩⟨m or u⟩                       /*marked or not*/
+                                                                                                                                                                                                                                                                                                                                                                                                      ...
+                                                                             ⟨state n⟩⟨m or u⟩
+
+                                                                       ⟨event 1⟩⟨c or u⟩⟨o or u⟩    /*controllability & observability*/
+                                                                                                                                                                                                                                                                                                                                                                                                      ...
+                                                                       ⟨event n⟩⟨c or u⟩⟨o or u⟩
+
+                                                                       ⟨event state⟩⟨event state⟩...       /*transitions from state 1*/
+Fig. 2. Example of a complete NB-AES                                                                                                                                                                                           ...
+                                                                       ⟨event state⟩⟨event state⟩...       /*transitions from state n*/
+A similar approach was also developed recently in [Yin
+and Lafortune 2015] for the synthesis of optimal sensor
+activation policies. The key structure in this synthesis                                                               Table 1. The FSM format in DPO-SYNT
+problem is called the Most Permissive Observer (MPO),
+which embeds all valid sensor activation policies in its
+structure. Based on the MPO, an optimal sensor activation   instance, one can further select whether or not the non-
+policy can be synthesized.                                  blockingness condition is required. If one is only interested
+                                                                in enforcing safety without non-blockingness, then DPO-
+                                      SYNT can also guarantee the minimal behavior achieved2.2 The Tool
+                                                   by the resulting supervisor; this is done by computing the
+                                                         Control Simulation Relation (CSR) developed in [Yin and
+To use DPO-SYNT, ﬁrst, we need to provide the plant                                                        Lafortune 2017].
+automaton, which is implemented by class FSM. The FSM
+format is depicted in Table 1; each state is then mapped  The basic architecture of DPO-SYNT is summarized in
+to an integer in the C++ toolbox. Second, we need to   Figure 1. The default output of DPO-SYNT  is either
+specify the IS-based property ϕ  : 2X →{0, 1} that is   an optimal sensor activation policy, which is realized by
+to be enforced. Each information state, which is a set of   a Bipartite Dynamic Observer (BDO), or a maximally-
+states of the plant automaton, is encoded as a Boolean   permissive supervisor, which  is realized by a Bipartite
+variable without enumerating all state names as a set. In   Transition System (BTS). The BPO and the BTS are dis-
+the current version of DPO-SYNT, we have included three   crete structures that can be viewed as a form of bipartite
+diﬀerent types of IS-based properties, namely, safety, state   labeled transition system. One can also choose to export
+distinguishability, and opacity. For example, for the safety   the AES, the NB-AES, or the MPO, which are constructed
+requirement, we need to specify the set of illegal states,   in the intermediate steps. The similarity between the AES
+while for the state disambiguation problem, we need to   and the MPO allows the implementation of these two
+specify the set of state pairs that we need to distinguish.   structures, as well as the BTS and the BDO, with the
+One is also allowed to deﬁne any custom IS-based property   same data structure in DPO-SYNT.
+in DPO-SYNT by deﬁning a truth table on 2X.
+                                        DPO-SYNT is implemented in C++ with approximately
+Next, we need to select whether we want to solve a su-   5000  lines  of  code  (current  version). DPO-SYNT  is
+pervisory control problem or a sensor activation problem.   command-line-based and it does not have a GUI. How-
+Under the selection of the supervisory control problem for   ever, command CONVERT is provided to transform an FSA
+
+
+                                                        6027
+
+Preprints of the 20th IFAC World Congress
+Toulouse, France, July 9-14, 2017
+
+
+in DPO-SYNT FSM format to the .fsm format used in   observable, 20% of the states are marked states, and 20%
+DESUMA. This allows drawing an FSA using the layout and    of the states are illegal. Then we constructed the NB-AES
+export capabilities of DESUMA. Note that both the AES and    for each randomly generated automaton and computed the
+the MPO are bipartite structures with two diﬀerent types   average number of states of the NB-AESs for each |X|.
+of states; this feature is preserved by using marked states   Also, we computed the average running time of the entire
+in the conversion, namely, marking is used to distinguish   synthesis algorithm for each |X|.
+between the two diﬀerent types of states. An example of
+                                              The experimental results are summarized in Figures 3AES is shown in Figure 2, in which each state without a
+                                                  and 4. Speciﬁcally, Figure 3 shows the average numberdouble circle is called a Y -state (where the supervisory
+                                                                  of states in the NB-AES compared with the theoreticalcontroller acts) and each state with a double circle  is
+                                                     upper bound. Figure 4 shows the average running timecalled a Z-state (where the system reacts). Note that the
+                                                                  of the entire synthesis algorithm when the number ofstructure in Figure 2 is also a BTS, since the AES is a
+                                                                states in the system increases. These experimental resultsspecial class of BTS.
+                                                  show that, in these tests on random plant models, the
+                                                        complexity of the synthesis algorithm  is much smaller
+                                                     than its theoretical upper bound. This was due to the
+                                                                 fact that for our randomly generated automata, the expo-
+                                                               nential upper bound when constructing the observer was
+                                                       not achieved. However, we also found that the running
+                                                       time increases signiﬁcantly when the number of events
+                                                                 increases. The current version of DPO-SYNT can handle
+                                                       systems with about 100 states and 20 events. Note that
+                                                          the current implementation of DPO-SYNT does not use
+                                                        symbolic methods. It is well known that using symbolic
+                                                  methods can signiﬁcantly improve the scalability of reac-
+                                                                  tive synthesis algorithms. Indeed, several DES tools have
+                                                BDD-based implementations, such as SUPREMICA, TCT, and
+                                                          the recent supervisor synthesis tool SynthSMV 1 [Rawlings
+                                                               2016]. Implementing a new version of DPO-SYNT usingFig. 3. Average number of states in the NB-AES
+                                                        symbolic methods is an important future direction.
+
+
+                                                    REFERENCES
+
+                                                               ˚Akesson, K., Fabian, M., Flordal, H., and Malik, R. (2006).
+                                                       Supremica - an integrated environment for veriﬁcation,
+                                                                synthesis and simulation of discrete event systems. In
+                                                             8th International Workshop on Discrete Event Systems,
+                                                           384–385.
+                                                               Clavijo, L., Basilio, J., and Carvalho, L. (2012). DESLAB:
+                                     A scientiﬁc computing program for analysis and syn-
+                                                                    thesis of discrete-event systems.  In 11th International
+Fig. 4. Average running time of the synthesis algorithm    Workshop on Discrete Event Systems, 349–355.
+     (y-axis) in terms of number of system states (x-axis)   Feng, L. and Wonham, W. (2006). TCT: A computation
+                                                                 tool for supervisory control synthesis.  In 8th Interna-
+2.3 Scalability                                                    tional Workshop on Discrete Event Systems, 388–389.
+                                                       Leduc, R. (2015).  DESpot.  URL http://www.cas.
+We discuss computational complexity in terms of the num-     mcmaster.ca/~leduc/DESpot.html.
+                                                   Moor, T., Schmidt, K., and Perk, S. (2008). libFAUDESber of states of the plant automaton, |X|. In the worst
+                                                    an open source C++ library for discrete event systems.case, the resulting BTS or BDO in solving a (control
+                                                            In 9th International Workshop on Discrete Event Sys-or sensor activation) synthesis problem may contain 2|X|
+                                                            tems, 125–130.states. However, this theoretical upper bound may not be
+                                                         Rawlings, B. (2016).   Discrete Dynamics in Chemicalachieved in practice. To better understand this exponential
+                                                             Process Control and Automation. Ph.D. thesis, Carnegiegrowth and test the limits of the current explicit imple-
+                                                        Mellon University.mentation in DPO-SYNT, we performed scalability tests
+                                                             Ricker, L., Lafortune, S., and Genc, S. (2006). DESUMA:of DPO-SYNT on an 8 GB Lenovo Laptop with a 2.5-GHz
+                                     A tool integrating GIDDES and UMDES. In 8th Inter-Intel core i7.
+                                                              national Workshop on Discrete Event Systems, 392–393.
+We ﬁxed the number of events as |E| = 10 and varied the   Rudie, K. (2006). The integrated discrete-event systems
+number of states from |X| = 1 to |X| = 50. We considered      tool. In 8th International Workshop on Discrete Event
+the standard non-blocking supervisor synthesis problem     Systems, 394–395.
+for a safety requirement. For each |X| ∈{1, . . . , 50}, we   Yin, X. and Lafortune, S. (2015). A general approach for
+randomly generated 20 system models using the following      solving dynamic sensor activation problems for a class
+parameters: the out-degree of each state is |X|/2, 50%
+of the events are controllable, 50%  of the events are    1 https://bitbucket.org/blakecraw/synthsmv/
+
+
+                                                        6028
+
+Preprints of the 20th IFAC World Congress
+Toulouse, France, July 9-14, 2017
+
+
+
+   of properties. In 54th IEEE Conference on Decision and
+  Control, 3610–3615.
+Yin, X. and Lafortune, S. (2016a). Synthesis of maximally
+  permissive supervisors for partially observed discrete
+  event systems. IEEE Transactions on Automatic Con-
+   trol, 61(5), 1239–1254.
+Yin, X. and Lafortune,  S. (2016b).  A uniform ap-
+  proach for synthesizing property-enforcing supervisors
+   for partially-observed discrete-event systems.  IEEE
+  Transactions on Automatic Control, 61(8), 2140–2154.
+Yin, X. and Lafortune, S. (2017). Synthesis of maximally-
+  permissive  supervisors  for  the  range  control  prob-
+  lem. IEEE Transactions on Automatic Control. DOI:
+  10.1109/TAC.2016.2644867.
+
+
+
+
+
+                                                        6029

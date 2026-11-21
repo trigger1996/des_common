@@ -1,0 +1,416 @@
+2018 IEEE Conference on Decision and Control (CDC)
+Miami Beach, FL, USA, Dec. 17-19, 2018
+
+
+   Veriﬁcation of Opacity in Networked Supervisory Control Systems
+                   with Insecure Control Channels
+
+
+                                   Xiang Yin and Shaoyuan Li
+
+
+
+  Abstract— We  investigate  security and  privacy  issues  in
+                                                                          Actuators    𝑮          Sensorsnetworked discrete-event systems, where supervisory controllers
+are connected with actuators and sensors via communication
+networks. In this paper, we consider the case where the control
+channel between the supervisor and the actuators may not
+be secure  in the sense  that the control  decisions  sent by                    𝑺
+the supervisor can be “listened” by an intruder. We adopt                      𝜞∗          𝑬𝒐∗
+the concept of an information-ﬂow property called opacity
+                                                                 Intruderto capture whether or not the networked supervisory control
+system is secure. Speciﬁcally, we say that the supervisory control     Fig. 1.  A networked supervisory control system with insecure control
+system is opaque with insecure control channel if the intruder    channel.
+can never determine for sure that the system is in a secret state     Although networked control systems have many advan-
+based on the control decisions sent by the supervisor. Based on                                                               tages compared with classical control systems, security issue
+different control decision transmission mechanisms, two notions
+                                                    becomes one of the main challenges in NCSs due to largeof opacity are deﬁned. Effective algorithms are also provided
+to verify different notions of opacity for networked supervisory   communications. In particular, the control channel and the
+control systems.                                               observation channel may not be secure in the sense that
+                                                                the information sent in the channels may be “listened” by
+                          I. INTRODUCTION                         intruders. Therefore, some “secret” of the system may be
+                                                              revealed to the intruder due to the information leak. In
+  Supervisory control theory is a widely used formal meth-    the context of networked DES, unfortunately, most existing
+ods  to enforce closed-loop properties  for Discrete-Event   works in the literature focus on the issues of communication
+Systems (DES). In this framework, the system is controlled   delays and losses; see, e.g., [4], [13], [14], [16], [17], [20],
+by a supervisor that disables events dynamically based on its    [25]. The security issue, which is becoming progressively
+observations so that the closed-loop behavior under control   more important, has not been systematically studied in the
+meets some design speciﬁcations. Supervisory control of   context of networked DES.
+DES has been extensively developed since the seminal work
+                                                                 In this paper, we propose an approach to analyze security
+of Ramadge and Wonham in the late 1980s [19].
+                                                                   for networked supervisory control systems with insecure
+  In many modern applications, controllers are implemented                                                                control channels. Speciﬁcally, we consider a DES controlled
+in networked environments where system components are                                                    by a networked supervisor as shown in Figure 1. We assume
+connected with each other via communication networks [11].                                                                     that the observation channel is secure, i.e., the intruder does
+Control systems with such networked information structures                                                             not know the observation sequence sent by the sensors.
+are referred to as the networked control systems (NCSs). In                                                       However, the control channel between the supervisor and
+the context of DES, the development of NCSs also motivates                                                                the actuators is assumed to be insecure in the sense that
+a new active research area called networked discrete-event                                                                the control decisions sent by the supervisor can be accessed
+systems; see, e.g., [10], [17]. As depicted in Figure 1, in                                                    by an intruder that is potentially malicious. Such a scenario
+networked supervisory control systems, there are generally                                                                     arises when the supervisor is located close to the sensors
+two communication channels: (i) the sensors send observable                                                              but far way from the actuators, and hence, the supervisor
+events to the supervisor via the observation channel; and                                                         needs to control the actuators remotely via communication
+(ii) the supervisor sends control decisions to the actuators                                                            networks. The goal is to analyze, in a formal manner, whether
+via the control channel. Compared with classical supervisory                                                              or not the supervisory control system is secure under such
+control systems, networked supervisory control systems have                                                       an insecure control channel.
+several advantages. In particular, the networked information
+                                                    Our approach is to adopt the concept of opacity to char-structure allows us to use outside computational devices to
+                                                                   acterize whether or not the networked supervisory controlcontrol large-scale systems remotely.
+                                                        system is secure. Opacity is an information-ﬂow property that
+  This work is supported by the National Natural Science Foundation of   captures the plausible deniability of the system’s “secret” un-
+China (61803259, 61833012).                                      der possible information leak. A system is said to be (current-
+  Xiang  Yin  and  Shaoyuan  Li  are  with  Department  of  Automa-    state) opaque if an outside intruder (potentially malicious)
+tion  and Key  Laboratory  of  System  Control  and  Information  Pro-
+cessing,  Shanghai  Jiao  Tong  University,  Shanghai  200240,  China.   cannot infer unambiguously, based on its limited information
+{yinxiang,syli}@sjtu.edu.cn.                         about the system, that the system is at a secret state. The
+
+
+978-1-5386-1394-8/18/$31.00 ©2018 IEEE                    4851
+
+property of opacity has drawn considerable attention in the    (or control patterns), i.e., uncontrollable events are always
+last few years in the DES literature; see, e.g., [1]–[3], [6],   enabled. The natural projection P  : E∗→E∗o  is deﬁned
+[8],  [9],  [12],  [15],  [18], [22]–[24] and a recent survey    recursively by: for any s ∈E∗, σ ∈E, we have
+[7] for more references. In our context, since we assume
+                                                                           P(s)σ       if σ ∈Eo
+that the control channel  is not secure, we say  that the     P(ϵ) = ϵ and P(sσ) =                               (1)
+                                                                            P(s)         if σ ∈Euo
+supervisory control system is opaque if the intruder cannot
+infer unambiguously that the system is at a secret state based   The natural projection is also extended to P  : 2E∗→2E∗
+on the control decisions sent by the supervisor.               by: for any L ⊆E∗, P(L) = {P(s) ∈E∗o : s ∈L}.
+  In the standard supervisory control theory, the supervisor   A supervisor S   : P(L(G)) →Γ  is a function  that
+updates its control decision and then sends it to the actuators   makes control decisions dynamically based on its observa-
+once a new observable event occurs. We call such decision    tions. Speciﬁcally, supervisor S works as follows. Initially,
+transmission mechanism event-based. However, communi-     it issues an initial control decision S(ϵ),  i.e., only events
+cation is usually costly in the networked environment. To    in S(ϵ) are enabled. The control decision is then sent to
+reduce the communication burden, the networked supervisor   each actuator associated with each controllable event via the
+may not need to resend a control decision if it is the same as    control channel. Once the ﬁrst observable event σ1 occurs,
+the previous one. Instead, the supervisor can just communi-    the supervisor changes  its control decision to S(σ1) and
+cate only when the control decision needs to be changed. We   sends  it. Similarly, when the second observable event σ2
+call such a decision transmission mechanism decision-based,    occurs, the supervisor again changes its control decision to
+which will not change the closed-loop behavior of the system   S(σ1σ2) and sends it, and so forth. We denote by L(S/G)
+since the actuators will still disable the same events when    the language generated by the closed-loop system, which is
+the current control decision is the same as the previous one.   deﬁned recursively by: ϵ ∈L(S/G); and sσ ∈L(S/G) iff
+In the paper, both the event-based and the decision-based   s ∈L(S/G) ∧sσ ∈L(G) ∧σ ∈S(P(s)).
+transmission mechanisms are investiagted. For each case, we
+                                                         C. State-Space Recognizers of Supervisorsprovide the deﬁnition of opacity and propose a corresponding
+veriﬁcation algorithm.                                           In practice, supervisor S is usually recognized as a FSA1
+
+                         II. PRELIMINARY                             S = (XS, E, δS, x0,S)
+A. System Model                                         such that the following conditions hold:
+  Let E be a ﬁnite set of events. A string is a ﬁnite sequence      • ∀x ∈XS, ∀σ ∈Euo : δS(x, σ)! ⇒δS(x, σ) = x; and
+of events. We denote by E∗the set of all strings over E      • ∀s ∈L(S) : ΣS(δS(s)) = S(P(s)).
+including the empty string ϵ. A language L ⊆E∗is a set of                                                                    Essentially, the  ﬁrst condition says  that only observable
+strings. A discrete-event system is modeled as a ﬁnite-state                                                              events can update control decisions (by updating states in
+automaton (FSA)                                                         G). The second condition says that S indeed works the same
+                                                              as S, i.e., the set of events deﬁned at each state encodes the           G = (X, E, δ, x0)
+                                                                current control decision. This also implies, implicitly, that
+where X is a ﬁnite set of states, E is a ﬁnite set of events,    uncontrollable events are always deﬁned at each state in S.
+δ  : X × E →X  is the (partial) transition function and  We denote by
+x0 ∈X is the initial state. The transition function δ is also
+extended to X ×E∗→X in the usual manner; see, e.g., [5].        G × S = (XG×S, E, δG×S, x0,G×S)
+For the sake of simplicity, we write δ(x, s) as δ(s) if x = x0.    the product (c.f. [5] pp. 78) of G and S and we have L(G×
+The language generated by G is L(G) = {s ∈E∗: δ(s)!},                                                 S) = L(S/G). In this paper, we assume that a supervisor
+where “!” means “is deﬁned”. For each state x ∈X, we                                                         always has its FSA recognizer (this essentially requires that
+denote by ΣG(x) = {σ ∈E  : δ(x, σ)!} the set of events    the supervisor can only have a ﬁnite memory). Hereafter,
+deﬁned at x.                                             we will only consider the recognizer FSA S and will use
+                                          L(G × S) instead of L(S/G). For the sake of simplicity,B. Supervisory Control Theory
+                                                                   for any s ∈L(G × S), we also write the control decision
+  In many cases, the open-loop system G may not satisfy
+                                                    upon the occurrence of s as S(s), i.e., S(s) := ΣS(δS(s)) =
+some design speciﬁcations. Hence, the supervisory control                                                     ΣS(δS(P(s))) = S(P(s)).
+theory has been widely adopted to enforce desired properties
+for DES. In the supervisory control framework, the event set      III. OPACITY IN NETWORKED SUPERVISORY CONTROL
+is assumed to be partitioned as E = Ec ˙∪Euc = Eo ˙∪Euo,                    SYSTEMS
+where Ec  is the set of controllable events, Euc  is the set   A. Opacity under Event-Based Transmission
+of uncontrollable events, Eo is the set of observable events
+                                                                 In networked supervisory control systems, control deci-
+and Euo is the set of unobservable events. In general, there
+                                                               sions made by the supervisor need to be transmitted to
+is no relationship between Ec and Eo,  i.e., a controllable
+event could be either observable or unobservable. We deﬁne      1The FSA representation of a supervisor usually comes  directly, by
+Γ = {γ ∈2E  : Euc ⊆γ} as the set of control decisions     construction, from supervisor synthesis procedures.
+
+
+                                                       4852
+
+the actuators via the control channel. More speciﬁcally, let               𝑐
+s ∈L(G×S) be a string generated by the closed-loop system                                                  A                                        0                                                                                0,A 𝑎                                                                    𝑜       𝑜                                                    𝑎        𝑎                                                   𝑜
+and assume that P(s) = σ1 . . . σn, σ ∈Eo. Then upon the                                      2                                          1                                                 B                                                          C     2,C                                                                                     1,Boccurrence of string s, supervisor S issues a sequence of      𝑐                                                  𝑜    𝑜                                                                   𝑐   𝑎, 𝑜                                                                                           𝑎, 𝑜                                                                                  𝑜                                                                           𝑜control decisions deﬁned by
+                                      4   𝑐 3    D 𝑎, 𝑜 E     4,E    3,D
+       DS(s) = S(ϵ)S(σ1) · · · S(σ1 . . . σn) ∈Γ∗                 𝑐    𝑜             𝑎, 𝑜, 𝑐      𝑐      𝑜
+                                                                                            𝑐
+                                      6   𝑐 5           F     6,F    5,E
+We also refer to DS(s) as the decision history of string s.                                𝑎, 𝑜
+We call the control decision transmission mechanism event-
+                                                                                                    (a) G                   (b) S                 (c) G × S
+based if DS(s) is entire information history the supervisor
+                                                                                                 Fig. 2. A supervisory control system (G, S)
+sends to the actuators, i.e., the supervisor will always send
+                                                                                                                                                        .
+S(σ1 . . . σn) when σ1 . . . σn is observed. We denote by                                                             not need to resend the newly computed control decision if it
+       DS = {DS(s) ∈Γ∗: s ∈L(G × S)}                  is the same as the previous one. Instead, it sufﬁces to send
+                                                           a new control decision only when  it is different from the
+the set of all possible decision histories in the supervisory                                                              previously one. We call such a control decision transmission
+control system.                                                   mechanism decision-based. The decision-based transmission
+  As depicted in Figure 1, however, the information trans-                                                   mechanism will reduce communication burden in the control
+mission between the supervisor and the actuators may not                                                           channel without affecting the behavior of the closed-loop
+be secure and there may exist an intruder that can access                                                            system, since the supervisor will still use the previous control
+the decision history. The question then arises as whether                                                              decision when it is the same as the current one.
+or not this information leak will reveal some “secret” of                                                               Formally, for any control decision sequence α ∈Γ∗,
+the system. Formally, we consider an intruder having the                                             we denote by LAST(α) the last control decision in α with
+following capabilities:                                                    LAST(ϵ) := ϵ. Then we deﬁne the event ﬁltering function
+A1 The intruder knows the system model and the function-
+                                                  F : Γ∗→Γ∗      ality of the supervisor; and
+A2 The control channel is not secure so that the intruder                                                                 recursively by: for any α ∈Γ∗, γ ∈Γ, we have
+    knows all information the supervisor sends to the actu-
+                                                                      F(α)γ   if γ̸ = LAST(α)     ators.                                                F(ϵ)=ϵ and F(αγ)=
+                                                                     F(α)     if γ = LAST(α)  In order to characterize whether or not the supervisory
+control system  is secure, motivated by recent works on   Function F is also extended to F  : 2Γ∗→2Γ∗. Therefore,
+information-ﬂow analysis of DES, we propose to use the    in the decision-based transmission mechanism, upon the
+notion of opacity in this problem. Speciﬁcally, we assume   occurrence of s ∈L(G × S), the intruder will observe
+that the system has a “secret” modeled as a set of secret states   decision string F(DS(s)) ∈Γ∗in the control channel. This
+Xsecret ⊂X. We say that the supervisory control system    also leads to the following deﬁnition of opacity.
+is opaque under event-based transmission if the intruder can      Deﬁnition 2: Supervisory control system (G, S) is said to
+never infer unambiguously that the system is at a secret state   be opaque under decision-based transmission if
+based on the decision history. This leads to the following
+                                           (∀s∈L(G×S) : δ(s)∈XSecret)                          (3)deﬁnition.
+  Deﬁnition 1: Supervisory control system (G, S) is said to   (∃t ∈L(G × S) : δ(t) /∈XSecret)[F(DS(s)) = F(DS(t))].
+be opaque under event-based transmission if
+
+   (∀s∈L(G×S) : δ(s)∈XSecret)                      (2)      In Sections III and IV, we will show formally how to
+    (∃t ∈L(G × S) : δ(t) /∈XSecret)[DS(s) = DS(t)]        verify opacity under event-based transmission and opacity
+   Intuitively, opacity requires that for any string that goes   under decision-based transmission, respectively.  First, we
+to a secret state, there exists a string that goes to a non-    illustrate Deﬁnitions 1 and 2 by the following example.
+secret state such that the supervisor will produce the same     Example 1: Let us consider system G shown  in Fig-
+decision history for these two different strings. Therefore, the   ure 2(a) with Σc = {c} and Σo = {o, a, c}, i.e., all events
+system can guarantee its plausible deniability for visiting a    are observable and the supervisor can only decide to enable
+secret state even when the control channel is “listened” by   or disable event c at each instant. Suppose that the control
+the intruder.                                                    objective is to prevent the dashed transitions from happening.
+                                                           This objective can be achieved by supervisor S shown in
+B. Opacity under Decision-Based Transmission                                                            Figure 2(b) and the closed-loop language is generated by
+  In the event-based transmission mechanism, we assume  G × S shown in Figure 2(c). Suppose that XSecret = {5},
+that the supervisor will send the latest control decision when-     i.e., the intruder should never know for sure that the system
+ever a new event is observed. However, in networked control    is at the unique secret state 5.
+systems, sending control decisions requires communication,      This system is not opaque under event-based transmission.
+which is costly in general. Therefore, the supervisor may   To see  this,  let us consider  string aoo ∈ L(G × S),
+
+
+                                                       4853
+
+where δ(aoo) = 5 ∈XSecret. The decision history along                               0, 𝐴
+this  trajectory  is DS(aoo) =  S(ϵ)S(a)S(ao)S(aoo) =                                      * +
+{o, a}{o, a}{o, a}{o, a, c}. Since events o and a are uncon-                            1, 𝐵, (2, 𝐶)
+trollable, which are always enabled in the control decision,                          *𝑐+             * +
+for the sake of simplicity, we will omit uncontrollable events                                                                                       4, 𝐸        3, 𝐷
+in each control decision and write the above decision history                                                                                                * +              *𝑐+
+as DS(aoo) = {}{}{}{c}. However, aoo is the unique string
+                                                                                       6, 𝐹        5, 𝐸
+that can induce decision history {}{}{}{c}. Therefore, by                                     * +
+observing {}{}{}{c} in the control channel, the intruder       Fig. 3.  The D-observer under event-based transmission Obs(G, S).
+knows unambiguously that the system is at secret state 5.                                                              q0 ={(x, x0,S)∈XG×S :∃w∈E∗uo s.t. (x, x0,S)=δG×S(w)}
+  However,  this system  is opaque under decision-based
+transmission. To see this, we still consider the unique string
+                                        We only consider the reachable part of Obs(G, S).
+leading  to  secret  state  5,  i.e., aoo. Under the decision-
+                                                        Note that, for any decision history α ∈DS,  it can bebased transmission mechanism, only ﬁltered decision history
+                                                                written in the form of α = S(ϵ)α′. In other words, the initialF(DS(aoo)) = F({}{}{}{c}) = {}{c}  is sent in the
+                                                                control decision S(ϵ) does not carry additional informationcontrol channel upon the occurrence of aoo. However, we
+                                                                   for the intruder since any decision history starts with S(ϵ).can ﬁnd another string oo leading to non-secret state 4 such
+                                                            Next, we present the main properties of Obs(G, S).that F(DS(oo)) = F({}{}{c}) = {}{c} = F(DS(aoo)).
+Therefore, the intruder does not know whether the system is       First, we show that Obs(G, S) can track all possible states
+at secret state 5 or at non-secret state 4 by observing {}{c}    consistent with the decision history.
+in the control channel.                                          Proposition 1: For any α = S(ϵ)α′ ∈DS, we have α′ ∈
+                                                 L(Obs(G, S)). Moreover,
+  IV. VERIFICATION OF OPACITY UNDER EVENT-BASED
+                TRANSMISSION
+                                                         ∃s∈L(G × S) s.t. DS(s)=α
+                                       q=  (x, xs)∈XG×S :                                    (5)  In this section, we show how to verify opacity under event-                           and (x, xs)=δG×S(s)
+based transmission. First, we deﬁne
+                                                     where q = f(q0, α′) is the state reached by α′ in Obs(G, S).E(α) := {x∈X : ∃s∈L(G × S) s.t. x=δ(s) ∧DS(s)=α}
+                                                              Next, we show that, in fact, Obs(G, S) exactly generates
+as the state estimate when decision history α is generated.    all possible decision histories.
+According to Deﬁnition 1, the system is opaque under event-                                                                Proposition 2: {S(ϵ)}L(Obs(G, S)) = DS.
+based transmission  if and only  if ∀α ∈DS   :  E(α)̸ ⊆                                                           For any q ∈2X×XS, we deﬁne q|X := {x ∈X  : ∃xs ∈
+XSecret. Therefore, the key to the opacity veriﬁcation prob-
+                                       XS  s.t. (x, xs) ∈q} as the restriction to its ﬁrst component.
+lem is to effectively compute E(α) for all possible control
+                                             By Proposition 1, we know that, for any α = S(ϵ)α′ ∈DS,
+decision history. However, this cannot be done by the stan-
+                                                   E(α) = f(α′)|X. Therefore, by Proposition 2, we have the
+dard observer automaton [5] since there are two levels of
+                                                             following theorem that shows how to use Obs(G, S) to verify
+inferences here: we need to ﬁrst use the decision history
+                                                              opacity under event-based transmission.
+to infer all possible observable strings and then use each
+                                                      Theorem 1: Supervisory control system (G, S) is opaquepossible observable string to infer all possible actual strings
+                                                         under event-based transmission w.r.t. Xsecret, if and only if,generated by the system. To solve this state estimation prob-
+                                                    ∀q ∈Q : q|X̸ ⊆XSecret.lem, we propose the following Decision-to-State Observer
+(D-observer) under event-based transmission.             We illustrate the decision-to-state observer under event-
+  Deﬁnition 3: Let G = (X, E, δ, x0) be a system and   based transmission by the following example.
+S = (XS, E, δS, x0,S) be a supervisor. The decision-to-state     Example 2: Again, let us consider system G and super-
+observer under event-based transmission is a FSA             visor S shown in Figures 2(a) and 2(b), respectively, with
+                                                Σc =  {c}, Σo =  {o, a, c} and XSecret =  {5}. Here,
+             Obs(G, S) = (Q, Γ, f, q0)               (4)                                             we use Theorem 1 to verify whether or not the system
+                                                                              is opaque under event-based transmission. To this end, wewhere
+                                                                build the the decision-to-state observer under event-based  • Q ⊆2XG×S is the set of states;
+                                                              transmission Obs(G, S), which is shown in Figure 3. Since
+  • Γ  is the set of control decisions,  i.e., each event in
+                                                                              all events are observable, the initial state is {(0, A)}. By
+    Obs(G, S) is a control decision;
+                                                           observing the ﬁrst control decision {}, we move to state
+  • f  : Q × Γ →Q is the transition function deﬁned by:
+                                                              {(1, B), (2, C)}. In particular, the occurrences of events a     for any q, q′ ∈Q, γ ∈Γ, f(q, γ) = q′ if
+                                                      and c lead to states (1, B) and (2, C), respectively, where
+                   ∃(x, xs)∈q, σ ∈Eo, w∈E∗uo                              ΣS(B) = ΣS(C) = {}. Since state {(5, E)} ∈Q and  q′ =      x′s)∈XG×S:  s.t. (x′, x′s)=δG×S((x, xs), σw)                                                              {(5, E)}|X = {5} ⊆XSecret, we know that (G, S) is not      (x′,                  and ΣS(x′s) = γ                                                          opaque under event-based transmission, which is consistent
+  • The initial state is deﬁned by                           with our result in Example 1.
+
+
+                                                       4854
+
+V. VERIFICATION OF OPACITY UNDER DECISION-BASED     Theorem 2: Supervisory control system (G, S) is opaque
+                TRANSMISSION                       under decision-based transmission w.r.t. Xsecret, if and only
+                                                                                           if, ∀q ∈˜Q : q|X̸ ⊆Xsecret.  In  this section, we show how to verify opacity under
+                                                                 In order to construct the D-observer under decision-baseddecision-based transmission. Similarly, we deﬁne
+                                                              transmission (either online or off-line), we need to compute
+˜E(α) := {x∈X : ∃s∈L(G×S) s.t. x=δ(s)∧F(DS(s))=α}   the  initial state and each successor state based on Equa-
+                                                                   tions (8) and (7), respectively, which are rather involved.
+as the state estimate when ﬁltered decision history α is ob-
+                                                              In Algorithm 1, we show speciﬁcally how the D-observer
+served under the decision-based transmission mechanism. In
+order to effectively compute ˜E(α) for each possible ﬁltered   under decision-based transmission can be constructed. This
+                                                            algorithm involves two recursive procedures DODFS and
+decision history α ∈F(DS), we propose the following
+                                                SEARCH. Procedure DODFS mainly aims to traverse the
+decision-to-state observer under decision-based transmission.
+                                                                       state space of ˜Q by a depth-ﬁrst search from the initial state.
+  Deﬁnition 4: Let G = (X, E, δ, x0) be a system and S =
+                                                    At each state q encountered, it computes the successor state
+(XS, E, δS, x0,S) be a supervisor. Then the decision-to-state
+                                                                   for each control decision γ that is different from the current
+observer under event-based transmission is a FSA
+                                                                control decision in q,  i.e., ∀(x, xs) ∈q  : ΣS(xs)̸ = γ.
+             Obs(G,˜    S) = (˜Q, Γ, ˜f, ˜q0)               (6)   The computation of the successor state q′  is implemented
+                                                    by lines 8-10. First, we set q′ as the empty set and then,
+where                                             we add states to q′ by another depth-ﬁrst search procedure
+  •  ˜Q ⊆2XG×S is the set of states;                    SEARCH. Speciﬁcally, for each  state (x, xs) and control
+  • Γ  is the set of control decisions,  i.e., each event in   decision γ, procedure SEARCH considers all possible events
+    Obs(G,˜    S) is a control decision;                     whose occurrence will maintain control decision γ and repeat
+  •  ˜f : ˜Q × Γ →˜Q is the transition function deﬁned by:    this by a recursive  call  until  all such  states have been
+     for any q, q′ ∈˜Q, γ ∈Γ, ˜f(q, γ) = q′ if                  explored. The initial state ˜q0 is computed in the same manner
+               ∀(x, xs) ∈q : ΣS(xs)̸ = γ                 by procedure SEARCH, where the depth-ﬁrst search starts
+                                                      from (x0, x0,S) with γ = S(ϵ).
+and                                         We illustrate the construction of Obs(G,˜    S) and show how
+                     ∃(x, xs)∈q, s ∈E∗         to verify opacity under decision-based transmission using     (x′, x′s)                    q′ =                   :   s.t. (x′, x′s)=δG×S((x, xs), s) and       Theorem 2 by the following example.     ∈XG×S
+               [∀s′ ∈{s} \ {ϵ}:ΣS(δS(xs, s′))=γ]      Example 3:  Still, let us consider system G and supervisor
+                                                            (7)  S shown in Figures 2(a) and 2(b), respectively, with Σc =
+  • The initial state is deﬁned by                            {c}, Σo = {o, a, c} and XSecret = {5}. We have shown in
+          (x, xs)    ∃s∈E∗s.t. (x, xs)=δG×S(s)          Example 1 that this system is opaque under decision-based
+  q0 =                :                                         (8)
+     ∈XG×S  and [∀s′ ∈{s}:ΣS(δS(s′))=S(ϵ)]          transmission. Here, we verify this result by Theorem 2.
+                                                    The D-observer under decision-based transmission  for
+We only consider the reachable part of Obs(G,˜     S).          (G, S)  is shown in Figure  4. The  initial  state  is  ˜q0 =
+   Still, for any ﬁltered decision history α ∈F(DS), it can   {(0, A), (1, B), (2, C), (3, D)};  this can be computed by
+be written as α = S(ϵ)α′. The following result states that   procedure SEARCH in line 2. Speciﬁcally, we  start from
+the D-observer under decision-based transmission Obs(S,˜   G)    (0, A) and search all reachable states whose control decision
+tracks all possible states consistent with the ﬁltered decision    is S(ϵ) = {}. Then we expend the D-observer by procedure
+history.                                   DODFS from the initial state ˜q0. At ˜q0, only control decision
+  Proposition 3: For any α = S(ϵ)α′ ∈F(DS), we have   {c} satisﬁes the condition in line 7 since it is only control
+α′ ∈L(Obs(G,˜     S)). Moreover,                                decision different from {}. Then procedure SEARCH needs to
+                                                             consider each state in ˜q0. In particular, SEARCH((0, A), {c})               ∃s∈L(G × S) s.t. F(DS(s))=α
+q=  (x, xs)∈XG×S :                                   and SEARCH((1, B), {c}) do not add state to q′ since no                         and (x, xs)=δG×S(s)
+                                                                       state whose control decision is {c} can be reached. How-                                                            (9)
+                                                                     ever, SEARCH((2, C), {c}) and SEARCH((3, D), {c}) will
+where q = ˜f(˜q0, α′) is the state reached by α′ in Obs(G,˜     S).   add states (4, E) and (5, E) to q′, respectively. Therefore,
+  Next, we show that Obs(G,˜    S) exactly generates all pos-    the successor state of  ˜q0 upon the occurrence of {c}  is
+sible ﬁltered decision histories.                                {(4, E), (5, E)}. Then we consider control decision {} from
+  Proposition 4: {S(ϵ)}L(Obs(G,˜     S)) = F(DS).             {(4, E), (5, E)} and we  reach  successor  state  {(6, F)}.
+  According to Deﬁnition 2, we know that the system is   This completes  the construction of Obs(G,˜     S). For  this
+opaque under decision-based transmission  if and only  if   D-observer, we have {(0, A), (1, B), (2, C), (3, D)}|X =
+∀α ∈F(DS) : ˜E(α)̸ ⊆XSecret. Moreover, by Proposition 3,   {0, 1, 2, 3}, {(4, E), (5, E)}|X = {4, 5} and {(6, F)}|X =
+we have ˜E(α) = ˜f(α′)|X, where α = S(ϵ)α′. Therefore,   {6}; none of them is a subset of XSecret. Therefore, by
+by Proposition 4, we have the following theorem that shows   Theorem 2, we conclude that the system is opaque under
+how to use Obs(G,˜    S) to verify opacity under decision-based   decision-based transmission.
+transmission.                                          Remark 1: We conclude  this section by analyzing the
+
+
+                                                       4855
+
+                                                              [21] that is provably opaque under insecure control channel.
+                    0, 𝐴,  1, 𝐵,  2, 𝐶, (3, 𝐷)
+                              *𝑐+                                          REFERENCES
+                           4, 𝐸, (5, 𝐸)                                     [1] E. Badouel, M. Bednarczyk, A. Borzyszkowski, B. Caillaud, and
+                                 * +                                                         P. Darondeau. Concurrent secrets. Discrete Event Dynamic Systems:
+                                                                          Theory & Applications, 17(4):425–446, 2007.
+                               6, 𝐹                                                                                     [2] B. B´erard, J. Mullins, and M. Sassolas. Quantifying opacity. Mathe-
+                                                                                 matical Structures in Computer Science, 25(2):361–403, 2015.
+ Fig. 4.  The D-observer under decision-based transmission Obs(G,˜     S).                                                                                     [3] J.W. Bryans, M. Koutny, L. Mazar´e, and P. Ryan. Opacity generalised
+                                                                                         to transition systems.  International Journal of Information Security,
+                                                                               7(6):421–435, 2008.
+ Algorithm 1: Compute D-Observer Obs(G,˜    S)                     [4] L.K. Carvalho, J.C. Basilio, and M.V. Moreira.  Robust diagnosis
+    input  : G and S                                                         of discrete event systems against intermittent loss of observations.
+                                                                               Automatica, 48(9):2068–2078, 2012.
+    output: Obs(G,˜    S)                                                      [5] C.G. Cassandras and S. Lafortune.  Introduction to Discrete Event
+                                                                                  Systems. Springer, 2nd edition, 2008.
+   1    q′ ←∅;                                                                  [6]  J. Chen, M. Ibrahim, and R. Kumar. Quantiﬁcation of secrecy in par-
+   2   SEARCH((x0, x0,S), S(ϵ));                                                    tially observed stochastic discrete event systems. IEEE Transactions
+                                                                      on Automation Sci. Eng., 14(1):185–195, 2017.   3     ˜q0 ←q′, ˜Q ←{˜q0};
+                                                                                     [7] R. Jacob, J.-J. Lesage, and J.-M. Faure. Overview of discrete event
+   4  DODFS(Obs(G,˜     S), ˜q0);                                         systems  opacity: Models,  validation, and  quantiﬁcation.   Annual
+   5   return Obs(G,˜    S) = (˜Q, Γ, ˜f, ˜q0);                              Reviews in Control, 41:135–146, 2016.
+                                                                                     [8] C. Keroglou and S. Lafortune. Veriﬁcation and synthesis of embedded
+    procedure DODFS(Obs(G,˜     S), q);                                      insertion functions for opacity enforcement. In 56th IEEE Conference
+                                                                      on Decision and Control, pages 4217–4223, 2017.
+   6    for γ ∈Γ do                                                                                     [9]  F. Lin.   Opacity of  discrete event systems and  its  applications.
+   7          if ∀(x, xs) ∈q : ΣS(xs)̸ = γ then                           Automatica, 47(3):496–503, 2011.
+   8             q′ ←∅;                                                   [10]  F. Lin.  Control of networked discrete event systems: dealing with
+                                                                         communication delays and losses.  SIAM Journal on Control and
+   9           for (x, xs) ∈q do                                           Optimization, 52(2):1276–1298, 2014.
+  10            SEARCH((x, xs), γ);                               [11]  J. Lunze. Control Theory of Digitally Networked Dynamic Systems.
+                                                                                      Springer, 2014.
+  11               if q′ /∈˜Q then                                           [12]  J. Mullins and M. Yeddes.  Opacity with orwellian observers and
+  12               ˜Q ←˜Q ∪{q′};                                                intransitive non-interference. In 12th Int. Workshop on Discrete Event
+                                                                                  Systems, pages 344–349, 2014.
+  13           Add transition q γ−→q′ to ˜f;                     [13] C. Nunes, M.V. Moreira, M. Alves, L.K. Carvalho, and J.C. Basilio.
+  14          DODFS( Obs(G,˜     S), q′);                               Codiagnosability of networked discrete event systems subject to com-
+                                                                             munication delays and intermittent loss of observation. Discrete Event
+                                                                    Dynamic Systems, 2018.
+    procedure SEARCH((x, xs), γ);                                  [14]  S.-J. Park and K.-H. Cho.   Delay-robust supervisory  control of
+                                                                                        discrete-event systems with bounded communication delays.  IEEE
+  15    for σ ∈E do                                                         Transactions on Automatic Control, 51(5):911–915, 2006.
+  16          if δG×S((x, xs), σ)! then                                 [15] A. Saboori and C.N. Hadjicostis. Veriﬁcation of inﬁnite-step opacity
+  17            (x′, x′s) := δG×S((x, xs), σ);                          and complexity considerations.  IEEE Transactions on Automatic
+                                                                                    Control, 57(5):1265–1269, 2012.
+  18               if ΣS(x′s) = γ ∧(x′, x′s) /∈q′ then                 [16]  S. Shu and  F. Lin.   Deterministic networked control of discrete
+  19                 q′ ←q′ ∪{(x′, x′s)};                                   event systems with nondeterministic communication delays.  IEEE
+  20             SEARCH((x′, x′s), γ);                                  Transactions on Automatic Control, 62(1):190–205, 2017.
+                                                                              [17]  S. Shu and F. Lin.  Predictive networked control of discrete event
+                                                                                  systems. IEEE TAC, 62(9):4698–4705, 2017.
+                                                                              [18] Y. Tong, Z. Li, C. Seatzu, and A. Giua.  Decidability of opacity
+complexity of the proposed algorithms for checking opacity.          veriﬁcation problems in labeled petri net systems. Automatica, 80:48–
+In the worst case, both Obs(G, S) and Obs(G,˜    S) contain          53, 2017.
+                                                                              [19] W.M. Wonham, K. Cai, and K. Rudie. Supervisory control of discrete-
+at most 2|X|×|XS| states and |2|Ec|| × 2|X|×|XS| transitions.          event systems: A  brief history–1980-2015.   IFAC-PapersOnLine,
+Therefore, the complexity of verifying opacity under event-         50(1):1791–1797, 2017.
+based transmission and the complexity of verifying opacity    [20] X. Yin. Supervisor synthesis for mealy automata with output functions:
+                                                A model transformation approach. IEEE Transactions on Automatic
+under decision-based transmission are both exponential in          Control, 62(5):2576–2581, 2017.
+the number of states and the number of events in G and S.    [21] X. Yin and S. Lafortune. Synthesis of maximally permissive supervi-
+                                                                                      sors for partially-observed discrete-event systems. IEEE Transactions
+                  VI. CONCLUSION                             on Automatic Control, 61(5):1239–1254, 2016.
+                                                                              [22] X. Yin and S. Lafortune.  A uniform approach for synthesizing
+  In the paper, we presented a framework for analyzing          property-enforcing supervisors for partially-observed discrete-event
+                                                                                  systems. IEEE Trans. Automatic Control, 61(8):2140–2154, 2016.
+security  for networked supervisory control systems with                                                                              [23] X. Yin and S. Lafortune. A new approach for the veriﬁcation of
+insecure control channels. We adopted the notion of opacity          inﬁnite-step and K-step opacity using two-way observers. Automatica,
+to characterize whether or not the system’s secret can be         80:162–171, 2017.
+                                                                              [24] X. Yin, Z. Li, W. Wang, and S. Li. Inﬁnite-step opacity and K-step
+revealed to an intruder that can access all control decisions in                                                                                   opacity of stochastic discrete-event systems. Automatica, 2019.
+the control channel. Two types of opacity were deﬁned and    [25] R. Zhang, K. Cai, Y. Gan, and W.M. Wonham. Distributed supervisory
+effective algorithms were also provided to verify different          control of discrete-event systems with communication delay. Discrete
+                                                                            Event Dynamic Systems, 26(2):263–293, 2016.
+notions of  opacity. An  interesting  future  direction  is  to
+consider the synthesis of a maximally-permissive supervisor
+
+
+                                                       4856

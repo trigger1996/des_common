@@ -958,7 +958,10 @@ def main_example3_partial() -> None:
 
 
 def main() -> None:
-    main_example2_partial()
+    # New default: draft-aligned offline scan followed by certified LL-BTS.
+    # Historical figure entry points above remain available for reproduction.
+    from certified_benchmark import main as certified_main
+    certified_main()
 
 
 if __name__ == "__main__":

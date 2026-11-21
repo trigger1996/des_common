@@ -1,0 +1,489 @@
+53rd IEEE Conference on Decision and Control
+December 15-17, 2014. Los Angeles, California, USA
+
+
+    Synthesis of Maximally Permissive Non-blocking Supervisors for
+                Partially Observed Discrete Event Systems
+
+
+                                Xiang Yin and St´ephane Lafortune
+
+
+  Abstract— We present new results on the synthesis of safe,    [6], solutions which are provably larger than the supre-
+non-blocking, and maximally permissive supervisors for par-   mal controllable normal sublanguage are provided. Another
+tially observed discrete event systems. We consider the case                                                         approach  is to use nondeterministic supervisors; this was
+where the legal language is a non-preﬁx-closed sublanguage of
+                                                                   ﬁrst advocated in [3] and subsequently extended in  [7].the system language and non-blockingness must be ensured in
+addition to safety. Our approach is based on the construction   In [8], [9], a game-theoretic approach was considered for
+of a new bipartite transition system, called the Non-blocking    the synthesis of supervisors. However, each of the above
+All Inclusive Controller (NB-AIC), that embeds all safe and   approaches has  its own limitations. The solutions in [5],
+non-blocking supervisors. We present an algorithm for the                                                                   [6] may be too  restrictive and may not always  exist in
+construction of the NB-AIC and discuss  its properties. We
+                                                                 general. In [4], the authors provide an algorithm that returnsthen provide a synthesis algorithm, based on the NB-AIC, that
+constructs a supervisor that is safe, non-blocking and maximally   a solution to the problem under consideration; however,
+permissive. This is the ﬁrst algorithm with such properties.     maximal permissiveness of that solution is not guaranteed. To
+                                                                the best of our knowledge, the synthesis of non-blocking and
+                        I. INTRODUCTION
+                                                                 safe supervisors that are maximally permissive for partially
+  We consider the control of partially observed Discrete                                                          observed DES remains an open problem.
+Event Systems (DES). The goal is to restrict the behavior                                                                 In our recent work  in  [10], we deﬁned a new ﬁnite
+of a DES within a non-preﬁx-closed legal language, while                                                                      bipartite transition system, called the AIC for “All Inclusive
+accounting for the presence of uncontrollable and unobserv-                                                                 Controller”. The AIC embeds in its structure all safe control
+able events. The non-preﬁx-closed speciﬁcation requires us                                                                  decisions, using suitably deﬁned information states. In this
+to take both safety and non-blockingness into account.                                                                paper, we build on our previous work in [10] and consider
+  Supervisory control of centralized and partially observed                                                           non-blockingness in addition to  safety, with the goal of
+DES was initially studied in [1], [2], in which the necessary                                                              synthesizing solutions that are maximally permissive. Our
+and sufﬁcient conditions for exactly achieving a speciﬁcation                                                         approach is based on the construction of a new ﬁnite state
+language were given. These are the well known control-                                                                     transition structure that we call the “Non-Blocking All Inclu-
+lability, observability, and Lm(G)-closure conditions. If a    sive Controller (or NB-AIC herafter). The NB-AIC contains
+language cannot be exactly achieved, then the synthesis prob-                                                                   in its transition structure all supervisors that are safe and
+lem asks whether we can synthesize a supervisor SP such    deadlock-free. Moreover, the NB-AIC can serve as the basis
+that Lm(SP /G) ⊆Lm(H) (the safety speciﬁcation) and    for the synthesis of supervisors that will provably be non-
+L(SP /G) = Lm(SP /G) (the non-blocking speciﬁcation),   blocking and maximally permissive (while remaining safe).
+where G is the plant and Lm(H) is the non-preﬁx-closed   Recall that a supervisor is non-blocking if it is both deadlock-
+speciﬁcation language, which is assumed to be a sublanguage                                                                   free and livelock-free.
+of Lm(G). This synthesis problem was shown to be decid-     The main contributions of this paper are: (i) The deﬁnition
+able in [3] and solvable in [4]. However, since observability                                                              of the NB-AIC, which contains all solutions to partial obser-
+may not be preserved under union, no supremal solution                                                               vation supervisory control problems with non-preﬁx-closed
+exists in general. Hence, one is interested in synthesizing                                                                speciﬁcations; (ii) The construction algorithm for the NB-
+solutions that are not only safe and non-blocking, but also                                                    AIC; (iii) A new algorithm based on the NB-AIC that returns
+maximally permissive in the sense that there does not exist                                                           a solution that is non-blocking and maximally permissive.
+another solution that is strictly larger and still safe and non-                                                    The remainder of  this paper  is organized as follows.
+blocking; in other words, such solutions are locally maximal.                                                             Section II describes the model of the system we analyze. In
+  Many approaches have been considered in the literature                                                             Section III, we formally deﬁne a class of bipartite transition
+for synthesizing safe and non-blocking supervisors for par-                                                          systems and summarize our previous work for preﬁx-closed
+tially observed DES; see, e.g., [5], [6], [3], [7], [8], [9].                                                              speciﬁcations in [10]. In Section IV, we start from the AIC
+One approach is to ﬁnd the supremal controllable normal                                                      and deﬁne the NB-AIC, the key structure of interest in this
+and Lm(G)-closed sublanguage of Lm(H)[1], [2]. In [5],                                                                 paper. Section V provides a algorithm that uses the NB-
+  This work was partially supported by the NSF Expeditions in Computing   AIC to synthesize a maximal safe and non-blocking solution.
+project ExCAPE: Expeditions in Computer Augmented Program Engineer-   The properties of the synthesis algorithm are established in
+ing (grant CCF-1138860).                                         Section VI. Finally, we conclude the paper in Section VII.
+  Xiang Yin and St´ephane Lafortune are with the Department of Electrical
+Engineering and Computer Science, University of Michigan, Ann Arbor,   Due to space constraints, all proofs have been omitted and
+MI 48109, USA. {xiangyin,stephane}@umich.edu.          they are available in [11].
+
+
+978-1-4673-6088-3/14/$31.00 ©2014 IEEE                    5156
+
+                      II. SYSTEM MODEL                      Deﬁnition 1: (Bipartite  transition  system). A  bipartite
+  We assume basic knowledge of DES and common nota-    transition system T w.r.t. G is a 7-tuple
+tions (see, e.g., [12]). We model a DES as a deterministic                                                     T = (QTY , QTZ, hTY Z, hTZY , E, Γ, yT0 )          (1)
+ﬁnite-state automaton G = (X, E, f, x0, Xm), where X
+is the ﬁnite  set of  states, E  is the ﬁnite  set of events,   where
+f  : X × E →X  is the partial transition function, where      • QTY ⊆I is the set of Y -states;
+f(x, e) = y means that there is a transition labelled by event      • QTZ ⊆I × Γ  is the  set of Z-states and I(z) and
+e from state x to state y, x0 is the initial state, and Xm is       Γ(z) denote, respectively, the information state and the
+the set of marked states. f  is extended to X × E∗in the         control decision components of a Z-state z, so that
+usual way. The behavior of the system is described by the       z = (I(z), Γ(z));
+preﬁx-closed language L(G) generated by G.                    • hTY Z : QTY × Γ →QTZ is the partial transition function
+  In the supervisory control framework [13], a non-preﬁx-       from Y -states to Z-states, which satisﬁes the following
+closed language K ⊆Lm(G) represents the desired (safe         constraint: hTY Z(y, γ) = z only if
+and non-blocking) behavior. A supervisor is imposed on G to                                                          – I(z) = URγ(y) and Γ(z) = γ
+achieve the speciﬁcation by dynamically enabling/disabling
+                                                                  • hTZY  : QTZ × E →QTY  is the partial transition functionevents. The event  set E  is partitioned into two  disjoint
+                                                          from Z-states to Y -states, which satisﬁes the following
+subsets: Ec, the subset of controllable events, and Euc, the
+                                                                         constraint: hTZY (z, e) = y only ifsubset of uncontrollable events. Under the partial observation
+                                                          – e ∈Γ(z) ∩Eo and y = Nexte(I(z))assumption  [1], E  is also partitioned into the subset of
+observable events, Eo, and the subset of unobservable events,      • E is the set of events of G;
+Euo. A partial observation supervisor  is a function SP   :      • Γ is the set of admissible control decisions of G;
+P(L(G)) →2E, with the following constraint: Euc ⊆      • yT0 ∈QTY  is the initial Y -state where yT0 = {x0}.
+SP (s), ∀s ∈E∗o, where P   : E∗→E∗o  is the natural       Intuitively, the BTS  is a game  structure between the
+projection deﬁned in the usual manner (see, e.g., [12]). We    controller and the system. A Y -state is an information state
+say that a control decision is admissible  if  it satisﬁes the   where control decisions are made (i.e., the controller plays).
+above constraint and we deﬁne Γ = {γ ∈2E  : Euc ⊆  A Z-state is an information states augmented with admissible
+γ} as the set of admissible control decisions. We use the    control decisions, i.e., z = (I(z), Γ(z)), from which observ-
+notation SP /G to represent the controlled system and the   able events occur (i.e., the system plays). A transition from
+language generated by SP /G, denoted by L(SP /G),  is   a Y -state to a Z-state represents the unobservable reach and
+deﬁned recursively in the usual manner.                    “remembers” the set of enabled events from the Y-state that
+  Let K = Lm(H). Hereafter, we assume, w.l.o.g., that    leads to it. This means that I(z) is the set of states reachable
+H and G satisﬁes the following properties: (i) H is a sub-   from some state in the preceding Y-state through some string
+automaton of G (as deﬁned in [12]); (ii) if x, y ∈XH and   of enabled unobservable events, and that Γ(z) is the control
+fG(x, σ) = y then fH(x, σ) is deﬁned and fH(x, σ) = y.   decision made in the preceding Y -state. A transition from
+In words,  all states of H are legal and  all transitions in   a Z-state to Y -state represents the observable  transition.
+G between legal states are also legal (and thus in H). If   This means that y is the set of states reachable from some
+the original G and H do not satisfy these assumptions, the    state of the information state component of the preceding
+algorithm in the appendix of [14] can be used to reﬁne both    Z-state through the single enabled observable event. We call
+of them and ensure that (i) and (ii) hold. Thus, we can talk   a sequence in the form of c1σ1 . . . cnσn, ci ∈Γ, σi ∈Eo, ∀i
+of the legality of states of X rather than of strings of L(G).   a run in T.
+  We deﬁne two operators that will be used in this paper.     The deﬁnition of a BTS is based on the plant G. For
+The Unobservable Reach of the subset of states S ⊆X under    simplicity, we will omit “with respect to G” in the remainder,
+the subset of events γ ⊆E is given by, URγ(S) := {x∈X :     if the plant G is clear. Since the control decision for a Y -
+(∃u∈S)(∃e∈(Euo ∩γ)∗) s.t. x=f(u, e)}. The Observable    state may not be unique, given a BTS T, we deﬁne CT (y) :=
+Transition  of the subset of states S ⊆X under observable   {γ ∈Γ : hTY Z(y, γ)!}, where ! means is deﬁned, to be the
+event e ∈Eo  is given by, Nexte(S) := {x ∈X  : ∃u ∈    set of control decisions deﬁned at y ∈QTY .
+S s.t. x=f(u, e)}. Finally, we assume the reader is familiar
+                                                            B. Total controller and BTS included supervisor
+with the standard DES-theoretic properties of controllability
+and observability, which are used in this paper with respect    We discuss the connection between BTS and supervisors
+to G, Euc, and Eo, as deﬁned in [12], pages 147 and 178.     in this section. First, we deﬁne an important type of BTS
+                                                                 called the Total Controller (TC), which enumerates all pos-
+         III. BIPARTITE TRANSITION SYSTEM
+                                                                     sible behaviors between the controller and the plant.
+A. Bipartite transition system                                 Deﬁnition 2: (Total controller). The total controller for G
+  We start by deﬁning the general notion of bipartite transi-    is deﬁned as the BTS
+tion system (BTS). Let an information state (IS) be a subset     T C(G) = (QTY CG , QTZ CG , hTY CGZ  , hTZYCG , E, Γ, yT0 CG )
+IS ⊆X of states and denote by I = 2X the set of all   where: (i) hTY CGZ  contains all admissible transitions from Y -
+information states.                                                  states to Z-states (i.e., all admissible control decisions at the
+
+
+                                                       5157
+
+                                                                             {3,4},{  }      {0}       {5,6},{  }                              {0}
+                                                                    {  }             {  }        {  }                                {  }
+                         0                                     {3,4}     {0,1,2},{  }     {5,6}                      {3,4}     {0,1,2},{  }     {5,6}
+                1                  2               {   ,  }       {   ,  }     {   ,  }       {   ,  }      {   ,  }       {   ,  }     {   ,  }       {   ,  }
+
+                                                                        {3,4,7,10}   {3,4,8,9}   {5,6,12,13}  {5,6,11,14}      {3,4,7,10}   {3,4,8,9}   {5,6,12,13}  {5,6,11,14}
+        7   3     5   11  13   6     4   9      {   ,  }     {   ,  }     {   ,  }      {   ,  }         {   ,  }     {   ,  }     {   ,  }      {   ,  }
+
+             8     12           14    10                               {1,2}                                                {1,2}
+                                                                                     {  }                                             {  }
+                         15                                                  {1,2},{  }                                             {1,2},{  }
+
+                          (a) Automaton G                                 (b) AIC(G)                                  (c) AICNB(G)
+
+         Fig. 1.  An example of (NB-)AIC. For G: Ec = {c1, c2}, Eo = {o1, o2} and state 15 is illegal. uc denotes all uncontrollable events.
+
+
+respective states of G) and (ii) hTZYCG contains all admissible   S(T) denotes the set of all supervisors included in T.
+transitions from Z-states to Y -states  (i.e., all feasible and      Deﬁnition 6: Given a complete BTS T, a language L is
+enabled observable events at the respective states of G).       said to be generated by T  if
+  Since T C(G) contains  all admissible control decisions              (∃SP ∈S(T))[L(SP /G) = L]
+after each observation and all possible event observations  LT S(T) denotes the set of all languages generated by T.
+after each control decision,  it contains all strings in L(G)
+                                                         C. All Inclusive Controller for Safety
+and also every admissible supervisor. As a consequence,
+                                                                 In this section, we brieﬂy review the transition structurethis structure contains all possible supervisors and possible
+                                                                 called the All Inclusive Controller (AIC), which was used tolanguages under control, no matter safe or unsafe.
+                                                              solve the supervisory control problem in the case of preﬁx-  There is a special kind of Z-state in the TC, which has
+no successors. We say a Z-state z  is terminal  if (∀x ∈   closed speciﬁcations in our previous work [10].
+I(z))(∀e ∈Eo∩Γ(z))[f(x, e) is not deﬁned]. Consequently,     Given an information  state  i ∈I, the  safety binary
+the only deadlock states in the TC are terminal Z-states.      function DI   : I →{0, 1}  is deﬁned by DI(i) = 1  if
+  Deﬁnition 3: Given a supervisor SP , ISYSP (y, s) is de-   ∀x ∈i  : x ∈XH and DI(i) = 0 otherwise. We say that
+ﬁned to be the Y -state that results from the occurrence of   a Y -state is safe if it is currently safe and there exist control
+string s, when starting in Y -state y. This can be computed   decisions that maintain the safety property for all possible
+                                                                 future behaviors. Since we cannot choose event occurrences,recursively as follows:
+                                             we say that a Z-state is safe if all of its successor Y -states
+ ISYSP (y, ϵ) := y                                               are safe. We therefore deﬁne two safety binary functions,
+         hTZYCG (hTY CGZ (ISYSP (y, s), SP (s)), σ),    DY  : Y →{0, 1} and DZ : Z →{0, 1} as follows:
+                           σ                                                  (s)                                               if                       ∈Eo ∩SP                                                                                                                                                           if                                                 = 1 and                                                                    DI(y) ISYSP (y, sσ) :=                                                                                   1,                                                                  CG                                                  ISY                           σ                                                   (s)                                               if                         ∈Euo                            ∩SP                     SP (y, s),                                                                ∃γ                                             ∈Γ : DZ(hT                                         DY (y) =                                                                                      Y                                                                           Z  (y, γ)) = 1       (2)
+                  undeﬁned,                                 otherwise                                                                                                else                                    0,
+For brevity, we write ISYSP (y0, s) as ISYSP (s).                     if DI(I(z)) = 1 and ∀e ∈                                    1,              CG  Also, ISZSP (z, s) is deﬁned analogously, with ISZSP (s) :=    DZ(z) =       Γ(z) ∩Eo : DY (hTZY  (z, e)) = 1     (3)
+ISZSP (z0, s), where z0 = hTY CGZ  (y0, SP (ϵ)).                0,   else
+  Deﬁnition 1 provides a general deﬁnition for the notion                                        We say that a control decision γ is safe from Y -state y if
+of BTS. However, for the purpose of control, we also want       CG                                             DZ(hTY Z  (y, γ)) = 1, since we know that there exists a
+to have a BTS that satisﬁes the two following conditions: (i)                                                         sequence of safe control decisions in the future. In [10], we
+for any reachable Y -state, there exists at least one control                                                    showed that the partially observed safety control problem
+decision; and (ii) for all enabled observable events in a Z-                                                        can be mapped to the problem of ﬁnding a subsystem of the
+state, their transitions should be deﬁned if they exist (in G).                                                                         total controller in which all reachable states are safe.
+This leads to the notion of a complete BTS.                                                             Deﬁnition 7: (All Inclusive Controller). The All Inclusive
+  Deﬁnition 4: A BTS T is said to be complete if:                                                               Controller for G AIC(G) = (QAICGY       , QAICGZ      , hAICGY Z    ,
+  1) (∀y ∈QTY )[CT (y)̸ = ∅] and;                      hAICGZY    , E, Γ, yAICG0      ), is deﬁned as the largest safe subsys-
+  2) (∀z ∈QTZ)(∀e ∈Γ(z) ∩Eo)[(∃x ∈I(z) : f(x, e)!) ⇒   tem of T C(G) consisting of only safe reachable Y and Z-
+    hTZY (z, e)!].                                                      states, and the transitions between them in T C(G).
+Note that “disable all (controllable) events” is a valid control     The following theorem show that the AIC (only) contains
+decision, but CT (y) = ∅means there is no control decision.    valid solutions to the safety control problem.
+  Now, given a complete BTS, it is possible for us to decode     Theorem 1: [10] If AIC(G) is non-empty, then
+supervisors from it, as we explain next.                   (L = L ⊆L(H) ∧L is observable ∧L is controllable)
+  Deﬁnition 5: Given a complete BTS T, a supervisor SP         ⇔L ∈LT S(AIC(G))
+is said to be included in T  if                              Example 3.1: Let G be the automaton shown in Figure
+        (∀s ∈L(SP /G))[SP (s) ∈CT (ISYSP (s))]              1(a). Its corresponding AIC is shown in Figure 1(b). In the
+
+
+                                                       5158
+
+diagram of the AIC, rectangular states correspond to Y -states    functions, BY  : Y →{0, 1} and BZ : Z →{0, 1} by
+and oval states correspond to Z-states. For more details about
+                                                                                    1,  if y is live in T
+the construction of the AIC, the reader is referred to [10].   BY (y; T) =
+                                                                                    0,   else
+  Remark 3.1: In Figure 1(b), at the initial Y -state y0 =
+                                         if z is deadlock-free and
+{0}, we can also take control decision {c1, uc}. However,        1,                                                  BZ(z; T) =      ∀e∈Γ(z)! ∩Eo : BY (hTZY (z, e); T) = 1event c1 will never be executed within its unobservable reach.
+Formally, we say that a control decision γ ∈Γ is irredundant        0,   else
+                                         We will show later that the non-blocking binary func-
+at i ∈I  if, (∀e ∈γ)(∃x ∈URγ(i))[f(x, e)!]. Hereafter, we
+                                                                   tion eliminates all the Y - and Z- states that may lead to
+only keep irredundant control decisions in the AIC; this will
+                                                              blocking. Unlike the safety binary function, we do not need
+not affect its properties.
+                                                                the existential quantiﬁer for Y -states, since liveness  is a
+                                                                stronger property. But for a Z-state, the universal quantiﬁer
+       IV. NON-BLOCKING ALL INCLUSIVE              is still needed to capture the recursiveness in the deﬁnition.
+            CONTROLLER                     Note that the non-blocking binary function depends on the
+                                                                     transition system T, i.e., the same system state in different
+  In this section, we ﬁrst deﬁne and then present an algorith-   Ts may have different function values, which is not the case
+m to construct the Non-Blocking AIC (NB-AIC), a bipartite    for the safety binary function.
+transition system obtained from the AIC that contains all safe      Deﬁnition 11: (Non-blocking  all  inclusive  controller).
+and non-blocking control policies.                       The Non-Blocking All Inclusive Controller for G  is the
+                                                                     largest  non-blocking  subsystem  of AIC(G). By  non-
+                                                           blocking subsystem, we mean that BY (y) = 1 and BZ(z) =
+A. Deﬁnition of the NB-AIC                                                    1 for all Y -states y and for all Z-states z, respectively. We
+                                                          denoted the NB-AIC of G by AICNB(G).  Deﬁnition 8: (Live decision string). Given a BTS T, for
+                                                        Note that, in the deﬁnition, the largest non-blocking sub-any Y -state y and state x ∈y in it, we say a decision string
+                                                        system of the AIC is uniquely deﬁned, since the union ofc1c2 . . . cn, ci ∈Γ is live for (x, y) if there exists a string
+                                                       any two non-blocking subsystems is still non-blocking.s = ξ1σ1ξ2 . . . σn−1ξn, where ξi ∈(Euo∩ci)∗, σi ∈Eo∩ci,
+                                                      Example 4.2: Going back to Figure 1, the NB-AIC for Gsuch that f(x, s) ∈Xm and ci+1 ∈CT (yi), ∀i < n, where
+                                                                              is shown in Figure 1(c). Comparing with its AIC, since allyi is the unique Y -state following the run c1σ1 . . . σi−1ciσi
+                                             Y -states in it are live, the deadlock Z-states that are removedin T. We say a Y -state y is live if for all x ∈y, (x, y) has
+                                                                are ({3, 4}, {uc}) and ({5, 6}, {uc}).a live decision string.
+                                              By deﬁnition, the NB-AIC is also a complete BTS. Thus,
+  Example 4.1: Consider the automaton and its correspond-
+                                             we can talk about the properties of its generated language,
+ing AIC shown in Figure 1. {uc}{c2, uc} is a live decision
+                                                     which are given  in the following theorem. We use the
+string for state 1 ∈{1, 2}, since string o1c2, which leads
+                                                             following terminology for a preﬁx-closed language L:  (i)
+state 1 to marked state 8, exists under this decision string.
+                                      L is deadlock-free if every terminating string in L ends at a
+  Remark 4.1: The veriﬁcation of the liveness property of
+                                                    marked state in G; (ii) L is non-blocking if L ∩Lm(G) = L;
+a Y -state is a reachability problem in an automaton that is                                                      and (iii) L is safe if L ⊆K.
+built from the original BTS by explicitly adding transitions
+                                                      Theorem 2: The  language  generated by  the NB-AIC,
+to capture reachability within states in Z-states.                                             LT S(AICNB(G)), satisﬁes the following two properties:
+  The purpose of the notion of liveness is to eliminate one
+                                                                1)  If L = L ∈LT S(AICNB(G)), then L is controllable,
+source of blocking: if a Y -state is not live, then no matter
+                                                                    observable, safe, and deadlock-free;
+what control decision we take, we will always be blocked by
+                                                                2)  If L = L is controllable, observable, safe, and non-
+some state in it. For a Z-state z, we also need to require that
+                                                                   blocking, then L ∈LT S(AICNB(G)).any state x ∈I(z) should either have an unobservable path
+                                                                 In general, for L ∈LT S(AICNB(G)), L need not beto a marked state or a path that goes outside of the Z-state;
+                                                                    livelock-free. Consider the automaton G in Fig. 2(a) and its
+otherwise, it will also be a source of blocking. This leads to
+                                                           corresponding NB-AIC shown in Fig. 2(b). Clearly, (ab)∗∈
+the following deﬁnition, which depends on Z-state z and on
+                                             LT S(AICNB(G)), but it is a livelock language.G, but not on the BTS that z is part of.
+  Deﬁnition 9: (Deadlock-free Z-state). A Z-state z is said                                                                                                   {a}       b                                                                                              {0}     {0},{a}    {1}   {1},{a,b}   {2}to be deadlock-free if for all x ∈I(z) we have                      b                       a              a
+                                                       0                                                            1                                                                               a                                                                2        b   {1},{b}  {b}  {a, b}                                                                        a      (∃s ∈(Γ(z) ∩Euo)∗)[f(x, s) ∈Xm] ∨(∃s ∈
+      (Γ(z) ∩Euo)∗(Γ(z) ∩Eo))[f(x, s) is deﬁned].                   (a) Automaton G           (b) The corresponding NB-AIC
+Otherwise, it is said to be a deadlcok state.                                           Fig. 2.  For G: Euo = ∅and Euc = b.
+  We are now ready to deﬁne a new binary function that
+captures the blockingness of a Y or Z-state.                  B. Construction of the NB-AIC
+  Deﬁnition 10: (Non-blocking binary function for Y and      In [10], an algorithm is provided for the construction of
+Z  state). For a complete BTS T, we deﬁne two binary    the AIC structure. Thus we assume that the AIC has already
+
+
+                                                       5159
+
+Algorithm 1 AICNB(G) ←FIND-NB-AIC(AIC(G))          solution. One possible non-blocking control policy  is to
+  1: A ←AIC(G)                                          enable c1 when we visit {3, 4} for 2k+1 times and to enable
+  2: Delete all Z-states in A that are deadlock states           c2 when we visit {3, 4} for 2k times, k ∈N. However, this
+  3: while exists Y -state in A that is not live do                  is not an IS-based supervisor.
+  4:     Delete all Y -states in A that are not live              The non-existence of an IS-based supervisor implies that
+  5:    while exists Y -state in A that has no successor do     state space reﬁnement is required if we want to synthesize a
+  6:        Delete all such Y -states in A and delete all their    solution from the NB-AIC. Our synthesis algorithm, is based
+    predecessor Z-states                                on the idea of unfolding a BTS. To begin with, we need
+  7:    end while                                                to build a IS-based supervisor (Step 1) and then determine
+  8: end while                                            whether or not there exists a livelock in it (Step 2). If not,
+  9: AICNB(G) ←Accessible(A)                            then we are done and return the solution. If yes, then we
+                                                       need to break the livelock at some point and resolve the it by
+                                                            unfolding the NB-AIC at that point such that a live decision
+                                                                     string can be added at the livelock point (Step 3 and 4).been built and it serves as the basis for the construction of
+                                                           This will give us a new (non-IS-based) supervisor. Finally,the NB-AIC. The construction procedure for the NB-AIC is
+                                             we need to go back to Step 2 and test again until the iterationgiven by Algorithm FIND-NB-AIC. The basic idea of the
+                                                           converges (Step 5). However, two questions arise: (i) whereconstruction algorithm follows directly from the deﬁnition.
+                                                           should we break a livelock? and (ii) how can we unfold theWe need to keep pruning states from the AIC structure until
+                                               NB-AIC? The answers to these two questions are obtainedconvergence. Speciﬁcally, there are three kinds of states we
+                                                    by building the unfolded BTS (UBTS) deﬁned below.need to prune: (i) a Z-state that is deadlock; (ii) a Y -state that
+                                                             Deﬁnition 12: U is an unfolded BTS of a BTS T if it is ais not live; and (iii) a Y or Z-state that violates completeness
+                                                               ﬁnite partial unfolding of T resulting in sets QUY = QTY × N(Def. 4). In the algorithm, the elimination of (i), (ii) and (iii)
+                                                      and QUZ = QTZ × N with corresponding transition functionsare implemented at lines 2, 4, and 6, respectively. Note that
+                                              hUY Z  : QUY × Γ →QUZ and hUZY  : QUZ × E →QUY over thefor (ii) and (iii), iteration steps are required, since pruning
+                                                          extended state space, and such that the following conditionsstates may change the liveness or the completeness of the
+                                                                are satisﬁed:system. However, (i) just needs to be executed once, since
+                                                                1) The restrictions of hUY Z and hUZY  to domain QTY andthe deadlock property does not depend on T.
+                                            QTZ, respectively, are consistent with hTY Z and hTZY ;
+            V. SYNTHESIS ALGORITHM                  2) The restriction of hUY Z or hUZY to domain N is deﬁned
+  In this section, we ﬁrst discuss the difﬁculty that arises in        by: the integer component of any state in U is n if there
+solving the non-blocking control problem and our approach        are n states in its predecessors (states that can reach this
+to overcome it. Then we formally show how to synthesize a         state from the initial state) that have the same Y - or Z-
+maximal non-blocking supervisor from the NB-AIC.                 state component;
+                                                                3) (∀y ∈QUY )[|CU(y)| ≤1];
+                                               {uc}                                  CG
+                    1b     2b                 {0}     {0,1,2},{ uc}               4) (∀z ∈QUZ)(∀e ∈E)[hTZY  (z, e)! ⇒hUZY (z, e)!];
+        1   0    2                                            o                  5) There is no cycle in U;
+        o         o      o               o            { 1c, uc}   {3,4}   {2c , uc}          6) The terminal states of U are either (i) terminal Z-states
+   5        3        4                        6                                            {3,4,5},                                                                   or (ii) Y -states of the form (y, n) with n ≥1.                                      o o  {uc} o    {3,4,6},         1c                              2c  2c                                        1c                                                           { 2c , uc}                                     { 1c , uc}
+   7     o         o     8                  {3,4},{uc}             For simplicity, we write a state (y, n) in the form of yn.
+                                         We call U a partial (ﬁnite) unfolding because of conditions
+           (a) Automaton G              (b) The corresponding NB-AIC
+                                                           1) and 3). By condition 6), any branch of the UBTS ends up
+     Fig. 3.  Ec = {c1, c2}, Eo = {o} and state 7 and 8 are illegal.       with a repeated Y -state or a terminal Z-state. Thus, given
+  In the preﬁx-closed speciﬁcation case, once the AIC is   a UBTS U, we can merge the terminal Y -state yn with its
+built, we can randomly pick one control decision at each   predecessor state y0 and denote the resulting new transition
+information state and this will give us a valid supervisor   system by ˜U, which is a complete (unfolded) BTS. Moreover,
+for  safety. However,  this  strategy may not work  in the  we note that the set of supervisors S(˜U) included in ˜U  is
+non-preﬁx-closed speciﬁcation case, since the NB-AIC only    singleton, since there is only one control decision at each
+guarantees that there exists a good decision, but arbitrary  Y -state in ˜U. Thus, we call the unique supervisor included
+choosing one control decision may return a livelock solution.    in ˜U, supervisor induced by UBTS U, and denote it by SU.
+This phenomenon was already pointed out in Fig. 2. One     Example 5.2: Consider the automaton G shown in Fig-
+conjecture is that we can search through the space of in-   ure 1. An example of UBTS is given in Figure 4(a). By
+formation state based (IS-based) supervisors, which is ﬁnite,   merging state pair ({3, 4}0, {3, 4}1) and ({5, 6}0, {5, 6}1)
+for the desired maximal solution. However, the next example    in U0 (connected by the dashed line), we can get the corre-
+shows that an IS-based solution does not exist in general.     sponding ˜U0. The resulting language L(SU0/G) is given in
+  Example 5.1: Consider the automaton G and  it corre-   Figure 4(b). By the properties of the NB-AIC, we know that
+sponding NB-AIC shown in Figure 3. We see that any ﬁxed    this language is controllable, observable, safe, and deadlock-
+control decision at Y -state {3, 4} will provides a livelock    free. However, we see in the ﬁgure that it is not livelock-free.
+
+
+                                                       5160
+
+                       {0}0
+                      {  }                                          ure 1. Recall that the UBTS U0 shown in Figure 4(a) is a
+       {3,4}0       {0,1,2},{  }     {5,6}0                                     valid UBTS returned by Algortihm INITIAL, which induces
+         {   ,  }           {   ,  }                                              0                   a livelock language L(SU0/G). Consider the livelock 2 →
+      {3,4,8,9}                                {5,6,12,13}                                        1             2          4 →9 →2, which is due to the presence of the the cycle      {   ,  }                               {   ,  }
+                                                             {3, 4} →{1, 2} →{3, 4} in U0˜ (we omit the Z-states in
+                    {1,2}0                  3     5  13   6     4   9                                                                the cycle since they are uniquely determined). Then we ﬁnd
+                      {  }
+                                                                     that ye = {3, 4}1 is an entrance of this livelock and return       {3,4}1      {1,2},{  }      {5,6}1       8     12
+                                                                   (4, {3, 4}1).
+ (a) UBTS U0 (without the dash lines)           (b) L(SU0/G)                                                    Remark 5.1: In Figure  4(a), we can also take control
+                    Fig. 4.  Example of Steps 1 and 2                                                              decision {c2, uc} at state {5, 6}0. It can be easily veriﬁed
+                                                                     that this will induce a non-blocking and IS-based solution.
+                                                    Thus we can stop the synthesis at Step 2 and return this
+  Now, we are ready to state our synthesis algorithm.
+                                                                   solution. However, as discussed earlier, the above situation
+Step 1: Generate an initial UBTS: The goal of this step
+                                             may not always hold. In the remainder, we will continue to
+is to initially generate an IS-based supervisor via building a
+                                                           use the non-IS-based initial setting shown in Example 5.3 as
+UBTS, and it is described formally by Algorithm INITIAL.
+                                                           our illustrative example.
+In order to make the UBTS induced supervisor IS-based, we
+                                                       Step 3: Resolve livelocks: The goal of the step is to resolve
+need to stop once a Y -state is repeated. Thus, the largest
+                                                                the livelock found in Step 2. Speciﬁcally, we unfold the
+index for a Y -state in the UBTS at this step should be 1.
+                                         UBTS from the entrance state by ﬁnding a live decision
+The language L(SU0/G) is a maximal language, since we
+                                                                     string in the NB-AIC. Also, to achieve maximality, we want
+take locally maximal control decisions in our construction;
+                                                                the new added control decisions to be locally maximal. This
+however, it may be blocking in general.
+                                                                 step is summarized by Algorithm RESOLVE.
+Step 1 U0 ←INITIAL(AICNB(G))
+                                                       Step 3 Ui ←RESOLVE(Ui, (xe, ye), AICNB(G))
+  1: Set i ←1.
+                                                                                     1: Find a live control string c1c2 . . . cn for (xe, ye) in the  2: Generate  a UBTS  U0  as  follows:  starting  from
+                                                NB-AIC with the property that there does not exist a
+    y0,  for each  reachable Y -state y  pick one  control
+                                                                                             2 . . . c′n such that there exists I ⊆    c ∈CAICNB(G)(y) in AICNB(G) such that ∀c′ ∈         live decision string c′1c′
+                                                                 {1, 2, . . . , n} where ci ⊂c′i for all i ∈I and cj = c′j for   CAICNB(G)(y)  :   c̸ ⊂c′ and for each reachable Z-
+                                                                                   all j /∈I.     state pick all observations, until: (i) a terminal Z-state
+                                                                                     2: From state ye, augment Ui with run c1σ1 . . . σn−1cn and     is reached; or (ii) a Y -state that has already been visited
+                                                                    the Y - and Z-states reachable along its preﬁxes, where     is reached.
+                                                                 σi is deﬁned in Def. 8.  3: Label each state with a non-negative integer as deﬁned
+                                                                                     3: Label the new added states with integers.     earlier.
+
+Step  2: Detect  livelocks:  The goal of  this step  is to     Remark 5.2: To ﬁnd such locally maximal live decision
+detect livelock  (if  it exists) and ﬁnd a state where  it can    strings, one approach is to ﬁrst ﬁnd an arbitrary live string
+be properly broken. First, we observe that any elementary   and then sequentially replace each control decision in it by
+cycle in a livelock of L(SU/G) corresponds to the presence   a larger one, whenever feasible, from c1 to cn.
+of an elementary cycle in ˜U. Moreover, since the cycle in     Example 5.4: In the last example, we detected (4, {3, 4}1)
+˜U is obtained by merging some terminal Y -state ym and its   as the point at which a live decision should be added. One
+corresponding y0 in U, then for each livelock, there exists    possible choice is to take control decision {c1, uc} at {3, 4}1,
+a terminal state that contributes to the cycle that leads to    since state 4 will be able to reach marked state 10 via c1.
+the livelock. We call such terminal state the entrance of   The resulting BTS U1′ is shown in Figure 5(a).
+the livelock. For  clarity, these concepts are illustrated in   Step 4: Complete the UBTS:  After Step 3, the resulting
+Example 5.3. Formal procedures for this step are described    transition system may no longer be a UBTS. Thus, the aim of
+in Algorithm DETECT.                                             this step is to complete it as a UBTS such that we can again
+                                                           induce a supervisor from it. This step is given by Algorithm
+Step 2 (xe, ye) ←DETECT(Ui−1, AICNB(G))
+                                          COMPLETE.
+  1: Ui ←Ui−1                                                                                                                             ′                                                      Example 5.5: In U1, event o1 is enabled but not deﬁned
+  2: Compute L(SUi/G)                                                                        at Z-state ({3, 4, 7, 10}, {c1, uc}). By observing o1, a new
+  3:  if there is no livelock state in L(SUi/G) then                                             Y -state {1, 2}1 will be reached. Since {1, 2} already exists
+  4:     stop and return SUi as the supervisor                                                                   in the UBTS, we stop and return U1 shown in Figure 5(b).
+  5: else
+                                                       Step 5: Iteration:  i ←i + 1 and go to Step 2.
+  6:    ﬁnd an entrance state ye ∈QUiY  for one livelock and
+                                                      Example 5.6: The U1  induced language L(SU1/G)  is    a state xe ∈ye that is also in the livelock.
+                                                  shown in Figure 5(c). We see that it is livelock-free. Thus,
+  7: end if
+                                             we stop the synthesis procedure and return L(SU1/G), a
+  Example 5.3: Consider G and its NB-AIC shown in Fig-    controllable, observable, safe, and non-blocking solution that
+
+
+                                                       5161
+
+                                                                                  {0}0
+                                 {0}0                                       {  }                             0
+                              {  }                                       0                                      0                                                            {3,4}      {0,1,2},{  }    {5,6}            1                2
+               {3,4}0      {0,1,2},{  }    {5,6}0                                                           {   ,  }           {   ,  }
+                 {   ,  }           {   ,  }
+                                                               {3,4,8,9}                 {5,6,12,13}      3            5         6            4
+               {3,4,8,9}                 {5,6,12,13}       {   ,  }                   {   ,  }
+                                                                                                                  0              {   ,  }                   {   ,  }                       {1,2}
+                                                                                                      8           12       13            9
+                                                 0                                      {  }
+                            {1,2}                                            1                                      1                                                            {3,4}      {1,2},{  }      {5,6}
+                              {  }                                                           {   ,  }                                          1'                        2'
+               {3,4}1      {1,2},{  }      {5,6}1
+                                                             {3,4,7,10}
+                  {   ,  }                                                       {   ,  }                                                             3'                               4'
+              {3,4,7,10}
+              {   ,  }                                          {1,2}1                                           7                     10
+
+                       (a) Incomplete UBTS U′1                         (b) UBTS U1                                (c) L(SU1/G)
+                                                            Fig. 5.  Example of Steps 3, 4 and 5
+
+
+Step 4 Ui ←COMPLETE(Ui, AICNB(G))                 Non-Blocking All Inclusive Controller, a bipartite transition
+  1: For each added Z-state in Step 3, complete its observa-   system whose structure contains  all the solutions to the
+    tion transitions and, for each reachable Y -state y pick   problem. We provided a synthesis algorithm which uses the
+    one control c ∈CAICNB(G)(y) in AICNB(G) such that   NB-AIC to synthesize the desired maximal, controllable, and
+    ∀c′ ∈CAICNB(G)(y) : c̸ ⊂c′ and, for each reachable Z-   observable sublanguage. In the future, we will investigate:
+     state, pick all observations, until: (i) a terminal Z-state     (i) extending the NB-AIC to decentralized systems; and (ii)
+     is reached; or (ii) a Y -state that has already been visited   ﬁnding an “optimal” solution w.r.t. some cost criterion.
+     is reached.                                                               REFERENCES
+  2: Augment Ui with these states and transitions.
+                                                                                     [1]  F. Lin and W. Wonham, “On observability of discrete-event systems,”
+  3: Label the newly added states with integers.                         Inform. Sciences, vol. 44, no. 3, pp. 173–198, 1988.
+                                                                                     [2] R. Cieslak, C. Desclaux, A. Fawaz, and  P. Varaiya, “Supervisory
+                                                                                      control of discrete-event processes with partial observations,” IEEE
+                                                                                   Trans. Autom. Control, vol. 33, no. 3, pp. 249–260, 1988.
+is also maximally permissive (as proved in the next section).      [3] K. Inan, “Nondeterministic supervision under partial observations,”
+                                                                                         in 11th International Conference on Analysis and Optimization of
+      VI. PROPERTIES OF THE ALGORITHM                  Systems: Discrete Event Systems.  Springer, 1994, pp. 39–48.
+                                                                                     [4]  T.-S. Yoo and S. Lafortune, “Solvability of centralized supervisory
+  In this section, we show that (i) the synthesis algorithm          control under partial observation,” Discrete Event Dyn. Syst.: Theory
+presented in Sec. V converges in a ﬁnite number of steps and          Appl., vol. 16, no. 4, pp. 527–553, 2006.
+                                                                                     [5]  S. Takai and T. Ushio, “Effective computation of an lm(g)-closed,
+(ii) the resulting solution is maximal. In our synthesis steps,           controllable, and observable sublanguage arising in supervisory con-
+the supervisor should not only know its current information            trol,” Systems & Control Letters, vol. 49, no. 3, pp. 191–200, 2003.
+state, but  it also needs to remember the number of times      [6] K. Cai, R. Zhang, and W. M. Wonham, “On relative observability of
+                                                                                        discrete-event systems,” in Decision and Control, 52th IEEE Confer-
+the current state has been visited. This does not tell us how         ence on, 2013, pp. 7285–7290.
+much space we need to realize the supervisor. The following      [7] R. Kumar, S. Jiang, C. Zhou, and W. Qiu, “Polynomial synthesis of
+theorem reveals that the supervisor can be represented in a          supervisor for partially observed discrete-event systems by allowing
+                                                                           nondeterminism in control,” IEEE Trans. Autom. Control, vol. 50,
+ﬁnite structure, i.e., the resulting language is regular.                  no. 4, pp. 463–475, 2005.
+  Theorem 3: The synthesis algorithm converges in a ﬁnite      [8] A. Arnold, A. Vincent, and I. Walukiewicz, “Games for synthesis of
+number of iterations.                                                              controllers with partial observation,” Theoretical Computer Science,
+                                                                                            vol. 303, no. 1, pp. 7–34, 2003.
+  Suppose that the algorithm stops after n steps of iteration      [9] K. Chatterjee, L. Doyen, T. A. Henzinger, and  J.-F. Raskin, “Al-
+and returns UBTS Un; then the induced supervisor SUn has         gorithms for omega-regular games with imperfect information,” in
+the following properties.                                             Computer Science Logic.  Springer, 2006, pp. 287–302.
+                                                                              [10] X. Yin and  S. Lafortune, “A general approach  for  synthesis of
+  Theorem 4: L(SUn/G) is a controllable, observable, safe,          supervisors  for partially-observed discrete-event systems,”  in 19th
+and non-blocking sub-language.                                    IFAC World Congress, 2014, pp. 2422–2428.
+  Theorem 5: L(SUn/G) is maximal, i.e.,                         [11] ——, “Synthesis of maximally permissive supervisors for partially-
+                                                                             observed discrete-event systems,” University of Michigan, Tech. Rep.,
+     (∀S′ ∈S(AICNB(G)))[L(SUn/G)̸ ⊂L(S′/G)].                  July, 2014.
+                                                                              [12] C. Cassandras and S. Lafortune, Introduction to Discrete Event Sys-
+                 VII. CONCLUSION                                 tems, 2nd ed.  Springer, 2008.
+                                                                              [13]  P. Ramadge and W. Wonham, “Supervisory control of a class of
+  We solved the previously open problem of synthesizing a           discrete event processes,” SIAM J. Control Optim., vol. 25, no. 1, pp.
+controllable, observable, and locally maximal sublanguage of         206–230, 1987.
+a given non-preﬁx-closed language. This results in a supervi-    [14] N. Ben Hadj-Alouane, S. Lafortune, and F. Lin, “Centralized and
+                                                                                          distributed algorithms for on-line synthesis of maximal control policies
+sor that is safe, non-blocking, and maximally permissive for         under partial observation,” Discrete Event Dyn. Syst.: Theory Appl.,
+a partially observed DES. For this purpose, we deﬁned the           vol. 6, no. 4, pp. 379–427, 1996.
+
+
+                                                       5162

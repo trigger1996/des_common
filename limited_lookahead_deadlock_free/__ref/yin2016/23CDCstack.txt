@@ -1,0 +1,510 @@
+2023 62nd IEEE Conference on Decision and Control (CDC)
+December 13-15, 2023. Marina Bay Sands, Singapore
+
+
+   Towards Supervisory Control Theory in Tactical Environments:
+            A Stackelberg Game Approach
+
+
+                          Bohan Cui, Alessandro Giua and Xiang Yin
+
+
+  Abstract— In  this  paper, we propose a new framework                                             objective: K2
+                                               A : L(G) →Ξfor supervisory control of discrete-event systems in tactical
+environments. In contrast to the standard supervisory control
+theory, where the environments are considered fully adversarial,            ξ ∈Ξ
+we consider the possibility of the presence of attackers who have
+their own objectives that may not necessarily be in opposition                 G
+to the specification of the supervisor. We formulate this scenario              2Σ                   s ∈L(G)
+as a Stakelberg game in the leader-follower  setting, where      ⊕
+the designer proposes a supervisor, and the attacker takes a
+best response to the supervisor. We characterize the solution
+to the Stakelberg supervisory control problem as having both
+cooperative and antagonistic solutions. Moreover, we provide an          γ ∈Γ
+effective algorithm for synthesizing a cooperative supervisor
+that enables both players  to achieve  their  objectives. Our                                                          S : L(G) →Γ
+work makes an initial step forward from the traditional zero-                                             objective: K1
+sum setting of supervisory control theory to the non-zero-sum
+setting. Examples are provided to illustrate our results.             Fig. 1.   Conceptual illustration of the supervisory control theory under
+                                                                                          tactical environments.
+                          I. INTRODUCTION
+                                                    The emergence of networked control architecture nowa-
+  Discrete-Event Systems (DES) are an important class of
+                                                         days has led to an increased demand for information trans-
+systems characterized by  their  discrete  state spaces and
+                                                           mission in the implementation of supervisory control. How-
+event-triggered dynamics [6]. They play a crucial role in
+                                                                     ever, this also makes sensors and actuators vulnerable to
+modeling, analyzing, and controlling the high-level logic be-
+                                                                    attacks. As a result, there has been a growing interest in the
+haviors of complex systems such as intelligent manufacturing
+                                                        development of resilient supervisory control strategies that
+systems, embedded software, and autonomous robots. In the
+                                                        can withstand such attacks. Recent research efforts have been
+context of DES, one of the most important problem is to
+                                                          devoted to the modeling and synthesis of resilient supervisors
+enforce the closed-loop properties of the system. Supervisory
+                                                                   in the presence of attackers, as demonstrated by studies such
+Control Theory (SCT), initiated by Ramadge and Wonham
+                                                              as [2], [5], [12], [14], [15], [19]–[21], [23], [24]. In this
+[17], is one of the most widely used formal frameworks for
+                                                                 context, the design process requires the consideration of an
+controller synthesis of DES and has been extensively studied
+                                                                 additional player, namely the attacker player, in addition to
+in the past few decades; see, e.g., the textbooks [22] and
+                                                                the supervisor and environment players in the standard SCT.
+some recent developments [1], [8]–[11], [18], [26].
+                                               As a result, the design of the supervisor may become more
+  In the context of SCT,  it is typically assumed that the
+                                                               conservative since it must consider the potential damage that
+system has a language for expressing its desired behavior,
+                                                       an attacker can inflict.
+known as a specification. Additionally, to account for the
+uncertainty of the environment, some events are considered     The majority of existing works on supervisory control
+to be uncontrollable, meaning that their occurrences cannot   under attack still adopt the zero-sum approach of the standard
+be prevented by  the  supervisor. The  supervisor  is then  SCT framework. In this approach, the supervisor is designed
+designed using a worst-case analysis, which ensures that the    to ensure that the system satisfies its specifications regardless
+specification can be achieved regardless of the environment’s   of the behavior of the attacker. While this is reasonable for
+actions. This standard SCT setting can be viewed as a zero-   robustness analysis,  it fails to account for the differences
+sum game, where the environment player aims to violate   between attackers and passive environments. Unlike passive
+the supervisor’s specification, while the supervisor player    disturbances, attackers usually have their own objectives and
+attempts to counter this by preventing such violations.         motivations for launching an attack, and simply failing the
+                                                              supervisor may not be their only goal. Therefore, it is more
+  This work was supported by the National Natural Science Foundation of   appropriate to consider a non-zero sum setting, in which the
+China (62061136004, 62173226, 61833012).
+  Bohan Cui and Xiang Yin are with Department of Automation and    attacker is assumed to be rational and seeking to maximize
+Key Laboratory of System Control and Information Processing, Shang-     its own utility. This approach takes into account the potential
+hai  Jiao Tong  University, Shanghai 200240,  China. {bohan cui,   gains that an attacker may derive from their actions and
+yinxiang}@sjtu.edu.cn. Alessandro Giua is with the Department
+of Electrical and Electronic Engineering, University of Cagliari, Cagliari   enables the supervisor to make more informed decisions
+09123, Italy. giua@unica.it.                                    to achieve its objectives while mitigating the effects of the
+
+
+979-8-3503-0123-6/23/$31.00 ©2023 IEEE                    7931
+
+attacker’s actions.                                 x to state x′, and x0 ∈X  is the unique initial state. The
+  Motivated by the above observations, in this paper, we    transition function is also extended to δ  : X × Σ∗→X
+propose a novel framework for supervisory control of DES    recursively by: (i) for any x ∈X, δ(x, ϵ) = x; and (ii) for
+under the presence of attackers. We adopt a leader-follower   any x ∈X, s ∈Σ∗, σ ∈Σ, we have δ(x, sσ) = δ(δ(x, s), σ).
+setting, specifically the Stackelberg game, where the super-   The set of all strings generated by G starting from state x ∈
+visor is designed first. Once the supervisor is synthesized, its  X is defined as L(G, x) = {s ∈Σ∗: δ(x, s)!}, where “!”
+implementation becomes public information, and the attacker   means “is defined”. The language generated by G is defined
+seeks to maximize its own utility by taking a best response.   as L(G) := L(G, x0). For simplicity, we write δ(x0, s) as
+Our approach models the objectives of both the supervisor   δ(s) for any s ∈L(G).
+and the attacker using two different prefixed-closed speci-
+fication languages. In addition to satisfying their respective   B. Standard Supervisory Control Theory
+specifications, both entities also strive to ensure the liveness    As we mentioned above, in the standard framework of
+of the system and maintain a high degree of permissiveness.   supervisory control theory, the event set is partitioned as
+We refer to  this problem formulation as the Stackelberg
+supervisory control problem (SCCP), as illustrated in Fig-               Σ = Σc ˙∪Σuc,
+ure 1. We then consider a specific type of attack known as
+                                                     where Σc is the set of controllable events and Σuc is the set
+the disablement attack (DA), and demonstrate that SCCP-
+                                                              of uncontrollable events. A supervisor is a mechanism that
+DA may have two incomparable solutions: cooperative or
+                                                          dynamically disables controllable events in order to enforce
+antagonistic. We propose a sound and complete algorithm
+                                                 some specifications. We denote Γ = {γ ∈2Σ : Σuc ⊆γ} as
+for synthesizing a cooperative solution that enables both
+                                                                the set of admissible control decisions. Then a supervisor is
+the supervisor and the attacker to achieve their respective
+                                                           a function S : L(G) →Γ. We use notation S/G to represent
+objectives.
+                                                                the controlled system and the language generated by S/G,
+  Our work is related to non-zero-sum graph games that
+                                                          denoted by L(S/G) is defined recursively by:
+have been studied in the context of reactive synthesis [3]. For
+                                                                                     (i) ϵ ∈L(S/G);instance, in [7], the co-synthesis problem was investigated,
+                                                                                       (ii) [s∈L(S/G)∧sσ∈L(G)∧σ∈S(s)] ⇔[sσ∈L(S/G)].and the notion of assume-guarantee synthesis was proposed,
+where two processes compete conditionally. This idea has   The  specification  of  the system  is a  prefix-closed sub-
+also been explored in the context of decentralized synthesis   language K1 = K1 ⊆L(G). The standard safety control
+problems  [13].  Additionally,  in  [4],  the  authors  studied   problem is to design a supervisor S such that L(S/G) ⊆K1
+Stackelberg games played on graphs from a new perspective   and as permissive as possible.
+where the followers have several goals, and the best response
+                                                                                 III. SUPERVISORY CONTROL UNDER TACTICALis defined by a Pareto-optimal payoff. A similar idea has
+                                                            ENVIRONMENTSbeen employed in solving the minimum violation problem on
+stochastic systems [16], where the globally optimal solution      In this section, we first present the model of attackers, then
+with numeric utilities was investigated. However, to the best  we formulate the supervisory control problem under tactical
+of our knowledge, the context of Stackelberg games has not   environments and provide examples to illustrate our problem
+yet been considered in the context of SCT of DES.             setting and the underlying challenges.
+
+                         II. PRELIMINARY
+                                                            A. General Model of Attackers
+A. System Model
+                                                                Similar to the supervisor, we model an attacker as a mech-
+  Let Σ be a finite set of events. A string is a finite sequence                                                      anism that dynamically makes attack decisions to achieve its
+of events and Σ∗denotes the  set of  all strings over Σ                                              own goals. Let Ξ be a set of symbols representing attack
+including the empty string ϵ. For any string s ∈Σ∗, |s|                                                                actions and ψ be a new symbol presenting that “no attack”
+denotes the length of s with |ϵ| = 0. A language L ⊆Σ∗                                                                              is launched. An attacker is a function
+is a set of strings and we denote by ¯L the prefix-closure of
+language L, i.e., ¯L = {s ∈Σ∗: ∃w ∈Σ∗s.t. sw ∈L}. We            A : L(G) →Ξ ∪{ψ}
+say that a language is prefix-closed if L = ¯L. Given language
+                                                                     that makes attack decisions based on the history. Then atL and a string s ∈L, we denote the active event set at s in
+                                                         each instant, the actual set of events enabled in the system isL by ∆L(s) = {σ ∈Σ : sσ ∈L}. We say language L is
+                                                          determined together by the decisions of the supervisor andlive if ∀s ∈L : ∆L(s)̸ = ∅.
+                                                                the attacker under certain fusion mechanism. We use function  We consider a DES modeled by a deterministic finite-state
+automaton (DFA)                                                  ⊕: Γ × (Ξ ∪{ψ}) →2Σ
+           G = (X, Σ, δ, x0),
+                                                                   to represent the fusion rule of the supervisor and the attacker,
+where X is the finite set of states, Σ is the finite set of events,   where for any γ ∈Γ, we have ⊕(γ, ψ) = γ. We say an
+δ : X × Σ →X is the partial transition function such that    attacker A is non-interfering if ∀s ∈L(G) : A(s) = ψ and
+δ(x, σ) = x′ denotes the transition labeled by σ from state   denote this attacker strategy by Aψ.
+
+
+                                                       7932
+
+  Given supervisor S, we define SA,⊕as the  resulting   such that its own objective K1 as well as liveness can always
+overall supervisor under attacker A with fusion rule ⊕.   be achieved under any best responses. This leads to the
+Specifically, this overall supervisor is defined by:             following Stackelberg Supervisory Control Problem (SSCP).
+                                                    Problem 1 (SSCP): Given  system  G,   specifications
+        ∀s ∈L(G) : SA,⊕(s) = ⊕(S(s), A(s))                                                  K1, K2 ⊆L(G), synthesize a supervisor S, such that:
+and we denote by L(SA,⊕/G) the language generated by the   C1 For any A ∈BR(S), we have L(SA,⊕/G) ⊆K1;
+system under attack. Clearly, for non-interfering attacker A,   C2 For any A ∈BR(S), we have L(SA,⊕/G) is live;
+we always have L(SA,⊕/G) = L(S/G).                C3 “as permissive as possible” when satisfying C1 and C2.
+
+B. Stackelberg Game Formulation                                    Intuitively, C1 and C2 require that the proposed supervisor
+                                                           should be safe w.r.t. K1 and live whenever the attacker reacts  To formalize the tactical behaviors of the attacker, we
+                                                                       rationally. Regarding “as permissive as possible” in C3, weconsider the following leader-follower setting:
+                                                    do not provide a mathematical definition here since it may
+  • The supervisor is designed first and the implementation                                                             not always be well-defined. In the next section, we will
+     of supervisor S : L(G) →Γ is a public information;                                                            provide a concrete definition of permissiveness for a specific
+  • The attacker then determines its strategy A : L(G) →                                                                instance of the general problem formulation.
+   Ξ ∪{ψ} based on the existing supervisor S, or chooses
+     to not interfere at all.                                            IV. CASE OF DISABLEMENT ATTACKERS
+  In the context of game theory, the above leader-follower     The previous section formulates a very general Stackelberg
+setting is referred to as a two-player Stackelberg game. In this   supervisory control problem. In particular, the attack decision
+game, since the supervisor is fixed first, a rational attacker    set Ξ and the fusion rule ⊕are generic without any physical
+can only seek its best response to achieve its own objective.   meaning. Depending on the specific setting of the system,
+Similarly, when designing the supervisor to achieve its own   they can be further concretized.
+objective, it is assumed that the attacker will not deviate from
+                                                            A. Disablement Attackersits best response. This assumption enables the supervisor to
+anticipate the attacker’s behavior and design a strategy that      Hereafter in this paper, we will focus a concrete type of
+maximizes its own objective while taking into account the    attacker called disablement attackers [5]. In the setting, the
+attacker’s potential moves.                                      attacker can further disable some events that are originally
+  Formally, we assume the attacker has its own objective   enabled by the supervisor. Specifically, we assume that
+that may not necessarily be opposed to the objective of the
+                                                               Σa ⊆Σsupervisor. Specifically, we denote by K2 = K2 ⊆L(G) the
+prefix-closed specification language of the attacker. When    is the set of events that can be disabled by the attacker and
+the supervisor S is given, the objective of the attacker is to  we denote Σua = Σ\Σa. The the action space of the attacker
+interfere with the supervisor in such a way that the overall    for this setting can be concretized by
+system behavior remains within K2, while ensuring that the
+system’s liveness is not affected.                             Ξ = {ξ ∈2Σ : Σua ⊆ξ}.
+  Definition 1 (Successful Attacks): Given system G and                                                  The fusion rule ⊕then boils down to the set intersection
+supervisor S, we say A : L(G) →Ξ ∪{ψ} is a successful                                                         ∩, i.e., for any control decision γ ∈Γ and attack decision
+attack strategy w.r.t. S, ⊕and K2 if it satisfies the following                                                           ξ ∈Ξ, we have ⊕(γ, ξ) = γ∩ξ. Furthermore, the “no attack”
+conditions:                                                              decision ψ can also be replaced by ψ = Σ, i.e., the attacker
+ C1 L(SA,⊕/G) ⊆K2; and                                                                 disables nothing. By understanding the concrete meaning of
+ C2 L(SA,⊕/G) is live; and                                       Ξ and ⊕= ∩, hereafter, the overall supervisor SA,∩will be
+ C3 For any A′ satisfying C1 and C2, we have
+                                                                 simplified as SA.
+    L(SA,⊕/G)̸ ⊂L(SA′,⊕/G).
+                                                            B. Properties of Disablement Attackers   It  is important to note that in some cases, successful
+attackers may not be possible. In such situations, a rational     Note that, given a supervisor S, the set of its best responses
+attacker would choose not to interfere since it would not help   can be of form
+achieve its objective. This concept of rational behavior leads      • BR(S) = {Aψ}; or
+to the definition of best responses.                               • BR(S) = {A1, . . . , An}, where Ai̸ = Aψ.
+  Definition 2 (Best Responses): Given system G and su-   In the first case, we say that the supervisor is antagonistic
+pervisor S, we say A : L(G) →Ξ∪{ψ} is a best response of    since  it does not leave any opportunity for the attacker to
+the attacker against supervisor S if it is a successful attack   achieve  its objective K2, and thus, the attacker gives up.
+strategy. If no successful attack is possible, then the best   In the second case, however, we say that the supervisor is
+response is the non-interfering attack strategy Aψ. We denote   cooperative since it allows the attacker to interfere with the
+by BR(S) the set of best responses against supervisor S.     system without harming the objective K1 of the supervisor.
+  Since the supervisor assume that the attacker will take      In general, when the supervisor is cooperative, its best re-
+a best response, the supervisor needs to propose a strategy   sponse may not be unique. This is why “permissiveness” may
+
+
+                                                       7933
+
+                 2             6                      C. Illustrative Examples and Potential Challenges
+                        b       c
+                 a               b                       Before we present the solution to SSCP-DA. We  first
+                b       c      a       b          3      1      0      5      7                present two examples to illustrate the problem formulation
+                c      a     a       c                    as well as its potential challenges.
+                                                  Example 1 (Non-Uniqueness of the Solution): Let  us
+                 4             8                        consider system G shown in Figure 2(a), where we have
+                                                Σc = {a} and Σa = {b}. For the supervisor, the specification                                  (a) System G.
+                                          K1 is to avoid reaching red state 2, and for the attacker, the
+                        c                          a                b                                        b
+          3                 1                        0                               5                                      7                 specification K2 is to avoid reaching blue state 6.
+                c      a     a       c                 One can easily find a cooperative supervisor Scop that
+                                                           only disables event a at state 1. Once this supervisor  is
+                 4             8                         posted, the best response of the attacker is to disable event
+                                                             b at state 5. Then the overall controlled system SBR/G is
+                 (b) The controlled system for cooperating.
+                                                  shown in Figure 2(b), where both supervisor and attacker
+                               6                       achieve their goals K1 and K2, respectively. This supervisor
+                                c                                   is indeed a solution to SSCP-DA. However, one can find
+                                     b
+                                                       an antagonistic supervisor Sant that is incomparable with                b       c               b
+          3      1      0      5      7                the above cooperative solution Scop. Specifically, one can
+                c      a     a       c                    consider a supervisor Sant that not only disables event a
+                                                                        at state 1, but also disables event a at state 5. Once this
+                 4             8                                                              supervisor is posted, the rational attacker will not choose
+                 (c) The controlled system for antagonizing.                 to disable event b at state 5 anymore since this will block
+Fig. 2.  An example of Stakelberg supervisory control problem, where    the entire system. Therefore, the best response to such a
+Σc = {a} and Σa = {b}.                                         supervisor is the non-interfering attacker. In this case, the
+                                                                  overall controlled system SBR/G is shown in Figure 2(c),
+not be well-defined in Problem 1. However, the following                                                     where only the supervisor achieve its objective K1. Clearly,
+result shows that, for disablement attacks, the best response                                                           Scop and Sant are incomparable, although Scop is already a
+is always unique in terms of the generated language.                                                                 solution to SSCP-DA.
+  Proposition 1: Given  supervisor S,  for any  best  re-      In the above example, we have show that for a cooperative
+sponses A, A′ ∈BR(S), we have L(SA/G) = L(SA′/G).     solution, there may exists an incomparable antagonistic so-
+  Based on the above result, we know that the best response    lution. The following result further shows that a maximally
+against supervisor S is always unique (in the sense of the   permissive antagonistic solution may not even exist.
+generated language), which is either Aψ for the antagonistic     Example 2 (Non-Existence of Antagonistic Solution):
+case, or an arbitrary strategy in BR(S) for the cooperative  We still consider the system in Example 1. In fact, we can
+case. Therefore, hereafter, we denote by SBR = SA the   make Sant in the above example more permissive as follow.
+overall supervisor under the unique best response A.       We define a supervisor Skant such that it enables event a for
+                                                                the first k times visiting state 5 and choose to disable event  With the above properties for the case of disablement
+                                                 a at state 5 when this state is visited for more that k times.attacks (DA), the general formulation of SSCP in Problem 1
+                                        We note that, for any k, BR(Skant) = {Aψ} since if thecan be further concretized as SSCP-DA as follows.
+                                                                  attacker tries to avoid reaching state 6 by disabling event
+  Problem 2 (SSCP-DA): Given system G, specifications                                                             b at state 5 after the kth visit of state 5, then the system
+K1, K2 ⊆L(G), synthesize a supervisor S, such that:                                                                   will be blocked. Furthermore, Sk+1ant  is always strictly more
+                                                             permissive than Skant. Therefore, a maximally permissiveC1 L(SBR/G) ⊆K1;
+                                                                 antagonistic solution does not even exist.
+C2 L(SBR/G) is live;
+C3 For any S′ satisfying C1 and C2, we have               Based on the above discussions, hereafter, we will focus
+    L(SBR/G)̸ ⊂L(S′BR/G).                          on finding a cooperative solution to SSCP-DA. How to find
+                                                           a reasonably permissive antagonistic solution is left for our
+                                                                 future work.  Note that we can formulate “permissiveness” as C3, since
+the overall supervisor under rational attack is unique. Without
+Proposition 1, this definition may be problematic.                                                                V. SYNTHESIS OF COOPERATIVE SOLUTIONS
+  Without  loss of  generality, we assume  that the spec-
+ification language Ki, i =  1, 2  is generated by Hi =      In this section, we discuss how to synthesis a supervisor in
+(XHi, Σ, δHi, xHi,0), which is a sub-automaton of G. Then   a tactical environment. Specifically, the synthesized supervi-
+for any s ∈L(G), we have s ∈Ki  iff  it does not pass    sor is cooperative in the sense that its best response attacker
+through any states in X \ XHi.                                       is interfering and can also achieve its own objective.
+
+
+                                                       7934
+
+A. Attack-Decision Structures                                   Definition 4 (Included Supervisors): Given a  supervi-
+                                                                sor S and an attacker A, we say an overall supervisor SA  The SSCP involves three key players: the supervisor, the
+                                                                              is included in ADS T  if for any s ∈L(SA/G), we haveattacker, and the environment. Specifically, the supervisor is
+                                                            (S(s), A(s)) ∈DT (XTSA(s)). Also, we say a supervisor Sthe first to propose a decision, which is then followed by the
+                                                                              is included in ADS T  if there exists an attacker A such thatattacker’s best response. Finally, the environment selects an
+                                                                the overall supervisor SA is included in ADS T.actual event that is permitted by the combination of the first
+two players’ decisions. To capture this three-stage process,   B. Characterizing Attacker’s Best Response
+the plant is unfolded by incorporating the decisions of the
+                                                 As we mentioned above, in this work, we seek for finding
+supervisor and the attacker into it.
+                                                           a cooperative solution. Therefore, we already assume that
+  Definition 3 (Attack-Decision Structure): An    attack
+                                                                the attacker can achieve its objective K2, which means that
+decision structure (ADS) w.r.t. G is defined by
+                                             we can restrict the state space of T to XH2 Furthermore, in
+       T = (XT , ˆXT , hTDE, hTED, Σ, Γ, Ξ, xT0 ),              addition to the satisfication of K2, the attacker also concerns
+                                                           about the liveness of the controlled system.
+where                                                          Definition 5 (Live States): Given an ADS T, an E-state
+  • XT ⊆X is the set of decision states (D-states), which     ˆx = (x, γ, ξ) ∈ˆXT is said to be live if there exists an event
+      is a subset of plant states;                       σ ∈⊕(γ, ξ) such that δ(x, σ)!.
+  • ˆXT ⊆X × Γ × Ξ is the set of environment states (E-     The following result connects the liveness of the overall
+      states), which is a subset of plant states augmented with    controlled system and live states.
+     control and attack decisions;                              Proposition 2: Given system G and supervisor SA, the
+  • hTDE : X×(Γ×Ξ) →ˆX is the partial transition function    overall controlled system SA/G is live if and only if for any
+    from D-states to E-states such that: for any x ∈XT , γ ∈   s ∈L(SA/G), the E-state encountered ˆXTSA(s) is live.
+    Γ, ξ ∈Ξ and ˆx = (x′, γ′, ξ′) ∈ˆXT , we have             Now, we introduce the all cooperative structure (ACS)
+                                                                     that contains all cooperative solutions.
+        hTDE(x, (γ, ξ))= ˆX ⇒(x′, γ′, ξ′)=(x, γ, ξ)           Definition 6 (All Cooperative Structures): Given  sys-
+                                                    tem G and  attack  specification H2,  the  all cooperative  • hTED  : ˆX × Σ →XT  is the partial transition function
+                                                                   structure (ACS), denote by    from  E-states  to  D-states such  that:  for any  ˆx =
+     (x, γ, ξ) ∈ˆXT , σ ∈Σ and x′ ∈XT , we have          ACS = (XACS, ˆXACS, hACSDE  , hACSED  , Σ, Γ, Ξ, xACS0    ),
+      hTED(ˆx, σ) = x′ ⇒[σ ∈⊕(γ, ξ)] ∧[x′ = δ(x, σ)]        is the largest complete ADS w.r.t. G such that
+                                                                1) XACS ⊆XH2; and  • Σ is the set of events of G, Γ is the set of admissible                                                                2) For any ˆx ∈ˆXACS, E-state ˆx is live.
+     control decisions of the supervisor and Ξ is the set of
+                                             By “largest”, we mean that for any complete ADS T satis-
+     attack decisions;
+                                                              fying 1) and 2), we have T ⊑ACS, where “⊑” denotes the
+  • xT0 = x0 ∈XT  is the initial D-state.                                                             standard sub-graph inclusion.
+   Intuitively, a D-state x ∈XT is just a plant state at which
+                                                    Remark 5.1: The ACS construction procedure is similar
+both the supervisor and the attack make decisions (γ, ξ) ∈
+                                                                   to the construction of the all inclusive controller in [25].
+Γ × Ξ. Then the system moves to E-state ˆx = (x, γ, ξ) by
+                                        We refer the reader to [25] for details on the construction
+simply remembering the decisions. Then at this E-state, only
+                                                               algorithm.
+events allowed by both players can occur, and once σ ∈
+                                         We use the following example to illustrate the ACS.
+⊕(γ, ξ) occurs, the system moves to D-state x′ = δ(x, σ)
+                                                  Example 3: Again we  consider system G shown  in
+following the dynamic of the plant.
+                                                           Fig 2(a). An example of the ACS is as shown in Fig 3, where
+  Given an ADS T, we define the set of decisions at D-state
+                                                                      circle states represent D-states, rectangular states represent
+x ∈XT as DT (x) := {(γ, ξ) ∈Γ × Ξ : hTDE(x, (γ, ξ))!}.                                                                     E-states. Take a part of this figure as an example, at D-state
+Then for the purpose of control, we need to require the
+                                                                     5, the supervisor has two possible decisions {a, b} and {b},
+supervisor and the attacker can always react to any events
+                                                      and the attacker can make decisions {a, b} or {a}. Thus, in
+that occurred. Formally, given an ADS T, we say
+                                                                the largest ADS Ttotal, there should be four decision-pairs at
+  • a D-state x ∈XT  is complete in T  if DT (x)̸ = ∅;         state 5. However, for the cases {a, b}∩{a, b} or{b}∩{a, b},
+  • an E-state ˆx = (x, γ, ξ) ∈ˆXT  is complete in T  if for    since event b is feasible, the system can go into D-state 6,
+    any σ ∈⊕(γ, ξ), we have δ(x, σ)! ⇒hTED(ˆx, σ)!.       which is in XH2. Therefore, E-states (5, {a, b}, {a, b}) and
+We say ADS T is complete if all states in it are complete.     (5, {b}, {a, b}) should be removed when constructing the
+  Note that the ADS contains multiple control and attack   ACS. On the other hand, in case of {b}∩{a}, the system will
+decisions in general. Given a supervisor S and an attacker   be blocked since no out-going event is feasible. Therefore,
+A, the corresponding D- and E-state reached upon the string    there is only one transition defined at state 5 in the ACS as
+s ∈L(SA/G) can be computed recursively by applying the   shown in Figure 3.
+corresponding control and attack decisions along string s,     The following theorem shows that the ACS indeed and
+which we denote as XTSA(s) and ˆXTSA(s), respectively.        only contains all cooperative supervisors.
+
+
+                                                       7935
+
+                                                                                          7, {b},   b                          c    3,{c},
+                     a                                             {b}       5                4         {c}                          a                   5, {a, b},                     0, {a, c},
+     5         {a}        8            {a, c}       0
+
+                                                                     a     a
+        b                                c                                              5, {a, b},                 4,{a},                                                           7        {a}       0        {a}       3
+                     c                     c     7,      {b},                                   8,                                  {c},                                                                  0,                                                             {c},
+              7                                  1     {b}                              {c}                                                                   {a,                                                          c}  b             c                                    b
+                                                                  a            c                                                                                          8, {c},                   0, {a, c},                   1, {b},
+                                                                          {c}       8          {a, c}      1          {a, b}
+                    1, {b},    b       b     1, {a, b},      1,{a, b},              Fig. 4.  The maximally permissive cooperative supervisor S∗.
+                     {a, b}       3            {a, b}        {a}
+                                                      Note that the above condition is equivalent to δ(x, σ) ∈XH1.
+                                 a   a             The following result shows  that, from the supervisor’s
+                     c                                                                  perspective, to enforce its own specification K1,  it always    4,{a},                                 3,{c},                      2,{b},
+     {a}        4          {c}        2          {b}        needs to make safe control decisions.
+                            a                          Proposition 4: Let S be a cooperative supervisor such
+                                                                     that the attacker can achieve K2, then the supervisor achieves
+                                                  K1, i.e., L(SBR/G) ⊆K1 if and only if
+Fig. 3.  The ACS, where D-states and E-states are represented by circle
+and rectangular states, respectively.                                    ∀s ∈L(SBR/G) : S(s) is safe at δ(s).
+                                                                           Intuitively, a control decision is safe  if  it cannot reach  Theorem 1: For any supervisor S and attacker A, the
+                                                       an unsafe state outside of XH2 in one step when the attackfollowing two statements are equivalent:
+                                                            responses in a maximally permissive manner. However, to
+ 1) L(SA/G) ⊆K2 and L(SA/G) is live;                                                            ensure safety of S, the above result states that the control
+ 2) SA is included in ACS.                                                              decision needs to be safe globally. Therefore, to decode
+  Given a cooperative supervisor S in the ACS, since the
+                                                              cooperative supervisor from the ACS, we need to further
+attacker also wants to be maximally permissive, at each state,
+                                                                   find the largest complete sub-system of the ACS such that
+once the supervisor makes a control decision, it will pick a                                                              1) all control decisions are safe. To find T ∗, we need to first
+locally maximal decision within the ACS. Formally, for any
+                                                     remove all transitions hACSDE (x, (γ, ξ)) such that γ is not safeD-state x ∈XACS and control decision γ ∈Γ, we define
+                                                                        at x. However, this may introduce new incomplete states, and
+                                 (γ, ξ) ∈DACS(x)∧       we still need to iteratively remove incomplete state until the
+LOCMAX(x, γ) =  ξ ∈Ξ :
+                            [∀(γ, ξ′)∈DACS(x) : ξ̸ ⊂ξ′]    ADS becomes complete. If the T ∗is non-empty, we can
+                                                       decode the maximally permissive cooperative supervisor S∗
+as the set of locally maximal attacker decisions at x when
+                                                      from  it by picking the locally maximal control and attack
+the supervisor’s decision is γ. In fact, LOCMAX(x, γ) is a
+                                                               decisions for each reachable D-states x, i.e.,
+singleton in the sense of non-redundant decisions when we
+consider the disablement attackers.                                                              ((γ, ·) ∈DT ∗(x)∧
+                                             LOCMAX(x) =  γ ∈Γ :
+  Then the best response of the attacker is characterized by                                 [∀(γ′, ·)∈DT ∗(x) : γ̸ ⊂γ′]
+the following result.
+                                                      and picking all feasible events for each reachable E-states.
+  Proposition 3: Let S be a cooperative supervisor such
+                                                           This will result an ADS T containing one supervisor ST ,
+that BR(S) = {A}, where A̸ = Aψ. Then for any s ∈
+                                                     which  is our solution. The complete synthesis algorithm
+L(SA/G), we have A(s) ∈LOCMAX(XACSSA  (s), S(s)).                                                                              is formally described by Algorithm 1. Similar to the case
+C. Synthesis of Cooperative Supervisors                       of LOCMAX(x, γ), for disablement attacks, we also have
+                                                                     that LOCMAX(x) a singleton in the sense of non-redundant
+  Moving on to the synthesis of cooperative supervisors,
+                                                                  decisions.
+as discussed earlier, when given a cooperative supervisor,
+                                          Now we show the correctness of our algorithm.
+the attacker always seeks to pick a locally maximal attack
+                                                 Theorem 2: Algorithm 1 is both sound and complete
+decision based on the supervisor’s decision. As a  result,
+                                         We illustrate Algorithm 1 by the following example.to ensure the satisfaction of  its own specification K1 (or
+                                                  Example 4: We still return to our running example. TheXH1 in terms of states), the supervisor needs to anticipate
+                                         ACS has been shown in Fig 3. We note that control decisionthe ”rational” behavior of the attacker. This motivates us to
+                                                            {a, b} is not safe at state 1 because there exists an eventintroduce the following definition.
+                                                 a ∈{a, b}∩{a, b} leading to state 2̸ ∈XH1 under the locally  Definition 7 (Safe Control Decisions): Given the ACS
+                                                    maximal attack decision = {a, b} ∈LOCMAX(1, {a, b}).w.r.t. H2, a control decision γ ∈Γ is said to be safe at D-
+                                                                DE (1, {a, b}, {a, b}) andstate x ∈XACS w.r.t. H1 if for any maximal attack decision   Therefore, we remove transitions hACS
+                                             hACSDE (1, {a, b}, {a}). This removal does not introduce anyξ ∈LOCMAX(x, γ) and any feasible event σ ∈⊕(γ, ξ)
+                                                new incomplete state and we obtain T ∗as shown in the
+         hACSED (hACSDE (x, (γ, ξ)), σ) ∈XH1              box marked by red lines. Now we synthesize a supervisor
+
+
+                                                       7936
+
+ Algorithm 1: Cooperative Supervisor Synthesis                           REFERENCES
+   Input: system G and trim automatons H1 and H2               [1] M. VS Alves, L. Carvalho, and  J.  Basilio.   Supervisory control
+  Output: S∗                                                                  of networked discrete event systems with timing structure.  IEEE
+                                                                                  Transactions on Automatic Control, 66(5):2206–2218, 2020.
+ 1 construct ACS                                                              [2]  J. Basilio, C.N. Hadjicostis, and R. Su.  Analysis and control for
+ 2 construct the largest complete sub-system of ACS in                 resilience of discrete event systems: Fault diagnosis, opacity and cyber
+   which all control decisions are safe, denoted by T ∗                 security. Foundations and Trends® in Systems and Control, 8(4):285–
+                                                                                443, 2021.
+ 3  if T ∗= ∅then                                                              [3] R. Brenguier, L. Clemente, P. Hunter, G. P´erez, M. Randour, J.-F.
+ 4    return no solution exists                                           Raskin, O. Sankur, and Ma. Sassolas. Non-zero sum games for reactive
+                                                                                          synthesis. In LATA, pages 3–23, 2016. 5 else
+                                                                                      [4] V. Bruy`ere, J.-F. Raskin, and C. Tamines. Stackelberg-pareto synthesis.
+ 6   XT = {x0}, ˆXT = ∅, hT = ∅                                      In CONCUR, 2021.
+ 7    Expand(T, T ∗, x0)                                                   [5] L. Carvalho, Y.-C. Wu, R. Kwong, and S. Lafortune.   Detection
+                                                                         and mitigation of classes of attacks in supervisory control systems.
+ 8    return ST                                                                                Automatica, 97:121–133, 2018.
+                                                                                      [6] C. Cassandras and S. Lafortune.   Introduction to Discrete Event
+ 9 procedure Expand(T, T ∗, x)                                                                                  Systems. Springer, 2008.
+10 γ ∈LOCMAX(x), ξ ∈LOCMAX(x, γ)                              [7] K. Chatterjee and T.A. Henzinger.  Assume-guarantee synthesis.  In
+11 hT = hT ∪{(x, γ, ξ, ˆx)}                                        TACAS, pages 261–275, 2007.
+                                                                                      [8] Y.  Ji, X. Yin, and S. Lafortune.  Optimal supervisory control with
+12  if  ˆx̸ ∈ˆXT then                                               mean payoff objectives and under partial observation.  Automatica,
+13    ˆXT = ˆXT ∪{ˆx}                                                  123:109359, 2021.
+                                                                                      [9] Jan Komenda and Tom´aˇs Masopust. Hierarchical supervisory control
+14     for σ ∈⊕(γ, ξ) do
+                     ∗                                                       under partial observation: Normality. IEEE Transactions on Automatic
+15         x′ = hTED(ˆx, σ), hT = hT ∪{(ˆx, σ, x′)}                      Control, 2023.
+16           if x′̸ ∈XT then                                             [10] Z. Liu, X. Yin, S. Shu,  F. Lin, and S.  Li.   Online supervisory
+                                                                                       control of networked discrete event systems with control delays. IEEE17       XT = XT ∪{x′}                                                                                  Transactions on Automatic Control, 67(5):2314–2329, 2022.
+18         Expand(T, T ∗, x′)                                     [11] Z. Ma and K. Cai. Optimal secret protections in discrete-event systems.
+                                                                 IEEE Transactions on Automatic Control, 67(6):2816–2828, 2021.
+                                                                               [12] Z. Ma and K. Cai. On resilient supervisory control against indefinite
+                                                                                       actuator attacks in discrete-event systems.  IEEE Control Systems
+as follows. Starting from state 0, the algorithm chooses a           Letters, 6:2942–2947, 2022.
+                                                                               [13] R. Majumdar, K. Mallik, A.-K. Schmuck, and D. Zufferey. Assume–
+maximally permissive control decision {a, c}, which will be         guarantee distributed synthesis.  IEEE Transactions on Computer-
+responded by attack decision {a, c} as shown in T ∗. By         Aided Design of Integrated Circuits and Systems, 39(11):3215–3226,
+ this choice, the system moves to E-state (0, {a, c}, {a, c}),         2020.
+                                                                               [14] R. Meira-G´oes, S. Lafortune, and H. Marchand. Synthesis of super-
+and we need to consider all successor D-states 1 and 8, at          visors robust against sensor deception attacks. IEEE Transactions on
+which the locally maximal control decision are {c} and {b},         Automatic Control, 66(10):4990–4997, 2021.
+ respectively, and so forth. The result structure is shown in    [15] R. Meira-G´oes and S. Marchand, H.and Lafortune. Dealing with sen-
+                                                                                      sor and actuator deception attacks in supervisory control. Automatica,
+Figure 4, which essentially gives us a cooperative supervisor         147:110736, 2023.
+and its best response attacker. This is consistent with our    [16]  J. Niu, L.and Fu and A. Clark. Optimal minimum violation control
+ earlier discussion as shown in Fig 2(b).                                    synthesis of cyber-physical systems under attacks. IEEE Transactions
+                                                                      on Automatic Control, 66(3):995–1008, 2020.
+                                                                               [17]  P. Ramadge and W. Wonham.  Supervisory control of a class of
+                                                                                          discrete event processes. SIAM Journal on Control and Optimization,
+                                                                               25(1):206–230, 1987.
+                  VI. CONCLUSION                                                                               [18]  S. Shu and F. Lin.  Predictive networked control of discrete event
+                                                                                  systems. IEEE Transactions on Automatic Control, 62(9):4698–4705,
+                                                                              2016.
+   In this paper, we introduced a novel framework for super-    [19] R. Tai, L. Lin, and R. Su. Synthesis of optimal covert sensor–actuator
+visory control in tactical environments, where attacks with          attackers for discrete-event systems. Automatica, 151:110910, 2023.
+ their own objectives may not be fully opposed to the control    [20] M. Wakaiki, P. Tabuada, and J.P. Hespanha.  Supervisory control of
+                                                                                        discrete-event systems under attacks. Dynamic Games and Applica-
+ objective. We formulated this scenario as a leader-follower           tions, 9:965–983, 2019.
+Stackelberg game and proposed an algorithm for synthesiz-    [21] Y. Wang and M. Pajic. Supervisory control of discrete event systems in
+ing a cooperative supervisor that enables both players to          the presence of sensor and actuator attacks. In IEEE 58th Conference
+                                                                      on Decision and Control, pages 5350–5355, 2019.
+achieve their objectives, while the supervisor has the pri-    [22] W. Wonham and K. Cai. Supervisory control of discrete-event systems,
+ ority to maximize its objective. There are several promising         2019.
+ directions for future research within this framework. Firstly,    [23] Y. Xie, X. Yin, and S. Li.  Opacity enforcing supervisory control
+                                                                                 using nondeterministic supervisors. IEEE Transactions on Automatic
+instead of cooperative solutions, we plan to investigate how          Control, 67(12):6567–6582, 2022.
+ to synthesize a reasonably permissive antagonistic solution.    [24]  J. Yao, X. Yin, and S. Li. On attack mitigation in supervisory control
+Secondly, we aim to extend our results to different types          systems: A tolerant control approach.  In 59th IEEE Conference on
+                                                                               Decision and Control, pages 4504–4510, 2020.
+of attacks beyond disablement attacks. Lastly, we note that    [25] X. Yin and S Lafortune. Synthesis of maximally permissive supervi-
+ in this work, the objectives of both the supervisor and the          sors for partially-observed discrete-event systems.
+ attacker are captured by safety. However, in the future, we    [26] X. Yin and S. Lafortune.  A uniform approach for synthesizing
+                                                                                    property-enforcing supervisors for partially-observed discrete-event
+plan to consider non-prefix-closed specification languages for          systems. IEEE Transactions on Automatic Control, 61(8):2140–2154,
+both players.                                                               2016.
+
+
+                                                       7937

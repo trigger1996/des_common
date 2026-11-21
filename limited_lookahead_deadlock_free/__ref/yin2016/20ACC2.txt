@@ -1,0 +1,404 @@
+2020 American Control Conference
+Denver, CO, USA, July 1-3, 2020
+
+
+  On a Notion of Approximate Opacity for Discrete-Time Stochastic
+                         Control Systems*
+
+
+                               Siyuan Liu, Xiang Yin, and Majid Zamani
+
+
+  Abstract— This paper investigates a conﬁdentiality property     The veriﬁcation of opacity has also been widely studied
+called opacity for discrete-time stochastic control systems. In    in [5], [6], [10]. Unfortunately, it is known (cf. the previous
+order to quantitatively evaluate the security guarantee, a notion                                                                references)  that existing algorithms for verifying opacity
+of approximate initial-state opacity for stochastic control sys-
+                                                        have exponential time complexity. Efﬁcient approaches totems is proposed. Then, we introduce a new notion of so-called
+opacity-preserving stochastic simulation functions to quantify   overcome the computational complexity are highly demand-
+the distance between two systems in a probabilistic setting, while   ing [11]. More recently, several promising abstraction-based
+preserving approximate  initial-state opacity across them. In   techniques have been employed for efﬁciently verifying and
+addition, we show that for a class of stochastic control systems                                                             enforcing opacity  [2],  [12].  Particularly,  in  [12], several
+satisfying incremental input-to-state stability property, one can
+                                                              notions of opacity-preserving (bi)simulation  relations areconstruct their ﬁnite abstractions (a.k.a ﬁnite Markov decision
+processes) together with a corresponding opacity-preserving   proposed. The proposed relations essentially characterize the
+stochastic simulation function between them.                    distance between two systems in terms of preservation of
+                                                                   opacity. By constructing abstractions of the original systems
+                          I. INTRODUCTION                    and leveraging the relations between them, the complexity
+                                                              of the veriﬁcation algorithms can be mitigated.  Security analysis of cyber-physical systems (CPS) has
+                                                             Since opacity is an information-ﬂow property, its deﬁnitionattracted considerable attention in the past years. The notions
+                                                        depends on the information model of the system. The exist-of security for CPS can be classiﬁed into two categories.
+                                                             ing results are mostly based on the event-observation models.The ﬁrst category deals with the capabilities of the intruders
+                                                              In this context, it is assumed that outputs of the systems arewhile the second one focuses on the information ﬂow from
+                                                         symbolic so that different outputs can be precisely distin-the systems to the intruders. In this paper, we investigate
+                                                           guished by the observer. However, many real life applicationsa security property called opacity, which belongs to the
+                                                                are metric systems (e.g. discrete-time control systems withsecond category. In  this case, we assume  that there are
+                                                           continuous state sets and continuous output sets) in the senseoutside intruders who can monitor the system by observing
+                                                                     that their outputs are physical signals equipped with somethe external behaviors (i.e. outputs) of the system. Opacity
+                                                                 metrics. In this setting, it is not practical for the intruder toproperty essentially determines whether or not any trace that
+                                                       unambiguously distinguish outputs due to the measurementreveals secret behaviors of the system is indistinguishable
+                                                                       errors. A more reasonable concept of opacity for metricfrom other traces to an intruder [1], [2], [3].
+                                                          systems called approximate opacity was lately proposed in
+  The concept of opacity was originally proposed by [4] in
+                                                                    [13]. These new notions provide relaxed versions of opacity
+the realm of computer science for the analysis of crypto-
+                                                                   to quantitatively evaluate the security guarantee level with
+graphic protocols. Since then, the opacity problem has been
+                                                                respect to the measurement precision of the intruder.
+widely studied in Discrete-Event Systems (DES) context. In
+                                            On the other hand, in real-world applications, a small
+order to capture various types of secret requirements, differ-
+                                                                 probability of violation of the opacity could be tolerable.
+ent notions of opacity have been proposed, including state-
+                                                        Hence, instead of simply asking if a system is opaque or
+based notions in [5], [6], [7] and language-based notions in
+                                                          non-opaque, it is more applicable to evaluate the possibility
+[8]. In practical situations, the state-based notions of opacity
+                                                              of being not secure for stochastic systems. This direction
+of DES are generally classiﬁed into the so-called initial-state
+                                                           has been recently explored in the context of stochastic DES
+opacity [7], current-state opacity [1], K-step opacity [5], and
+                                                                    [14], [15], [16], [17], [18], [11]. For example, in [14] three
+inﬁnite-state opacity [6]. We refer interested readers to the
+                                                                     different notions of probabilistic opacity were introduced for
+recent surveys in [9], [3] describing those different notions
+                                                                    current-state opacity; this approach has also been extended
+of opacity in details.
+                                                                   to inﬁnite-step opacity by [11]. In [16], Jensen-Shannon
+  *This work was supported in part by the German Research Foundation   divergence was adopted to quantify secrecy loss in stochastic
+(DFG) through the grant ZA 873/1-1 and by China Scholarship Council.     systems. Opacity of (partially-observed) Markov decision
+  Siyuan Liu  is with the Department of Electrical and Computer En-   processes has also been studied in [15], [17], [18]. Note that
+gineering,  Technical  University  of  Munich,  Germany.  Xiang  Yin  is
+with  the Department  of Automation, Shanghai  Jiao Tong  University,   most of the existing works on opacity analysis of stochastic
+China. Majid Zamani  is with the Computer Science Department, Uni-  DES are based on ﬁnite systems. In discrete-time stochastic
+versity  of Colorado Boulder, USA. Majid Zamani  is with  the Com-    control systems, however, the state-sets are usually inﬁnite,
+puter Science Department, Ludwig Maximilian  University  of Munich,
+Germany. Emails: sy.liu@tum.de, yinxiang@sjtu.edu.cn,   which makes the veriﬁcation problem very challenging and
+majid.zamani@colorado.edu.                           even undecidable. Therefore, efﬁcient abstraction techniques,
+
+
+978-1-5386-8266-1/$31.00 ©2020 AACC                      5413
+
+together with suitably deﬁned notions of stochastic opacity,    respectively, by N := {0, 1, 2, . . .} and N≥1 := {1, 2, 3, . . .}.
+are needed in order to quantitatively evaluate the security   The sets of real, positive and nonnegative real numbers are
+level of large-scale inﬁnite stochastic systems.                denoted by R, R>0, and R≥0, respectively. Given N ∈N≥1
+  In this paper, we introduce a new notion of initial-state    vectors xi ∈Rni, with  i ∈{1, . . . , N}, ni ∈N≥1,
+opacity for discrete-time stochastic control systems, which   and n = Pi ni, we use x = [x1; . . . ; xN] to denote the
+is called (δ, ε)-approximate initial-state opacity. Our notion   corresponding concatenated vector in Rn. We denote by ∥·∥
+can be regarded as the stochastic counterpart of the notion    the inﬁnity norm of a vector x ∈Rn. Given functions f and
+of approximate opacity introduced in [13]. In particular, the    g, the composition of them is denoted by f ◦g. A continuous
+δ-approximate initial-state opacity proposed in [13] requires   function γ : R≥0 →R≥0 is said to be a class K function if it
+that given a threshold parameter δ ≥0 (based on the mea-    is strictly increasing and γ(0) = 0. A class K function γ(·)
+surement precision of the intruder), for any state run starting    is said to be a class K∞function if γ(r) →∞as r →∞.
+from a secret state, there always exists another state run
+                                                            B. Discrete-Time Stochastic Control Systemsstarting from a non-secret state, such that the largest distance
+between their output runs is smaller than δ. In this paper,       First, we deﬁne discrete-time stochastic control systems
+the aim is still to ensure that discerning which of the states   (dt-SCS) as the sextuple
+was the originating one is difﬁcult for an intruder based on
+                                                    Σ=(X, U, ς, f, Y, h),                 (1)
+its observation. Particularly, starting from two initial states,
+the output trajectories are considered indistinguishable if the   where X ⊆Rn, U ⊆Rm, and Y ⊆Rq are Borel spaces
+probability measures of them remaining in any set of interest   denoting the  state, input and output  sets of the system,
+are close to each other. The parameter ε is used to bound    respectively. We use B(X) to denote the Borel sigma-algebra
+the probability distance and δ captures the measurement   on the state set X, thus (X, B(X)) denotes the corresponding
+precision of the intruder. In the special case when δ=0, the   measurable space. In the probability space (Ω, FΩ, P), we
+notion boils down to ε-approximate initial-state opacity, and   use ς = (ς(1),ς(2),. . .) to denote a sequence of independent
+the parameter ε can be captured exactly by the well-known   and identically distributed (i.i.d.) random variables from Ω
+total variation distance, see, e.g. [19], [20], [21], [22].         to the measurable set Vς, where ς(k):Ω→Vς, k∈N.
+  In addition, we introduce a notion of initial-state opacity-     The maps f  : X × U × Vς →X and h  : X →Y  are
+preserving stochastic simulation function. This function is es-   measurable functions serving as the state transition relation
+sentially used to quantitatively relate two systems in terms of   and output map, respectively. Given an initial state ξ(0) ∈X,
+opacity satisfactions in a probabilistic setting. Unfortunately,    the dt-SCS Σ satisﬁes
+the existing notions of stochastic simulation functions do not
+                                                                  ξ(k + 1) = f(ξ(k), ν(k), ς(k)),
+necessarily preserve opacity. We show that if our notion of     Σ :                              k ∈N,   (2)
+                                                                   ζ(k) = h(ξ(k)),
+opacity-preserving stochastic simulation function exists be-
+tween systems Σ and ˆΣ, then ˆΣ being ε-approximate initial-   where ξ(·)  : N →X, ζ(·)  : N →Y , and ν(·)  : N →
+state opaque implies that Σ  is (2λ, ε + 2¯ελ)-approximate  U are the state, output, and input signals, respectively. We
+initial-state opaque for any arbitrarily chosen λ > 0 and ¯ελ ≥   use U  to denote a collection of sequences ν  : Ω→U,
+0 which is a function of λ (cf. equation (6)). As a result, this   where ν(k) is independent of ς(t) for any k, t ∈N and
+allows us to efﬁciently verify opacity of a complex system    t ≥k. A dt-SCS deﬁned in (1) with (possibly) continuous
+with possibly uncountable number of states by analyzing    state set can be equivalently represented as a general Markov
+it over  its simpler (potentially ﬁnite) abstraction. Finally,   decision process (gMDP). The ﬁnite abstractions of gMDPs
+we propose a scheme to construct abstractions (in the form    are called ﬁnite MDPs, as constructed later in Section V-
+of ﬁnite Markov decision processes (MDPs)) for a class   A, which are of crucial use for the analysis of opacity. We
+of incrementally input-to-state stable discrete-time stochastic    refer the interested readers to [23] for formal deﬁnitions of
+control systems. We show that under some mild assumptions,  gMDPs and MDPs.
+the original and ﬁnite systems are related to each other
+                                                                           III. APPROXIMATE OPACITY FOR STOCHASTIC CONTROLthrough an opacity-preserving stochastic simulation function.
+                                                               SYSTEMSExisting techniques for computing total variation distance in
+the case of labelled Markov chain (LMC) [20], [21] can be      In this section, we introduce the concept of approximate
+readily employed for the veriﬁcation of ε-approximate initial-   opacity  for  the  class  of  discrete-time  stochastic  control
+state opacity on the constructed ﬁnite MDPs.                 systems. Hereafter, we slightly modify the formulation in
+                                                                   (1) to accommodate for initial states and secret states, as
+  II. DISCRETE-TIME STOCHASTIC CONTROL SYSTEMS
+                                    Σ = (X, X0, XS, U, ς, f, Y, h), where X0 ⊆X  is a set of
+A. Notation                                                                              initial states and XS ⊆X  is a set of secret states. Given
+                                                                                            u
+  In this paper, a probability space is written as (Ω, FΩ, P),   system Σ = (X, X0, XS, U, ς, f, Y, h), x −→x′ is called a
+where Ωis the sample space, FΩis a sigma-algebra on    transition in the system if and only if x′ = f(x, u, ς). The
+Ωrepresenting a set of events, and P  : FΩ→[0, 1]  is   random sequence ξx0ν : Ω× N →X, which is in the form
+a probability measure that assigns probabilities to events.   of ξx0ν = (x0, x1, . . . , xn), is said to be a solution process
+We denote the sets of nonnegative and positive integers,   of Σ under input sequence ν = (u1, u2, . . . , un) satisfying
+
+
+                                                       5414
+
+(2), with initial state ξx0υ(0) = x0. The random sequence     Note that throughout the work we assume X0 ⊈XS,
+ζx0ν  : Ω× N →Y  is called the output run and deﬁned as   otherwise (δ, ε)-approximate initial-state opacity is trivially
+ζx0ν = (y0, y1, . . . , yn) such that there exists a ﬁnite state run    violated.
+ξx0ν = (x0, x1, . . . , xn) with yi = h(xi), for i ∈{0, . . . , n}.                                                              IV. STOCHASTIC SIMULATION FUNCTIONS FOR OPACITY
+A ﬁnite state run and a ﬁnite output run can be extended to
+                                                                 In  this  section, we introduce a notion of  initial-statean inﬁnite state run and an inﬁnite output run as well.
+                                                               opacity-preserving stochastic simulation functions for  dt-   In order to show our new notion of opacity, we deﬁne for
+any system Σ=(X, X0, XS, U, ς, f, Y, h) with output set Y ,   SCS. The stochastic simulation function will play an impor-
+set BY = {y = (y0,y1,. . . ,yn) ∈Y n|n ∈N≥1} which is    tant role in analyzing opacity for dt-SCS. First, we provide
+                                                                the deﬁnition of  initial-state opacity-preserving stochasticthe set of all ﬁnite output sequences. For any measurable set
+E ⊆BY , for some δ > 0, we denote the δ neighborhood of   simulation functions.
+                                                             Deﬁnition 4.1: (Initial-state opacity-preserving stochasticset E by Eδ and ¯Eδ, where Eδ is the largest measurable set
+                                                              simulation function) Let Σ = (X, X0, XS, U, ς, f, Y, h) andcontained in E satisfying:
+                                                 bΣ=( ˆX, ˆX0, ˆXS, ˆU, ς, ˆf, ˆY , ˆh) be two dt-SCS with the same
+Eδ ={y∈E|∀¯y∈BY\E, ∥¯y(i)−y(i)∥≥δ,∀i∈{0,. . . ,n}}, (3)   output sets Y = ˆY . A function V :X×ˆX →R≥0 is called an
+and ¯Eδ is the smallest measurable set containing E satisfying:    initial-state opacity-preserving stochastic simulation function
+                                                          (InitSOP-SSF) from ˆΣ to Σ, if there exist constants ψ ≥0,
+   ¯Eδ ={y∈BY | ∃¯y∈E, ∥¯y(i)−y(i)∥≤δ,∀i∈{0,. . . ,n}}.(4)  ω ≥0, a function α ∈K∞, and a function κ ∈K which
+Note that we can regard Eδ and ¯Eδ respectively as the δ-    satisﬁes κ(s) ≥ˆκs, ∀s ∈R≥0, where 0 < ˆκ < 1, such that
+deﬂated version and δ-inﬂated version of set E.                  1)  a) ∀x0 ∈X0 ∩XS, ∃ˆx0 ∈ˆX0 ∩ˆXS: V (x0, ˆx0) ≤ω;
+  Now, we introduce a notion of opacity for the class of         b) ∀ˆx0 ∈ˆX0 \ ˆXS, ∃x0 ∈X0 \ XS: V (x0, ˆx0) ≤ω;
+stochastic systems deﬁned above.                                2) ∀x ∈X, ∀ˆx ∈ˆX, α(∥h(x) −ˆh(ˆx)∥) ≤V (x, ˆx);
+  Deﬁnition 3.1: Let Σ=(X, X0, XS, U, ς, f, Y, h) be a dt-      3) ∀x ∈X, ∀ˆx ∈ˆX, the following conditions hold:
+SCS and consider constants δ ≥0, 0 ≤ε < 1. System Σ is          a) ∀u, ∃ˆu, s.t. Eh V (f(x, u, ς), ˆf(ˆx, ˆu, ς))  x, ˆx, u, ˆui −
+(δ, ε)-approximate initial-state opaque if for any x0 ∈X0 ∩       V (x, ˆx) ≤−κ(V (x, ˆx)) + ψ;
+XS, there exists x′0 ∈X0\XS, so that for any input sequence         b) ∀ˆu, ∃u, s.t. Eh V (f(x, u, ς), ˆf(ˆx, ˆu, ς))  x, ˆx, u, ˆui −
+ν, there exisits an input sequence ν′, such that for every
+                                                 V (x, ˆx) ≤−κ(V (x, ˆx)) + ψ.
+measurable set E ⊆BY and the δ neighboring sets Eδ and                                                    Now, before stating the main theorem in this section, we¯Eδ as deﬁned in (3) and (4), the following inequalities hold:
+                                                            provide the following technical proposition which is inspired
+   P(ζx′0ν′ ∈Eδ)−ε≤P(ζx0ν ∈E)≤P(ζx′0ν′ ∈¯Eδ)+ε,   (5)   by Theorem 3.3 in   [24]. This proposition shows us the
+                                                               usefulness of the InitSOP-SSF in the sense that  it can be
+where ζx0ν and ζx′0ν′ are the output runs of the same length,                                                     employed to show indistinguishability of output trajectories
+starting from x0 under ν and x′0 under ν′, respectively.                                                               of two dt-SCS in a probabilistic setting.
+  Remark 3.2: In  this deﬁnition, we use parameter ε to
+                                                                Proposition 4.2: Let Σ = (X, X0, XS, U, ς, f, Y, h) and
+denote the largest allowable probability violation for the
+output trajectories starting from the secret and non-secret   bΣ=( ˆX, ˆX0, ˆXS, ˆU, ς, ˆf, ˆY , ˆh) be two dt-SCS with the same
+                                                             output sets Y = ˆY . Suppose V  is an InitSOP-SSF from bΣ toinitial states x0 and x′0 to be δ close. Note that the value of                                                      Σ. Then, for any a ∈X0∩XS in Σ, there exists ˆa ∈ˆX0∩ˆXSparameter δ is chosen depending on the measurement pre-
+                                                                   in ˆΣ (respectively, for any ˆa ∈ˆX0 \ ˆXS in ˆΣ, there existscision of a malicious intruder. In the case that the precision
+                                                 a ∈X0 \ XS in Σ) so that for any ˆν ∈ˆU in ˆΣ, there existsof the intruder is lower than δ, the δ neighborhood of set
+                                                     ν ∈U in Σ and vice versa such that the following inequalityE,  i.e. Eδ and ¯Eδ, is indistinguishable from set E from                                                            holds
+the intruder’s point of view. When δ = 0, the probability
+inequalities in (5) boils down to |P(ζx0ν∈E)−P(ζx′0ν′∈E)|≤ε,   P   sup  ∥ζaν(k) −ˆζˆaˆν(k)∥≤λ | [a; ˆa] ≥1 −¯ελ,
+and we use the term ε-approximate initial-state opacity. It is       0≤k≤n
+worth mentioning that, in this case the parameter ε can be     (1−(1− α(λ))(1ω   − α(λ))nψ                       if α(λ)≥ψˆκ,
+captured exactly by total variation distance [20], [21] for the      ¯ελ :=    ω            ψ                     ψ
+                                                                            ( α(λ))(1−ˆκ)n+( ˆκα(λ))(1−(1−ˆκ)n)  if α(λ)< ˆκ ,case of ﬁnite MDPs. Thus existing techniques for computing
+                                                                                                                               (6)total variation distance can be leveraged as tools to check the
+probability distance in (5), which would be applicable for the    for any λ > 0.
+veriﬁcation of ε-approximate initial-state opacity for ﬁnite        Proof:   It can be readily seen that by conditions 2)
+MDPs. Although computing this distance is shown to be NP-   and 3) in Deﬁnition 4.1, the InitSOP-SSF is a stochastic
+hard [20], [21], there have been some results to approximate   simulation function (SSF) (as deﬁned in [24, Deﬁnition 3.2])
+the distance, which are #P-hard and in PSPACE see, e.g.   both from bΣ to Σ and from Σ to bΣ. Since by condition
+[19], [22]. Moreover, in the case that δ = 0, ε = 0, and no   1) in Deﬁnition 4.1, V (a, ˆa) ≤ω, the rest of the proof is
+stochasticity exists in the transition functions of the systems,   concluded by applying Theorem 3.3 in  [24].
+this notion boils down to exact opacity deﬁned in [12] for      This proposition will be used for the proof of the following
+general nondeterministic transition systems.                main theorem, where we show preservation of approximate
+
+
+                                                       5415
+
+initial-state opacity across related systems as in Deﬁnition   where ¯ελ ∈R≥0 is computed as in (6).
+4.1. The next lemmas will be used to prove the main result.        Proof:  Consider an arbitrary secret initial state x0 ∈
+  Lemma 4.3: Suppose for two dt-SCS Σ and ˆΣ, the output  X0 ∩XS, input sequence ν = {u1, u2, . . . , un} and the
+trajectories ζaν and  ˆζˆaˆν satisfy the inequality                 corresponding state run ξx0ν = (x0, x1, . . . , xn) in Σ. Since
+                                             V is an InitSOP-SSF from ˆΣ to Σ, by conditions 1)a), 2) and
+             sup  ∥ζaν(k) −ˆζˆaˆν(k)∥≤λ,
+            0≤k≤n                                           3)a) in Deﬁnition 4.1, there exist a secret initial state ˆx0 ∈
+                                                                ˆX0 ∩ˆXS, input sequence ˆν = {ˆu1, ˆu2, . . . , ˆun} and state run
+for some time bound n and λ > 0. Then we have:                     ˆξˆx0ˆν = (ˆx0, ˆx1, . . . , ˆxn) in ˆΣ such that V (x0, ˆx0) ≤ω, and
+           ˆζˆaˆν ∈Eλ =⇒ζaν ∈E; ζaν ∈E =⇒ˆζˆaˆν ∈¯Eλ,         ∀i ∈{0, 1, . . . , n}:
+over time interval [0, n], for any measurable set E ⊆BY                                                             α(∥h(xi) −ˆh(ˆxi)∥) ≤V (xi, ˆxi),
+and the modiﬁed sets Eλ and ¯Eλ as deﬁned in (3) and (4).
+                                                   V (f(xi, ui, ςi)), ˆf(ˆxi, ˆui, ςi))  xi, ˆxi, ui, ˆui i     Proof: As can be seen from the deﬁnition of Eλ and ¯Eλ      Eh
+in (3) and (4), given any set of output sequences E ⊆BY ,      −V (xi, ˆxi) ≤−κ(V (xi, ˆxi)) + ψ.
+Eλ and ¯Eλ are the λ-deﬂated version and λ-inﬂated version
+of set E, respectively. Since we have                  By applying Proposition 4.2, for the given λ, we have:
+             sup  ∥ζaν(k) −ˆζˆaˆν(k)∥≤λ,              P  max ∥ζx0ν(i)−ζˆx0ˆν(i)∥≤λ | [x0; ˆx0] ≥1 −¯ελ,
+            0≤k≤n                                          0≤i≤n
+
+then  it can be readily seen that according to the structure   where ¯ελ is computed using inequality (6). By applying (7)
+of Eλ and ¯Eλ,  ˆζˆaˆν ∈Eλ guarantees ζaν ∈E. Similarly,    in Lemma 4.4, we get for any set E ⊆BY and the modiﬁed
+ζaν ∈E inplies  ˆζˆaˆν ∈¯Eλ as well.                                sets Eλ and ¯Eλ:
+This lemma essentially provides us the relation between the
+                                                                                                      P(ˆζˆx0ˆν ∈Eλ) −P(ζx0ν ∈E) ≤¯ελ,          (9)property satisfactions of two dt-SCS, given that the output
+trajectories of these two dt-SCS are close to each other.              P(ζx0ν ∈E) −P(ˆζˆx0ˆν ∈¯Eλ) ≤¯ελ.        (10)
+Based on this lemma, the following lemma presents another
+                                                           Since  ˆΣ  is ε-approximate  initial-state opaque, by (5) in
+technical result of this paper.
+                                                          Deﬁnition 3.1, there exist a non-secret  initial state  ˆx′0 ∈
+  Lemma 4.4: Suppose Σ and bΣ are two dt-SCS for which    ˆX0 \ ˆXS, input sequence  ˆν′ = {ˆu′1, ˆu′2, . . . , ˆu′n} and stateinequality (6) holds with initial states a and  ˆa, input se-
+                                                           run  ξˆx′0ˆν′ =  (ˆx′0, ˆx′1, . . . , ˆx′n) in  ˆΣ, such that ∥P(ˆζˆx′0ˆν′ ∈quences ν and ˆν, a constant pair (λ,¯ελ) and any time bound
+                                            E) −P(ˆζˆx0ˆν ∈E)∥≤ε holds for any set E, so we have:n. The following inequality holds for any set E ⊆BY and
+the modiﬁed sets Eλ and ¯Eλ as deﬁned in (3) and (4):                          P(ˆζˆx′0ˆν′ ∈Eλ) −P(ˆζˆx0ˆν ∈Eλ) ≤ε,        (11)
+     P(ˆζˆaˆν ∈Eλ)−¯ελ ≤P(ζaν ∈E) ≤P(ˆζˆaˆν ∈¯Eλ)+¯ελ, (7)                     P(ˆζˆx0ˆν ∈¯Eλ) −P(ˆζˆx′0ˆν′ ∈¯Eλ) ≤ε.        (12)
+where the satisfaction is over time interval {0, . . . , n}.        Again, since V is an InitSOP-SSF from ˆΣ to Σ, by conditions
+     Proof:  Let us consider the events: E1:={ˆζˆaˆν ∈Eλ},    1)b), 2) and 3)b) in Deﬁnition 4.1, Proposition 4.2 and (7) in
+E2:={ζaν ∈E} and E3:={sup0≤k≤n ∥ζaν(k) −ˆζˆaˆν(k)∥≤  Lemma 4.4, there exist an initial state x′0 ∈X0 \ XS, input
+λ}. Since we have from Lemma (4.3), E1 ∩E3 =⇒E2, thus,   sequence ν′ = {u′1, u′2, . . . , u′n} and the corresponding state
+P(¯E2) ≤P(¯E1 ∪¯E3) ≤P(¯E1) + P(¯E3), where ¯E1, ¯E2 and ¯E3   run ξx′0ν′ = (x′0, x′1, . . . , x′n) in Σ such that
+are the complements of E1, E2 and E3, respectively. As we
+have by (6), P(¯E3) ≤¯ελ, now we readily get:                           P(ζx′0ν′ ∈E2λ) −P(ˆζˆx′0ˆν′ ∈Eλ) ≤¯ελ,      (13)
+  P(¯E2) ≤P(¯E1) + ¯ελ =⇒1 −P(E2) ≤1 −P(E1) + ¯ελ                       P(ˆζˆx′0ˆν′ ∈¯Eλ) −P(ζx′0ν′ ∈¯E2λ) ≤¯ελ.      (14)
+                =⇒P(E1) ≤P(E2) + ¯ελ,                                                        Hence, by combining inequalities (9), (11), (13), we have
+                                                                the following resultwhich gives us P(ˆζˆaˆν ∈Eλ) −¯ελ ≤P(ζaν ∈E). The proof
+of P(ζaν ∈E) ≤P(ˆζˆaˆν ∈¯Eλ)+ ¯ελ is similar and is omitted            P(ζx′0ν′ ∈E2λ) −P(ζx0ν ∈E) ≤ε + 2¯ελ.    (15)
+here due to lack of space.
+  Now, we present the main result of this paper on the    Additionally, combining inequalities (10), (12), (14), we get
+preservation of opacity across related dt-SCS systems.                P(ζx0ν ∈E) −P(ζx′0ν′ ∈¯E2λ) ≤ε + 2¯ελ.    (16)
+  Theorem 4.5: Let Σ = (X,X0,XS,U,ς,f,Y,h) and bΣ =
+(ˆX,ˆX0,ˆXS,ˆU,ς,ˆf,ˆY ,ˆh) be two dt-SCS with the same output   Since x0 ∈X0∩XS and input sequence ν in Σ are arbitrary,
+sets Y = ˆY . Consider constants ε ∈R≥0 and λ ∈R>0.  we conclude that Σ is (2λ, ε+2¯ελ)-approximate initial-state
+Assume V  is an InitSOP-SSF from ˆΣ to Σ as in Deﬁnition   opaque.
+4.1 with the corresponding constants ψ, ω,  ˆκ and K∞     Remark 4.6: The theorem provides a sufﬁcient condition
+function α. Then the following implication holds:              for approximate initial-state opacity based on the relation
+                                                       between two stochastic systems. It bridges the gap between
+      bΣ is ε-approximate initial-state opaque                   the veriﬁcation of opacity and abstraction-based techniques
+ ⇒Σ is (2λ, ε+2¯ελ)-approximate initial-state opaque, (8)   on stochastic systems. To be speciﬁc, when analyzing opacity
+
+
+                                                       5416
+
+for a large system Σ, the veriﬁcation procedure can be highly   where µx and µu  are the  state and input  discretization
+time-consuming. By constructing an abstraction of system Σ,   parameter deﬁned as
+which appears as system ˆΣ in the theorem, and leveraging
+                                                   µx := sup{∥x −x′∥, x, x′ ∈Xi, i = 1, 2, . . . , nx},  (19)
+the simulation relation between them, one can efﬁciently
+verify opacity of the complex system Σ. The abstraction    µu := sup{∥u −u′∥, u, u′ ∈Ui, i = 1, 2, . . . , nu}.  (20)
+                                                            Next, we construct the InitSOP-SSF for a class of nonlinearis contructed as a ﬁnite Markov decision process (MDP)
+                                                                  stochastic systems.in the following subsection V-A. In addition, as mentioned
+before, ε-approximate initial-state opacity for the MDP can   B. Establishing  InitSOP-SSF  for a  Class  of  Nonlinear
+be veriﬁed easily using existing computation algorithms for    Stochastic Systems
+total variation distance.
+                                                                 In this subsection, we focus on a general class of nonlinear
+V. OPACITY OF STOCHASTIC CONTROL SYSTEMS BASED    stochastic systems Σ. We provide an InitSOP-SSF candidate
+           ON FINITE ABSTRACTIONS                     for the concrete systems Σ and their ﬁnite MDPs as con-
+                                                                  structed in the previous subsection. The existence of such an  In this section, we show how to analyze approximate opac-
+                                                       InitSOP-SSF enables us to verify opacity of a continuous-ity for the class of dt-SCS based on their ﬁnite abstractions
+                                                           space stochastic system by leveraging its ﬁnite abstraction.(ﬁnite MDPs). First, we provide the construction of ﬁnite
+                                                  The establishment of InitSOP-SSF is under the following twoabstractions of the concrete systems.
+                                                            assumptions. First, we assume that the output map h satisﬁes
+A. Finite Abstractions of dt-SCS                               the following general Lipschitz assumption: there exists an
+  Given a dt-SCS Σ = (X, X0, XS, U, ς, f, Y, h), we con-     ˜α ∈K∞such that ∥h(x) −h(x′)∥≤˜α(∥x −x′∥) for all
+struct a ﬁnite MDP as its ﬁnite abstraction, represented by   x, x′ ∈X. Second, we assume that the concrete system
+the tuple bΣ=( ˆX, ˆX0, ˆXS, ˆU, ς, ˆf, ˆY , ˆh). The construction of    is incrementally input-to-state stable as in the following
+ﬁnite MDPs follows a similar procedure as in [24, Algorithm    deﬁnition.
+1] with some modiﬁcations to incorporate the role of secret      Deﬁnition 5.3: A dt-SCS Σ is incrementally input-to-state
+sets. First, for the given state set X and input set U, we select    stable if there exists function V  : X × X →R≥0 such that
+ﬁnite partitions of them as X = ∪iXi, U = ∪iUi, and single   ∀x, x′ ∈X, ∀u, u′ ∈U the following two inequalities hold:
+representative points  ¯xi ∈Xi,  ¯ui ∈Ui as abstract states       α(∥x −x′∥) ≤V (x, x′) ≤α(∥x −x′∥),          (21)
+and inputs. Then, we deﬁne the state and input sets of bΣ     EhV (f(x, u, ς),f(x′, u′, ς)) x, x′, u, u′i −V (x, x′)
+as ˆX = {¯xi, i = 1, . . . , nx}, and ˆU = {¯ui, i = 1, . . . , nu},
+which simply consist of the selected representative points.       ≤−¯κ(V (x, x′)) + ¯ρ(∥u −u′∥),                  (22)
+The transition function ˆf : ˆX × ˆU × Vς →ˆX is deﬁned as                                                                   for some α, α ∈K∞, ¯κ ∈K, and ¯ρ ∈K∞∪{0}.
+                      ˆf(ˆx, ˆu, ς) = Πx(f(ˆx, ˆu, ς)),            (17)   Now, we provide the main theorem in this subsection. We
+                                                  show  that by adding a mild  condition,  the function V
+where Πx : X →ˆX represents the map that assigns to any   described in Deﬁnition 5.3 is indeed an InitSOP-SSF from
+x ∈X, the representative point ˆx ∈ˆX of the corresponding    the ﬁnite abstraction    (as constructed in Subsection V-A)                                                                                                 bΣ
+partition set containing x. The output set ˆY is the image of    to the concrete system Σ.
+ˆX under h, with ˆh : ˆX →ˆY being the same as h except     Theorem 5.4: Let Σ be an incrementally input-to-state
+for having a restricted domain ˆX. Similarly, we use Πu  :    stable dt-SCS via a function V as in Deﬁnition 5.3 and   be                                                                                                                                       bΣ
+U →ˆU  to denote the map that assigns to any u ∈U,     its ﬁnite MDP constructed as in Subsection V-A. Suppose
+the representative input point  ˆu ∈ˆU of the corresponding    there exists a constant 0 <  ˆκ < 1 such that the function
+partition set containing u.                                                      ¯κ ∈K satisﬁes ¯κ(s) ≥ˆκs, ∀s ∈R≥0. Assume that there
+  Remark 5.1: Note that we have not deﬁned the map Πx :    exists a function γ ∈K∞such that V satisﬁes
+X →ˆX yet. For example, one can choose center points (if
+                                             V (x, x′) −V (x, x′′) ≤γ(∥x′ −x′′∥), ∀x, x′, x′′ ∈X. (23)applicable) of the partitions as representative points or apply
+other specialized mapping rule to it. In this work, we enforce   Then V  is an InitSOP-SSF from bΣ to Σ.
+two conditions as the rule of choosing representative points        Proof: We start by proving condition 1) in Deﬁnition
+for initial states and secret states as follows:                     4.1. For every initial state x0 ∈X0 ∩XS in Σ, there always
+  1)  If X0 ∩Xi̸ = ∅, we constrain the representative point    exists a representative point ˆx0 = Πx(x0) in bΣ which is
+      of Xi to be chosen as ¯xi ∈X0 ∩Xi;                     inside the set ˆX0∩ˆXS by the construction of X0ˆ and XS,ˆ  and
+  2)  If XS ∩Xi̸ = ∅, we constrain the representative point    ∥ˆx0 −x0∥≤µx holds by (18). Hence, we have V (x0, ˆx0) ≤
+      of Xi to be chosen as ¯xi ∈XS ∩Xi.                 α(∥x0 −ˆx0∥) by (21), and condition 1)a) in Deﬁnition 4.1
+By the above conditions, one can observe that the initial    is satisﬁed with ω = α(µx). For every ˆx0 ∈ˆX0 \ ˆXS, by
+state set ˆX0 and secret state set ˆXS satisfy ˆX0 ⊆X0 and   choosing x0 = ˆx0 which is also inside X0 \ XS, we get
+ˆXS ⊆XS.                                     V (x0, ˆx0) = 0 ≤ω. Hence, condition 1)b) in Deﬁnition 4.1
+  Remark 5.2: In this paper, it is assumed that the abstrac-   holds as well.
+tion maps Πx and Πu satisfy the inequalities                   Let us show condition 2) in Deﬁnition 4.1 holds. Since
+                                    Σ is incrementally input-to-state stable and using (21), and ∥Πx(x)−x∥≤µx,∀x ∈X, ∥Πu(u)−u∥≤µu,∀u ∈U, (18)
+
+                                                       5417
+
+given the Lipschitz assumption on h, ∀x ∈X and ∀ˆx ∈ˆX,                    REFERENCES
+one gets                                                                          [1] A. Saboori and C. N. Hadjicostis, “Notions of security and opacity in
+    ∥h(x) −ˆh(ˆx)∥≤˜α(∥x −ˆx∥) ≤˜α ◦α−1(V (x, ˆx)),                discrete event systems,” in IEEE Conference on Decision and Control.
+                                                                        IEEE, 2007, pp. 5056–5061.
+                                                                                     [2] M. Noori-Hosseini, B. Lennartson, and C. Hadjicostis, “Compositional
+ which results in                                                                     visible bisimulation abstraction applied to opacity veriﬁcation,” in 14th
+            α(∥h(x) −ˆh(ˆx)∥) ≤V (x, ˆx),                       IFAC Workshop on Discrete Event Systems, 2018, pp. 434–441.
+                                                                                     [3]  S. Lafortune,  F. Lin, and C. N. Hadjicostis, “On the history of
+∀x ∈X and ∀ˆx ∈ ˆX, where α(s) :=  (˜α ◦α−1)−1(s),          diagnosability and opacity in discrete event systems,” Annual Reviews
+                                                                                         in Control, vol. 45, pp. 257–266, 2018.
+∀s ∈R≥0. Hence, condition 2) in Deﬁnition 4.1 is satisﬁed.      [4] L. Mazar´e, “Using uniﬁcation for opacity properties,” Proceedings of
+Let us now show that condition 3) in Deﬁnition 4.1 holds          the 4th Workshop on Issues in the Theory of Security, vol. 7, pp. 165–
+as well. Now, ∀x ∈X, ∀ˆx ∈ˆX, ∀u ∈U and ∀ˆu ∈ˆU, by         176, 2004.
+                                                                                     [5] A. Saboori and C. N. Hadjicostis, “Veriﬁcation of k-step opacity and
+taking the conditional expectation from (23), we have                                                                                      analysis of its complexity,” IEEE Transactions on Automation Science
+     Eh V (f(x,u,ς),ˆf(ˆx,ˆu,ς))  x,ˆx,u,ˆui                          and Engineering, vol. 8, no. 3, pp. 549–559, 2011.                                                                                     [6] ——, “Veriﬁcation of inﬁnite-step opacity and complexity considera-
+           h                           i                               tions,” IEEE Transactions on Automatic Control, vol. 57, no. 5, pp.    −E V (f(x,u,ς),f(ˆx,ˆu,ς))  x,ˆx,u,ˆu                         1265–1269, 2012.
+                                                                                     [7] ——, “Veriﬁcation of initial-state opacity in security applications of
+    ≤Eh γ(∥ˆf(ˆx, ˆu, ς)−f(ˆx, ˆu, ς)∥)  x,ˆx,u,ˆui.                     discrete event systems,” Information Sciences, vol. 246, pp. 115–132,
+                                                                             2013.
+                                                                                     [8]  F. Lin, “Opacity of  discrete event systems and  its  applications,”
+Employing (22), one gets                                                                               Automatica, vol. 47, no. 3, pp. 496–503, 2011.
+      Eh V (f(x, u, ς), f(ˆx, ˆu, ς))  x,ˆx,u,ˆui                       [9] R. Jacob, J.-J. Lesage, and J.-M. Faure, “Overview of discrete event
+                                                                             systems opacity: Models, validation, and quantiﬁcation,” Annual Re-
+      ≤V (x, ˆx) −¯κ(V (x, ˆx))+¯ρ(∥u −ˆu∥).      (24)         views in Control, vol. 41, pp. 135–146, 2016.
+                                                                              [10] X. Yin and S. Lafortune, “A new approach for the veriﬁcation of
+                                                                                       inﬁnite-step and k-step opacity using two-way observers,” Automatica,
+Since ˆf(ˆx, ˆu, ς) = Πx(f(ˆx, ˆu, ς)), by using (18), we get                vol. 80, pp. 162–171, 2017.
+   Eh γ(∥ˆf(ˆx, ˆu, ς)−f(ˆx, ˆu, ς)∥)  x,ˆx,u,ˆui ≤γ(µx).           [11] opacityX. Yin, ofZ. stochasticLi, W. Wang,discrete-eventand S. Li,systems,”“Inﬁnite-stepAutomatica,opacity vol.and 99,k-steppp.
+                                                                          266–274, 2019.
+Now, consider any u ∈U. By choosing the representative    [12] K. Zhang, X. Yin, and M. Zamani, “Opacity of nondeterministic transi-
+input ˆu = Πu(u), which satisﬁes ∥u −ˆu∥≤µu, we obtain            tion systems: A (bi) simulation relation approach,” IEEE Transactions                                                                      on Automatic Control, vol. 64, no. 12, pp. 5116–5123, 2019.
+    Eh V (f(x, u, ς), ˆf(ˆx, ˆu, ς))  x,ˆx,u,ˆui −V (x, ˆx)            [13] X. Yin, M. Zamani, and S. Liu, “On approximate opacity of cyber-
+                                                                                    physical systems,” IEEE Transactions on Automatic Control, condi-
+     ≤−¯κ(V (x, ˆx))+ ¯ρ(µu) + γ(µx).               (25)           tionally accepted, arXiv:1902.09411, 2019.
+                                                                              [14] A. Saboori and C. N. Hadjicostis, “Current-state opacity formulations
+                                                                                         in probabilistic ﬁnite automata,” IEEE Transactions on automatic
+Hence, condition 3)a) in Deﬁnition 4.1 holds with ψ =           control, vol. 59, no. 1, pp. 120–133, 2014.
+¯ρ(µu) + γ(µx). Similarly, ∀x ∈X, ∀ˆx ∈ˆX, and ∀ˆu ∈ˆU, by    [15] B. B´erard, K. Chatterjee, and N. Sznajder, “Probabilistic opacity for
+choosing u = ˆu, we have                                          Markov decision processes,” Information Processing Letters, vol. 115,
+                                                                                    no. 1, pp. 52–59, 2015.
+    Eh V (f(x, u, ς), ˆf(ˆx, ˆu, ς))  x,ˆx,u,ˆui −V (x, ˆx)            [16]  J. Chen, M. Ibrahim, and R. Kumar, “Quantiﬁcation of secrecy in par-
+                                                                                                      tially observed stochastic discrete event systems,” IEEE Transactions
+     ≤−¯κ(V (x, ˆx))+ γ(µx) ≤−¯κ(V (x, ˆx))+ ψ.                 on Automation Science and Engineering, vol. 14, no. 1, pp. 185–195,
+                                                                             2017.
+Therefore, condition 3)b) in Deﬁnition 4.1 holds as well, and    [17] M. Ahmadi, B. Wu, H. Lin, and U. Topcu, “Privacy veriﬁcation in
+                                                      POMDPs via barrier certiﬁcates,” in IEEE Conference on Decision
+we conclude that V  is an InitSOP-SSF from bΣ to Σ.               and Control.  IEEE, 2018, pp. 5610–5615.
+                  VI. DISCUSSION                              [18] B. Wu and H. Lin, “Privacy veriﬁcation and enforcement via belief
+                                                                                          abstraction,” IEEE Control Systems Letters, vol. 2, no. 4, pp. 815–820,
+  In  this paper, we extended the notion of approximate         2018.
+opacity to discrete-time stochastic systems. The new notion    [19] D. Chistikov, A. S. Murawski, and D. Purser, “Asymmetric distances
+                                                                                          for approximate differential privacy,” in 30th International Conference
+called (δ, ε)-approximate initial-state opacity is proposed to        on Concurrency Theory (CONCUR 2019).  Schloss Dagstuhl-Leibniz-
+evaluate the security level of a system to hide initial-state        Zentrum fuer Informatik, 2019.
+secret information. A stronger version of stochastic simula-    [20] C. Cortes, M. Mohri, and A. Rastogi, “Lp distance and equivalence
+                                                                                    of probabilistic automata,” International Journal of Foundations of
+tion function that preserves opacity was also proposed. By        Computer Science, vol. 18, no. 04, pp. 761–779, 2007.
+leveraging this simulation function, we discussed an effective    [21] R. B. Lyngsø and C. N. Pedersen, “The consensus string problem
+approach to construct ﬁnite MDPs, which are in opacity-         and the complexity of comparing hidden markov models,” Journal of
+                                                                      Computer and System Sciences, vol. 65, no. 3, pp. 545–569, 2002.
+preserving relations with the original systems. Our result    [22]  S. Kiefer, “On computing the total variation distance of hidden markov
+provides a promising way for verifying opacity of complex         models,” arXiv preprint arXiv:1804.06170, 2018.
+discrete-time stochastic control systems by the veriﬁcation of    [23]  S. Haesaert, S. Soudjani, and A. Abate, “Veriﬁcation of general
+                                                                     markov decision processes by approximate similarity relations and pol-
+opacity on the related ﬁnite MDPs, which can be done using          icy reﬁnement,” SIAM Journal on Control and Optimization, vol. 55,
+computational algorithms for total variation distance. For the          no. 4, pp. 2333–2367, 2017.
+future work, we plan to extend our framework to cover more    [24] A. Lavaei, S. Soudjani, and M. Zamani, “From dissipativity theory
+                                                                                         to compositional construction of ﬁnite Markov decision processes,”
+notions of opacity, e.g., K-step opacity, current-state opacity           in Proceedings of the 21st ACM International Conference on Hybrid
+and inﬁnite-state opacity.                                                  Systems: Computation and Control, 2018, pp. 21–30.
+
+
+                                                       5418

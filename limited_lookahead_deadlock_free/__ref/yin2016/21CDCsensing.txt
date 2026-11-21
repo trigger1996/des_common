@@ -1,0 +1,470 @@
+2021 60th IEEE Conference on Decision and Control (CDC)
+December 13-15, 2021. Austin, Texas
+
+
+         Distributed Sensing and Information Transmission of
+              Discrete-Event Systems with Edge Sensors
+
+
+                              Yingying Liu, Xiang Yin and Shaoyuan Li
+
+
+
+  Abstract— In  this  paper, we  investigate  the problem  of
+                                                                                               D(S)
+distributed sensing and information transmission in partially
+observed discrete-event systems, where the sensing and infor-                               Central decision making
+mation transmission are complicated by a set of edge sensors.
+Each edge sensor  selectively transmits  its observable events,                                                 P¯Ω
+according  to  information transmission  policies,  to a  central
+site for the purpose of decision making. In this paper, we                           Communication Networks
+consider a general class of decision-making requirement at the
+central site called the distinguishability. Then we investigate both
+the veriﬁcation and synthesis problems. For the veriﬁcation                     PΩ1         PΩ2          PΩn
+problem, two different approaches, one based on the observer
+                                                                                     Ω1         Ω2          Ωnand the other based on the veriﬁer, are proposed to check
+whether or not a given  set of sensor transmission  policies                       Sensor 1     Sensor 2        Sensor n
+fulﬁlls the distinguishability requirement at the central site. For                                                                                       S          S            S
+the synthesis problem, we also develop an effective algorithm
+to design an observer-based optimal information transmission                              Plant G
+policy for each edge sensor such that they are veriﬁed to be
+distinguishable.
+                                                                                  Fig.  1.    Architecture of  distributed dynamic sensor observations  for
+                          I. INTRODUCTION                               centralized decision-making with n sensors and m agents, where Ωi denotes
+                                                                                the event transmission policy of sensor i and PΩi denotes the information
+A. Motivations                                                  mapping under policy Ωi (see strict deﬁnitions in Section II).
+
+  Sensing and information transmission (SIT) problems have
+found increasing attentions in discrete-event systems where
+                                                            maintaining structural observability. A discrete-event systemthe systems make decisions under limited sensor capacities.
+                                                         approach  is given in [15] to investigate the informationBased on  different SIT  policies,  several  properties have
+                                                                  release problem, ensuring the opacity of private informationbeen well studied in the DES literature to capture different
+                                                           while releasing the maximum information to the public.requirements imposed on the system. Examples include fault
+diagnosis [1], [2], [3], [4] and opacity [5], [6], [7], [8], [9],                                                            B. Our Contribution
+[10]. There are two problems immediately: how to verify that
+a system satisﬁes (at least) one of those properties under      In this paper, we consider the distributed SIT problems
+a given SIT policy and how to synthesize a SIT policy    in  the context of  partially-observed DES. As shown  in
+to enforce the given property provably. In this paper, we    Fig. 1, a new architecture is proposed to tackle the problem
+investigate veriﬁcation and synthesis problems of distributed   of distributed sensing and information transmission for the
+SIT in the context of partially-observed DES with edge   purpose of centralized decision making. In this architecture,
+sensors.                                                  each edge sensor transmits its observable events to a central
+  The SIT problems in DES has been widely studied in the    site for decision making based on its SIT policy, called infor-
+DES literature. For instance, in [11], [12] approaches are   mation transmission policy, which controls the observability
+proposed to ﬁnd a language-based minimal SIT policy for   property of events and decides the current observable event
+each agent such that the agents can always make a correct   can be transmitted to the central site or not. The central
+global decision as a team. Two algorithms that compute    site makes control decisions for each agent by collecting the
+minimal SIT policies are proposed in [13] to verify several   information transmitted from the edge sensors. Note that, to
+properties such as observability, diagnosability, detectability,   reduce the cost of sensor readings (for reasons of bandwidth,
+and feasibility. The authors in [14] study optimal SIT prob-    energy, or security), the edge sensors have no communication
+lem in DES by placing a minimum number of sensors while   with each other and do not receive any information from the
+                                                                   central site.
+  This work was supported by the National Key Research and Devel-     The  contributions  of  this paper  are  threefold.  Firstly,
+opment Program of China (2018AAA0101700) and the National Natu-
+ral Science Foundation of China (62061136004, 61803259, 61833012)  we give a novel architecture based on the distributed SIT,
+and  Shanghai  Jiao Tong  University  Scientiﬁc and  Technological  In-   where the edge sensors transmit the observable events to a
+novation  Funds. The  authors  are  with  the  Department  of Automa-    central site for decision making based on their information
+tion and Key Laboratory of System Control and Information Process-
+ing, Shanghai  Jiao Tong  University, Shanghai 200240, China. E-mail:   transmission policies. Secondly, we propose two different
+{yingyingliu611,yinxiang,syli}@sjtu.edu.cn.       approaches  to  verify under the given information  trans-
+
+
+978-1-6654-3658-8/21/$31.00 ©2021 IEEE                     309
+
+mission policy whether or not the system satisﬁes a class   not receive any information from the central site to reduce
+of properties, called state disambiguation, that  is able to    the cost of communications.
+distinguish between the states of the system under dynamic
+                                                                                   II. DISTRIBUTED INFORMATION TRANSMISSIONobservations and can be applied, but not restricted to, safety
+                                                              ARCHITECTUREand opacity. One approach is based on building an observer
+from the central  site. Another one  is based on a veriﬁer   A. System Model
+structure. Finally, we propose an algorithm to synthesize the                                         We consider a DES modeled by a deterministic ﬁnite-state
+optimal information transmission policies for edge sensors                                                       automaton (DFA)
+while ensuring the state distinguishability.
+                                           G = (Q, Σ, δ, q0, Qm),
+C. Related Works
+                                                     where Q is a ﬁnite set of states, Σ is a ﬁnite set of events,  The veriﬁcation and synthesis problems under static ob-
+                                                            δ: Q × Σ →Q is a (partial) transition function, q0 ∈Qservations have been widely studied in the DES literature
+                                                                              is the initial state and Qm ⊆Q is a set of marked states.by ﬁxing observable events, where a given DES-theoretic
+                                                              In the usual way, δ can be extended to δ: Q × Σ∗→Q,property is satisﬁed [16], [17], [18], [19]. In [16], a method-
+                                                     where Σ∗is the set of all ﬁnite-length strings, including theology is proposed to obtain a set of observable events by
+                                                    empty string ε. The generated behavior of G is languageexploiting the structure of the diagnoser automaton, which
+                                               L(G) = {s ∈Σ∗: δ(q0, s)!}, where δ(q0, s)! means thatensures language diagnosability of discrete-event systems.
+Instead of using partial diagnosers, test diagnosers, and other    δ(q0, s) is deﬁned, and the marked behavior of G is the
+                                                          language Lm(G) = {s ∈L(G) : δ(q0, s) ∈Qm} ⊆L(G).new constructs to achieve diagnosability as given in [16], in
+                                     A string s1 ∈Σ∗is a preﬁx of s ∈Σ∗, written as s1 ≤s,this paper we directly employ a centralized decision-maker
+                                                                                     if there is a string s2 ∈Σ∗such that s1s2 = s. The length ofto solve a kind of decision-making problems which includes
+                                                           a string s is denoted by |s|. The preﬁx closure of a languagethe diagnosability problem. Authors in [18] synthesize an
+                                      L is the set L = {s ∈Σ∗: ∃t ∈L s.t. s ≤t}. For a naturaloptimal set of sensors that can provide sufﬁcient yet minimal
+                                                   number n, let [1, n] = {1, . . . , n} denote the set of all naturalevents needed to accomplish the task at hand, such as that
+                                                     numbers from 1 to n.of control or estimation. The case of given sensors with
+ﬁxed observation capability does not considered in [18]. By
+                                                            B. Information Transmission Policy
+contrast, in this paper we discuss how to verify whether
+the given observation information  is sufﬁcient when the    We consider the scenario where system G is equipped
+observation capability of sensors are given.                   with a set of edge sensors {S1, S2, . . . , Sn} that monitors the
+  Dynamic  observations  [20],  [21],  [13],  [22]  also  re-   global system distributively. We denote by I = {1, . . . , n}
+ceived a lot of attention in the context of centralized [23],    the index set. For each edge sensor Si, i ∈I, we assume
+[24], [25], [26], [27], decentralized [11], and distributed    that  it can only observe a set of locally observable event
+architectures[28], where sensors can be turned ON/OFF    Σo,i ⊆Σ. For each i ∈I, we denote by Pi  : Σ∗→Σ∗o,i
+dynamically. For example, in the centralized architecture a    the standard natural projection from Σ to Σo,i. However,
+new hierarchical framework is proposed in [27] to tackle   upon the occurrence of a locally observable event σ ∈Σo,i,
+decentralized diagnosis, where different distributed SIT poli-   an edge sensor does not necessarily need to transmit this
+cies together with appropriate rules are developed. Instead of   observation to the central decision-maker. Note that here
+constructing a diagnoser composed of a state estimator and  we consider a generic central decision-maker and it can be,
+a failure decision-maker as given in [27], in this paper we    e.g., a supervisor or a diagnoser, depending on the speciﬁc
+directly employ a centralized decision-maker to complete the    application.
+state estimation and decision-making. In the decentralized    Due to the local computation capability of each edge
+architecture, many different property veriﬁcation problems    sensor,  it  will decide, based  it own observation  history,
+have already been  studied. For  instance,  in [29] a SIT   whether to transmit this observation to the central site or not.
+policy  is deﬁned by the diagnostic information generated   Such a decision mechanism is formalized as an information
+at the distributed  sites, the communication rules used by   transmission policy
+the distributed sites, and the coordinator’s decision rule to                                                                 Ωi : Σ∗o,iΣo,i →Σo,i ∪{ϵ}
+address the problem of the failure diagnosis. In this paper,
+we generalize the coordinated decentralized architecture pro-   That  is,  for each  local observation sσ ∈Σ∗o,iΣo,i, Ωi
+posed in [29], so that local sites no longer need to make    will decide whether to transmit the observation of σ,  i.e.,
+local diagnosis, but use a central decision-maker to judge not   Ωi(sσ) = σ, or not, i.e., Ωi(sσ) = ϵ. The above deﬁnition
+only diagnosis problem, but also a kind of decision-making   of information transmission policy is history-dependent. In
+problems. In the context of distributed architecture, diagnosis    practice, such a policy needs to be implemented in ﬁnite
+and communication problems are studied in [28], where local   memory, which can be represented as a pair (a ﬁnite trans-
+sites are required to communicate to perform some speciﬁed   ducer)
+monitoring and control tasks. By construct, in this paper the
+local sites have no communication with each other and do                     Ωi = (Ai, Li),                     (1)
+
+
+                                                       310
+
+where Ai = (Xi, Σ, fi, x0,i) is a DFA, called the sensor    policies. We say that G is distinguishable w.r.t. ¯Ωand T
+automaton, such that                                                         if for any string s ∈L(G), we have
+  • L(Ai) = Σ∗; and
+                                                            (EG¯Ω(s) × EG¯Ω(s)) ∩T = ∅.              (3)  • ∀x ∈Xi, σ /∈Σo,i : fi(x, σ) = x.
+and Li   : Xi × Σi,o →{Y, N}  is a labeling function      In the above deﬁnition, speciﬁcation T  is a set of state
+that determines whether  the  current observable event  is    pairs for which the central site should always be able to
+transmitted or not. Here, we assume the event domain of    distinguish, i.e., for any (q, q′) ∈T, if q is possible in the
+Ai is Σ for the sake of simplicity, but it can only update its    state estimate, then q′ should not be included in it, and vice
+sensor state upon the occurrences of its locally observable    versa.
+events Σo,i. Also, for any σ ∈Σo,i, Li(x, σ) = Y means      In this work, we consider two different problems for the
+that the occurrence of event σ will be transmitted  if the    distinguishability. One  is the veriﬁcation problem, which
+edge sensor is at state x, while Li(x, σ) = N represents   assumes that the information transmission policy for each
+the opposite. Then for each state x ∈Xi, we denote by       edge sensor has already been designed, and we want to verify
+                                                         whether or not such policies  fulﬁll the distinguishability
+            θi(x) = {σ ∈Σo,i : Li(x, σ) = Y }                                                           requirement at the central site. The other one is the synthesis
+the set of events whose occurrences will be transmitted by   problem, namely how to design an information transmission
+Ωi at sensor state x. Hereafter in the paper, an information   policy for each edge sensor such that they are veriﬁed to
+transmission policy  will be considered as a  pair Ωi =   be distinguishable. These two problems are formulated as
+(Ai, Li) rather than a language-based mapping.                follows.
+                                                        Problem 1: (Veriﬁcation Problem) Let G be a system
+C. Central Observation by Collecting Edge Information                                                         equipped with a set of edge sensors associate with infor-
+  Now,  let ¯Ω=  [Ω1, Ω2, . . . , Ωn] be  the  collection of   mation transmission  policies ¯Ω=  [Ω1, Ω2, . . . , Ωn] and
+information transmission policies for all edge sensors, where  T ⊆Q × Q be a speciﬁcation. Verify whether or not G
+each Ωi = (Ai, Li) sends information to the central site    is distinguishable w.r.t. ¯Ωand T.
+distributively. Therefore, from the central site’s point of view,     Problem 2: (Synthesis  Problem)  Let G  be  a  system
+the information that receives from all edge sensors can be   equipped with a set of edge sensors with local observations
+speciﬁed by an ¯Ω-induced new projection P¯Ω: Σ∗→Σ∗o,    Σo,i, i ∈I and T ⊆Q × Q be a speciﬁcation. Find
+which is deﬁned recursively by:                              information transmission policies ¯Ω= [Ω1, Ω2, . . . , Ωn] for
+  • P¯Ω(ϵ) = ϵ; and                                      edge sensors such that G is distinguishable w.r.t. ¯Ωand T,
+  •  for any s ∈Σ∗, σ ∈Σ, we have                       and ¯Ω= [Ω1, Ω2, . . . , Ωn] transmit events as less as possible.
+                  P¯Ω(s)σ       if σ ∈∪i∈Iθi(fi(x0,i, s))          III. VERIFICATION OF INFORMATION TRANSMISSION     P¯Ω(sσ) =
+                   P¯Ω(s)      otherwise                                       POLICIES
+Above deﬁnition says that an event can be observed by the                                                                 In this section, we solve the veriﬁcation problem (Prob-
+central site if there exists (at least) one edge sensor that can                                                    lem 1) for a given set of information transmission policies
+observe this event and its information transmission policy                                                    by two different approaches. The ﬁrst approach  is based
+will transmit this observation.                                                    on building the observer from the central  site’s point of
+  Therefore, for any string s ∈L(G) generated by the                                                              view. This approach is practical when the central site wants
+system, we deﬁne                                                                   to compute the state estimate online. However,  it is costly
+ EG¯Ω(s) := {δ(q0, t) ∈Q : ∃t ∈L(G) s.t. P¯Ω(s) = P¯Ω(t)}     for purpose of ofﬂine veriﬁcation only. Therefore, another
+                                                         approach based on the veriﬁer automaton is proposed. For                                                            (2)
+                                                                the sake of simplicity, hereafter in this work, we assume
+as the central state estimate of the system. Clearly, for strings                                                I = {1, 2}; our approach can be easily extended to the case
+s, t ∈L(G), if P¯Ω(s) = P¯Ω(t), then EG¯Ω(s) = EG¯Ω(t).          of the arbitrary number of edge sensors.
+D. Problem Formulations
+                                                            A. Observer-Based Approach
+  In our setting, the computation of each edge sensor only
+                                                             Let  ¯Ω =  [Ω1, Ω2]  be  a  set  of  local  informationaims to determine which observable event to transmit in order
+                                                              transmission polices, where Ωi = (Ai, Li) with Ai =to save bandwidth usage. The ultimate objective is still to
+                                                         (Xi, Σ, fi, x0,i). To build the observer of G, we ﬁrst deﬁnemake sure that the central site will have sufﬁcient information
+                                                           a new automatonfor the purpose of decision making. In this work, instead
+of considering speciﬁc objectives,  e.g., safety or opacity,                                  V = G × A1 × A2 = (QV , Σ, δV , q0,V )       (4)
+we consider a general class of decision-making requirement
+called the distinguishability.                              where QV ⊆Q × X1 × X2  is the  set of  states, Σ  is
+  Deﬁnition 1: (Distinguishability) Let T ⊆Q × Q be the    the  set  of  events,  q0,V =  (q0, x0,1, x0,2)  is  the  initial
+speciﬁcation imposed on the system G = (Q, Σ, δ, q0), and    state, and δV  : QV × Σ →QV  is the transition function
+¯Ω= [Ω1, Ω2, . . . , Ωn] be a set of information transition   deﬁned by: for any qV = (q, x1, x2) ∈QV , δV (qV , σ) =
+
+
+                                                         311
+
+                                                                                                            4                      Σ \ {o}        Σ \ {a}         Σ
+(δ(q, σ), f1(x1, σ), f2(x2, σ)). Note that, since we have as-
+                                                                                                                       c         a                     1     o     2     a     3sumed that L(Ai) = Σ∗for i ∈I, δV (qV , σ)! iff δ(q, σ)!,
+                                                                                                 o
+                                                                                                                       A1                                                                                                   2        f2     6and therefore, we have L(V) = L(G).                                      1
+                                                                                                                                 Σ \ {b, c}       Σ                                                                                                                                                                                                              \ {b}        Σ
+  To compute the state estimate EG¯Ω(s), we construct the                    f1                                                   b              b
+observer of G under information transmission policy  ¯Ω,                                b               b               1           2           4
+                                                                                                   3           5           7
+which is deﬁned as a new DFA                                                                                                                   c   Σ
+                                                          G
+              Obs¯Ω(G) = (Z, Σo, ξ, z0),              (5)                                                                   3
+                                                                                                                       A2
+where Z ⊆2QV \ ∅is the set of states, Σo = Σo,1 ∪Σo,2
+is the set of events, ξ : Z × Σo →Z is the partial transition     Fig. 2.   System G and information transmission policies A1 and A2
+                                                                         with L1(1, o) = Y , L1(2, a) = Y , L2(1, b) = Y , L2(1, c) = N, and
+function deﬁned by: for any z ∈Z, σ ∈Σ, we have                                                                 L2(2, b) = N. The transmitted events are denoted by red line in the ﬁgures.
+
+                  ξ(z, σ) = UR(NXσ(z)),
+
+where for any z ∈Z, we have                                                  o   (1,1,1)qv,1    f1
+                       ∃qV = (q, x1, x2)∈z s.t.                     qv,2 (2,2,1)        qv,3 (3,1,1)
+NXσ(z)=  q′V ∈Z :
+                  σ∈θ1(x1)∪θ2(x2), q′V =δV (qV , σ)                 c                    b                ((1,o 1, 1),A(3, 1, b1))
+                                                            (6)         qv,4 (4,2,3)        qv,5 (5,1,2)
+                                                                         a                   b       ((2, 2, 1), (4, 2, 3)) ((5, 1, 2), (7, 1, 4))
+and UR(z) is deﬁned inductively by:                                                              a B          C
+                                                                                                qv,6 (6,3,3)  a    qv,7 (7,1,4)
+  • z ⊆UR(z); and                                                             f2     (4,3,3) qv,9           ((2,3,3),(4,3,3),(6,3,3))
+                                                                      D
+  •  for any qV = (q, x1, x2) ∈z and σ /∈θ1(x1)∪θ2(x2),          qv,8 (2,3,3)  c                                                  V                       Obs¯Ω(G)
+   we have δV (qV , σ) ∈UR(z).
+The initial state z0  is deﬁned by UR({q0,V }). Intuitively,              Fig. 3.  Product automaton V and observer Obs¯Ω(G).
+NXσ(z) is the set of states that can be reached from some
+state in z immediately by transmitted event σ, and UR(z) is
+the set of states that can be reached unobservably from some   Obs¯Ω(G) is shown in Figure 3. Suppose T = Q1 × Q2 =
+state in z. Note that the above construction of the observer   {1, 2, 6} × {4, 5, 7}. Then G is not distinguishable, since
+is different from the standard construction of observer under    at state D of Obs¯Ω(G), we have (Q(D) × Q(D)) ∩T =
+natural projection; see, e.g., section 4.8 in [30]. The main   {2, 4, 6} × {2, 4, 6} ∩T = {(2, 4), (6, 4)}̸ = ∅. Therefore,
+difference is that whether or not each event is observable   by Theorem 1 the given information transmission policies
+from the central site’s point of view is changed dynamically   [Ω1, Ω2] cannot ensure the distinguishablility of G.
+depending on the  states of the information transmission                                                            B. Veriﬁer-Based Approach
+policies. Therefore, we cannot ﬁnd a closed-form expression
+                                              By Proposition 1, since the observer generates all observ-
+of UR(z), and it has to be deﬁned inductively.
+                                                              able strings from the central site’s point of view and for any  For any z ∈Z ⊆2QV , we denote by Q(z) = {q ∈
+                                                          observed string, it leads to a state whose ﬁrst component is
+Q  :  (q, z1, z2) ∈z} ∈2Q the set of states in the ﬁrst
+                                                                the state estimate. The observer is not only valid for ofﬂine
+component of z. The following result shows that the above
+                                                                 veriﬁcation, but also needed for online estimation. However,
+proposed observer construction indeed computes the desired
+                                                                the observer is not efﬁcient if one only considers the ofﬂine
+state estimate.
+                                                               veriﬁcation as  it is exponential in the size of the system.
+  Proposition 1: The observer Obs¯Ω(G) has the following                                                           Here, we further propose to use the veriﬁer structure to check
+properties:
+                                                                   distinguishability under edge sensors.
+  (i) P¯Ω(L(G)) = L(Obs¯Ω(G)); and                                    Still, let G = (Q, Σ, δ, q0) be the system, ¯Ω= [Ω1, Ω2]
+  (ii) For any string s ∈L(G), we have                                                       be a set of local information transmission polices, where
+             EG¯Ω(s) = Q(ξ(z0, P¯Ω(s)))               Ωi = (Ai, Li) with Ai = (Xi, Σo,i, fi, x0,i) for i = 1, 2.
+                                                   Then the veriﬁer is a new DFA
+         .
+                                      R = (QR, ΣR, δR, q0,R),               (7)  The above result also leads to our ﬁrst approach for the
+veriﬁcation of distinguishability.                          where
+  Theorem 1: System G is distinguishable w.r.t. ¯Ωand T ⊆                                                                  • QR ⊆QV × QV  is the set of states;
+Q × Q if and only if ∀z ∈Z : (Q(z) × Q(z)) ∩T = ∅.                                                                  • ΣR = (Σ×Σ)∪({ϵ}×Σ)∪(Σ×{ϵ}) is the set of events;
+  We illustrate the observer-based veriﬁcation by the follow-                                                                  • δR : QR × ΣR →QR is the transition function deﬁned
+ing example.                                                                  by: for any qR = (qV , q′V ) = (q, x1, x2, q′, x′1, x′2) ∈
+  Example 1: Let us consider system G and information                                        QR and σ ∈Σ
+transmission policies [Ω1, Ω2] as shown in Figure 2, where
+                                                          –  If σ ∈(θ1(x1) ∪θ2(x2)) ∩(θ1(x′1) ∪θ2(x′2)), thenΣo,1 = {o, a} and Σo,2 = {o, b, c}. We ﬁrst compute V =
+G×A1×A2 which is shown in Figure 3. Then the observer               δR(qR, (σ, σ)) = (δV (qV , σ), δV (q′V , σ))
+
+
+                                                       312
+
+      –  If σ ∈(θ1(x1) ∪θ2(x2)) \ (θ1(x′1) ∪θ2(x′2)), then                                            (f2, ϵ)
+                                                                                                                     (qv,1, qv,1)             (qv,3, qv,1)
+                δR(qR, (ϵ, σ)) = (qV , δV (q′V , σ))                                      (o, o)    (ϵ, f2)                     (ϵ, f2)
+                                                                                                           (qv,2, qv,2)        (qv,1, qv,3)
+                                                                                                                                              (qv,3, qv,3)      –  If σ ∈(θ1(x′1) ∪θ2(x′2)) \ (θ1(x1) ∪θ2(x2)), then                   (c, ϵ)          (ϵ, c)         (f2, ϵ)
+                                                                                                                                                     (b, b)
+                δR(qR, (σ, ϵ)) = (δV (qV , σ), q′V )                            (qv,4, qv,2)  (qv,2, qv,4)
+                                                                                                                                             (qv,5, qv,5)
+      –  If σ /∈(θ1(x1) ∪θ2(x2)) ∪(θ1(x′1) ∪θ2(x′2)), then                                                      (b, ϵ)          (ϵ, b)
+                δR(qR, (ϵ, σ)) = (qV , δV (q′V , σ))                                                               (qv,7, qv,5)   (qv,5, qv,7)
+                                                                                                                                             (ϵ, b)           (b, ϵ)
+                δR(qR, (σ, ϵ)) = (δV (qV , σ), q′V )                                                                      (qv,7, qv,7)
+
+  The construction of automaton R  is motivated by the                                                                                                      Fig. 4.  The veriﬁer automaton R.
+veriﬁer construction in the  static or dynamic observation
+setting. Here our construction is more involved as we need to
+consider local information transmission policies to determine                                                           space for searching optimal policies may be unbounded.
+the observability of each event at the central site. Intuitively,                                                                  Further, each edge sensor essentially transmits information
+our construction tracks a pair of strings that are observational                                                                 collaboratively in the sense that one edge sensor should
+equivalent from the central receiver’s point of view, i.e., for                                                               take other sensors’ strategies into account to synthesize its
+any string s = (s1, s2) ∈L(R), we have P¯Ω(s1) = P¯Ω(s2).    strategy. However, this local strategy will again affect the
+Furthermore, all such pairs are included in the structure if R,                                                               optimality of other strategies. This information dependency
+i.e., for any strings s1, s2 ∈L(G), if P¯Ω(s1) = P¯Ω(s2), then   may require inﬁnite iterations, which again, results in un-
+there exists a string s ∈L(R) such that s = (s1, s2). These   bounded solution space. In order to resolve the above issues,
+two properties are rather straightforward by the construction                                                            here we propose to restricting our attention to observer-based
+of R and one can show easily by induction. Speciﬁcally, by                                                                      strategies,  i.e., the decision space for each edge sensor is
+tracking a pair of strings that are observational equivalent the                                                                      restricted to its local observer.
+two components of each state of R are used to estimate states                                                                  Speciﬁcally, for each edge sensor with observable events
+in the original system. All possible confusing states are listed                                                                   Σo,i, its local observer is a new DFA
+under the given local information transmission polices, and
+thus can be used to check whether the given policies ensure              Obsi(G) = (Zi, Σo,i, ξi, z0,i),             (9)
+distinguishability. Our main result is given in the following.
+  Theorem 2: System G is distinguishable w.r.t. ¯Ωand T ⊆   where Zi ⊆2Q is the set of states, ξi : Zi×Σo,i →Zi is the
+Q × Q if and only if                                              transition function deﬁned by: for any z ∈Zi and σ ∈Σo,i,
+                                             we have
+    ∀qR = (q, x1, x2, q′, x′1, x′2) ∈QR : (q, q′) /∈T.   (8)
+  We illustrate the veriﬁcation of distinguishability using the    ξi(z, σ)={q′ ∈Q : ∃q∈z, w∈(Σ \ Σo,i)∗s.t. q′ =δ(q, σw)}
+veriﬁer by the following example.
+                                                      and z0,i = {q′ ∈Q : ∃w ∈(Σ \ Σo,i)∗s.t. q′ = δ(q0, w)} is  Example 2: Let us again consider system G and infor-
+                                                                the initial state.mation transmission policies A1 and A2 shown in Figure 2
+                                                        Note that Obsi(G) is different from the central observerwith Σo,1 =  {o, a} and Σo,1 =  {o, b, c}. We construct
+                                              Obs(G) used for the purpose of online estimate and ver-the veriﬁer automaton R as shown in Figure 4. Suppose
+                                                                  iﬁcation. In  particular, Obs(G) only can be constructedagain T = Q1 × Q2 =  {1, 2, 6} × {4, 5, 7}. Here, we
+                                                when each local transmission policy is speciﬁed. However,employ Theorem 2 to verify whether or not the system is
+                                                            here Obsi(G) is built based on its local sensing capabilitydistinguishable w.r.t. ¯Ωand T. As shown in Figure 4, for state
+                                                                Σo,i without the need of specifying its transmission policy.(qv,2, qv,4) = ((2, 2, 1), (4, 2, 3)) ∈Z, we have (2, 4) ∈T.
+                                                  Our purpose  is  to consider Obsi(G) as the  state-spaceWe thus get that R is not distinguishable w.r.t. ¯Ω∗and T.
+                                                                   for specifying the information transmission policy of edgeTherefore, by Theorem 2, G is not distinguishable w.r.t. ¯Ω
+                                                             sensor i ∈I. We denote by Obsi(G) the DFA obtainedand T.                         g
+                                                    by adding self-loops for missing events  at each  state in
+       IV. SYNTHESIS OF OPTIMAL INFORMATION        Obsi(G) such that L(gObsi(G)) = Σ∗. Then for each edge
+             TRANSMISSION POLICIES                    sensor i ∈I, Ωi = (gObsi(G), Li) is called an observer-
+  In the previous section, we have investigated how to verify   based information transmission policy. Hereafter, we assume
+whether a given  set of information transmission policies    that G  is distinguishable  if each Li always chooses  to
+ensures distinguishability or not. In this section, we further    transmit observed events. Otherwise, the synthesis problem
+investigate how to synthesize a set of information transmis-    will trivially have no solution.
+sion policies for edge sensors such that distinguishability is    Now we are ready to provide the algorithm for synthe-
+fulﬁlled by construction.                                        sizing information transmission policies, which is given in
+  As we discussed  early, each information transmission   Algorithm 1. The basic idea  is to mark as many of the
+policy is language-based in general; therefore, the solution   observable events of the local sensors not transmissible as
+
+
+                                                       313
+
+ Algorithm 1: EDGE-SENSOR-TRANS-POLICY              Theorem 3: The observer-based information transmission
+   input  : G, Σo,1, Σo,2 and T                               policy ¯Ω= [Ω1, Ω2] obtained by Algorithm 1 is distinguish-
+   output: ¯Ω= [Ω1, Ω2] = [(A1, L1), (A2, L2)]               able and observer-based optimal, i.e., it solves Problem 2.
+                                                     Remark 1: Note  that  in Algorithm  1, we  test  for  all
+ 1     for i ∈{1, 2} do                                                                possible subsets of transitions W whether or not the system
+ 2      Ai ←gObsi(G) = (Xi, Σ, ˜fi, x0,i)                       is distinguishable by setting their communication labels are
+ 3         for any x ∈Xi, σ ∈Σ, set                              set from Y to N. Such an approach requires to enumerate, in
+                  Y        if σ ∈Σo,i ∧fi(x, σ)!          the worst-case, the power-set of all transitions to determine          Li(x, σ) =
+             N     otherwise                                                         whether or not the current solution is optimal. One may ask
+ 4     for W ⊆TrY (A1) ∪TrY (A2) do                why we do not take a greedy search by test transitions one-
+ 5         for any (x, σ) ∈W such that fi(x, σ)!,             by-one. This is because it is known that there is no so-called
+            set Li(x, σ) ←N                                 monotonicity property in communications. It is possible that
+ 6        Verify if G is distinguishable w.r.t.                   the system is not distinguishable by removing each of the
+           [((A1, L1), (A2, L2))] and T                    communications individually but becomes distinguishable by
+ 7            if G is not distinguishable then                   removing their combinations. Therefore, a greedy search may
+ 8             for any (x, σ) ∈W such that fi(x, σ)!,          not yield an optimal solution.
+                set Li(x, σ) ←Y                             Example 3: Let us again consider system G in Figure 2
+           else                                              with Σo,1 = {o, a} and Σo,1 = {o, b, c}, and speciﬁcation
+ 9          break the for-loop and go to line 4          T = Q1 × Q2 =  {1, 3, 5} × {6, 7}. Here, we employ
+                                                         Algorithm 1 to synthesize a set of information transmission
+10    return ¯Ω←[(A1, L1), (A2, L2)]                                                                 polices ¯Ω∗= {Ω1, Ω2} such that the system is distinguish-
+                                                               able w.r.t. ¯Ω∗and T.
+                                                             Step  1:  Construct  observers A1  =  Obs1(G)  =                               g
+possible while ensuring the distinguishability of the system.   (X1, Σo,1, f1, x0,1)  with X1 =  {x11, x21}  and A2 =
+For each Ωi = (Ai, Li), we deﬁne                     Obs2(G)                                       = (X2, Σo,2, f2, x0,2) with X2 = {x12, x22, x32, x42}                  g
+                                                    by (9). For any x ∈Xi and σ ∈Σo,i,  let Li(x, σ) =    TrY (Ai) = {(x, σ) ∈Xi × Σo,i : Li(x, σ) = Y }
+                                             Y  if fi(x, σ)!. Hence TrY (A1) = {(x11, o), (x21, a)} and
+as the set of transitions corresponding to event transmissions   TrY (A2) = {(x12, o), (x12, b), (x22, c), (x32, b)}.
+ in Ai. Then Algorithm 1 works as follows.  Initially, we   Step 2:
+construct the sensor automaton Ai for each i ∈I based      1) Let W = {(x12, o)} and L1(x12, o) = N, and Ω2 ←
+on the local observer of G  (line 2) and allow them to   (A2, L2). Construct R w.r.t ¯Ω= [Ω1, Ω2] by (7). R satisﬁes
+transmit all observable events (lines 3). Then for any subset    (8), so we keep L2(x12, o) = N and let Ω2 ←(A2, L2).
+of transitions W  associated with event transmissions, we      2) Let W = {(x11, o)} and L1(x11, o) = N, and Ω1 ←
+ test whether or not by making the corresponding observable   (A1, L1). Construct R w.r.t ¯Ω= [Ω1, Ω2] by (7). R dissat-
+events non-transmitted (line 5), G is still distinguishable w.r.t.    isﬁes (8) since ∃qr ∈QR. s.t. Q(qr) ∩T = {1} × {6}̸ = ∅.
+[((A1, L1), (A2, L2))] and T  (line 6). If so, we will keep   Hence we let L1(x11, o) = Y and Ω1 ←(A1, L1).
+W non-transmitted, break the current for-loop, and repeat      3) Let W = {(x21, a)} and L1(x21, a) = N, and Ω1 ←
+searching for subsets of transitions. Therefore, the only case   (A1, L1). Construct R w.r.t ¯Ω= [Ω1, Ω2] by (7). R satisﬁes
+we reach the ﬁnal solution in line 10 is that, for any subset    (8), so we keep L1(x21, a) = N and let Ω1 ←(A1, L1).
+W, we cannot make the transitions non-transmitted, which      4) Let W =  {(x12, b)}, L2(x12, b) = N and Ω2 ←
+means the current transmission policies cannot be improved   (A2, L2). Construct R w.r.t ¯Ω= [Ω1, Ω2] by (7). R satisﬁes
+anymore.                                                               (8), so we keep L2(x12, b) = N and let Ω2 ←(A2, L2).
+   For any two observer-based information transmission poli-      5) Let W =  {(x22, c)}, L2(x22, c) = N and Ω2 ←
+ cies Ωi = (Ai, Li) and Ω′i = (A′i, L′i) for i ∈I, we write   (A2, L2). Construct R w.r.t ¯Ω= [Ω1, Ω2] by (7). R satisﬁes
+Ω′i ⊆Ωi if for any sσ ∈Pi(L(G)), we have                     (8), so we keep L2(x22, c) = N and let Ω2 ←(A2, L2).
+                     ′                                                     6) Let W =  {(x32, b)}, L2(x32, b) = N and Ω2 ←      L′i(fi(x0,i, s), σ) = Y ⇒Li(f(x0,i, s), σ) = Y                                                     (A2, L2). Construct R w.r.t ¯Ω= [Ω1, Ω2] by (7). R dissat-
+and write that Ω′i ⊂Ωi  if Ω′i ⊆Ωi and there exists sσ ∈    isﬁes (8) since ∃qr ∈QR. s.t. Q(qr) ∩T = {5} × {7}̸ = ∅.
+Pi(L(G)) such that                                   Hence we let L2(x32, b) = Y and Ω2 ←(A2, L2).
+                                                                 7)   Similarly,  we   will  check  the  cases W  =
+      L′i(f ′(x0,i, s), σ) = N ∧Li(f(x0,i, s), σ) = Y                                                        {(x11, o), (x21, a)},  W    =      {(x11, o), (x12, o)},. . . ,
+Then, for any ¯Ω= [Ω1, Ω2] and ¯Ω′ = [Ω′1, Ω′2], we denote  W     =      TrY (A1)  ∪   TrY (A2)    =
+by ¯Ω′ ⊆¯Ωif ∀i ∈[1, n] : Ω′i ⊆Ωi and by ¯Ω′ ⊂¯Ωif ¯Ω′ ⊆¯Ω   {(x11, o), (x21, a), (x12, o), (x12, b), (x22, c)}.
+and ∃i ∈[1, n] : Ω′i ⊂Ωi]. Then we say an observer-based   Step 3: Output: ¯Ω←[Ω1, Ω2]. A1 and A2 are shown
+information transmission policy ¯Ωis observer-based optimal    in Fig. 5 with labels L1(x11, o) = Y , L1(x21, a) = N,
+ if  there does not  exist another information transmission   L2(x12, o) = N, L2(x12, b) = N, L2(x22, c) = N, and
+policy ¯Ω′ s.t. ¯Ω′ ⊂¯Ω.                                  L2(x32, b) = Y .
+
+
+                                                        314
+
+                                Σ \ {o, b}       Σ
+                                                                              [10] X. Yin and S. Lafortune, “A uniform approach  for synthesizing
+       Σ \ {o}        Σ                   o                                    property-enforcing supervisors for partially-observed discrete-event
+                                     x12          x22                            systems,” IEEE Transactions on Automatic Control, vol. 61, no. 8,
+               o                           Σ \ {b}         Σ                pp. 2140–2154, 2016.
+          x11          x21                      b                              [11] X. Yin and S. Lafortune, “Minimization of sensor activation in de-
+                                                            b                        centralized discrete-event systems,” IEEE Transactions on Automatic
+                                                 x32           x42               Control, vol. 63, no. 11, pp. 3705–3718, 2018.
+         A1(= Obs1(G))˜                        A2(= Obs2(G))˜                        [13] W. Wang, S. Lafortune, F. Lin, and A. R. Girard, “Minimization of
+                                                                       dynamic sensor activation in discrete event systems for the purpose
+                                                                                    of control,” IEEE Transactions on Automatic Control, vol. 55, no. 11,Fig. 5.  Sensor automata A1 and A2 with L1(x11, o) = Y , L1(x21, a) =                                                                                    pp. 2447–2461, 2010.N, L2(x12, o) = N, L2(x12, b) = N, L2(x22, c) = N, and L2(x32, b) = Y .
+                                                                              [14] Y. Ru and C. N. Hadjicostis, “Sensor selection for structural ob-
+                                                                                           servability in discrete event systems modeled by petri nets,” IEEE
+                                                                                 Transactions on Automatic Control, vol. 55, no. 8, pp. 1751–1764,
+                   V. CONCLUSION                                 2010.
+                                                                              [15]  S. Shu, Z. Huang, and F. Lin, “Online sensor activation for detectabil-
+  We proposed a new architecture to tackle the problem            ity of discrete event systems,” IEEE Transactions on Automation
+of distributed sensing and information transmission for the         Science and Engineering, vol. 10, no. 2, pp. 457–461, 2013.
+purpose of centralized decision making in partially observed    [16]  J. C.  Basilio, S.  T. S. Lima, S. Lafortune, and M. V. Moreira,
+                                                                          “Computation of minimal event bases  that ensure diagnosability,”
+discrete-event systems with edge sensors. Information trans-          Discrete Event Dynamic Systems, vol. 22, no. 3, pp. 249–292, 2012.
+mission policies for the edge sensors are given to decide    [17] A. Haji-Valizadeh and K. A. Loparo, “Minimizing the cardinality of an
+which observed event should to be transmitted to the central          events set for supervisors of discrete-event dynamical systems,” IEEE
+                                                                                 Transactions on Automatic Control, vol. 41, no. 11, pp. 1579–1593,
+site. Then, we  also proposed two approaches  to  verify                                                                             1996.
+whether the system  is centralized distinguishable under a    [18]  S. Jiang, R. Kumar, and H. E. Garcia, “Optimal sensor selection for
+given set of sensor transmission policies. One approach is          discrete-event systems with partial observation,” IEEE Transactions
+based on building an observer from the central site. Another        on Automatic Control, vol. 48, no. 3, pp. 369–381, 2003.
+                                                                              [19]  T.-S. Yoo and S. Lafortune, “Np-completeness of sensor selection
+one is based on a veriﬁer structure. Finally, we provided an         problems arising in partially observed discrete-event systems,” IEEE
+algorithm to synthesize a set of optimal information trans-          Transactions on Automatic Control, vol. 47, no. 9, pp. 1495–1499,
+mission policies for edge sensors such that distinguishability         2002.
+                                                                              [20] K. W. Schmidt and C. Breindl, “A framework for state attraction
+is fulﬁlled by construction.                                                                                    of  discrete event systems under  partial  observation,” Information
+                                                                                     Sciences, vol. 281, pp. 265–280, 2014.
+                 REFERENCES                                                                              [21] W. Wang, S. Lafortune, A. R. Girard, and F. Lin, “Optimal sensor
+ [1] Y. Hu, Z. Ma, and Z. Li, “Design of supervisors for active diagnosis           activation for diagnosing discrete event systems,” Automatica, vol. 46,
+      in discrete event systems,” IEEE Transactions on Automatic Control,          no. 7, pp. 1165–1175, 2010.
+      vol. 65, no. 12, pp. 5159–5172, 2020.                                   [22] B. Zhang, S. Shu, and F. Lin, “Maximum information release while
+ [2] Z. Ma, X. Yin, and Z. Li, “Marking diagnosability veriﬁcation in          ensuring opacity in discrete event systems,” IEEE Transactions on
+      labeled petri nets,” Automatica, vol. 131, p. 109713, 2021.                  Automation Science and Engineering, vol. 12, no. 3, pp. 1067–1079,
+ [3]  F. G. Cabral and M. V. Moreira, “Synchronous diagnosis of discrete-         2015.
+     event systems,” IEEE Transactions on Automation Science and Engi-    [23]  F. Cassez, J. Dubreil, and H. Marchand, “Synthesis of opaque systems
+      neering, vol. 17, no. 2, pp. 921–932, 2020.                                 with static and dynamic masks,” Formal Methods in System Design,
+ [4] M. Sampath,  S. Lafortune, and D. Teneketzis, “Active diagnosis           vol. 40, no. 1, pp. 88–115, 2012.
+      of discrete-event systems,” IEEE transactions on automatic control,    [24]  F. Cassez and S. Tripakis, “Fault diagnosis with static and dynamic
+      vol. 43, no. 7, pp. 908–929, 1998.                                              observers,” Fundamenta Informaticae, vol. 88, no. 4, pp. 497–540,
+ [5] X. Yin, M. Zamani, and S. Liu, “On approximate opacity of cyber-         2008.
+      physical systems,” IEEE Transactions on Automatic Control, vol. 66,    [25] E. Dallal and S. Lafortune, “On most permissive observers in dynamic
+     no. 4, pp. 1630–1645, 2020.                                                 sensor activation problems,” IEEE Transactions on Automatic Control,
+ [6]  F. Lin, W. Chen, L. Han, B. Shen, et al., “N-diagnosability for active           vol. 59, no. 4, pp. 966–981, 2013.
+      on-line diagnosis in discrete event systems,” Automatica, vol. 83,                                                                              [26] X. Yin and S. Li, “Synthesis of dynamic masks for inﬁnite-step
+     pp. 220–225, 2017.                                                                                         opacity,” IEEE Transactions on Automatic Control, vol. 65, no. 4,
+ [7] M. Ben-Kalefa and F. Lin, “Supervisory control for opacity of discrete                                                                                    pp. 1429–1441, 2020.
+     event systems,” in 2011 49th Annual Allerton Conference on Commu-
+                                                                              [27] D. Wang, X. Wang, and Z. Li, “State-based fault diagnosis of discrete-
+      nication, Control, and Computing (Allerton), pp. 1113–1119, IEEE,
+                                                                                  event systems with partially observable outputs,” Information Sciences,
+     2011.
+                                                                                            vol. 529, pp. 87–100, 2020.
+ [8] X. Yin, Z. Li, W. Wang, and S. Li, “Inﬁnite-step opacity and k-
+                                                                              [28] K. Rudie, S. Lafortune, and F. Lin, “Minimal communication in a      step opacity of stochastic discrete-event systems,” Automatica, vol. 99,
+                                                                                          distributed discrete-event system,” IEEE Transactions on Automatic     pp. 266–274, 2019.
+                                                                                    Control, vol. 48, no. 6, pp. 957–975, 2003. [9]  P. Darondeau, H. Marchand, and L. Ricker, “Enforcing opacity of reg-
+      ular predicates on modal transition systems,” Discrete Event Dynamic    [29] R. Debouk, S. Lafortune, and D. Teneketzis, “Coordinated decentral-
+     Systems, vol. 25, no. 1, pp. 251–270, 2015.                                   ized protocols for failure diagnosis of discrete event systems,” Discrete
+[12] X. Yin and S. Lafortune, “A general approach for optimizing dynamic         Event Dynamic Systems, vol. 10, no. 1, pp. 33–86, 2000.
+     sensor activation for discrete event systems,” Automatica, vol. 105,    [30] W. M. Wonham and K. Cai, Supervisory control of discrete-event
+     pp. 376–383, 2019.                                                           systems. Springer, 2019.
+
+
+
+
+
+                                                       315

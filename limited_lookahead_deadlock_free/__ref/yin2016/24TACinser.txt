@@ -1,0 +1,505 @@
+2500                                                IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 4, APRIL 2024
+
+
+        Opacity Enforcement via Greedy Privately-and-Publicly
+                 Known Insertion Functions
+
+       Rongjian Liu    , Jianquan Lu    , Senior Member, IEEE, Yang Liu    , Senior Member, IEEE,
+             Xiang Yin    , Member, IEEE, and Christoforos N. Hadjicostis    , Fellow, IEEE
+
+
+  Abstract—In this  article, we investigate the enforcement of   opacity, which is a conﬁdentiality property that aims to determine
+(current-state)  opacity, an important information-ﬂow  security   whether the secret information of the system can be inferred by an
+property, via insertion functions. An insertion function is an ob-   outside intruder with malicious intentions [4].
+fuscation mechanism that inserts ﬁctitious events to the out-
+                                                                         Discrete event systems (DES) are efﬁcient and successful in provid-
+puts in order to confuse the outside observer (intruder) such
+                                                                     ing formal treatments and analytical techniques for many man-madethat the secret of the system is not revealed. In some situations,
+the secret may be revealed when the insertion mechanism is (or   systems, such as computer systems, communication systems, database
+becomes) publicly known. This leads to the problem of synthesiz-   systems, and trafﬁc systems [5]. Opacity in DES has been extensively
+ing private-and-public enforcing (PP-enforcing) insertion functions   studied in recent years, and various notions of opacity have been consid-
+in the sense that opacity is still enforced even when the mechanism   ered in the literature, such as current-state opacity [6], language-based
+is discovered or published by the designer. Existing works that   opacity [7], initial-state opacity [8], initial-and-ﬁnal-state opacity [9],
+have investigated this synthesis problem are either only sound or   and K-step opacity and inﬁnite-step opacity [10], [11]. Different ap-
+have limited applicability as we show in this work. For this reason,   proaches to enforce opacity in DES have been developed in the litera-
+and more importantly, to better solve the synthesis problem, a
+                                                                                 ture, such as supervisory control theory [12], [13], [14], [15] or dynamic
+new approach is proposed upon an improved greedy criterion. We
+                                                        mask [16], [17]. For additional information about opacity in DES, theshow that the proposed algorithm is both sound and complete,
+and can be used to completely solve the synthesis problem for   readers can refer to [18], [19], and [20], and survey [21], or book [4].
+the PP-enforcing insertion function. With slight modiﬁcations of     Another important mechanism for enforcing opacity is the use of
+our algorithm, inﬁnite-step opacity and K-step opacity can also be   an output obfuscation mechanism, which includes insertion mech-
+enforced under publicly-known insertion mechanisms.              anisms [22] and edit mechanisms [23]. An insertion function is a
+                                                                  monitoring interface placed at the output of the system and does
+  Index Terms—Discrete event systems (DES), insertion mecha-
+                                                                     not interact with the system. Ji et al. [24] pointed out that, if the
+nism, opacity enforcement, publicly known obfuscation.
+                                                                       existence of the insertion function becomes known to the intruder
+                                                                                       (e.g., by performing reverse engineering) or becomes public (e.g., as in
+                                                                   public-keycryptography),thesecretmayberevealed.Insuchsituations,                                     I. INTRODUCTION
+                                                                  a publicly-known insertion mechanism, as illustrated in Fig. 1, needs
+  SECURITY is a major concern in network communication systems,   to be investigated. Notice that the edit mechanism, which is a more
+and people put a lot of effort to protect conﬁdential information. Various   general version of the insertion mechanism, has been investigated in a
+security notions related to information ﬂow have been proposed in the   publicly known manner in [25]. However, due to the use of erasures in
+literature: among others, anonymity, noninterference, nondeductibility,   the edit mechanism, the synthesis of such obfuscation strategies rely
+and opacity, see, for example, [1], [2], and [3]. We are interested in   on distinct methodologies that require exponential complexity in |XE |,
+                                                            where XE is the state set of the standard observer of the system. This
+                                                                  should be compared with polynomial complexity (with respect to |XE |)
+  Manuscript received 12 June 2023; accepted 18 August 2023. Date   for the publicly-known insertion mechanism proposed in this article.
+of publication 23 August 2023; date of current version 29 March 2024.   In addition, the insertion mechanism is more convenient than the edit
+This work was supported  in part by the National Natural Science
+                                                          mechanism when there exists an intended or legitimate receiver at the
+Foundation of China under Grant 61973078, Grant 62233004, and
+                                                                       outside for recovering purposes [22], [26]. For additional research aboutGrant 62173308, in part by the Scientiﬁc and Technological Research
+Program of Chongqing Municipal Education Commission Grant KJZD-   opacity enforcement under insertion/edit mechanisms, one can refer to
+K202300501, in part by the Chongqing Normal University Foundation   [27], [28], and [29].
+under Grant 22XLB012, and in part by the Natural Science Foundation     To characterize the requirement that the insertion function needs to
+of Zhejiang Province of China under Grant LR20F030001 and Grant   maintain the secret even when the insertion function is publicly known,
+LD19A010001. Recommended by Associate Editor J. Komenda. (Cor-   the notion of private-and-public enforceability (PP-enforceability) was
+responding author: Jianquan Lu.)                                   proposed in [24] and [28]. An (only) sound algorithm was proposed
+  Rongjian Liu is with the National Center for Applied Mathematics in   in [28] for synthesizing private-and-public enforcing (PP-enforcing) in-
+Chongqing, Chongqing Normal University, Chongqing 401331, China,
+                                                                           sertion functions, and a “sound and complete” approach was attempted
+and also with the School of Cyber Science and Engineering, Southeast
+                                                                           in [24] based on a greedy-maximal criterion (GM-criterion). TheUniversity, Nanjing 210096, China (e-mail: rongjliu@foxmail.com).
+  Jianquan Lu is with the School of Mathematics, Southeast University,   GM-criterion in [24], makes insertion decisions by comparing the
+Nanjing 210096, China (e-mail: jqluma@seu.edu.cn).                    lengths of strings that are to be inserted, but it has limitations as it
+  Yang Liu is with the Key Laboratory of Intelligent Education Tech-    is (only) valid for a class of systems (see Example 3). Therefore,
+nology and Application of Zhejiang Province, School of Mathematical   the existing GM-criterion needs to be improved, and the question
+Sciences, Zhejiang Normal University, Jinhua 321004, China (e-mail:   of whether or not opacity  is PP-enforceable when  it  is privately
+liuyang@zjnu.edu.cn).                                                 enforceable needs further investigation.
+  Xiang Yin is with the Department of Automation, Shanghai Jiao Tong      In this article, the notion of PP-enforceability  is ﬁrst revisited
+University, Shanghai 200240, China (e-mail: yinxiang@sjtu.edu.cn).
+                                                                           for accuracy, and a sound and complete algorithm for synthesizing
+  Christoforos N. Hadjicostis is with the Department of Electrical and
+                                                                   PP-enforcing insertion functions  is proposed. In fact, we solve aComputer Engineering, University of Cyprus, 1678 Nicosia, Cyprus (e-
+mail: chadjic@ucy.ac.cy).                                                  partially-solved open problem (the synthesis of PP-enforcing insertion
+   Digital Object Identiﬁer 10.1109/TAC.2023.3307791                     functions), in a complete manner.
+
+
+               1558-2523 © 2023 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                          See https://www.ieee.org/publications/rights/index.html for more information.
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:56:24 UTC from IEEE Xplore. Restrictions apply.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 4, APRIL 2024                                                               2501
+
+
+
+                                                                      estimator or simply estimator. The safe language for CSO, denoted
+                                                                      as Lsafe, is deﬁned as [22]
+                                                                                                Lsafe = P(L(G))\((P(L(G))\P(LNS))E∗o).
+                                                         The unsafe language for CSO is deﬁned as Lunsafe = P(L(G))\Lsafe.
+Fig. 1.   Publicly known insertion mechanism.                       Language Lsafe is preﬁx-closed, and the intruder can never infer the
+                                                                           secret by observing strings in Lsafe. A string s is said to be safe if
+                                                             s ∈Lsafe, and unsafe otherwise. The continuations of a string t ∈Lunsafe
+                                                                                                  still belong to Lunsafe.      II. SYSTEM MODEL, OPACITY, INSERTION MECHANISM, AND
+                                                                  Moreover, we can build a deterministic automaton Ed, called desired
+                     ENFORCEABILITY                                                                         estimator, which is in the form Ed = (XEd, Eo, fEd, xEd,0), for the
+A. System Model                                                     safe language Lsafe. Ed can be constructed from the estimator E by
+                                                                         deleting all the secret revealing states in E and taking the accessible part
+   Let E be a ﬁnite set of events and E∗be the set of all ﬁnite   fromtheinitialstatexEd,0 = xE ,0.ForEd,wehaveL(Ed) = Lsafe [22].
+strings over E including the empty string ε. For a nonempty string
+s = e1e2 . . . e|s| ∈E∗, where |s| is the length of string s, we use (s)i
+to denote the ith event in s, i.e., (s)i = ei, i = 1, 2, . . . , |s|. We also use   C. Insertion Function and PP-Enforceability
+|E| to denote the cardinality of E, i.e., the number of events in E is equal    An insertion function  is deﬁned as a potentially  partial func-
+to |E|. For strings s and t, we use s ⋐t to denote that there exists an in-   tion fI : E∗o × Eo →E+o , where E+o = E∗oEo, that outputs a string
+teger sequence 1 ≤j1 < j2 < . . . < j|s| ≤|t| such that (t)jk = (s)k,   with  inserted  events based on  the  past observed  events  string
+k = 1, 2, . . . , |s|, i.e., s is “embedded” in t. For two natural numbers   and the current observed event. Given an observable string teo ∈
+k and l with k < l, [k, l] = {k, k + 1, . . . , l}. We use t′ ⪯t (t′ ≺t) to   P(L(G)), fI(t, eo) = tIeo when string tI ∈E∗o is inserted before
+denote that string t′ is a preﬁx (strict-preﬁx) of string t. For string t ⪯s,   eo. The string-based version of fI, denoted by f Istr ,  is deﬁned
+we use s/t to denote the post string of t in s, i.e., s = t(s/t). A language    as: f Istr (ε) = ε and f Istr (teo) = f Istr (t)fI(t, eo), where t ∈E∗o, eo ∈
+L ⊆E∗is a subset of E∗. We use L|t to denote the set of strings s in L   Eo. Then, based on fI, the modiﬁed language is f Istr (P(L(G))) =
+having preﬁx t, and deﬁne L|t = {s ∈L : t ⪯s}. The preﬁx closure of                                                                                      {˜t ∈Eo ∗: ∃t ∈P(L(G)), f Istr (t) = ˜t}. We assume that the events in
+language L is denoted by L, where L = {t′ ∈E∗: ∃t ∈L s.t. t′ ⪯t}.   the modiﬁed output string are observed one by one [24], i.e., from the
+Language L is preﬁx-closed if L = L.                                    intruder’s viewpoint, the modiﬁed output language of the system is
+  The system is modeled as a deterministic ﬁnite-state automaton1   preﬁx-closed. Note that the insertion functions fI (and its string-based
+G = (X, E, f, X0) with a ﬁnite set of states X, a ﬁnite set of events   version f Istr ) considered in this article are deterministic.
+E,apartialdeterministicstatetransitionfunctionf : X × E →X,and      In this article, the synthesized insertion function is encoded as
+a set of initial states X0 ⊆X. In the context of opacity, the intruder   an input/output (I/O) automaton IA = (Xia, Eo, E+o , fia, qia, xia,0)
+does not have a priori knowledge on the precise initial state, and thus   [22], where Xia is the set of states, Eo is the input events set, the
+we include a set of initial states X0 in the deﬁnition of G. The transition   output set is a set of strings in E+o = E∗oEo, fia : Xia × Eo →Xia is
+function f is extended to domain X × E∗in the standard manner [5].   the transition function of IA, the output function qia is deﬁned as:
+For the sake of simplicity, transition f(x, e) = x′, e ∈E is written   qia(x, eo) = qia(fia(xia,0, t), eo) = tIeo, where x = fia(xia,0, t),
+as x e−→x′. The language generated by G from state x is denoted by   fI(t, eo) = tIeo, and xia,0 is the unique initial state.
+L(G, x) = {s ∈E∗: f(x, s)!} (“!” means “is deﬁned,” and we also    We formally recall and revise the deﬁnition of PP-Enforceability in
+use “!/” to denote “is not deﬁned”). The language generated by G is de-   the following.
+noted by L(G, X0) := ∪x0∈X0L(G, x0). For simplicity, we will write     Deﬁnition 2 (PP-Enforceability): Consider G, P, LS, LNS, L safe
+L(G) as shorthand for L(G, X0) when X0 is clearly deﬁned. Automa-   and L unsafe. An insertion function fI with its f Istr , is PP-enforcing if
+ton G = (X, E, f, {x0}) is also simply denoted as G = (X, E, f, x0),    1) ∀teo ∈P(L(G)),  where   t ∈E∗o,  eo ∈Eo,  ∃tI ∈E∗o    s.t.
+where x0 ∈X is the unique initial state of automaton G. The system       fI(t, eo) = tIeo,
+                                                                                                                                                                            str (t) ∈L safe, andG is generally partially observed. Thus, the event set E is partitioned    2) ∀t ∈P(L(G)), f I
+  E =                                    is the                                       set                                      of observable                                                    eventsas      Eo          ˙∪Euo,               where Eo                                                   and Euo                                                                                                                                                                             ˜t                                                                                      ∃t                                                  ∈L                                                                                      ∀˜t ∈f                                                                                                                                                       s.t.                                                                                                                                                        str (P(L(G))),                                                                       3)                                                                                                                                                               safe                                                                                            I                                                           ⪯f Istr (t).                                  P : E∗→E∗is  the      set         of           unobservable                          events.                          The                                      natural                                             projection                                                                   o                                                   When                                                                           only                                                                                Conditions                                                                                                       (1)                                                                                      and                                                                                                               (2)                                                                                                                   in                                                                                                     Deﬁnition                                                                                                    2 are satisﬁed, the
+is deﬁned as: P(ε) = ε; P(te) = P(t), if e ∈Euo and P(te) = P(t)e   insertion function fI is privately-enforcing [24]. The system is called
+if e ∈Eo. For a language L, P(L) = {P(s) : s ∈L}.                   privately enforceable  if there exists a privately-enforcing insertion
+                                                                      function fI. The problem of verifying whether a given system is
+B. Opacity Notation                                                    privately enforceable2 or not has been well studied in [22]. When only
+                                                                   Conditions (1) and (3) in Deﬁnition 2 are satisﬁed, the insertion function
+   Deﬁnition 1 (Current-State Opacity (CSO)): Given system G =   fI is publicly-enforcing [24], [28]. Notice that [24] and [28] require
+                                                                                                                                              str (t) in Condition (3), unlike our deﬁnition here. The following(X, E, f, X0), natural projection P, and the set of secret  states     ˜t = f I
+XS ⊆X,  the  system   is  current-state  opaque   if  ∀t ∈LS :=   example highlights the difference.
+{t ∈L(G) : ∃x0 ∈X0, f(x0, t) ∈XS}, ∃t′ ∈LNS := {t ∈L(G) :     Example 1: Suppose  that  there  is an observer/estimator of a
+∃x0 ∈X0, f(x0, t) ∈(X\XS)} s.t. P(t) = P(t′).                   system G  (the system G  is not  explicitly presented here) with
+  CSO can be veriﬁed by checking the state information of the standard  Eo = {a, b, c, d, e},  set of observable  strings {abcde, bcde, c, d},
+observer automaton of G built according to [5]. Hereafter, we will                                                             and   set   of   secret   revealing   strings   {c, bcde}.  Then,  we
+work on the observer automaton denoted by E = (XE , Eo, fE , xE ,0)                                                               have   Lsafe = {abcde, bcd, d}.  Consider  the  insertion  functiondirectly, where E is a deterministic automaton with the unique initial
+                                                                    fI : fI(ε, d) = bcd, fI(ε, c) = bc, fI(ε, b) = ab, and fI(s, eo) = eostate xE ,0 ∈XE . In the remainder, E  is also called current-state
+                                                             ∀seo ∈{abcde, bcde}\{b}. Clearly, fI  is privately-enforcing since
+                                                           f
+                                                                                  I                                                                                                                                       str (abcde) = abcde ∈Lsafe,  f Istr (bcde) = abcde ∈Lsafe,  f Istr (c) =
+                                                                  bc ∈Lsafe, f Istr (d) = bcd ∈Lsafe, and f Istr (P(L(G))) = {abcde, bcd};
+  1Generally, the initial state is taken to be unique for a “deterministic” ﬁnite-   fI  is also PP-enforcing since Condition (3) holds: for any string
+state automaton. In our case, however the initial state might not be precisely
+known (due to a variety of reasons) but the automaton is  still considered
+deterministic in the sense that its transition function is deterministic [4].          2More speciﬁcally, private enforceability is termed i-enforceability in [22].
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:56:24 UTC from IEEE Xplore. Restrictions apply.
+
+2502                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 4, APRIL 2024
+
+
+˜t ∈f Istr (P(L(G))), in particular, for strings abcde = f Istr (bcde) and
+bc = f Istr (c) in f Istr (P(L(G))), there exist two safe strings abcde and
+d in Lsafe such that abcde ⪯f Istr (abcde) and bc ⪯f Istr (d). Notice
+that f Istr (d) = bcd̸ = bc, i.e., for ˜t = bc = f Istr (c), there does not exist    Fig. 2.  System model with E = Eo = {a, b} and secret state set
+exactly a string t ∈Lsafe such that bc = f Istr (t).                XS = {3}.
+
+
+           III. ALL INSERTION STRUCTURE (AIS) AND ANALYSIS
+
+  For synthesizing purposes, a structure, named AIS [22], [24], [30],
+is recalled in the following.                                     Now, we are ready to discuss and derive one of our main re-
+  Given E = (XE , Eo, fE , xE ,0), Ed = (XEd, Eo, fEd, xEd,0), and    sults. In [24], the following partition is proposed for safe language
+letting                     be the                             information                                               state                                                         set, the AIS is a game-         × XE   Q = XEd
+                                                                                   Lsafe  as L1safe ˙∪L2safe, where L1safe = Lsafe,  Lsafe = {s ∈Lsafe : ∄u ∈like bipartite              structure,                   and                          formally                              deﬁned                                           as
+                                                                                    Lunsafe, s.t., s ⪯u},andL2safe = Lsafe\L1safe. Lsafe isthesetofsafestrings
+    AIS = TRIM∗(AISpre = (Y, Z, Eo, E∗o, fAIS,yz, fAIS,zy, y0))         that are not preﬁxes of any unsafe strings, and L2safe is a subset of safe
+                                                                 preﬁxes of unsafe strings. Based on the abovementioned partition [24,
+where                                                                     Prop. 2] claims that L1safe̸ = ∅if private safety is enforceable. However,
+ 1) Y ⊆Q is the set of Y -states and a state y = (xEd, xE ) ∈Y   we argue that the abovementioned result is not always correct.
+     is called a Y  deadlock state  if ∃eo ∈Eo  s.t. [fE (xE , eo)!] ∧     Example  2: Consider  system G  in  Fig. 2  with E = Eo =
+    [fAIS,yz(y, eo)!/].                                                {a, b} and  secret  state  set XS = {3}, where L safe = {a}{ba}∗,
+ 2) Z ⊆Q × Eo is the set of Z-states, and a state z ∈Z is called a    Lunsafe = {a}{ba}∗{bb}, L1safe = ∅and L2safe = Lsafe. Deﬁne fI so
+  Z deadlock state if there are no fAIS,zy transitions deﬁned at z.    that fI(E∗b, b) = ab and fI(s, e) = e, s ∈L(G), e ∈E otherwise.
+    Let Q(z), E(z) denote the information state component and event   Because f Istr (P(L(G))) = f Istr (L(G)) = {a}{ba}∗⊆Lsafe, fI  is a
+   component of z ∈Z respectively, so that z = (Q(z), E(z)).         privately-enforcing insertion function. One can conclude that system G
+ 3) fAIS,yz : Y × Eo →Z  is the transition function from Y -state   inFig.2isprivatelyenforceable,whileL1safe = ∅,whichcontradicts[24,
+    to Z-state. For every y = (xEd, xE ) ∈Y , e ∈Eo, we have:   Prop. 2].
+    fAIS,yz(y, e) = z if [fE (xE , e)!] ∧[Q(z) = y] ∧[E(z) = e].        The partition L1safe ˙∪L2safe is based on the observation that some safe
+ 4) fAIS,zy : Z × E∗o →Y is the transition function from Z-state to Y -   strings are preﬁxes of unsafe strings while others are not. In [24],                                                                      Proposition 2 is proved by contradiction: since all the continuations
+     state. For every z = ((xEd, xE ), e) ∈Z and “cycle-free” string3tI                                                                      of unsafe strings are also unsafe  if L1safe = ∅, then one can never
+     starting from xEd  in Ed  (i.e.,  tI ∈{s ∈L(Ed, xEd) : ∄s′ ≺  map an unsafe string to a string in L1safe. However, Example 2 shows
+    s s.t. fEd(xEd, s′) = fEd(xEd, s)}), we have: fAIS,zy(z, tI) = y    that this is not always true. We can map unsafe strings to L2safe  if
+      if [fEd(xEd, tIe)!] ∧[y = (fEd(xEd, tIe), fE (xE , e))].         L1safe = ∅. The condition that continuations of unsafe strings are un-
+ 5) y0 = (xEd,0, xE ,0) ∈Y is the unique initial Y state.                 safe, may have no effect on the map as they can also be mapped
+ 6) TRIM is an operation that prunes away all Y and Z deadlock   into L2safe. Also important is the fact that the length/number of safe
+     states in the structure and takes the accessible part from y0. TRIM∗   preﬁxes of unsafe strings could be inﬁnite. Indeed, it does not mat-
+   means repeating TRIM operation on AISpre until no more Y and Z    ter whether L1safe  is empty or not for the enforceability of private
+                                                                                safety.    deadlock states exist.
+                                                    By reviewing the insertion mechanism, we observe that some strings  An instance of AIS is presented in Example 3.
+                                                            must be modiﬁed while others need not. For example, unsafe strings   Proposition 1 (see [22], [24]): The AIS embeds all and only all
+                                                                           in Lunsafe should be modiﬁed. Based on this observation, the observedprivately-enforcing insertion functions in its transitions.
+                                                               system language can be partitioned as follows.  With a slight abuse of notation, we denote AIS by the form AIS =
+                                                               P(L(G))                                                                                                                       (i)L1                                                              Language                                                                                                                       is                                                                                                        partitioned                                                                                                                       into                                                                                                  two                                                                                                                                         parts:   Z,                                                                                                     E ⊆(Y,                           y0) hereafter, and recall/extend the no-                fAIS,yz,                         fAIS,zy,     Eo, E∗o,                                                                                                     f                                                                                                                                                                                                                                     str (s)̸ =                                                                                   s ∈P(L(G))                                                                                                                  s under                                                        P(L(G)):                                                                            a set                                                                                      of strings                                                                                                                          that                                                                                                                               satisfy                                                                                                                                           Itions      related             to            AIS in [24]                          as below.
+  Arunr generatedbytheAISisasequenceoftransitionsstartingfrom    all possible privately-enforcing insertion functions fI; (ii) L2E :=                                                                                L2                                                     P(L(G))\L1                                                                                     Or, we                                                                                     can deﬁne                                                                                                              as                                                                                                                    the                                                                                                                            collection                                                                                                                                of strings                                                               E .                                                                                 E                and endingthe     initial state y0                         up with a Y -state: r = ⟨y0 −→z0e0   −→s0                                                                                   f                                                                                               s                                                                                                                                                                                             str (s)                                                       =                                                             s ∈P(L(G)),                                                                         which                                                                                                       satisfy                                                                                                     under                                                                                                              a                                                                                                                           privately-enforcing                                                                                                                   I                ek−1                            sk−1    e1
+y1 −→. . . yk−1 −−−→zk−1 −−−→yk⟩, where ei ∈Eo, si ∈E∗o, zi =   insertion function fI.
+fAIS,yz(yi, ei), and yi+1 = fAIS,zy(zi, si) for 0 ≤i < k. The set of    L1E  is the set of strings that must be modiﬁed, while L2E  is the
+runs in the AIS is denoted by R. The original events in run r are    set of strings that can remain unchanged. Clearly, we have L2E =
+deﬁned as: Sori(r) = e0e1 . . . ek−1. The map Sori erases all states and  L2                                                       E , and Lunsafe ⊆L1E as any string s ∈Lunsafe should be modiﬁedinserted         strings                in run                        r, and                        shows                                    the                                         original                                              events                                                   corresponding                                                                           for safety. Also L2E ⊆Lsafe as there may exist a safe string that
+to the run            r. The                    string                        generated                             by                                    run                                      r is                                        deﬁned                                                              as: Sp(r) =                                                            must be modiﬁed. For example, consider the system in Example 1,              . . .                    and the                      map                                        erases                                                         all                                                       states                                                           in run                                                        r ands0e0s1e1           sk−1ek−1                            Sp
+                                                  we have L1E = {c, bcde}, Lunsafe = {c, bcde}, L2E = {d, abcde}, and                             and                                                 pair.                                              In                                                        particular,                                                                for                                                            runthen    swaps            every                  consecutive                                 ei                                         si
+r = ⟨y0⟩, we deﬁne Sp(⟨y0⟩) = Sori(⟨y0⟩) = ε. For a run  r̸ = ⟨y0⟩,    Lsafe = {d, bcd, abcde}, where Lunsafe ⊆L1E and L2E ⊆Lsafe. Since
+we have Sori(r) ⋐Sp(r), i.e., string Sori(r) is “embedded” in string   {bcd} is the set of safe preﬁxes for unsafe string bcde, any string
+Sp(r).                                                        s ∈{bcd} should be modiﬁed. While, in Example 2, the string set that
+  For  t ∈L(E ), we  deﬁne  Mp(t) = {Sp(r) ∈Lsafe : Sori(r) =   must be modiﬁed is L1E = Lunsafe = {a}{ba}∗{bb} and L2E = Lsafe =
+t, where r ∈R}. The Mp(t) is the set of strings that t can map to under   {a}{ba}∗. The new partition here captures the feature of strings in
+these privately-enforcing insertion functions that can be synthesized  P(L(G)) better.
+from the AIS. For any s ∈Mp(t), we have t ⋐s.                   As L1E is the set of strings that must be modiﬁed, the string in L1E
+   Proposition 2: For a given ﬁnite length string t, we have that the   cannot map to itself according to the deﬁnition of L1E . We have the
+cardinality of Mp(t) is also ﬁnite.                                     following proposition for L1E .
+                                                                        Proposition 3: For any string s ∈P(L(G)), s ∈L1E if and only if
+                                                             s /∈Mp(s).
+  3We claim that the cycle-free requirement, which has also been deployed       If s ∈L1E , then ∀α ∈Mp(s), we have s ⋐α and |s| < |α|.
+in [24], does not compromise the functionality of the AIS.                     For L2E , we have Proposition 4.
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:56:24 UTC from IEEE Xplore. Restrictions apply.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 4, APRIL 2024                                                               2503
+
+
+   Proposition 4: For any string s ∈P(L(G)), s ∈L2E if and only if
+s ∈Mp(s). Or, For any string st ∈P(L(G)), s ∈L2E  if and only if
+there exists a string α ∈Mp(st) such that s ⪯α.
+   Proof: From the deﬁnitions of L2E and Mp, we have that s ∈L2E if
+and only if s ∈Mp(s).
+  The second statement can be proven as follows. First, we have that
+for a string α ∈Mp(st), there must exist a string α′ ⪯α such that
+α′ ∈Mp(s). This is because, in AIS, any run r′ ∈R s.t. Sori(r′) = s
+can be extended to a run r ∈R s.t. Sori(r) = st and any run r ∈R
+s.t. Sori(r) = st can only be extended from a run r′ s.t. Sori(r′) = s.    Fig. 3.   Estimator E  with secret revealing states 7 and 8, and the
+Then, (⇒) for a string st ∈P(L(G)), we have that ∀α′ ∈Mp(s), ∃α ∈   desired estimator Ed.
+Mp(st) such that α′ ⪯α. In particular, if s ∈Mp(s), i.e., s ∈L2E , then
+∃α ∈Mp(st) such that s ⪯α. (⇐) If ∄α ∈Mp(st) s.t. s ⪯α, then
+this implies that s must be modiﬁed, i.e., s ∈L1E .         ■
+   Proposition 5: ∀s ∈L2E ∀st ∈P(L(G)), we have Mp(st)|s̸ = ∅.
+   Proof: If Mp(st)|s = ∅, then ∀α ∈Mp(st), s is not a preﬁx of α,
+and it implies that s ∈L1E must be modiﬁed, which is a contradiction.■
+  According to [24], Lsafe̸ = ∅if private safety is enforceable. Further-
+more, the following proposition shows the nonemptiness of L2E ⊆Lsafe
+when private safety is enforceable.
+   Proposition 6: L2E̸ = ∅if private safety is enforceable.
+   Proof: If private safety is enforceable, then the AIS is not empty. We
+prove that L2E̸ = ∅by contradiction. If L2E = ∅, then L1E = P(L(G)).
+For a ﬁnite length t0 ∈P(L(G)) = L1E , the cardinality of Mp(t0) is
+ﬁnite (Proposition 2). Let n = |Eo| be the number of events in Eo, then
+we can ﬁnd a sequence of ﬁnite length strings ti such that Mp(ti)̸ = ∅,
+ti ∈Mp(ti−1) (i.e., ti−1 ⋐ti) and |ti| −|ti−1| ≥1, i = 1, 2, . . . , n.
+SincethereareonlyndifferenteventsinEo,theremustexisttwoindices
+i1and i2 with 0 ≤i1 < i2 ≤n such that ti1 and ti2 have a same ﬁrst
+event eo ∈Eo, i.e., eo = (ti1)1 = (ti2)1. Notice that ti1 ⋐ti2 means
+that when one maps string ti1 to ti2, for the preﬁx eo ⪯ti1, one can
+also keep eo unchanged, which implies that eo ∈L2E . However, eo is    Fig.dashed4. arrowsAIS. areThechosenrectangular/ellipticalunder the GM-criterionstates arein DeﬁnitionY /Z  states.3 andThethe
+assumed to be eo ∈L1E = P(L(G)), which is a contradiction. The   red arrows are chosen under the improved GM-criterion in Deﬁnition 4.
+proof is completed.                         ■   These red-dashed arrows coincide (by chance) with both GM-criteria in
+   Proposition 7:  If AIS is not empty, i.e., private safety is enforceable,   Deﬁnitions 3 and 4 for this model in Fig. 3(a).
+then ∀s ∈P(L(G)), ∃r ∈R, t ∈L2E s.t. Sori(r) = s ∧Sp(r) = t.
+   Proof: For every string s ∈P(L(G)), we can always ﬁnd a run
+r ∈R s.t. Sori(r) = s due to the fact that the AIS is built based on E ,
+and all observed system behaviors have been embedded in the AIS.      Lemma 1 (see [24]): A privately-enforcing insertion function fI is
+  For every string s ∈L2E , we can always ﬁnd a run r ∈R  s.t.   also publicly-enforcing if there exists a language L ⊆Lsafe such that
+Sp(r) = s as there exists a privately-enforcing insertion function fI   f Istr (P([L(G)])) = L and f Istr (L) = L.
+s.t. f Istr (s) = s.                                                  Depending on whether the ε transition is deﬁned at Z-states, the
+  For strings s ∈L1E , we prove by contradiction. Assume that there ex-    set of Z-states can be partitioned into two subsets: 1)Z1, deﬁned as
+ists a string set A ⊆L1E , such that ∀s ∈A ∀r ∈R satisfying Sori(r) =   the Z-states in AIS where ε transitions exist and 2)Z2, deﬁned as the
+s, ∄t ∈L2E s.t. Sp(r) = t. Then, ∀s0 ∈A, we have [Mp(s0) ∩L2E =   remaining Z-states, where only non ε transitions are deﬁned.
+∅] ∧[Mp(s0) ∩(L1E \A) = ∅], as L1E \A is the string subset of L1E      Deﬁnition 3 (GM-Criterion [24]):
+that can map to L2E . If Mp(s0) ∩(L1E \A)̸ = ∅, then there exist strings    1) At every z ∈Z1 in the AIS, choose ε insertion.
+l1 ∈(L1E \A), l2 ∈L2E such that [s0 ⋐l1 ⋐l2] ⇒[s0 ⋐l2]. There-    2) At  every z ∈Z2  in  the  AIS,  choose  for  insertion  choice
+fore, ∀s ∈A, we have Mp(s) ⊆A. However, such subset A does not      any string smax ∈arg max{|s|, s ∈Γ(z)}, where Γ(z) =  {s ∈
+                                   ■exist,      see Appendix.                                                      E∗                                                                                     s)                                                                                                                   is                                                                                     deﬁned}.                                                                              o : fAIS,zy(z,
+  Roughly            speaking, in the proof of Proposition 7, as L1E  is the                                                              Based                                                                  on [24, Def.                                                                                                     3,                                                                                    Algorithm                                                                                                                        2], one can synthesize the so-called
+collection of strings that must be modiﬁed, one cannot map L1E to   “greedy-maximal insertion function fgreedy” [24] from the AIS. We
+a subset of itself. Proposition 7 points out that there always exist safe                                                           would like to point out that the above synthesized “greedy-maximal
+strings t ∈L2E for strings s ∈P(L(G)) to map to whenever the system   insertion functions fgreedy” are not always PP-enforcing as claimed
+is privately enforceable and in later sections, this observation will be                                                                           in [24]. We illustrate this in the following counter-example.
+helpful for synthesizing PP-enforcing insertion functions.                                                             Example 3: Consider a new system G whose estimator E is obtained
+                                                                           in Fig. 3(a) with secret-revealing states 7 and 8. Then, for E in Fig. 3(a),
+                                                                        the corresponding desired estimator is shown in Fig. 3(b). The model
+    IV. PRIVATELY-AND-PUBLICLY KNOWN INSERTION FUNCTIONS      here is a customized estimator derived in [24, Example 6]. The AIS is
+   In the following, we ﬁrst recall the existing greedy synthesis method,    illustrated in Fig. 4 [transition ((4, 4), c) −−−→(0,ceda    0) here should be
+and then improve it by proposing a new criterion. A formal proof is   added to Fig. 9 in [24, Example 6] since string ceda ∈L(Ed, 4) is a
+presented for the existence of PP-enforcing insertion functions.          cycle-free string]. For Z state ((0, 0), a) ∈Z2 in Fig. 4, according to
+                                                                 Deﬁnition 3, string db can be chosen as the lengths of insertion choices
+                                                            db and ed are equivalent. Moreover, e transition at state ((0, 0), d) is
+A. Existing Greedy Synthesizing Method                          chosen. The transitions represented by the dashed arrows at Z-states
+                                                                        are the choices obtained under the GM-criterion given in Deﬁnition 3,
+   Here, we ﬁrst recall some necessary knowledge for the existing                                                             and the synthesized “greedy-maximal insertion function fgreedy” [24] isgreedy synthesis method. Recall the sufﬁcient condition for the ex-
+                                                                                             a/dba
+istence of PP-enforcing insertion functions.                         encoded in Fig. 5 with 0 −−−→7.
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:56:24 UTC from IEEE Xplore. Restrictions apply.
+
+2504                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 4, APRIL 2024
+
+
+                                                             Algorithm 1: Build E dpp .
+                                                                  Input: AIS = (Y, Z, Eo, E∗o, fAIS,yz, fAIS,zy, y0),
+                                                             Ed = (XEd, Eo, fEd, xEd,0)
+                                                             Output: E dpp = (XppEd, Eo, f Ed,pp xppEd,0)
+                                                                              1: f Edpp := ∅, Q := {y0}
+                                                                              2: for all y ∈Q that have not been examined do
+                                                                              3:  for e ∈Eo s.t. fAIS,yz(y, e) is deﬁned do
+                                                                              4:    z = ((xEd, xE ), e) = fAIS,yz(y, e)
+                                         a/dba          d/d              5:      if fAIS,zy(z, ε) is deﬁned then
+Fig. 5.   I/O automata. The transitions 0 −−−−→7 and 8 −−→9 are      6:     f Ed(xEd,pp      e) := fEd(xEd, e)obtained under the GM-criterion in Deﬁnition 3 for “greedy-maximal
+                                            a/eda          d/ed         7:   Q := Q ∪{fAIS,zy(z, ε)}
+insertion function fgreedy” [24] and transitions 0 −−−−→7 and 8 −−−→9      8: E dpp := (XEd, Eo, f Ed,pp xEd,0)
+are obtained under the improved GM-criterion in Deﬁnition 4 for fI,greedy                              pp
+                                                                              9: Return the Trimmed Edin Algorithms 2 or 3 in this article. Note that the states in the I/O
+automata synthesized from the AIS have been relabelled with numbers
+0, 1, . . . , 10.
+                                                          y = (0, 0), while, only at state z3, there exists an ε transition; thus, tran-
+                                                                               sition 0 e−→1 is added to Edpp and Q = Q ∪{(1, 1)} = {(0, 0), (1, 1)}.
+                                                                For y = (1, 1) ∈Q, we need to check ε transitions for all Z states that
+                                                                        are reachable from (1, 1) with a single-step transition, and so forth.
+                                                        Now, we are in the position to ﬁnd a PP-enforcing insertion function fI
+                                                                       (f Istr ) such that f Istr (L(E dpp )) = L(E dpp ) and f Istr (P(L(G))) = L(Edpp ).
+                                                                     Deﬁnition   4   (Improved   GM-Criterion): At   every   z =
+Fig. 6.  Subestimator/subautomaton Edpp .                              ((x1, x2), e) ∈Z in the AIS
+                                                                       1)  if z ∈Z1, choose ε transition if z ε−→y = (x′1, x′2) s.t. x′1 ∈XppEd
+                                                                                in E dpp ;
+  For the above obtained fgreedy, we show that it is not PP-enforcing.    2)  if the above condition is not satisﬁed or z ∈Z2, then randomly
+                                                                                                                  sI                                   f                           =                a ∈L(E                                                   dba,                                                    and theGiven unsafe                string                                      ), we                                 have                                                                                      z                                                  greedy(a)str                                                           −→y                                                                              where                                                                   choose                                                                       one                                                                                           sI,                                                        = (x′1, x′2)  s.t. x′1 ∈XppEd and                        dba                                             f                                                                                                  pporiginal        system’s                 safe behavior                                has                                 been                                   modiﬁed                                                       to                                  =      f                                                            greedy(dba)str                                                                           deﬁned                                                                                                       in                                                                                                                                                          ;                                                                             sI) is                                                                         E d                                                                   Ed(x1,ppedabceda. When the intruder observes string dba, the intruder can                                                                       3) otherwise, undeﬁned.
+assert that secret behavior a in 0 a−→7 has occurred and secret-revealing     Condition (1) in Deﬁnition 4 is used to guarantee that every string
+state 7 is exposed, since there is no safe string t ∈Lsafe that can map   s ∈L(E dpp ) is mapped to itself. Condition (2) in Deﬁnition 4 is used to
+to a safe behavior string ˜t1 ∈Lsafe such that ˜t2 = dba is a preﬁx of   guarantee that the modiﬁed output strings belong to L(Edpp ).
+˜t1, i.e., Condition (3) in Deﬁnition 2 has been violated. As a result,    By leveraging Lemma 1 with the improved GM-criterion in Deﬁni-
+in [24, Th. 2], i.e., the statement that “a greedy-maximal insertion   tion 4, Algorithm 2 is shown here for synthesizing a (greedy) insertion
+function is PP-enforcing,” is not correct according to this example.   function fI. Algorithm 2 starts from initial state xia,0 = y0. For a
+Whether opacity is PP-enforceable when it is privately enforceable    state xia, all transitions fAIS,yz(xia, e) deﬁned are considered. For
+(in [24, Corollary 1]), is still unclear and we further investigate it later   a reached Z-state, i.e., z = fAIS,yz(xia, e), we ﬁrst check whether
+in this article.                            ■   z ∈Z1. If z ∈Z1, then we use Condition (1) in Deﬁnition 4 (i.e.,
+   Furthermore, the requirement that choosing ε insertion at Z1 states    lines 5–9 in Algorithm 2) to choose next the xia state; otherwise, we
+in Deﬁnition 3 may also not be permissible.                           use Condition (2) in Deﬁnition 4 (i.e., lines 11–14 in Algorithm 2) to
+  Example 4: Reconsider Example 3. If one chooses the ε insertion at   choose the next xia state. The insertion function fI synthesized from
+Z1 state ((0, 8), d) in Fig. 4 (which corresponds to transition 8 −−→9d/d     Algorithm 2 is called a greedy insertion function hereafter, denoted as
+in Fig. 5), then the unsafe string dbcd would be modiﬁed as edabcd.    fI,greedy.
+However, the original safe behavior edabcd has been modiﬁed as     Example 5: Reconsider Example 3. The Edpp built from the AIS is
+edabced and no safe behavior t ∈Lsafe could be modiﬁed as a string   shown in Fig. 6.
+˜t ∈Lsafe that has preﬁx edabced, i.e., Condition (3) in Deﬁnition 2     The AIS with  the improved GM-criterion  in Deﬁnition 4  is
+is not satisﬁed. Thus, the insertion function in Fig. 5 with transition   shown in Fig. 4. The red arrows represent the corresponding choices
+  d/d                                                  when using the improved GM-criterion. The corresponding greedy
+8 −−→9 would not be PP-enforcing.                ■                                                         a/eda
+   In other words, one cannot synthesize PP-enforcing  insertion   insertion function fI,greedy is encoded in Fig. 5 with 0 −−−→7 and
+functions from the AIS by purely examining the lengths of the   8 −−−→9.d/ed                                ■
+insertion choices at Z2 states or simply choosing ε insertion at Z1
+states in the AIS.
+                                                             C. Veriﬁcation for the Greedy Insertion Functions fI,greedy
+                                                    Lemma 2:  If  fI,greedy  is synthesized from Algorithm  2, thenB. Improved Greedy Synthesizing Method
+                                                           f I,greedy(P(L(G)))str        = L2E .
+                                                                                                                                 pp                                   L                                                                                  L2  Following             the                 ideas in                 Lemma                           1 and [28]                                                that                                            a language                                                     ⊆Lsafe                                                                           L(E                                                                                                              ) =                                                                       Proof:                                                                                                First, we                                                                                   prove that                                                                                    E . Recall                                                                                                                                      that L2E is the col-                                                                                                    d   f          str (L) =                                                                                  fs.t.        L should                     be                             ﬁrst identiﬁed.                                      For                                                     this                                                 purpose,                                           we                                                                                                                                                                                          str (s)                                                       =      I                                                                    ﬁrst   lection                                                                             of strings                                                                           s satisfying                                                                                              s under                                                                                                            a privately-enforcing                                                                                                                                                        in-                                                                                                                 I
+                                            through                                                 Algorithmbuild/identify             a subestimator/subautomaton                                          of Ed                                                                         1,   sertion                                                                             function                                                                     AIS                                                                                      enumerates                                                                                                                                   all                                                                                             and                                                                                                         only                                                                                                                                                 all privately-enforcing                                                                                        fI.
+                                                                                             swhich         is denoted                                     When                                                            building                                                                  ∈L2                                                                                   For                                                                                           every string                                                                                                                                     exists a run r ∈R                                                                           insertion                                                                                functions                  as Edpp = (XppEd, Eo, f Ed,pp                                      xppEd,0).                                                                                           fI.                                                                                     E , there
+E dpp , we only consider those ε transitions at Z-states. For example,     s.t. Sori(r) = s and Sp(r) = s, i.e., for all z in this r, fAIS,zy(z, ε) is
+the built E dpp w.r.t. AIS in Fig. 4 and Ed in Fig. 3(b) is shown in Fig. 6.   deﬁned. According to the construction (Algorithm 1) of E dpp , we have
+To obtain E dpp , Algorithm 1 starts from y0 = (0, 0) and Q is initialized  L(E dpp ) = L2E . Indeed, L(Edpp ) = L2E is established from the fact that
+as Q = {y0}. For events a, d, and e at y = y0 = (0, 0), Z states z1 =   every state in E dpp can be derived from a run r, where the run r only has
+((0, 0), a), z2 = ((0, 0), d), and z3 = ((0, 0), e) are reachable from   ε transitions for all Z states in it.
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:56:24 UTC from IEEE Xplore. Restrictions apply.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 4, APRIL 2024                                                               2505
+
+
+                                                       AIS is performed in Algorithm 2 for synthesizing fI,greedy. In all, the Algorithm 2: Synthesize a (Greedy) Insertion Function fI.                                                                   computational complexity of Algorithm 3 is O(|XE |3).
+  Input: AIS = (Y, Z, Eo, E∗o, fAIS,yz, fAIS,zy, y0),                   Remark 1: We would like to point that Algorithm 3 can also be
+  E dpp = (XppEd, Eo, f Ed,pp xppEd,0)                                   used to synthesize PP-enforcing insertion functions for inﬁnite-step
+  Output: IA = (Xia, Eo, E+o , fia, qia, xia,0)                         opacity and K-step opacity4 in [10] and [11] by replacing Ed in line
+   1: xia,0 := y0, Xia := {xia,0}                               1 in Algorithm 3 with desired inﬁnite-step estimator Edinf and desired
+   2: for all xia = (x1, x2) ∈Xia that have not been examined do     K-step estimator E dK obtained in our work [30], respectively.
+   3:  for e ∈Eo s.t. fAIS,yz(xia, e) is deﬁned do
+   4:    z = ((x1, x2), e) = fAIS,yz(xia, e)                                                                                                 V. CONCLUSION
+   5:      if [fAIS,zy(z, ε) is deﬁned] ∧[x′1 ∈XppEd, where
+          (x′1, x′2) = fAIS,zy(z, ε)] then                                 This  article  investigates opacity enforcement when  the  inser-
+   6:     y = fAIS,zy(z, ε)                                              tion mechanism  is also publicly known.  First, the notion of PP-
+   7:       x′ia := y                                                      enforceability has been revised for accuracy, and an improved GM-
+   8:      fia(xia, e) := x′ia                                              criterion is proposed for synthesizing PP-enforcing insertion functions.
+   9:      qia(xia, e) := e                            We have solved the soundness problem by showing that there always
+ 10:     else                                                                exist PP-enforcing insertion functions when the AIS is not empty. A
+ 11:     ﬁnd a transition z −→ysI  = (x′1, x′2) in fAIS,zy where         necessaryandsufﬁcientconditionis derivedforPP-enforceabilityofthe
+            x′            1 ∈XppEd and f Ed(x1,pp    sI) is deﬁned                       system. It would be interesting to extend the enforcement method in this
+ 12:       x′ia := y                                                            article to other system dynamics, such as cyber-physical systems [32],
+ 13:      fia(xia, e) := x′ia                                              [33].
+ 14:      qia(xia, e) := sIe
+ 15:   Xia := Xia ∪{x′ia}                                                       APPENDIX
+ 16: Return IA
+                                                                   Material for the Proof of Proposition 7
+                                                               Suppose that there exists a string set A ⊆L1E such that ∀s ∈A, we
+                                                               have Mp(s) ⊆A. Then, for A, we have that A\A ⊆L2E and ∀st ∈L1E , Algorithm 3: Synthesize Greedy Insertion Functions fI,greedy for
+ System G.                                                                                if s ∈A, then st ∈A. We deﬁne AL = {s ∈A\A : ∃e ∈Eo s.t. se ∈
+                                              A} and AF = {se ∈A : e ∈Eo∀s ∈AL}. AF  is the set of strings
+  Input: G = (X, E, f, X0), P, XS                              s in A such that any strict-preﬁx of s does not belong in A. Clearly,
+  Output:      A            PP-enforcing                                     ∩A                                         =                                                        ⊆L2                                                                   ⊆L1                                                                                                                     s ∈                                                                                         and                                                                                                                                                                                                           . Any                                                                                                                                            string                     IA                          AL                                                                                           ∅, AL ⊆A\A                                                                     AF ⊆A                                                                            E                                                                                           E          E   1:  Build                      , Ed                                                                                                                                                        s′                                                                                         s                                                      = s′es′′                                                                                                      such                                                                                                                                  that                                      A can                                                                    be                                                                            uniquely                                                                                              partitioned                                                                                                   as                                                                               ∈AL,                                                                                                                  e ∈Eo,   2:  Construct All Insertion Structure (AIS)
+                                                                          s′e ∈AF ; then, the longest-safe preﬁx of s, denoted by sLP, is s′, i.e.,   3:  Build Edpp by Algorithm 1
+                                                                      sLP = s′ ∈AL and sLPe ∈AF . AL is a collection set that contains all   4:  Synthesize a greedy insertion function from AIS by
+      Algorithm 2                                                     the longest-safe preﬁxes of strings in A.
+                                                               Suppose that A generated by a ﬁnite-state deterministic subautoma-
+                                                                     ton H of estimator E , denoted H = (Q, Eo, δ, q0) with Q ⊆XE and
+                                                                    q0 = xE ,0. Deﬁne a state-event pair set Θ as Θ = {(δ(q0, s), e) ∈
+   Next, we prove that f I,greedy(P(L(G)))str        = L2E . We have proved  Q × Eo : s ∈AL, e ∈Eo, se ∈AF }. Suppose that there are m state-
+that L(E dpp ) = L2E , and Proposition 7 points out that all strings in   event pairs in Θ, then we have m = |Θ| < |XE | × |Eo|. For any
+P(L(G)) can be modiﬁed into L2E . The improved GM-criterion in    string s in A, we can ﬁnd a unique preﬁx s′e ⪯s and a unique state-
+Deﬁnition 4 is used to guarantee that all strings are modiﬁed into   event pair (q′, e′) ∈Θ such that s′ = sLP ∈AL, s′e ∈AF , δ(q0, s′) =
+L(E dpp ) and all strings in L(Edpp ) remain unchanged. Algorithm 2 is   δ(q0, sLP ) = q′ and e = e′. Or, we say that any string in A must “pass
+designed under the guidance of the criterion in Deﬁnition 4, thus, we                                                                  through”                                                                           a state-event                                                                                                   pair in Θ.
+have f I,greedy(P(L(G)))str        = L2E .                   ■                                                           To show                                                                                    the nonexistence                                                                                                   of A, we ﬁrst pick up a string s0 ∈A.
+   Proposition 7 guarantees that Condition (3) in Deﬁnition 4 will
+                                                                Then, according to Proposition 5, we can further ﬁnd a sequence of
+never occur when executing Algorithm 2, i.e., we will never reach a
+Z-state where only non ε transitions are deﬁned and the requirements    strings si ∈A, i = 1, 2, . . . m such that si ∈Mp(si−1)|sLPi−1. Clearly,
+for Condition (2) in Deﬁnition 4 are not satisﬁed. Furthermore, we have   for such string sequences si, i = 0, 1, . . . m, we also have |si| > |si−1|,
+the following result.                                                  si−1 ⋐si and sLPi−1 ⪯sLPi  . Since there are at most m pairs in Θ, then
+  Theorem 1: The insertion function fI,greedy is PP-enforcing.           there must exist two indices k, l ∈[0, m] with k < l and a state-event
+   Proof: Notice that fI,greedy is a privately-enforcing insertion func-   pair (q′, e′) ∈Θ such that sk, sl pass through the same pair (q′, e′),
+tion as  it is derived from the AIS. Based on Lemma 2, we have     i.e., δ(q0, sLPk  ) = δ(q0, sLPl ) = q′, sLPk e′ ⪯sk and sLPl  e′ ⪯sl. Since
+                L2f          =                                                                                                                               sLP                                                                                                                                      sLP                                          .                      Based on the                                           criterion                                             given                                                         in                                                   Deﬁnition                                                                         4,   sLP                  E I,greedy(P(L(G)))str                                                     ⪯sLP                                                                                                                             i ∈[k,                                                                                                                                                                    l],                                                                                  we                                                                                                           have                                                                                                                                          that                                                                                           si                                                                         ∈Mp(si−1)|sLP                                                                                                              i−1,                                                                    k                                                                                                                         l  and                                                                                                                          k =                                                                                                                                                                                                                   l
+                    f                                         L2                                                                                      sLP                                                                                                                                            q′                     ) =                                              pp ))                     = L(E                                                            pp ) =we                                              ∈E∗                                                                                                                δ(q′,                                                                      or                                                                                                                                                                 (i.e.,                                                                                                                                                           is a string                                                                                                                                                     that                                          E . Thus, ac-   have f I,greedy(L2str     E                           I,greedy(L(Estr                                   d                                              d                                                                 ∃sI                                                                                                    sI) =                                                                                                                        sI                                                                                   o s.t.                                                                                   k sI = sLPl  and
+cording to Lemma 1, the privately-enforcing insertion function fI,greedy    is obtained from a circle path that starts and ends at the same state q′).
+is also PP-enforcing.                        ■   However,bothabovesituationsimplythatsLPk e′ ∈L2E .Clearly,IfsLPk =
+   Corollary 1: There always exist PP-enforcing insertion functions   sLP                                                                                                                l ,thenwehavethatsLPk e′ = sLPl  e′ andsLPk e′ ∈L2E ;ifsLPk sI = sLPl andwhen the AIS is not empty; or, the system is PP-enforceable if and only
+                                                                             δ(q′, sI) = q′ (i.e., sl = sLPl e′(sl\sLPl  e′) = sLPk sIe′(sl\sLPl  e′)), whichif it is privately enforceable.
+                                                         means that based on sl and sk, we can simply delete the string   Full steps for synthesizing greedy PP-enforcing insertion functions
+are summarized in Algorithm 3.                                       sI in sl and obtain a newly modiﬁed string s′ = sLPk  e′(sl\sLPl   e′);
+  We brieﬂy discuss the computational complexity of Algorithm 3.
+Recall that the time complexity and space complexity for building AIS     4More speciﬁcally, the notions of inﬁnite-step opacity and K-step opacity
+are O(|XE |3) and O((1 + |Eo|)|XE |2), respectively, [24], [30]. To    in [10], [11] are also termed as weak inﬁnite-step opacity and weak K-step
+build E dpp , Algorithm 1 needs a breadth-ﬁrst search on the AIS, which    opacity [21], respectively; strong inﬁnite-step opacity and strong K-step opacity
+requires O(|XE |2) time complexity. Also, a breadth-ﬁrst search on the   were introduced in [15] and [31] for a higher level of conﬁdentiality, respectively.
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:56:24 UTC from IEEE Xplore. Restrictions apply.
+
+2506                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 4, APRIL 2024
+
+
+this means that sLPk e′ ∈L2E . Furthermore, recall that sLPk e′ ∈AF ⊆    [16]  F. Cassez, J. Dubreil, and H. Marchand, “Synthesis of opaque systems
+L1 E , which is a contradiction. Therefore, such subset A does not         with static and dynamic masks,” Formal Methods Syst. Des., vol. 40, no. 1,
+                                                                                     pp. 88–115, 2012.exist.
+                                                                               [17] X. Yin and S. Li, “Synthesis of dynamic masks for inﬁnite-step opacity,”
+                                                                 IEEE Trans. Autom. Control, vol. 65, no. 4, pp. 1429–1441, 2020.
+                                                                               [18]  J. Balun and T. Masopust, “Comparing the notions of opacity for discrete-
+                    REFERENCES                                       event systems,” Discrete Event Dyn. Syst., vol. 31, pp. 553–582, 2021.
+                                                                               [19] Y. Tong, Z. Li, C. Seatzu, and A. Giua, “Veriﬁcation of state-based
+ [1] R. Focardi and R. Gorrieri, “A taxonomy of trace-based security properties         opacity using Petri nets,” IEEE Trans. Autom. Control, vol. 62, no. 6,
+      for CCS,” in Proc. Comput. Secur. Found. Workshop VII, 1994, pp. 126–         pp. 2823–2837, Jun. 2017.
+     136.                                                                      [20] X. Han, K. Zhang, J. Zhang, Z. Li, and Z. Chen, “Strong current-state
+ [2]  S. Schneider and A. Sidiropoulos, “CSP and anonymity,” in Eur. Symp.        and initial-state opacity of discrete-event systems,” Automatica, vol. 148,
+     Res. Comput. Secur., 1996, pp. 198–218.                                     2023, Art. no. 110756.
+ [3] R. Alur, P. ˇCerny`y, and S. Zdancewic, “Preserving secrecy under reﬁne-    [21] R. Jacob, J. Lesage, and J. Faure, “Overview of discrete event systems
+     ment,” in Proc. Int. Colloq. Automata, Lang., Program., 2006, pp. 107–         opacity: Models, validation, and quantiﬁcation,” Annu. Rev. Control,
+     118.                                                                                   vol. 41, pp. 135–146, 2016.
+ [4] C. N. Hadjicostis, “Estimation and inference in discrete event systems,”    [22] Y.-C. Wu and S. Lafortune, “Synthesis of insertion functions for en-
+      in Series Communications and Control Engineering, Berlin, Germany:        forcement of opacity security properties,” Automatica, vol. 50, no. 5,
+      Springer, 2020.                                                                pp. 1336–1348, 2014.
+ [5] C. G. Cassandras and S. Lafortune, Introduction to Discrete Event Sys-    [23] Y.-C. Wu, V. Raman, B. C. Rawlings, S. Lafortune, and S. A. Seshia, “Syn-
+      tems., 3rd ed., Berlin, Germany: Springer, 2021.                                    thesis of obfuscation policies to ensure privacy and utility,” J. Automated
+ [6] A. Saboori and C. N. Hadjicostis, “Notions of security and opacity in        Reasoning, vol. 60, no. 1, pp. 107–131, 2018.
+      discrete event systems,” in Proc. IEEE 46th Conf. Decis. Control, 2007,    [24] Y. Ji, Y.-C. Wu, and S. Lafortune, “Enforcement of opacity by public and
+     pp. 5056–5061.                                                                     private insertion functions,” Automatica, vol. 93, pp. 369–378, 2018.
+ [7]  F. Lin, “Opacity of discrete event systems and its applications,” Automat-    [25] Y. Ji, X. Yin, and S. Lafortune, “Opacity enforcement using nondetermin-
+      ica, vol. 47, no. 3, pp. 496–503, 2011.                                                     istic publicly-known edit functions,” IEEE Trans. Autom. Control, vol. 64,
+ [8] A. Saboori and C. N. Hadjicostis, “Veriﬁcation of initial-state opacity         no. 10, pp. 4369–4376, Oct. 2019.
+      in security applications of discrete event systems,” Inf. Sci., vol. 246,    [26] R.  Liu,  J. Lu, and C. N.  Hadjicostis, “Opacity enforcement  via
+     pp. 115–132, 2013.                                                                attribute-based  edit  functions  in  the  presence  of an  intended  re-
+ [9] Y.-C. Wu and S. Lafortune, “Comparative analysis of related notions          ceiver,” IEEE  Trans. Autom.  Control,  early  access, Nov.  8, 2022,
+      of opacity in centralized and coordinated architectures,” Discrete Event          doi: 10.1109/TAC.2022.3220557.
+    Dynamic Syst., vol. 23, no. 3, pp. 307–339, 2013.                          [27] X. Li, C. N. Hadjicostis, and Z. Li, “Extended insertion functions for
+[10] X. Yin and S. Lafortune, “A new approach for the veriﬁcation of inﬁnite-         opacity enforcement,” IEEE Trans. Autom. Control, vol. 67, no. 10,
+      step and K-step opacity using two-way observers,” Automatica, vol. 80,         pp. 5289–5303, Oct. 2022.
+     pp. 162–171, 2017.                                                       [28] Y.-C. Wu and S. Lafortune, “Synthesis of opacity-enforcing insertion
+[11] A. Saboori and C. N. Hadjicostis, “Veriﬁcation of inﬁnite-step opacity and         functions that can be publicly known,” in Proc. IEEE 54th Conf. Decis.
+     complexity considerations,” IEEE Trans. Autom. Control, vol. 57, no. 5,         Control, 2015, pp. 3506–3513.
+     pp. 1265–1269, May 2012.                                                [29] A. Wintenberg, M. Blischke, S. Lafortune, and N. Ozay, “Enforcement
+[12] Y. Ji, X. Yin, and S. Lafortune, “Optimal supervisory control with mean         of K-step opacity with edit functions,” in Proc. IEEE 60th Conf. Decis.
+     payoff objectives and under partial observation,” Automatica, vol. 123,         Control, 2021, pp. 331–338.
+     2021, Art. no. 109359.                                                    [30] R. Liu and J. Lu, “Enforcement for inﬁnite-step opacity and K-step opacity
+[13] A. Saboori and C. N. Hadjicostis, “Opacity-enforcing supervisory strate-         via insertion mechanism,” Automatica, vol. 140, 2022, Art. no. 110212.
+      gies via state estimator constructions,” IEEE Trans. Autom. Control,    [31] Y. Falcone and H. Marchand, “Enforcement and validation (at runtime)
+      vol. 57, no. 5, pp. 1155–1165, May 2012.                                       of various notions of opacity,” Discrete Event Dyn. Syst., vol. 25, no. 4,
+[14] Y. Xie, X. Yin, and S. Li, “Opacity enforcing supervisory control using         pp. 531–570, 2015.
+      non-deterministic supervisors,” IEEE Trans. Autom. Control, vol. 67,    [32] L. An and G. Yang, “Opacity enforcement for conﬁdential robust control
+     no. 12, pp. 6567–6582, Dec. 2022.                                                 in linear cyber-physical systems,” IEEE Trans. Autom. Control, vol. 65,
+[15] Z. Ma, X. Yin, and Z. Li, “Veriﬁcation and enforcement of strong inﬁnite-         no. 3, pp. 1234–1241, Mar. 2020.
+     and k-step opacity using state recognizers,” Automatica, vol. 133, 2021,    [33] X. Yin, M. Zamani, and S. Liu, “On approximate opacity of cyber-physical
+      Art. no. 109838.                                                               systems,” IEEE Trans. Autom. Control, vol. 66, no. 4, pp. 1630–1645,
+                                                                                 Apr. 2021.
+
+
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:56:24 UTC from IEEE Xplore. Restrictions apply.

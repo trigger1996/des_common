@@ -1,0 +1,404 @@
+                       IEEE CONTROL SYSTEMS LETTERS, VOL. 9, 2025                                                              2411
+
+Enforcing Opacity in Discrete Event Systems via
+           Delayed Observations
+
+        Jiwei Wang   , Simone Baldi   , Senior Member, IEEE, Wenwu Yu   , Senior Member, IEEE,
+
+                             and Xiang Yin   , Member, IEEE
+
+
+
+
+  Abstract—Artiﬁcially introducing a delay in the observa-   not possible to unambiguously determine  if the system  is
+tions of a system can be an effective mechanism to mask   in a secret state. Opacity of DESs has received signiﬁcant
+the system itself, with the goal to increase its opacity and   attention  [2], with  potential  applications spanning  several
+thus its security. This letter investigates opacity in discrete
+                                                       domains  [3]. Despite  the  various mechanisms  to enforceevent systems with delayed observations. We focus on two
+questions: how to verify opacity under delayed observa-   opacity [4], [5], [6], [7], [8], [9], [10], none of these exploits
+tions, and how to synthesize sensor activation policies   the fact that artiﬁcially introducing delayed observations (e.g.,
+that guarantee opacity under such delayed conditions.  on a system that originally is not opaque) can help to make the
+To address these questions, we ﬁrst introduce the deﬁ-   system opaque. In these contexts, a defender may artiﬁcially
+nition of opacity under delayed observation and develop                                                               introduce a delay in the sensors of the system to safeguard
+a corresponding  veriﬁcation method. We then extend
+                                                  some secret states to an eavesdropper.such analysis tool into a synthesis tool by proposing
+an optimization approach for designing sensor activation     This letter aims to cover this gap: we consider opacity from
+policies guaranteeing opacity under delayed observations.   the perspective of a defender who can artiﬁcially introduce a
+An example is used to illustrate the analysis and synthesis   ﬁnite delay K in the observations so as to mask the system
+procedures.                                                       to an eavesdropper. We investigate two problems: i) Analysis:
+  Index Terms—Discrete event systems, opacity, delayed  how  to  verify opacity when a delay  is introduced  in  its
+observations, sensor activation, optimal policy.               observations? ii) Synthesis: how to synthesize (and possibly
+                                                              optimize) a sensor activation policy that guarantees opacity?
+                                                   To analyze the effect of delayed observations, we extend the                             I. INTRODUCTION
+                                                       framework in [11], which is based on recording the delay of
+     AINTAINING  security and privacy of a system  is                                                        key events that help the veriﬁcation of system properties [12].
+       important in many scenarios. In the context of partially-M                                              To synthesize an opaque system, we extend the dynamic
+observed discrete event systems (DESs), opacity has been                                                  mask synthesis in [13], also referred to as dynamic sensor
+proposed to guarantee that some secret state of the system                                                                      activation, and the framework of most permissive observer
+remains hidden to inference from outside [1]. A system is                                                                    in [14]. The observation is dynamic when the sensors can
+opaque if, for every execution that reaches a secret state, there                                                        be dynamically activated or not depending on the current
+exists another execution with an identical set of observable                                                               observation [15], [16].
+events  that does not reach a  secret  state:  this way,  it  is                                                         Given the above analysis and synthesis problems, this letter
+  Received 28 July 2025; revised 22 September 2025; accepted 12   provides the following contributions. We address the analysis
+October 2025. Date of publication 20 October 2025; date of current   problem by introducing a deﬁnition of opacity under delayed
+version 27 October 2025. This work was supported in part by the   observations, named K-delayed opacity. Building on this deﬁ-
+Jiangsu Provincial Scientiﬁc Research Center of Applied Mathematics
+under Grant BK20233002, and in part by the National Natural Science   nition, we propose a delay observer structure to capture opacity
+Foundation of China under Grant 62150610499, Grant 62073074, Grant   under dynamic and delayed observations, and we develop a
+62073076, Grant 62233004, and Grant 62173226. Recommended by   corresponding veriﬁcation method. We address the synthesis
+Senior Editor A.  P. Aguiar. (Corresponding authors: Simone Baldi;
+Wenwu Yu.)                                              problem by proposing a new container structure tailored to
+  Jiwei  Wang   is   with  the  School   of  Cyber  Science  and   delayed observations. This container structure encompasses all
+Engineering, Southeast  University, Nanjing 210096, China  (e-mail:   sensor activation policies that guarantee K-delayed opacity,
+jwwang@seu.edu.cn).
+  Simone Baldi is with the School of Mathematics, Southeast University,   enabling  the  selection of an optimal policy according  to
+Nanjing 210096, China (e-mail: simonebaldi@seu.edu.cn).             a  criterion deﬁned in  this  letter. Let us mention  that the
+  Wenwu Yu is with the School of Mathematics, Southeast University,   proposed K-delayed opacity should not be confused with
+Nanjing 210096, China, and also with the School of Automation and
+Electrical Engineering, Linyi University, Linyi 276005, China (e-mail:   K-step opacity  [1], a notion  that cannot address delayed
+wwyu@seu.edu.cn).                                               observations.
+  Xiang  Yin   is  with  the  School  of  Automation  and  Sensing,    The  remainder  of  this  letter  is  organized  as  follows.
+Shanghai  Jiao Tong  University, Shanghai 200240, China  (e-mail:
+yinxiang@sjtu.edu.cn).                                           Section II introduces partially-observed DESs under dynamic
+   Digital Object Identiﬁer 10.1109/LCSYS.2025.3623658               observation. Section III presents the deﬁnition of K-delayed
+
+           2475-1456 c⃝2025 IEEE. All rights reserved, including rights for text and data mining, and training of artiﬁcial intelligence
+               and similar technologies. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                          See https://www.ieee.org/publications/rights/index.html for more information.
+    Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on November 23,2025 at 05:50:44 UTC from IEEE Xplore. Restrictions apply.
+
+2412                                                                                    IEEE CONTROL SYSTEMS LETTERS, VOL. 9, 2025
+
+
+opacity and the delay observer for veriﬁcation. Section IV   under     , respectively. Using P   , the feasibility condition (2)
+addresses the synthesis problem. Section V concludes this   can also be stated as
+letter.
+                                                                    ∀s, s′ ∈L(G), P  (s) = P    s′ ⇒ω(s) = ω s′ ,     (4)
+
+                           II. PRELIMINARIES                     implying that when two system trajectories are indistinguish-
+                                                                     able, they must result in the same sensing decision.
+  We start by recalling the basic formalism of automata. The                                                 n                                                         Given P   , we consider the operation ζ    : L(G) →L(G)ﬁnite event set E in DESs  is modeled as an alphabet, so
+                                                                    to handle delayed information: ∀s ∈L(G),that a ﬁnite sequence of events in E can be described as the
+concatenation of a string of words in the alphabet. A language         n                                                                           ζ  (s) =   s′′ ∈s | ∃s′ ∈s : |s′| ≥|s| −n, s.t.P    s′′ = P    s′   ,  (5)
+is a set of event strings formed from the alphabet E. Let E∗
+denote the set of all ﬁnite strings over E, also known as Kleene  where n ∈N is the number of delay steps. Intuitively, {P  (s′) |
+or star closure [17]. For any string s ∈E∗, the length of s    s′ ∈s∧|s′| ≥|s|−n} represents the set of possible observations
+is denoted by  |s|. The empty string is denoted by ϵ, with   that eavesdroppers may receive with delay after the occurrence
+|ϵ| = 0. The preﬁx-closure of a language L is deﬁned as L =   of s, and ζ n (s) collects all preﬁxes of s that yield the same
+{s ∈E∗|∃t ∈E∗,  s.t. st ∈L}. A language L is said to be   observation under    as an element in this set.
+preﬁx-closed if L = L. We assume the language L to be live:    Example 1: Throughout this letter, we consider the automa-
+∀s ∈L, ∃e ∈E, s.t. se ∈L. In other words, any string in L   ton G in Fig. 1(a) describing a simpliﬁed location-detection
+can be extended to arbitrary length.                          problem. The  state  set X =  {0, 1, 2, 3}  corresponds  to
+  Automata are a fundamental framework for manipulating  N = 4 locations, while events e1 and e2 denote detection
+languages. Consider a ﬁnite automaton deﬁned as               signals received from sensor 1 and sensor 2, respectively,
+                                                           with E = Eo =  {e1, e2}. Consider the sensor activation
+            G = (X, E, α, X0),                     (1)   policy   shown in Fig. 1(b), describing that sensor 2 is kept
+                                                             continuously active. Given the string e1e2, we have   (0) =
+where X is the set of N ﬁnite system states, E is the set of                              0                           1                                                                       {e2}, P  (e1e2) =  e2, ζ  (e1e2) = {e1e2} and ζ  (e1e2) =
+ﬁnite events, α : X × E∗→2X is the transition function that
+                                                                    {ϵ, e1, e1e2}.                         ■
+describes the transition of an event string, and X0 ⊆X is the
+set of initial states. The language generated by G is denoted
+by L(G) = {s ∈E∗|α(x0, s)! ∃x ∈X0}, where ! means that            III. OPACITY WITH DELAYED OBSERVATIONS
+the function is deﬁned. For any s ∈L(G), let us denote for     In  this  section, we propose an  opacity concept  called
+brevity α(s) := {α(x, s) | x ∈X0}. The accessible part of G is   K-delayed opacity, which incorporates artiﬁcially introduced
+the set of states {x ∈X | ∃s ∈L(G), s.t. x ∈α(s)}.              delays as a mechanism for protecting the secret states.
+ A partially-observed DES is said to have dynamic obser-
+vation when the observability of the events can be controlled
+                                                A. K-Delayed Opacity
+by a sensor activation policy that depends on the current
+observation. We divide the event set E into the observable     Let us ﬁrst recall the notion of opacity.
+events Eo and the unobservable events Euo. A sensor activation     Deﬁnition 1 (Opacity [1]): Given a system model G in (1)
+policy  is deﬁned by the  pair   =  (R,   ), where R =   with a set of secret states XS ⊆X and a sensor activation
+(Q, E, ω, q0) is a deterministic automaton that satisﬁes L(R) =   policy     , the live language L(G) is opaque w.r.t. XS and P
+E∗, with Q the set of policy states and ω  : Q × E∗→Q    if ∀s ∈L(G) : α(s) ⊆XS,
+the sensing transition function. For each q ∈Q,   (q) ∈
+                                                                               ∃s′ ∈L(G) : P    s′ = P  (s),  s.t. α s′ ⊆XS.      (6)2Eo speciﬁes the sensing decision, which determines the set
+of events monitored at q. To ensure that     is feasible, the                                                                  In other words, an opaque system is such that for any event
+following feasibility condition [18] must be satisﬁed:                                                                      string that leads to a secret state, there exists another string
+                                                           with the same observation leading to a non-secret state.
+  ∀q, q′ ∈Q, e ∈E : ω(q, e) = q′,  q̸ = q′ ⇒e ∈   (q) , (2)                                                       Example 2: Let the set of secret states of G in Fig. 1(a)
+                                                        be XS =  {2, 3}, representing  that the defender wishes torepresenting that sensing transitions in R occur only upon the
+                                                                   protect  the  information  of  the  current  location  being  in
+observation of events. This aligns with practical situations in
+                                                                       states 2 or 3. Let the sensor activation policy    be as in
+which unobservable events cannot trigger sensing transitions.
+                                                                   Fig. 1(b). Since α(e1e2) = {2} ⊆XS, α(e1e2e1) = {3} ⊆  Let us introduce a projection operator to obtain the obser-
+                                                     XS and {s′ ∈L(G) | P  (s′) = P  (e1e2)} = {e1e2, e1e2e1}, wevation of an event string: ∀se ∈E∗,
+                                                         have that L(G) is not opaque w.r.t. XS and P   . Note that the
+                    P  (s)e, if e ∈   (ω(s)),            transition (1, e2, 2) is key to an eavesdropper to know that the
+    P  (ϵ) = ϵ, P  (se) =                                                              (3)   system will be in secret states until the next e2 is observed. ■                    P  (s),  if e /∈   (ω(s)).
+                                      A  system  lacking  opacity may become opaque when
+The projection operator P  can also be applied to a language,   introducing an observation delay, motivating the following
+that is, ∀L ⊆E∗, P (L) = {s ∈E∗o|∃s′ ∈L, s.t. s = P  (s′)}. In   deﬁnition.
+other words, for any system trajectory s ∈L(G),   (ω(s)) and     Deﬁnition 2 (K-Delayed Opacity): Given a system model G
+P  (s) return the current sensing decision and the observation   in (1) with a set of secret states XS ⊆X and a sensor activation
+
+
+    Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on November 23,2025 at 05:50:44 UTC from IEEE Xplore. Restrictions apply.
+
+WANG et al.: ENFORCING OPACITY IN DISCRETE EVENT SYSTEMS VIA DELAYED OBSERVATIONS                                             2413
+
+
+                                                      Algorithm 1: Construction of the Delay Observer OK (G)
+                                                              Input: G = (X, E, α, X0), R =
+                                                                (Q, E, ω, q0),    , K, Eo, XS;
+                                                         Output: OK (G) = (Y, Eo, β, y0);
+                                                                            1 y0 ←(∅, q0); u0 ←∞;
+                                                                            2  if φ(X0, Eo) ⊆XS then
+                                                                            3     u0 ←K;
+                                                                            4 for x0 ∈X0 doFig. 1.  (a) System model G, with secret states XS = {2, 3} marked in
+blue; (b) Sensor activation policy    , maintaining sensor 2 continuously    5     I(y0) ←I(y0) ∪(x0, u0); REC-UNOBS(x0, u0, y0);
+active; (c)-(d) Delay observers OK1 (G) and OK2 (G) with delay K1 = 1    6 Y ←{y0}; REC-OBS(y0);
+and K2 = 2.                                                                7 Return OK (G);
+                                                                            8 Procedure REC-UNOBS(x, u, y)
+                                                                            9 for e ∈E \  (D(y)) : α(x, e)! do
+policy     , the live language L(G) is K-delayed opaque w.r.t.                                                                           10     for x′ ∈α(x, e) do
+XS and P   if ∀s ∈L(G) : |s| ≥K ∧α(s) ⊆XS,                                                                           11            if 0 < u < ∞then
+      ∃s′ ∈L(G) : P    s′ ∈P  ζ K (s) , s.t. α s′ ⊆XS.    (7)   12               u′ ←u −1;
+                                                                           13         else
+   If (7) holds, the  string s cannot be distinguished from                                                                           14               u′ ←u;
+another string  s′  that does not lead to secret states under                                                                           15            if (x′, u′) /∈I(y) then
+delayed observations. Thus, none of the events required to                                                                           16             I(y) ←I(y) ∪{(x′, u′)};
+unambiguously determine if the system is in a secret state can                                                                           17          REC-UNOBS(x′, u′, y);
+be received timely by the eavesdropper.
+                                                                           18 Procedure REC-OBS(y)
+  As K increases, the strings that cannot be distinguished from
+                                                                           19  ι ←{x ∈X | (x, u) ∈I(y)}; ERec ←∅;the string s  : α(s) ⊆XS become more.  It can be veriﬁed
+                                                                           20 for e ∈   (D(y)) dofrom (7) that K′-delayed opacity ⇒K-delayed opacity when
+                                                                           21   ι∗←{x ∈X | ∃x′ ∈ι, s.t. x ∈α(x′, e)};K ≥K′, i.e., larger delay increases opacity. Clearly, opacity
+                                                                           22       if φ(ι∗,  (ω(D(y), e))) ⊆XS thenimplies K-delayed opacity
+                                                                           23        ERec ←ERec ∪{e};
+                                                                           24     ye ←(∅, ω(D(y), e));
+B. Delay Observer
+                                                                           25 for (x, u) ∈I(y) do
+  Similar to opacity, verifying K-delayed opacity cannot be   26     for e ∈  (D(y)) : α(x, e)! do
+accomplished by examining all possible string of events of   27            if u = ∞∧e ∈ERec then
+a system.  It  is  essential  to incorporate delay information   28               u′ ←K;
+in a veriﬁcation method. We incorporate delay information   29         else if e /∈ERec then
+via a delay observer: we  stress on the  fact  that  existing   30               u′ ←∞;
+delay observers based on recording the delay of at most one   31         else
+observable event [12] cannot be applied to the scenario under   32               u′ ←u −1;
+consideration, where multiple delays within an observation   33         for x′ ∈α(x, e) do
+may need to be recorded. Such difference requires to extend   34                 if (x′, u′) /∈I(ye) then
+the delay observer structure.                                          35                 I(ye) ←I(ye) ∪{(x′, u′)};
+  The following deterministic observer structure is proposed   36             REC-UNOBS(x′, u′, ye);
+           OK (G) = (Y, Eo, β, y0),                 (8)   37 for e ∈   (D(y)) do
+                                                                           38    Add β(y, e) = ye to O (G);
+where Y  ∈2X×(Z∪{∞}) × Q  is the observer  state space,   39       if ye /∈Y then
+with Z the set of integers. For notational convenience,  let   40      Y ←Y ∪{ye}; REC-OBS(ye);
+us decompose each y ∈Y  as y =  (I(y), D(y)). Namely,
+I(y) ∈2X×(Z∪{∞}) represents the  state estimation  set: for
+any  (x, u)   ∈I(y), the system  state x  is assigned with
+a delay value u counting the maximum number of steps   involving unobservable and observable events, respectively.
+before receiving the key events  (i.e., the observable events   Speciﬁcally, REC-UNOBS(x, u, y) appends a delay value to
+allowing to distinguish the states in XS from other states).   each system  state,  storing  the  result  in  I(y). Meanwhile,
+Meanwhile, D(y) ∈Q speciﬁes the current sensing decision  REC-OBS(y) identiﬁes new transitions and observer states,
+  (D(y)) ∈2Eo. For a state set ι ⊆X and a sensing decision  where the delay values are appended to the next initial system
+θ ⊆Eo, denote φ(ι, θ) =  {x ∈X  |  ∃x′ ∈ι, s ∈(E \   states.
+θ)∗, s.t. α(x′, s) = x}, representing the set of states that can     Note  that  for any  (x, u) ∈  I(y),  there always  exists
+be reached unobservably from a state in ι under the sensing   s ∈L(G) : x ∈α(s) such that y = β(P  (s)). If there exists
+decision θ. The transition function β  : Y × Eo →Y and the   another state (x′, u′) ∈I(y), then there exists s′ ∈L(G) : x′ ∈
+initial state y0 in (8) are constructed as in Algorithm 1. Two   α(s′) such that P  (s) = P  (s′). For each s ∈L(G) : α(s) ⊆
+recording procedures are proposed to handle the transitions   XS, the delay observer OK (G) records the delay of the events
+
+
+    Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on November 23,2025 at 05:50:44 UTC from IEEE Xplore. Restrictions apply.
+
+2414                                                                                    IEEE CONTROL SYSTEMS LETTERS, VOL. 9, 2025
+
+
+in Eo that help to distinguish s from the system trajectories  L(G) is K-delayed opaque w.r.t. XS and P   , (7) holds for any
+s′ ∈L(G) : α(s′)̸ ⊆XS. A delay value “0” indicates that the   s ∈L(G) : |s| ≥K ∧α(s) ⊆XS, implying that there exists
+observation allowing to distinguish the states in XS from other  s∞∈¯s : |s| −|s∞| ≤K such that (6) holds for s = s∞. Then,
+states has been received. In line with existing observers [17],   the delay value of any state x∞∈α(s∞) is ∞. According to
+also the observer in Algorithm 1 has worst-case complexity   the strategy of delay record (cf. lines 11-14 and lines 27-32),
+O(22N), where N is the number of system states.               the delay value of the states in α(s) will remain greater than
+                                                     0 starting from (x∞, ∞) within K steps.Hence, for any y ∈Y
+C. Veriﬁcation of K-Delayed Opacity                     and (x, u) ∈y, we have u > 0, implying ψ(y) = O, i.e., (10)
+                                                                  holds.  For the delay observer OK (G) = (Y, Eo, β, y0), deﬁne the
+                                                       Example 3: Let us introduce delay K1 = 1 or K2 = 2veriﬁcation function ψ  : Y →{O, T} as follows: ∀y ∈Y,
+                                                                    in the observations of system G in Fig. 1(a). Algorithm 1
+                O,    if ∀(x, u) ∈I(y), u > 0;                returns the delay observers OK1 (G) and OK2 (G) shown in        ψ(y) =                                           (9)                                     Eo             Eo
+                 T,   otherwise,                             Fig. 1(c) and Fig. 1(d), where the delays of the key transition
+                                                                  (1, e2, 2) are recorded. Using (9) in Theorem 1, we havewhere O  stands  for  ‘opacity’ and T  for  ‘transparency’.
+                                                          ψ({(2, 1), (3, 0)}) = T for OK1 (G) and ψ(y) = O, ∀y ∈Y, forVeriﬁcation of K-delayed opacity is along the following result.
+                                                 OK2 (G). Hence, L(G) is not K-delayed opaque with K = 1,  Theorem 1: Given a system model G in (1) with secret state
+set XS ⊆X, let   be a sensor activation policy and OK (G)   but  it is K-delayed opaque with K = 2 w.r.t. XS and P   .
+be the delay observer built via Algorithm 1. Then, L(G) is   Hence, system G originally lacking opacity (cf. Example 2)
+                                                                   exhibits K-delayed opacity with K = 2.           ■K-delayed opaque w.r.t. XS and P   if and only if
+
+                 ∀y ∈Y, ψ(y) = O.                  (10)                                                                       IV. SYNTHESIS AND OPTIMIZATION OF SENSOR
+                                                                   ACTIVATION POLICY  Proof (Sufﬁciency): Suppose that (10) holds. Then, for any
+s ∈L(G) such that  |s| ≥K, ψ(β(P  (s))) = O, that  is,     Instead of a given sensor activation policy,  it might be
+∀(x, u) ∈β(P  (s)), u > 0. We claim that there exists s∞∈   desirable to design the sensor activation policy, e.g., balancing
+¯s : |s| −|s∞| ≤K such that                                between acquiring information and preserving secrecy. In this
+                                                                     section, we aim to design a policy that monitors as many
+           ∃(x, u) ∈I(β(P (s∞))),  s.t. u = ∞.         (11)                                                               events as possible while guaranteeing opacity of the system.
+Suppose on the contrary that such a string s∞does not exist.  To formalize this objective, for two sensor activation policies
+Then, ∀t ∈¯s:|s| −|t| ≤K,                                           1 = (R1,   1),  2 = (R2,   2), we write   1 ⊆   2  if ∀s ∈
+                                                        E∗,  1(ω1(s)) ⊆   2(ω2(s)), and   1 ⊂   2 if      1̸ =   2. We
+                ∀(x, u) ∈β(P  (t)), u ≤K.                     are now in a position to formulate the problem.
+                                                        Problem 1: Given a system model G in (1) and a delay K,According to the recording strategy in Algorithm 1 (cf. lines
+                                                                               let XS ⊆X be the set of secret states. Find a sensor activation11-14 and lines 27-32), the delay value u < ∞will be updated
+                                                                policy  ¯ such thatto u−1 at each step and will become 0 within K steps, resulting
+                                                                                         i) L(G) is K-delayed opaque w.r.t. XS and P ¯ ;in a contradiction.
+                                                                                           ii) there exists no other policy   such that  ¯ ⊂   and L(G)  Note  that  the  existence  of s∞  ∈     ¯s  satisfying  (11)
+                                                                                     is K-delayed opaque w.r.t. XS and P   .implies  that  there  exists a  string  s′ ∈  L(G) such  that
+                                                     To solve Problem 1, we leverage the veriﬁcation functionP  (s′) = P (s∞) and α(s′)̸ ⊆XS (cf. lines 19-23 and lines
+                                      K                 in (9), extending the delay observer structure to facilitate the29-30). By |s| −|s∞| ≤K, we have s∞∈ζ  (s), implying
+                     K                                     application of Theorem 1 throughout the optimization process.P  (s′) = P (s∞) ∈PEo(ζ  (s)). Hence, (7) holds for any s ∈
+                                                          For the system model G in (1) and the veriﬁcation functionL(G) : |s| ≥K. We conclude that L(G) is K-delayed opaque
+                                                   ψ, let us deﬁne the following container automaton
+w.r.t. XS and PEo.
+   (Necessity): Suppose that L(G) is K-delayed opaque w.r.t.           OKψ(G) = Yψ, Eo, βψ, Yψ,0 ,            (12)
+XS and P   . We will show that for any s ∈L(G), x ∈α(s), the
+delay value of x will always be greater than 0.                with state space Yψ ∈2X×(Z∪{∞}) × 2Eo. Similar to (8), let us
+  We ﬁrst consider the set of string {s ∈L(G) | |s| < K}.  decompose each  ¯y ∈Yψ as  ¯y = (I(¯y), Dψ(¯y)), where I(¯y) ∈
+In Algorithm 1, the delay value of each initial state is ∞or   2X×(Z∪{∞}) represents the state estimation set with delay value,
+K. According to the strategy of delay record (cf. lines 11-14  and Dψ(¯y) ∈2Eo represents the current sensing decision. The
+and lines 27-32), the delay value of each state x ∈α(s) will   transition function βψ  : Yψ × Eo →2Yψ and the set of initial
+remain greater than 0 within K −1 steps. We now show that   states Yψ,0 in (12) are constructed in Algorithm 2. We stress
+for any s∞∈L(G), if (6) holds for s = s∞, then the delay   that, instead of a sensor activation policy, the new structure is
+value of any x ∈α(s∞) is ∞. Denote s∞= s0e0s1 such   based on the veriﬁcation function ψ, that is,
+that P  (s0e0) = P (s∞) and e0 ∈   (ω(s0)). According to                                                                                                        ∀¯y ∈Yψ, ψ(¯y) = O,                 (13)
+the recording strategy for state estimation set not contained in
+XS (cf. lines 19-23 and lines 29-30), the delay value of any  where the domain of the veriﬁcation function ψ is extended
+x ∈α(s0e0) is ∞. Since P  (s0e0) = P (s∞), we have that   to include Yψ with a slight abuse of notation. Note that (13)
+the delay value of any x ∈α(s∞) remains ∞(cf. lines 9-14).    is reﬂected in lines 9-11 and lines 39-42 of Algorithm 2.
+Hence, for any s∞∈L(G) such that (6) holds with s = s∞,  While REC-UNOBS is as in Algorithm 1, a new procedure
+the delay value of the states in α(s∞) is ∞. Finally, since  REC-OBSψ is proposed to traverse the state space and record
+
+    Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on November 23,2025 at 05:50:44 UTC from IEEE Xplore. Restrictions apply.
+
+WANG et al.: ENFORCING OPACITY IN DISCRETE EVENT SYSTEMS VIA DELAYED OBSERVATIONS                                             2415
+
+ Algorithm 2: Construction of OKψ(G)                      Algorithm 3: Sensor Activation Policy Optimization
+   Input: G = (X, E, α, X0), ψ, K, Eo, XS                        Input: OKψ(G);
+  Output: OKψ(G) = (Yψ, Eo, βψ, Yψ,0)                       Output:  ¯ = (R,   ) with R = (Q, E, ω, q0);
+ 1 Yψ,0 ←∅; Yψ ←∅;                                                 1 Find ¯y0 ∈Yψ,0 satifying ∀¯y′0 ∈Yψ,0, Dψ(¯y′0)̸ ⊂Dψ(¯y0);
+ 2 for θ ∈2Eo do                                                        2  i ←0; ψQ(¯y0) ←i;   (i) ←Dψ(¯y0); q0 ←i;
+ 3        ¯yθ0 ←(∅, θ); u0 ←∞;                                          3 ADD(¯y0, ¯ , OKψ(G));
+ 4       if φ(X0, θ) ⊆XS then                                           4 for q ∈Q do
+ 5        u0 ←K;                                                      5     for e ∈E\{e ∈E | ω(q, e)!} do
+ 6     for x0 ∈X0 do                                                   6      Add ω(q, e) = q to R;
+ 7            I(¯yθ0) ←I(¯yθ0) ∪{(x0, u0)};                                 7 Return  ¯ ;
+ 8       REC-UNOBS(x0, u0, ¯yθ0);                                   8 Procedure ADD(¯y, ¯ , OKψ(G));
+ 9       if ψ(¯yθ0) = O then                                               9 for e ∈Eo : βψ(¯y, e)! do
+10        Yψ,0 ←Yψ,0 ∪{¯yθ0}; Yψ ←Yψ ∪{¯yθ0};                  10    Find  ¯y′ ∈βψ(¯y, e) satisfying that
+11       REC-OBSψ(¯yθ0);                                                                ∀¯y′′ ∈βψ(¯y, e), Dψ(¯y′)̸ ⊂Dψ(¯y′′);
+12 while ∃¯y ∈Yψ  : (x, u) ∈I(¯y), e ∈Dψ(y), s.t. [α(x, e)!         11       if ψQ(¯y′) ∈N then
+  and βψ(¯y, e) is undeﬁned] do                                     12      Add ω(ψQ(¯y), e) = ψQ(¯y′) to R;
+13    Yψ ←Yψ \ {¯y}; Take the accessible part of OKψ(G);       13     else
+14 Return OKψ(G);                                                     14             i ←i + 1; ψQ(¯y′) ←i;   (i) ←Dψ(¯y′);
+                                                                           15     Q ←Q ∪{i}; Add ω(ψQ(¯y), e) = i to R;15 Procedure REC-OBSψ(¯y)
+                                                                             ADD(¯y′, ¯ , OKψ(G));16  ι ←{ x ∈X | (x, u) ∈I(¯y)};                                        16
+17 for θ ∈2Eo do
+18    ERecθ  ←∅;
+19 for e ∈Dψ(¯y) do                                                              Deﬁnition 3: Given a sensor activation policy    and a
+20   ι∗←{ x ∈X | ∃x′ ∈ι, x ∈α(x′, e)};                                                                veriﬁcation function ψ, the delay observer OK (G) is said to
+21     for θ ∈2Eo do                                                        be contained in OKψ(G) if ∀s ∈L(G),
+22            if φ(ι∗, θ) ⊆XS then
+23           ERecθ  ←ERecθ  ∪{e};                                      (I(β(P  (s))),  (ω(s))) ∈βψ(P  (s)).        (14)
+24             ¯ye,θ ←(∅, θ);
+25 for (x, u) ∈I(¯y) do                               Lemma 1: The  delay  observer OK (G)  is  contained  in
+                                        OKψ(G) if and only if (10) holds.26     for e ∈Dψ(¯y) : α(x, e)! do
+27         for θ ∈2Eo do                                         Proof(Necessity): Suppose  that OK (G)  is  contained  in
+28                 if u = ∞∧e ∈ERecθ   then               OKψ(G). Then, (14) holds for any s ∈L(G). By (9) and (13),
+29                uθ ←K;                           we have ψ(β(P  (s))) = O, implying that (10) holds.
+30             else if e /∈ERecθ   then                                (Sufﬁciency): Suppose that (10) holds. Since ψ(y0) = O,
+31                uθ ←∞;                                      there  exists   ¯y0  ∈  Yψ,0  such  that  I(y0) =   I(¯y0) and
+32             else                                             (D(y0)) =  Dψ(¯y0)  (cf.  lines 1-6  of Algorithm 1 and
+33                uθ ←u −1;                                     lines 2-11 of Algorithm 2). Suppose that (14) holds for a
+34            for x′ ∈α(x, e) do                                   string  s =   s′ ∈  L(G). We now  consider an e ∈ E
+35                      if (x′, uθ) /∈I(¯ye,θ) then                    such that α(s′e)!. In case e  /∈    (ω(s′)), we directly have
+36                         I(¯ye,θ) ←I(¯ye,θ) ∪{(x′, uθ)};               that (14) holds for s =  s′e since P  (s′) = P  (s′e) and
+                                                               ω(s′) =  ω(s′e).  In  case e ∈    (ω(s′)),  let us denote37                REC-UNOBS(x′, uθ, ¯ye,θ);
+                                                                                                                        ¯y = (I(β(P  (s′))),  (ω(s′))) and evaluate REC-OBSψ(¯y) in38 for e ∈Dψ(¯y) do
+                                                         Algorithm 2. First, lines 16-24 return (∅,   (ω(s′e))). Then,39     for θ ∈2Eo  : ψ(¯ye,θ) = O do
+                                                                      lines 25-37 return  ¯ye = (I(β(P  (s′e))),  (ω(s′e))) based on40      Add βψ(¯y, e) = ¯ye,θ to OKψ(G);                                                                  (ω(s′e))  (cf. lines 25-36 of Algorithm 1). By  (9), since
+41            if ¯ye,θ /∈Yψ then                                                ψ(β(P  (s′))) = O, we have ψ(¯ye) = O, implying that ¯ye is
+42         Yψ ←Yψ ∪{¯ye,θ}; REC-OBSψ(¯ye,θ);                                                        added in Yψ (cf. lines 38-42). Since ¯ye ∈βψ(¯y, e),  ¯y will not
+                                                        be eliminated (cf. lines 13-14). Hence, (14) holds for s′e. By
+                                                                  induction, we conclude that OK (G) is contained in OKψ(G).
+the delays until state  ¯y ∈Yψ is such that ψ(¯y) = T. The ﬁnal    To ﬁnd an optimal policy  ¯ based on OKψ(G), Algorithm 3
+step of Algorithm 2 (cf. lines 12-13) removes states where no   applies a greedy strategy  at each  transition in OKψ(G) to
+ feasible sensing decision exists to enable further transitions.    determine the sensing decision. The idea is to maximize the
+  Note that OKψ(G) is a nondeterministic automaton. A deter-   monitored events while guaranteeing K-delayed opacity. The
+ministic automaton contained in OKψ(G) can be obtained by   following result shows that this greedy strategy returns a policy
+choosing one initial state and by making one sensing decision   that solves Problem 1.
+ at each transition. To formalize the reasoning above, we now    Theorem 2: Algorithm 2 and Algorithm 3 solve Problem 1.
+ establish that OKψ(G) collects  all possible sensor activation     Proof: First, we show that Algorithm 3 will produce a non-
+ policies guaranteeing K-delayed opacity.                    empty output whenever Problem 1 admits a solution. Suppose
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on November 23,2025 at 05:50:44 UTC from IEEE Xplore. Restrictions apply.
+
+2416                                                                                    IEEE CONTROL SYSTEMS LETTERS, VOL. 9, 2025
+
+                                                                    activation policy  ¯ in Fig. 2(b). Note that in Fig. 2(a), redun-
+                                                             dant sensing decisions (representing that some events being
+                                                          monitored cannot happen at the current step) are omitted. By
+                                                   Theorem 3,  ¯ in Fig. 2(b) solves Problem 1.
+
+
+                                                                                 V. CONCLUSION
+
+                                                              This letter has investigated opacity of discrete event systems
+                                                          under delayed observations. A novel notion of K-delayed
+                                                               opacity has been introduced along with a delay observer
+                                                                    structure to enable veriﬁcation. To synthesize and optimize the
+                                                              sensor activation policy, a new container structure has been
+                                                               constructed collecting all feasible sensor activation policies
+Fig. 2.   (a) Container OK1ψ (G) (with greedy strategy marked in red),   that preserve K-delayed opacity. The perspective adopted in
+collecting all possible sensor activation policies guaranteeing K-delayed   this letter is the one of a defender trying to mask the system
+opacity with K = K1; (b) Optimal sensor activation policy ¯ built with the
+marked container states.                                             to an eavesdropper. An interesting point for future work is to
+                                                           adopt the perspective of the eavesdropper.
+that Problem 1 has a solution  ¯ . Then, OK¯ (G) is contained in
+OKψ(G) by Theorem 1 and Lemma 1 since L(G) is K-delayed                  REFERENCES
+opaque w.r.t. XS and P ¯ . Hence, Algorithm 2 will produce     [1] A. Saboori and C. N. Hadjicostis, “Notions of security and opacity in
+a non-empty OKψ(G), which guarantees that Algorithm 3 will          discrete event systems,” in Proc. IEEE 46th Conf. Decis. Control, 2007,
+produce a non-empty output, as  ¯ can be constructed directly     [2]  S.pp.Lafortune,5056–5061.F. Lin, and C. N. Hadjicostis, “On the history of diag-
+from the states in OKψ(G) (cf. lines 1 and 10 of Algorithm 3).          nosability and opacity in discrete event systems,” Annu. Rev. Control,
+  Let  ¯ be the output of Algorithm 3. Next, we show that          vol. 45, pp. 257–266, Jun. 2018.
+                                                                                      [3] R. Jacob, J.-J. Lesage, and J.-M. Faure, “Overview of discrete event
+such  ¯ indeed constitutes a solution to Problem 1.                    systems opacity: Models, validation, and quantiﬁcation,” Annu. Rev.
+  We ﬁrst check condition i) in Problem 1. Since  ¯  is built         Control, vol. 41, pp. 135–146, Jun. 2016.
+directly with corresponding states in OKψ(G)  (cf. lines 1-2     [4] Y.andJi,privateY.-C. Wu,insertionand S.functions,”Lafortune, Automatica,“Enforcementvol.of opacity93, pp. by369–378,public
+and lines 10-15 of Algorithm 3), we have that OK¯ (G)  is           Jul. 2018.
+contained in OKψ(G). Then, by Theorem 1 and Lemma 1, L(G)     [5] X.IEEEYinTrans.and S.Autom.Li, “SynthesisControl,ofvol.dynamic65, no.masks4, pp.for1429–1441,inﬁnite-stepApr.opacity,”2020.
+is K-delayed opaque w.r.t. XS and P ¯ .                                   [6] M. Mizoguchi and T. Ushio, “Abstraction-based control under quantized
+  We then check condition ii) in Problem 1. By contradiction,         observation with approximate opacity using symbolic control barrier
+                                                                          IEEE                                                                                                 Control                                                                                                                           Syst.                                                                                                                                             Lett.,                                                                                                                                      vol.                                                                                                                                            6, pp.                                                                                                                    2222–2227,                                                                                                                                      2021.                                               ′ =                             (R′,                                          R′                        = (Q′, E,suppose         there                exists                                             ′) with                                                     ω′, q′0)     [7] X.functions,”                                                                                                 Li,                                                                                    C.                                                                                  N.                                                                                                         Hadjicostis,                                                                                                 and                                                                                                                 Z. Li,                                                                                                                   “Opacity                                                                                                                            enforcement                                                                                                                                                               in dis-                ¯         ⊂         ′                        L(G)such       that                      and                                                is                                     K-delayed                                              opaque                                                                                           crete                                                                                         event                                                                                         systems                                                                                                     using                                                                                                       extended                                                                                                                                  insertion                                                                                                                                    functions                                                                                                                                 under                                                                                                                                                           inserted
+w.r.t. XS and P  ′. Then, by Theorem 1 and Lemma  1,        language constraints,” IEEE Trans. Autom. Control, vol. 68, no. 11,
+OK ′(G) =  (Y′, Eo, β′, y′0)  is contained  in OKψ(G). Since         pp. 6797–6803, Nov. 2023.
+ ¯ ⊂      ′,  there  exist two  cases:   (ω(ϵ)) ⊂    ′(ω′(ϵ))     [8] W.anismDuan,synthesisR. Liu,forM.opacityP. Fanti,enforcementC. N. Hadjicostis,under uncertainand Z. Li,observations,”“Edit mech-
+or    (ω(ϵ)) =     ′(ω′(ϵ)).  In  the  ﬁrst  case,    (ω(ϵ))       IEEE Control Syst. Lett., vol. 7, pp. 2041–2046, 2023.
+cannot be  selected  in  line 1,  contradicting  the  fact  that     [9] Y. Xie, S. Li, and X. Yin, “Optimal synthesis of opacity-enforcing
+ ¯   is  the  output  of  Algorithm 3.  In  the  second  case,         supervisorsAutom. Control,for qualitativevol. 69, no.and8, quantitativepp. 4958–4973,speciﬁcations,”Aug. 2024.IEEE Trans.
+there exists s ∈L(G) such that   (ω(se)) ⊂    ′(ω′(se))    [10] X. Li, C. N. Hadjicostis, and Z. Li, “Opacity enforcement in discrete
+and  for any  s′  ∈    ¯s,    (ω(s′)) =     ′(ω′(s′)). Denote         event systems using modiﬁcation functions,” IEEE Trans. Autom. Sci.
+                                                                                    Eng., vol. 22, pp. 3252–3264, 2025.
+¯y = (I(β(P ¯ (s))),  (ω(s))) = (I(β′(P  ′(s))),   ′(ω′(s))).         [11]  J. Wang, S. Baldi, W. Yu, and X. Yin, “Distributed fault diagnosis
+Since OK¯ (G) and OK ′(G) are contained in OKψ(G), we have          in discrete event systems with transmission delay impairments,” IEEE
+¯y ∈βψ(P  (s)). Then, since   (ω(se)) ⊂   ′(ω′(se)), we have         Trans. Autom. Control, vol. 69, no. 8, pp. 5508–5515, Aug. 2024.
+                                                                               [12]  J. Wang, S. Baldi, W. Yu, and X. Yin, “Fault diagnosis and prognosis
+that (I(β(P ¯ (se))),  (ω(se))) ∈βψ(¯y, e) cannot be selected          in partially-observed discrete event systems with delayed observations,”
+in line 10, contradicting the fact that  ¯  is the output of          in Proc. IEEE 63rd Conf. Decis. Control (CDC), 2024, pp. 3675–3680.
+Algorithm 3. Hence, there exists no other policy   such that    [13]  F. Cassez, J. Dubreil, and H. Marchand, “Synthesis of opaque systems
+ ¯ ⊂   and L(G) is K-delayed opaque w.r.t. XS and P   . We         withpp. 88–115,static andJan.dynamic2012.  masks,” Formal Methods Syst. Design, vol. 40,
+conclude that  ¯  is a solution to Problem 1.                         [14] E. Dallal and S. Lafortune, “On most permissive observers in dynamic
+  Remark 1 (Non-Uniqueness   of   Solution):  Note   that         sensor activation problems,” IEEE Trans. Autom. Control, vol. 59, no. 4,
+Problem 1 does not exclude the existence of more ¯ satisfying         pp. 966–981, Apr. 2014.
+                                                                               [15] D.  Sears and K. Rudie, “Minimal  sensor  activation and minimal
+i)-ii), meaning that the solution may be not unique. This        communication  in  discrete-event systems,”  Discr. Event Dyn.  Syst.,
+is reﬂected in the fact that  ¯y0 and ¯y∗in lines 1 and 10 of          vol. 26, no. 2, pp. 295–349, 2016.
+Algorithm 3 may be not unique.                                       [16] X. Yin and S. Lafortune, “A general approach for optimizing dynamic
+                                                                                   sensor  activation  for  discrete event systems,” Automatica,  vol. 105,
+  Example 4: The sensor activation policy in Fig. 1(b) does         pp. 376–383, Jul. 2019.
+not achieve K-delayed opacity with K = K1 =  1  (cf.    [17] C. G. Cassandras and S. Lafortune, Introduction to Discrete Event
+Example 3). To design a sensor activation policy achieving         Systems. Cham, Switzerland: Springer, 2009.
+this, we obtain OK1ψ (G) in Fig. 2(a) from Algorithm 3. Then, a    [18] W.activationWang, forS. diagnosingLafortune, discreteA. R. Girard,event systems,”and F. Lin,Automatica,“Optimalvol.sensor46,
+greedy strategy is applied (marked in red) to obtain the sensor         no. 7, pp. 1165–1175, 2010.
+
+    Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on November 23,2025 at 05:50:44 UTC from IEEE Xplore. Restrictions apply.

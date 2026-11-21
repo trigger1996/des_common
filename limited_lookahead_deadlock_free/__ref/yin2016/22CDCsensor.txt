@@ -1,0 +1,484 @@
+2021 61st IEEE Conference on Decision and Control (CDC)
+December 6-9, 2022. Cancún, Mexico
+
+
+        Sensor Deception Attacks Against Initial-State Privacy
+                     in Supervisory Control Systems
+
+
+                                   Jingshi Yao, Xiang Yin and Shaoyuan Li
+
+
+  Abstract— This paper investigates the problem of synthesiz-      In general, an uncontrolled open-loop system may not be
+ing sensor deception attackers against privacy in the context   opaque naturally. Therefore, supervisors are usually used to
+of supervisory control of discrete-event systems (DES). We                                                                           restrict the behavior of the system such that the closed-loop
+consider a plant controlled by a supervisor, which is subject
+                                                        system under control is opaque. In the literature on DES,to sensor deception attacks. Speciﬁcally, we consider an active
+attacker that can tamper with the observations received by the   many algorithms have been developed for designing opacity-
+supervisor. The privacy requirement of the supervisory control   enforcing  supervisors;  see,  e.g.,  [13]–[17].  All  existing
+system is to maintain initial-state opacity, i.e., it does not want   opacity-enforcing supervisory control systems are designed
+to reveal the fact that it was initiated from a secret state during                                                                   for the nominal setting in the sense that no malicious attacks
+its operation. On the other hand, the attacker aims to deceive
+                                                                         exist. However, in networked environments, supervisors arethe supervisor, by tampering with its observations, such that
+initial-state opacity is violated due to incorrect control actions.    usually subject to active and malicious attacks, which may
+We investigate from the attacker’s point of view by presenting   destroy their desired closed-loop property in the nominal
+an effective approach for synthesizing sensor attack strategies    setting. Particularly, the sensors of the supervisor may be
+threatening the privacy of the system. To this end, we propose                                                     compromised under sensor deception attacks [18]–[23] such
+the All Attack Structure (AAS) that records state estimates for
+                                                                     that the supervisor may receive factitious observation tam-both the supervisor and the attacker. This structure serves as a
+basis for synthesizing a sensor attack strategy. We also discuss   pered with by the attacker. Then based on the incorrect
+how to simplify the synthesis complexity by leveraging the   information, the supervisor can be misled to take incorrect
+structural properties. A running academic example is provided    actions, which may further expose its secret.
+to illustrate the synthesis procedure.                                                                 In this paper, we investigate from the attacker’s point of
+                                                               view. Speciﬁcally, we assume that there already exists a
+                          I. INTRODUCTION
+                                                            well-designed supervisor for the plant such that the closed-
+  With the developments of computation and communica-   loop system is initial-state opaque without attacks on the
+tion technologies, cyber-physical system (CPS) has become    supervisor,  i.e. when the outsider  is purely passive and
+the new generation of engineering systems with computa-   eavesdropping. However, we assume that an active attacker
+tion devices embedded in physical dynamics. Particularly,   can further deceive the supervisor by tampering with some
+in cyber-physical control systems, distributed sensors and   observable events it receives. Our objective is to synthesize
+actuators exchange information in real time. This, on the   such a sensor deception attacker such that (i) it may mislead
+one hand, enables more ﬂexible and intelligent control archi-    the supervisor to expose its secret initial-state, i.e., to violate
+tectures, but on the other hand, makes security and privacy    initial-state opacity; and (ii) at the same time, maintain itself
+considerations become increasingly more important in the   undetected by the supervisor. To solve this problem, we build
+analysis and design of CPS [1]–[4].                        an information structure called the all-attack structure (ASS)
+  In  this paper, we study privacy issues in CPS whose    that embeds all feasible attack strategies in it. Based on this
+high-level behaviors are abstracted as discrete-event systems    structure, we show how to effectively extract an attacker
+(DES).  Speciﬁcally, we focus on an important  class of    strategy satisfying the above two requirements.
+information-ﬂow property  called  opacity, which captures     Our work is most related to [21], [22], where the authors
+whether or not some “secret” of the system can be inferred    also investigate how to synthesize sensor deception attacks
+by an outsider via  its observation. The notion of opacity    against given supervisory control systems. However, the
+has drawn much attention in the context of DES in the past    attack objective considered therein is the violation of safety,
+few years due to its wide applications in many engineering   which is deﬁned on the actual behavior of the system. Here,
+systems [5]–[11]. In this work, we will focus on the notion  we consider the violation of privacy as the attack objective,
+of initial-state opacity [12], which requires that the system   which is a property deﬁned in the information ﬂow. To our
+can never reveal the fact that it was initiated from a secret   knowledge, the synthesis of active attackers against privacy
+state.                                                       requirements has not yet been studied in the context of
+                                                             supervisory control of DES.
+  This work was supported by the National Natural Science Foundation of
+China (62061136004, 61803259, 61833012) and the National Key Research                             II. PRELIMINARY
+and Development Program of China (2018AAA0101700).
+   Jingshi Yao, Xiang Yin and Shaoyuan Li  are with Department  of   A. Supervisory Control of DES
+Automation and Key  Laboratory  of System  Control and  Information
+Processing, Shanghai  Jiao Tong  University, Shanghai 200240,  China.      Let Σ be a ﬁnite set of events. A string over Σ is a ﬁnite
+{yaojingshi,yinxiang,syli}@sjtu.edu.cn.           sequence s = σ1 · · · σn, σi ∈Σ; |s| = n denotes its length;
+
+
+978-1-6654-6761-2/22/$31.00 ©2022 IEEE                    4839
+
+si = σ1 · · · σi denotes the preﬁx of s with length i ≤n                 5    c    6
+and s0 = ϵ is the empty string. We denote by Σ∗the set of
+                                                                          c        c          a, b, c, d     z2
+all strings over Σ including the empty string ϵ. A language                      c
+L ⊆Σ∗is a set of strings We deﬁne Σϵ = Σ ∪{ϵ}.                         1         3    d               d                                                                                                      c  We model a DES by a  ﬁnite-state automaton G =                    b
+(X, Σ, δ, X0), where X is a ﬁnite set of states; Σ is the set              a   c   a               z0   b    z1
+of events; δ : X ×Σ →X is the (partial) transition function;
+                                                                              2         4
+X0 ⊆X is the set of possible initial states. The transition                    b                  a, d      a, b
+function is also extended to δ : X × Σ∗→X recursively in
+                                                                                                            (a) System G             (b) Supervisor H
+the usual manner. We deﬁne ∆G(x) = {σ ∈Σ : δ(x, σ)!}
+                                                                                  Fig. 1.   System G and supervisor H, where Σo = {b, c, d}, Σc =
+as the set of events feasible at state x ∈X, where ! means    {a, c, d}. The secret initial state Xsec = {1} is marked by red circle.
+“is deﬁned”. The language generated from x0 ∈X0  is
+deﬁned by L(G, x0) = {s ∈Σ∗: δ(x0, s)!}; we deﬁne                                         (z2, 5)      (z2, 6)
+                                                                                             c
+L(G) = ∪x0∈X0L(G, x0).                                                      c
+  In the context of supervisory control, the event set Σ is                                  c    c    c
+partitioned as Σ = Σo ˙∪Σuo = Σc ˙∪Σuc, where Σo (respec-
+                                                                                              (z0, 1)      (z1, 3)      (z2, 1)      (z2, 3)    d
+tively, Σc) is the set of observable (respectively, controllable)                   b                  b            d
+events, and Σuo (respectively, Σuc) is the set of unobservable            a       a       a       a
+                                                                                               c(respectively, uncontrollable) events. We deﬁne P  : Σ∗→
+Σ∗o as natural projection that replaces unobservable events in                (z0, 2)      (z1, 4)      (z2, 2)      (z2, 4)                                                                            b                  b
+a string by ϵ, which can also be extended to P : 2Σ∗→2Σ∗o
+                                                                                       c
+by P(L) = {P(s) ∈Σ∗o : s ∈L}.
+ A  partial-observation  supervisor  is  a  function S    :                Fig. 2.  Closed-loop system G × H in Example 1.
+P(L(G)) →Γ, where Γ = {γ ∈2Σ  : Σuc ⊆γ} is the   (Σuo ∩γ)∗}. The observable reach of q upon the occurrence
+set of control decisions or control patterns. That is, upon the   of σ is NXσ(q) := {δ(x, σ) ∈X  : x ∈q}. We also deﬁne
+occurrence of α ∈Σ∗o, events in S(α) ∈Γ are enabled by   NXϵ(q) = q for technical reason. The set of events that can
+the supervisor. We use notation S/G to represent the closed-   be observed from q under event set γ is denoted as:
+loop system under control. The generated language of S/G                                                                     ∃x ∈q, w ∈(Σuo ∩γ)∗
+starting from x0 ∈X0, denoted by L(S/G, x0), is deﬁned    O(q, γ) =  σ ∈Σo ∩γ :                                                                                                                                             s.t. δ(x, wσ)!
+recursively as:
+                                                            B. Initial-State and Current-State Estimates
+   • ϵ ∈L(S/G, x0); and
+   • for any s ∈Σ∗, σ ∈Σ, we have sσ ∈L(S/G, x0) iff     Given system G and supervisor S, upon the occurrence
+     [s ∈L(S/G, x0)] ∧[sσ ∈L(G, x0)] ∧[σ ∈S(P(s))].     of observable string α ∈P(L(S/G)), the supervisor can
+                                                              estimate the current-state or the initial-state of the system. WeWe assume without loss of generality that the supervisor
+                                                           denote by ECS/G(α) and EIS/G(α), respectively, the current-does not know the  initial  state of the system. Then the
+                                                                       state estimate and the initial-state estimate of the closed-looplanguage generated by the controlled system S/G is deﬁned
+                                                        system S/G upon observing α, i.e.,by L(S/G) = ∪x0∈X0L(S/G, x0).
+  Throughout the paper, we assume that supervisor S  is                        ∃x0 ∈X0, ∃s ∈L(S/G, x0)
+                                             ECS/G(α) =  x ∈X :recognized by a deterministic ﬁnite-state automaton H =                                           s.t. P(s) = α ∧δ(x0, s) = x
+(Z, Σ, ξ, z0) such that                                    EIS/G(α) ={x0 ∈X0 : ∃s ∈L(S/G, x0) s.t. P(s) = α}
+    i (∀z ∈Z)(∀σ∈Σ)[δ(z, σ)̸=z ⇒σ∈Σo]; and
+                                                      Using the current-state estimate, for closed-loop system S/G,   ii (∀s ∈L(S/G))[∆H(ξ(z0, s)) = S(P(s))].
+                                             we have ασ ∈P(L(S/G)) iff [α ∈P(L(S/G))] ∧[σ ∈
+Then the closed-loop language can also be computed by
+                                           O(ECS/G(α), S(α))].L(S/G) = L(G × H), where × is the standard product
+                                                        Note that the current-state estimate ECS/G(α) can be com-composition of automata; see, e.g., [24].
+                                                           puted recursively by:
+Example 1. Let us consider system G shown in Figure 1(a),      • ECS/G(ϵ) = URS(ϵ)(X0); and
+where Σo = {b, c, d} and Σc = {a, c, d}. Let us consider a      • for any ασ ∈P(L(S/G)), where σ ∈Σo, we have
+supervisor S that disables event c only when observing string      ECS/G(ασ) = URS(ασ)(NXσ(ECS/G(α))).
+b and enables all events otherwise. Then supervisor S can be
+                                                  The initial-state estimate EIS/G(α) can be computed throughrealized by automaton H shown in Figure 1(b). The closed-
+                                                                the current-state estimate over the augmented state-space
+loop system under control S/G is recognized by automaton
+                                                                    [25]. Speciﬁcally, the augmented system of G is an automa-
+G × H as Figure 2 shows.
+                                                             ton ˜G = ( ˜X, Σ, ˜δ, ˜X0), where ˜X ⊆X0 × X is the set of
+  Let q ⊆X be a set of states, γ ⊆Σ be a set of events and    states, ˜X0 = {(x0, x0) ∈˜X : x0 ∈X0} is the set of initial-
+σ ∈Σo be an observable event. The unobservable reach of    states, and the transition function ˜δ : ˜X × Σ →˜X is deﬁned
+q under event set γ is URγ(q) := {δ(x, s) ∈X : x ∈q, s ∈   by: for any (x0, x) ∈˜X, σ ∈Σ, we have ˜δ((x0, x), σ) =
+
+
+                                                       4840
+
+               1, 5           1, 6                  2, 5           2, 6                     (∀α ∈P(L(S/G)))[EIS/G(α)̸ ⊆Xsec].        (3)               c                      c
+            c        c             c        c
+                c                      c                       In  practice, the open-loop system may not be  initial-
+                                                                       state opaque without control. Therefore, supervisor S  is               1, 1           1, 3    d         2, 1           2, 3    d
+               b                      b                      usually designed to guarantee that the closed-loop system
+          a       a          a       a          S/G  is  initial-state opaque; see,  e.g., [13]–[17] for how
+                c                      c
+                                                                   to synthesize such a supervisor. We illustrate the opacity-
+               1, 2           1, 4                  2, 2           2, 4                enforcing supervisor by the following example.               b                      b
+Fig. 3.  Augmented system ˜G for system G in Figure 1(a), where red-   Example 3. We still consider system G shown in Figure 1(a)
+marked states {(1, 1), (2, 1)} correspond to the original secret state 1 in   and assume state 1 is a secret initial-state, i.e., Xsec = {1}.
+G.
+                                                                Speciﬁcally,  if the system  is initiated from 1, then when
+(x0, δ(x, σ)). Then we have L(˜G) = L(G) and L(S/ ˜G) =                                                         sequence bc ∈P(L(G, 1)) \ P(L(G, 2)) is observed, we
+L(S/G). Furthermore, for any set of augmented states ˜q ⊆
+                                                        have EIS/G(bc) = {1} ⊆Xsec, i.e., the intruder knows for˜X, we deﬁne I(˜q) = {x0 ∈X0 : (x0, x) ∈q} as the set of its                                                              sure that the system was from a secret-state. However, under
+ﬁrst components. Then for any observation α ∈P(L(S/G)),                                                                the supervision of S shown in Figure 1(b), the closed-loop
+we have                                                        system under control shown as Figure 2 is initial-state opaque
+               EIS/G(α) = I(ECS/G(α)).˜                     (1)   because the secret-revealing string bc is no longer in the
+                                                             closed-loop language L(S/G).
+For the sake of clarity, we use notations NXσ(˜q) and URγ(˜q)                f    f
+to denote the observable reach and the unobservable reach     III. ACTIVE ATTACK AGAINST INITIAL-STATE OPACITY
+over the augmented state-space, respectively.
+                                                            A. Motivating Example
+Example  2.  Still, we consider system G and supervisor                                                                 In the standard problem of initial-state opacity, the intruder
+H shown  in Figure  1. Suppose  that  string α =  b ∈                                                                              is assumed to be passive in the sense  that  it can only
+P(L(S/G)) is observed. We have ECS/G(α) = {3, 4} and   “eavesdrop” on the observations without interfering with the
+EIS/G(α) =  {1, 2}.  Speciﬁcally, EIS/G(α) can  also be   observations received by the supervisor. In Example 3, we
+computed as follows.  First, we construct the augmented                                                        have provided an example, where the supervisor successfully
+system ˜G shown in Figure 3. Then we have EC                                              S/G(ϵ)˜  =    protects the  initial secret of the closed-loop system from
+URS(ϵ)(˜X0) = {(1, 1), (1, 2), (2, 1), (2, 2)} and ECS/G(b)˜  =   being revealed to the passive intruder.
+URS(b)(NXb(ECS/G(ϵ)))˜   = {(1, 3), (1, 4), (2, 3), (2, 4)}. Fi-     However, in networked control systems, some powerful
+                                                                  attackers may further have the capability to actively tamper
+nally, we get EIS/G(b) = I(ECS/ G(b))˜   = {1, 2}.                                                           with the observations sent by the sensors in order to mislead
+C. Initial-State Opacity                                        the feedback decisions. Such an attacker model is referred
+                                                                   to as the sensor deception attacks [21], [22]. The following  In some cases, for example, due to insecure communica-
+                                                      example shows that, in the case of sensor deception attacks,tions, the observation of the system may also be available
+                                                                the attacker may actively mislead a supervisor, which  isto an outsider. Here, we ﬁrst consider a passive intruder
+                                                                   original opaque-enforcing, to expose its secret initial state.(eavesdropper) with the following capabilities:
+A1  It knows both the system model G and the functionality   Example 4. Let us still consider system G and supervisor
+     of supervisor S;                            S in Figure 1. Now, we consider an active sensor attacker A
+A2  It can also observe the occurrences of events in Σo.      described above. Suppose that the attacker A can erase the
+Essentially, the passive intruder has exactly the same knowl-    ﬁrst occurrence of observable event b, e.g., by manipulating
+edge about the system as that of the supervisor.                the communication channels between the sensors and the
+  Furthermore, we assume that the system has some “secret”    supervisor. Therefore, when observable string bβ actually
+that should not be revealed to the outside world. In this    occurs, the supervisor will only receive β. Recall that su-
+work, we assume that the system wants to hide the fact that    pervisor S simply disables event c when it observes string b.
+it starts from some secret initial states Xsec ⊆X0. This   Therefore, under attacker A, string bc is still feasible since
+requirement can be formalized by the notion of initial-state    the supervisor does not know that event b happens. Then
+opacity deﬁned as follows.                            when the attacker observes bc,  it knows for sure that the
+                                                        system was initiated from secret state 1.
+Deﬁnition 1 (Initial-State Opacity). Given system G, ob-
+servable events Σo, supervisor S and a set of secret initial   B. Active Attackers and Problem Formulation
+states Xsec ⊆X0, the closed-loop system S/G is said to be                                                    To formulate the above setting, we deﬁne Σv ⊆Σo as the
+initial-state opaque w.r.t. Xsec and Σo if                                                                      set of vulnerable events whose occurrences can potentially
+  (∀x0 ∈Xsec)(∀s ∈L(S/G, x0))                         be tampered with by an active attacker. An active attacker
+  (∃x′0 ∈X0 \ Xsec)(∃t ∈L(S/G, x′0))[P(s) = P(t)]   (2)    (or attack strategy) is a function
+or equivalently,                                     A : P(L(G)) →Σϵo,
+
+
+                                                       4841
+
+satisfying the following constraints:                            the supervisor should not be aware of its presence before
+   • A(ϵ) = ϵ;                                                                        it successfully does so. Here, we only require the existence
+                    ({σ}   if σ /∈Σv      of such an attack  string since we consider synthesizing
+   • for any ασ ∈P(L(G)), A(ασ) ∈                             .    an attacker that can potentially threaten the privacy of the                                 Σϵv    if σ ∈Σv
+                                                            system. As a stronger requirement, one may also require
+That is, upon the occurrence of each new observable event
+                                                                     that the attacker can always detect the secret; this problem,
+σ ∈Σo, if  it is a vulnerable event, then the intruder may
+                                                          however, is beyond scope of this work.
+choose to either erase this event or replace it with another
+event in Σv. An active attacker A essentially induces a modi-         IV. THE GENERAL ALL ATTACK STRUCTURES
+ﬁcation mapping for observable strings gA : P(L(G)) →Σ∗o,                                                                 In this section, we deﬁne the All Attack Structure (AAS)
+which is deﬁned recursively as:
+                                                                     that embeds  all possible attacker’s strategies in  it with a
+   • gA(ϵ) = A(ϵ); and                                                                  suitably chosen state-space, which, therefore, can be served
+   • ∀ασ ∈P(L(G)) : gA(ασ) = gA(α)A(ασ).                                                              as the basis for our synthesis problem.
+  Therefore, upon the occurrence of s ∈L(G), the supervi-                                         We denote by ˆΣϵ = {ˆσ : σ ∈Σ}∪{ˆϵ} the events modiﬁed
+sor will observe gA(P(s)) and issue decision S(gA(P(s))).                                                    by the attacker in order to distinguish from the actually
+Essentially, system G can be regarded as being controlled                                                              events generated by the plant. Note that the supervisor cannot
+by a new “supervisor” SA = S ◦gA, where ◦is the standard                                                                 distinguish event σ and ˆσ. For every observable event σ ∈
+function composition. Then the language generated by the                                                       Σo, we deﬁne the action space of the attacker as
+controlled system under attack is given by L(SA/G).
+  Before the supervisor detect the presence of the attacker,                         {ˆσ : σ ∈Σv} ∪{ˆϵ}    if σ ∈Σv                                                       V(σ) =                                                        .
+it will estimate the state based on the doctored observation                              {ˆσ}               if σ /∈Σv
+in original closed-loop system S/G since it is not aware of                                                       Deﬁnition 2 (All Attack Structure). Given system G =
+the attacker. On the other hand, the attacker will estimate the                                                   (X, Σ, δ, X0), observable events Σo ⊆Σ, supervisor S
+state based on the real observation in attacked closed-loop                                                                  realized by automaton H = (Z, Σ, ξ, z0) and vulnerable
+system SA/G. In summary, upon the occurrence of actual                                                              events Σv ⊆Σo, the All Attack Structure M is a new ﬁnite-
+observation α ∈P(L(SA/G)),                                                                       state automaton
+   • from the supervisor’s point of view, the current-state
+     estimate and the initial-state estimate are, respectively,          M = (Q, ΣM, f, q0),                 (5)
+   ECS/G(gA(α)) and EIS/G(gA(α));                                                     where
+   • from  the  attacker’s  point  of view,  the  current-state                                                                  X˜
+     estimate and the initial-state estimate are, respectively,    • Q = Qe ˙∪Qa such that Qe ⊆2X × 2 × (Z ∪{zatt})
+   ECSA/G(α) and EISA/G(α).                                           is the set of environment states, where zatt is a new state
+                                                       meaning that the supervisor has realize the presence of the
+  Note that, for actual observation α ∈P(L(SA/G)), if the                    X˜                                                                    attacker and Qa ⊆2X × 2 × Z × Σo is the set of attackattacker changes it to observation gA(α) /∈P(L(S/G)), or
+                                                                          states;
+equivalently, ECS/G(gA(α)) = EIS/G(gA(α)) = ∅, then the                                                                • q0 = (X0, ˜X0, z0) ∈Qe is the initial state;supervisor will detect the presence of the attacker and then,
+it may upgrade the security level or take further actions to    • ΣM = Σo ∪ˆΣϵo is the set of events;
+                                                                • f : Q × ΣM →Q is the transition function consists of theprotect the system from being attacked. Formally, we say
+                                                               following two types of transitions:attack A is stealthy along sequence α ∈P(L(SA/G)) if
+                                                      – fea  : Qe × Σo →Qa is the transition function from
+              ECS/G(gA(α))̸ = ∅.                   (4)       environment states to attack states deﬁned by: for any
+In this work, we investigate from the attacker’s point of view.        qe = (q, ˜q, z) ∈Qe, we have
+The objective of the attacker is to break the privacy guarantee
+                                                                                            O(˜q, ∆H(z))    if z ∈Z
+of the system, in the sense that the initial-secret (IS) may          ∆M(qe) =                                               .
+                                                                             ∅            if z = zatt
+possibly be revealed under attack.
+                                                          and for σ∈∆M(qe), we have fea(qe, σ)=(q, ˜q, z, σ).
+Problem 1  (IS-Detectable Attacker  Synthesis Problem).                                                      – fae : Qa × (ˆΣo ∪{ˆϵ}) →Qe is the transition function
+Given system G, observable events Σo ⊆Σ, supervisor
+                                                         from attack states to environment states deﬁned by: for
+S, secret initial-states Xsec ⊆X0 and vulnerable events
+                                                           any qa =(q, ˜q, z, σ), we have ∆M(qa)=V(σ). For each
+Σv ⊆Σo, synthesize an attacker A : P(L(G)) →Σϵo such                                                                                   ˆσa ∈∆M(qa), we have fae(qa, ˆσa) = (q′, ˜q′, z′), where
+that ∃ασ ∈L(SA/G) satisfying:
+                                                                              q′ =NXσa(UR∆H(z)(q)), ˜q′ = NXσ(f  UR∆H(z)(˜q))f          and  1) A is stealthy along α;
+  2) EISA/G(ασ) ⊆Xsec.                                                        ξ(z, σa)   if [q′̸ = ∅] ∧[ξ(z, σa)!]                                                                                  z′ =                                                         .
+If the attacker exists, we said the system S/G to be IS-                             zatt       otherwise
+attackable, and the attacker A to be IS-detectable.
+                                                    The intuition of the AAS is explained as follows. The
+   Intuitively, in the above formulation, ασ is a string along  AAS essentially serves as an arena for the game between
+which the attacker can detect the secret  initial state, and    the system and the attacker. The system-player plays at each
+
+
+                                                       4842
+
+environment state by randomly generating a feasible observa-
+                                                                                                         X1, ˜X1, z0       c
+tion in O(˜q, ∆H(z)). Whenever an observation σ occurs, the
+                                                                                                                                             b
+game moves to an attack state simply by “remembering” σ.                                 ϵ
+                                                                                                                                         a01           a02
+Note that we use a new state zatt to denote that the supervisor
+has detected the presence of the attacker. Therefore, if the                                              b             c
+                                                                                             d
+third component of the state is  zatt, the game stops,  i.e.,                     X1, ˜X2, z0   X2, ˜X2, z1   X3, ˜X3, z2       c
+no active event is deﬁned. The attacker-player plays at each                               c           d           d
+attacker states by choosing a doctored observation. Note                 a03           a04           a05           a06           a07
+that, when the attacker changes the original observation σ              d             c           d             d             c
+to σa, we use notation ˆσa with a hat to emphasize that this              ∅, ˜X4, zatt   X3, ˜X5, z1   X4, ˜X4, z2
+is a doctored observation. For technical reason, we deﬁne
+                                                                                                        d             c
+∆H(zatt) = ∅.
+  To formally connect the AAS structure with the attacker                                                 · · ·           a08
+strategies, we introduce the following concepts. First. we                                              c
+denote by Le(M) = {α ∈Σ∗M  : f(α) ∈Qe} the set of                                X5, ˜X6, z2       c
+extended strings where all strings end up with an environ-                                              b
+ment state. Consider α = σ1ˆσa1σ2ˆσa2 · · · σnˆσan ∈Le(M).                                 ϵ             a09           a10
+We denote by obs(α) = σ1σ2 · · · σn the string consists of                                              b             c
+odd events in α, and denote by tam(α) = σa1σa2 · · · σan              d                                                                                              X5, ˜X7, z2   X3, ˜X7, z2   X3, ˜X8, z2
+the string consists of even events in α with “hats” removed.
+                                                                                                                              c        d      c     d      c
+Therefore, for α ∈Le(M), obs(α) is the actual observation,
+which is observed by the attacker, and tam(α) is the modiﬁed                 a11           a12       a13    a14    a15    a16
+observation, which is observed by the supervisor. The inverse                 c             c        d      c     d      c
+obs−1 is deﬁned by: for every observation α = σ1 · · · σn ∈              ∅, ˜X4, zatt   X3, ˜X4, z2
+P(L(G)), we have obs−1(α) = {σ1}V(σ1) · · · {σn}V(σn).                               c                   X1X2 == {3,{1, 2}4}
+  On  the  other  hand,  given an  attack  strategy A and                               a17                  X3 = {3, 5}
+an actual observation α = σ1σn . . . σn ∈P(L(SA/G)),                               c                   X5X4 == {1}{6}
+                                                                                        =                                                                                                                                                                       {(1,                                                                                                                                                                                       1),                                                                                                                                                                                           (2,                                                                                                                                                                2)}                                                                                                                                                                   ˜X1an extended  string can be uniquely speciﬁes as αA =                                                                                        =                                                                                                                                                                       {(1,                                                                                                                                                                                       3),                                                                                                                                                                                           (1,                                                                                                                                                                                              4), (2, 4)}                                                                                                                                                                   ˜X2                                                                                              X4, ˜X6, z2       c
+σ1ˆσa1σ2ˆσa2 · · · σnˆσan where σai = A(σ1σ2 · · · σi). Clearly,                                                               ˜X3 = {(1, 3), (1, 5), (2, 3)}
+                                                                                                                               b                             ˜X4 = {(1, 6), (2, 6)}
+we have obs(αA) = α and tam(αA) = gA(α).                                     b                                            ˜X5 = {(1, 6)}
+  We denote by Qatt = {(q, ˜q, z) ∈Qe : z = zatt} the set of                               a18           a19            ˜X6 = {(1, 1), (2, 1)}                                                                                                                                                                   ˜X7 = {(1, 3), (2, 3), (1, 4), (2, 4)}
+attack-revealing states. Then the following result says that                                 ϵ             c              ˜X8 = {(1, 3), (2, 3), (1, 5), (2, 5)}
+the attack remains stealthy along a string if and only if  it              ∅, ˜X7, zatt   X4, ˜X7, z2   X5, ˜X8, z2
+does not reach an attack-revealing state in M.                                                 c     d     d      c
+
+Lemma  1. For any  attacker A and observation ασ ∈                           a20    a21    a22    a23    c
+P(L(SA/G)) such that A  is stealthy along α,  let qe =                            c     d      c
+(q, ˜q, z) = f((ασ)A) be the environment state reached by                     X5, ˜X4, z2    ∅, ˜X4, zatt
+(ασ)A. Then A is stealthy along ασ if and only if qe /∈Qatt.                               c
+
+Example 5.  Still, let us consider system G and supervisor                                                 · · ·
+S shown in Figure 1. Figure 4 shows part of the AAS     Fig. 4.   (Part of) the AAS for system G and supervisor S for Example 5.
+M. The  initial  state  is (X1, ˜X1, z0), which  is the tuple   S,  d̸ ∈O(X1, ∆H(z0)). Therefore, the supervisor will be
+of the initial-state sets of G, ˜G and H. From the initial-   aware of presence of the attacker. As a result, AAS M enters
+state, the system randomly chooses an event in {b, c} =   a attack-revealing state (∅, ˜X4, zatt). The remaining part of
+O G(˜ ˜X1, ∆H(z0)) to play.  If event b is chosen, the AAS    the AAS structure is constructed in the same way.
+will enters attacker state a01. The attacker can choose an
+event in V(b) = {ˆϵ,ˆb} to play. If ˆϵ is chosen, the supervisor                   V. THE SIMPLIFIED AAS
+observes nothing. Therefore, the ﬁrst and the third compo-                                                                 In the previous section, we have introduced the AAS that
+nents do not change. However, the attacker knows that b is                                                   embeds all attack strategies until their presence is revealed.
+generated and therefore, the second component is updated                                                              In practice, once the attacker knows for sure that the system
+to ˜X2 = NXb(     f  UR∆H(z0)(f        ˜X1)) =  {(1, 3), (1, 4), (2, 4)}.   was or was not initiated from a secret state, the attacker-
+As a  result, AAS enters environment  state (X1, ˜X2, z0).    player’s win or loss has been completely determined. Based
+Again, the system randomly chooses an event in {d, c} =                                                    on this idea, the AAS can be simpliﬁed.
+O G(˜ ˜X2, ∆H(z0)) to play. If event d is chosen, the AAS
+will  enters  attacker  state  a03. Since V(d) =  { ˆd},  the   Deﬁnition 3 (Detected  States). Given AAS M, for any
+attacker can only choose ˆd to play,  i.e.,  it cannot modify   environment state qe = (q, ˜q, z) ∈Qe, we say qe is a
+the observation. However, in the control logic of supervisor      • positive detected state if I(˜q) ⊆Xsec; and
+
+
+                                                       4843
+
+                                                                                                                                                             : undetected state   • negative detected state if I(˜q) ∩Xsec = ∅.
+We denote by Q+det ⊆Qe and Q−det ⊆Qe the set of all                               : positive detected state    X1, ˜X1, z0       c
+positive and negative detected states, respectively, and deﬁne                               : attack-revealing states         b
+
+                                                                                                                                                      a01           a02Qdet = Q+det ∪Q−det as the set of detected states.                                                                 ϵ
+  Furthermore, we observe that, once we know for sure that                                                           b             c
+                                                                                                       d
+the system was or was not started from secret states, we                               X1, ˜X2, z0   X2, ˜X2, z1   X3, ˜X3, z2       c
+know this information forever. In terms of the AAS, this                                            c           d           d
+observation is summarized by the following result.                                           a03           a04           a05           a06           a07
+Proposition 1. Let qe ∈QM be a positive (respectively, neg-                        d             c           d           d
+                                                                                                                                                                                     c
+ative) detected state. Then all environment states reachable                           ∅, ˜X4, zatt   X3, ˜X5, z1   X4, ˜X4, z2
+from qe are positive (respectively, negative) detected states.                Fig. 5.  The simpliﬁed AAS of the AAS in Figure 4.
+                                                                undetectable. Therefore, we can remove active events deﬁned   Positive/negative detected environment states essentially
+                                                                        at these states from the AAS, which gives the SAAS a muchprovide a state-based winning condition for the attacker-
+                                                              smaller state space.player. In some cases, we can also determine in advance
+that the attacker cannot win the game even before it reveals                                                               VI. SYNTHESIS OF ATTACK STRATEGIES
+itself. This is captured by the notion of undetectable states.
+                                                            A. Single Attack Structure
+Deﬁnition 4 (Undetectable States). Given AAS M, for any                                                        Note that in the SAAS, at each attack state, the attacker
+environment state qe =  (q, ˜q, z) ∈Qe, we say qe  is a   may have multiple choices. To synthesize a deterministic
+undetectable state if (i) I(˜q) ∩Xsec̸ = ∅; and (ii) for any    attack strategy, the single attacker structure (SAS) is deﬁned,
+(x0, x) ∈fUR∆H(z)(˜q) such that x0 ∈Xsec, there exists   which is a sub-system of the SAAS such that each attack
+(x′0, x) ∈fUR∆H(z)(˜q) such that x′0̸ ∈Xsec. We denote by    state only has no more than one active event.
+Qud ⊆Qe the set of all undetectable states.
+                                                       Deﬁnition 5 (Single Attack Structure). Let m = (Qm =
+   Intuitively, if the system reaches an undetectable state, then   Q′a ∪Q′e, ΣM, f m, q0) be a sub-system of the SAAS M s.
+it means that whenever the system was possibly initiated  We say m is a single attack structure if
+from a secret state x0 ∈Xsec,  it is also possible that the     1) for any state qa ∈Q′a, we have |∆m(qa)| = 1;
+system was initiated from a non-secret state x0 ∈Xsec     2) for any state qe ∈Q′e, we have |∆m(qe)| = |∆M s(qe)|.
+such that the two cases end up with the same current-state x                                                       s                                        We denote the set of all SAS of the SAAS M  as S(M s).
+via trajectories having the same observation. Therefore, once
+the system reaches an undetectable state, we can conclude       Intuitively, in a single attack structure, at each attack state,
+immediately that the attacker can no longer detect the secret     it only has a unique choice of attack strategy, and at each
+in the future when actually the initial state is secret.          environment  state,  it can reactive to  all possible system
+                                                                  events. Recall  that, for any observation α ∈P(L(G)),
+Proposition 2. Let qe ∈QM be an undetectable state in   obs−1(α) ∈Σ∗M  is the set of  all extended strings with
+AAS M. Then all environment states reachable from qe are                                                              observation α. However, in terms of SAS m, we know that
+either undetectable or negative detected states.                                                                the cardinality of obs−1(α) ∩Le(m) is always smaller than
+  Based on Propositions 1 and 2, we know that once we   or equal to one. Therefore, we denote by obs−1m (α) the
+reach a detected state in Qdet, the attacker knows for sure   unique extended string m such that obs(obs−1m (α)) = α
+whether the  initial state  is secret, and once we reach an   when it exists.
+undetectable state in Qud, the attacker will never be able to      Therefore, given a SAS m ∈S(M s), we can uniquely an
+discover the initial secret when the truth is secret. Therefore,    attack strategy Am by: for any observation ασ ∈P(L(G)),
+there is no need to further expand the AAS from detected      •  If obs−1m (α) exists, then Am(α) = σa, where ˆσa is the
+states and undetectable states, which leads to the simpliﬁed          last event of obs−1m (α);
+AAS (SAAS). Speciﬁcally, we denote by                         •  If obs−1m (α) does not exist, then Am(α) = σ, where σ
+                                                                                    is the last event of α.
+        M s = (Qs, ΣM, f s, q0),                                        We call such strategy Am the SAS m induced strategy. We
+the simpliﬁed AAS, which is the reachable part of the AAS M   can easily show, by induction, that αAm = obs−1m (α) for
+by removing all outgoing transitions from states Qdet ∪Qud.   any observation α. Therefore, by understanding how a SAS
+                                                        can “encode” an attacker strategy, hereafter, we will focus
+Example 6. For the AAS shown in Example 5, its SAAS is                                                    on ﬁnding a SAS instead of ﬁnding an attacker strategy.
+given in Figure 5. For environment state (X3, ˜X5, z1), since
+I(˜X5) = I({(1, 6)}) = {1} ⊆Xsec, it is positive detected.   B. Synthesis of Attacker Strategy
+For environment state (X4, ˜X4, z2), since UR∆H(z2)(f        ˜X4) =     Now, we show how to synthesize an attack strategy, which
+{(1, 6), (2, 6)}, where 1 ∈Xsec  but 2 /∈Xsec,  it  is    is encoded as a SAS, such that Problem 1 is solved. The
+undetectable. In fact, the revealing state (∅, ˜X4, zatt) is also   following result shows that, in order to ensure an attack
+
+
+                                                       4844
+
+                                                                  path. This synthesis problem with the stronger requirement is
+                                 X1, ˜X1, z0       c
+                                                                 currently under investigation. Our preliminary result shows
+                                               b
+                                   ϵ                                              that memory is needed in order to realize such attackers.
+                                              a01           a02
+                                                             c                                   REFERENCES
+
+               d
+                      X1, ˜X2, z0              X3, ˜X3, z2       c                     [1] L.K. Carvalho, Y.-C. Wu, R. Kwong, and S. Lafortune.  Detection
+                                                                        and mitigation of classes of attacks in supervisory control systems.
+                                 c                       d
+                                                                               Automatica, 97:121–133, 2018.
+                  a03           a04                         a06           a07                   [2]  J.C. Basilio, C.N. Hadjicostis, and R. Su.  Analysis and control for
+                                                                                           resilience of discrete event systems: Fault diagnosis, opacity and cyber
+               d             c                       d                                                                                             security. Foundations and Trends® in Systems and Control, 8(4):285–
+                ∅, ˜X4, zatt   X3, ˜X5, z1   X4, ˜X4, z2                     c                       443, 2021.
+                                                                                     [3] Z. Ma and K. Cai. On resilient supervisory control against indeﬁnite
+        Fig. 6.  Synthesized attack strategy represented by a SAS.                  actuator attacks in discrete-event systems.  IEEE Control Systems
+sequence in its induce strategy, the necessary and sufﬁcient           Letters, 2022.
+                                                                                     [4] Z. Ma and K. Cai. Optimal secret protections in discrete-event systems.
+condition is to have a positive detected state in the SAS.          IEEE Transactions on Automatic Control, 2022.
+                                                                                     [5]  J. Balun and T. Masopust.  Comparing the notions of opacity for
+Theorem 1. Let m ∈S(M s) be a SAS. Then Am solves          discrete-event systems. Discrete Event Dynamic Systems, 31(4):553–
+                                                                                582, 2021.Problem 1, i.e., Am is IS-detectable, iff Qm ∩Q+det̸ = ∅.
+                                                                                     [6] X.  Yin, M. Zamani, and  S.  Liu.  On approximate  opacity  of
+  The above result says that there exists a SAS-encoded          cyber-physical systems.  IEEE Transactions on Automatic Control,
+attacker strategy if and only if the SAAS contains a positive         66(4):1630–1645, 2021.
+                                                                                     [7] X. Yu, X. Yin, S. Li, and Z. Li.  Security-preserving multi-agent
+detected state. This implicitly restricts our solution space          coordination for complex temporal logic tasks. Control Engineering
+to SAS-encoded attackers. The following result further says          Practice, 123:105130, 2022.
+that, in fact, such a restriction is without loss of generality      [8] Y.  Ji, X. Yin, and S. Lafortune.   Enforcing opacity by insertion
+                                                                                    functions under multiple energy constraints. Automatica, 108:108476,
+for the solvability of Problem 1.                                        2019.
+                                                                                     [9]  S. Liu, A. Trivedi, X. Yin, and M. Zamani.  Secure-by-construction
+Theorem  2.  Supervisory  control  system S/G  is  IS-          synthesis of cyber-physical systems. Annual Reviews in Control, 2022.
+detectable, i.e., Problem 1 has a solution, if and only if there    [10] A. Wintenberg, M. Blischke, S. Lafortune, and N. Ozay. A general
+exists a SAS m ∈S(M s) such that Am is IS-detectable.             language-based framework for specifying and verifying notions of                                                                                         opacity. Discrete Event Dynamic Systems, pages 1–37, 2022.
+  The above two theorems suggest immediately an approach    [11]  S. Yang, X. Yin, S. Li, and M. Zamani. Secure-by-construction optimal
+                                                                                 path planning for linear temporal logic tasks. In 59th IEEE Conference
+for synthesizing an IS-detectable attack strategy:                    on Decision and Control (CDC), pages 4460–4466. IEEE, 2020.
+                                    s                                    [12] A. Saboori and C.N. Hadjicostis. Veriﬁcation of initial-state opacity in   • First, we build the SAAS M  and check whether or not
+                                                                                        security applications of discrete event systems. Information Sciences,
+       it contains a positive detected state;                              246:115–132, 2013.
+   •  If so, then we ﬁnd a SAS m ∈S(M s) such that    [13]  J. Dubreil, P. Darondeau, and H. Marchand. Supervisory control for
+     a positive detected state is contained, and its induced          opacity. IEEE Trans. Automatic Control, 55(5):1089–1100, 2010.
+                                                                              [14] A. Saboori and C.N.  Hadjicostis.   Opacity-enforcing supervisory
+     strategy Am is the solution.                                                strategies via state estimator constructions.  IEEE Transactions on
+We illustrate the procedure by the following example.                Automatic Control, 57(5):1155–1165, 2011.
+                                                                              [15] X. Yin and S. Lafortune.  A uniform approach for synthesizing
+Example 7. Still, in our running example, the SAAS M s has          property-enforcing supervisors for partially-observed discrete-event
+                                                                                  systems. IEEE Trans. Automatic Control, 61:2140–2154, 08 2016.
+been shown in Figure 5, where Q+det = {(X3, X5, z1)}̸ = ∅.    [16] Y. Tong, Z. Li, C. Seatzu, and A. Giua.  Current-state opacity en-
+A possible SAS m ∈S(M s) is given in Figure 6. Compared         forcement in discrete event systems under incomparable observations.
+with M s in Figure 5, m in Figure 6 only has one out-going          Discrete Event Dynamic Systems, 28(2):161–182, 2018.
+                                                                              [17] Y. Xie, X. Yin, and S. Li.  Opacity enforcing supervisory control
+transition at attack state a01. Then according to Theorem 1,         using non-deterministic supervisors. IEEE Transactions on Automatic
+Am is an IS-detectable strategy.                                            Control, 2021.
+                                                                              [18] L. Lin and R. Su. Synthesis of covert actuator and sensor attackers.
+                  VII. CONCLUSION                                 Automatica, 130:109714, 2021.
+                                                                              [19] Y. Wang, Y. Li, Z. Yu, N. Wu, and Z. Li.  Supervisory control of
+  This paper investigated the problem of synthesizing active-          discrete-event systems under external attacks.  Information Sciences,
+                                                                            562:398–413, 2021.
+sensor attackers against the  initial-state opacity of super-                                                                              [20] M. Alves, P.N. Pena, and K. Rudie.  Discrete-event systems subject
+visory control systems. To this end, we deﬁned an infor-           to unknown sensor attacks. Discrete Event Dynamic Systems, pages
+mation structure, call the AAS, that embeds  all possible         1–16, 2021.
+                                                                              [21] R. Su. Supervisor synthesis to thwart cyber attack with bounded sensor
+attack strategies. Using the structural properties of initial-                                                                                 reading alterations. Automatica, 94:35–44, 2018.
+state estimation, we further simpliﬁed the AAS and based    [22] R. Meira-G´oes, E. Kang, R.H. Kwong, and S. Lafortune. Synthesis
+on which, an attacker strategy is synthesized. Note that, in          of sensor deception attacks at the supervisory layer of cyber–physical
+                                                                                  systems. Automatica, 121:109172, 2020.
+this work, we only require that the synthesized attacker can                                                                              [23] R. Meira-G´oes, S. Lafortune, and H. Marchand. Synthesis of super-
+possibly detected the initial secret along some path. This is          visors robust against sensor deception attacks. IEEE Transactions on
+motivated by the negation of opacity, i.e., if the attacker can         Automatic Control, 66(10):4990–4997, 2021.
+                                                                              [24] C.G. Cassandras and S. Lafortune.  Introduction to Discrete Event
+potentially threaten the system, then the system is not secure.                                                                                  Systems, volume 3. Springer, 2021.
+In some cases, we may further require that the synthesized    [25]  S. Shu and F. Lin.  I-detectability of discrete-event systems. IEEE
+attacker can always detected the  initial secret along any        TASE, 10(1):187–196, 2012.
+
+
+                                                       4845

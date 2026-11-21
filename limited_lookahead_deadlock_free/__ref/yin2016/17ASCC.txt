@@ -1,0 +1,428 @@
+2017 11th Asian Control Conference (ASCC)
+Gold Coast Convention Centre, Australia
+December 17-20, 2017
+
+
+
+
+
+         Inﬁnite-Step Opacity of Stochastic Discrete-Event Systems
+
+
+                          Xiang Yin, Zhaojian Li, Weilin Wang and Shaoyuan Li
+
+
+
+      Abstract— Opacity is an important information-ﬂow property   opacity was proposed in order to capture whether or not the
+    that arises in security and privacy analysis of cyber-physical    intruder may know that the system was/is at a secret state
+    systems. It captures the plausible deniability of the system’s                                                                       for some speciﬁc instant. This deﬁnition is stronger than the
+    “secret” in the presence of a malicious intruder modeled as
+                                                                 notion of current-state opacity as  it allows the intruder to    a  passive  observer. As a speciﬁc type  of  opacity,  inﬁnite-
+    step opacity requires that the intruder can never determine   use future information to infer the system’s state in the past.
+    unambiguously that the system was at a secret system for any   More recently, an improved approach for the veriﬁcation of
+    speciﬁc instant in the past. Existing works on the analysis of    inﬁnite-step opacity was proposed by using a structure called
+    inﬁnite-step opacity only provide a binary characterization, i.e.,                                                                    the two-way observer [32].
+    a system  is either opaque or non-opaque. However, a non-
+                                                       The deﬁnition of inﬁnite-step opacity in [20], [32] only    inﬁnite-step-opaque system may only have a small probability
+     of violation; this may be still tolerable in many applications.   provides a binary characterization,  i.e., a system is either
+    To analyze inﬁnite-step opacity more quantitatively, in  this   opaque or not. However, a non-inﬁnite-step-opaque system
+    paper, we investigate the veriﬁcation of inﬁnite-step opacity in   may only have a small probability of violation; this may be
+    the context of stochastic discrete-event systems. A new notion                                                                                            still tolerable in many applications. Recently, many works
+     of opacity, called almost inﬁnite-step opacity,  is proposed to
+                                                            have considered how to quantitatively evaluate opacity by    capture whether or not the probability of violating inﬁnite-step
+    opacity is smaller than a given threshold. This notion is weaker   using probabilistic models (stochastic DES), e.g., [2], [3],
+    than its purely logical counter-part as  it takes the transition    [6], [10], [14], [15], [22], [27]. By precisely capturing the
+    probability of the system into account. We also provide an    transition probability of the system, one is able to evalu-
+     effective algorithm for the veriﬁcation of almost inﬁnite-step                                                                       ate the possibility of being not secure, rather than simply
+     opacity.
+                                                                providing a binary answer. However,  all these works on
+                                                                  opacity analysis of stochastic DES only consider current-                                I. INTRODUCTION
+                                                                       state-type opacity. (Note that initial-state opacity can also
+      Opacity  is an information-ﬂow property  that  arises in                                                           be transformed to current-state opacity by considering  its
+    security and privacy analysis of cyber-physical systems. In                                                                  reversed automaton [26].) For current-step-type opacity, we
+     this paper, we investigate the veriﬁcation of opacity for                                                              only need to consider all information available so far in order
+    Discrete-Event Systems (DES), an important class of man-                                                                       to determine whether the system is opaque or not. However,
+   made cyber-physical systems with discrete state-spaces and                                                                       for inﬁnite-step opacity, we also need to consider how future
+    event-triggered dynamics. In this problem, we assume that                                                                 information can affect our knowledge about the current status
+    the system is monitored by a (potentially malicious) intruder                                                                   of the system, which is much more challenging. To the best
+     that is modeled as a passive observer. We say that the system                                                                   of our knowledge, how to evaluate inﬁnite-step opacity in the
+     is opaque if the intruder can never determine the system’s                                                                  context of stochastic DES has still not yet been investigated.
+    “secret” unambiguously based on its limited observation. In                                                                     In this paper, we investigate the analysis of inﬁnite-step
+    the past years, opacity has drawn considerable attention and                                                                  opacity in the context of stochastic DES. The main contribu-
+    has been extensively studied in the DES literature; see, e.g.,                                                                       tions of this paper are as follows. First, we deﬁne the notion
+     [1], [4], [5], [8], [9], [11], [12], [16], [17], [19]–[21], [23]–                                                                   of almost inﬁnite-step opacity to capture whether or not the
+    [26], [28]–[33] and a recent survey [13] for more references.                                                            cumulated probability of violating inﬁnite-step opacity  is
+      In the context of DES, different notions of opacity have                                                                  smaller than a given threshold. Then we propose an effective
+    been proposed to capture different types of security require-                                                             approach for the veriﬁcation of almost inﬁnite-step opacity.
+    ments, e.g., current-state opacity [26], initial-state opacity                                                     Our deﬁnition of almost inﬁnite-step opacity is motivated by
+    [21], K-step opacity  [19], [32] and inﬁnite-step opacity                                                                    the deﬁnitions of almost current-step opacity [22] and almost
+    [20], [32]. Particularly, in [20], the notion of inﬁnite-step                                                                                initial-state opacity [14]. However, the proposed veriﬁcation
+                                                                algorithm  is quite different from those in [14], [22]. As
+       X.  Yin  and  S.  Li   is  with  Department  of  Automation  and
+    Key  Laboratory  of  System  Control  and  Information  Processing,  we mentioned earlier, both current-state opacity and initial-
+     Shanghai  Jiao  Tong  University,  Shanghai  200240,  China.  E-mail:    state opacity fail into the current-state-type category, where
+   xiangyin@umich.edu,syli@sjtu.edu. X. Yin is also with   no delayed information is involved. In order to handle the
+     the  Department  of EECS,  University  of  Michigan, Ann  Arbor, MI
+     48109, USA.  Z. Li  is with  the Department  of Aerospace  Engineer-   delayed information in inﬁnite-step opacity, in this paper, we
+      ing,  University  of  Michigan, Ann  Arbor, MI  48109, USA.  E-mail:   propose a new information structure that precisely captures
+   zhaojli@umich.edu.  W. Wang  is  with  the  Faculty  of  En-    all possible delayed state estimates along the trajectory. This
+     gineering, Monash  University,  Clayton, VIC  3800,  Australia  E-mail:
+   weilin.wang@monash.edu. This work is supported by the Na-   new structure  is  different from the current  (respectively,
+      tional Nature Science Foundation of China (61590924, 61233004).            initial)-state estimator used in [22] (respectively, [14]) for the
+
+978-1-5090-1573-3/17/$31.00 ©2017 IEEE                       102
+
+veriﬁcation of stochastic current (respectively, initial) state               𝑎/0.9    𝑎/0.9    𝑎/1.0                                                 1      4      7     10  𝑎/1.0
+opacity. It is also different from the two-way observer [32]      𝑢1/0.1          𝑐 /0.1    𝑐 /0.1
+that is used for the veriﬁcation of inﬁnite-step opacity in the
+                                                         𝑎/0.9                                                                𝑎/0.9                                                                        𝑎/0.9                                                       𝑢2/0.4context of logical DES.                                                                     11 𝑎/1.0                                           0                                                 2                                                        5                                                               8
+  The rest of this paper is organized as follows. Section II                                                                       𝑐 /0.1    𝑐 /0.1    𝑐 /0.1
+provides some necessary preliminaries. In Section  III, we      𝑢3/0.5
+propose the notion of almost inﬁnite-step opacity for stochas-            3                                                        6 𝑎/1.0 9 𝑎/1.0 12  𝑎/1.0                                                         𝑎/1.0tic DES; an effective approach for the veriﬁcation of this
+notion is provided in Section IV. Finally, we conclude the
+                                                                                                  Fig. 1.  System (G1, p1) with Σo = {a, c}
+paper in Section V. Due to space constraints, all proofs in
+the paper are omitted.
+
+                        II. PRELIMINARIES                             let α ∈P(L(G)) be an observable string. Then the current
+                                                                     state estimate upon the occurrence of α is deﬁned byA. System Model
+  Let Σ be a set of events. A string over Σ  is a ﬁnite    ˆXG(α) = {x∈X : ∃s∈L(G) s.t. P(s)=α∧x=δ(s)} (2)
+sequence of events s = σ1 . . . σn, σi ∈Σ. We denote by
+Σ∗the set of all strings over Σ including the empty string   The current state estimate can be computed by building the
+ϵ. For any string s ∈Σ∗, we denote by |s| its length with   observer automaton (current state estimator); see, e.g., [7].
+|ϵ| = 0. A language L ⊆Σ∗is a set of strings; we denote      In some situations, the intruder is also interested in know-
+by L the preﬁx-closure of L,  i.e., L := {s ∈Σ∗: ∃t ∈   ing which states the system could be in for some previous
+Σ∗s.t. st ∈L}. For any string s ∈Σ∗, we denote by t ≤s    instant. Suppose that α ∈P(L(G)) is observed and we are
+if t ∈{s} and denote by t < s if t ∈{s} \ {s}.                interested in the state estimate of the system for the instant
+  We consider a DES modeled as a deterministic ﬁnite-state   when only β ≤α was executed. Then we deﬁne the delayed
+automaton (DFA) G = (X, Σ, δ, x0), where X is the ﬁnite    state estimate for β given α been observed by
+set of states, Σ is the ﬁnite set of events, δ : X × Σ →X
+is a (partial) deterministic transition function and x0 is the   ˆXG(β | α) =                                              (3)
+unique initial state. The transition function δ is also extended                                                 {x ∈X : ∃st ∈L(G) s.t. P(s)=β ∧P(st)=α ∧x=δ(s)}
+to X × Σ∗→X in the usual manner; see, e.g., [7]. For the
+sake of simplicity, we denote δ(x, s) by δ(s) if x = x0. We                                                                        Intuitively, ˆXG(β | α) estimates the state of the system (|α|−
+denote by L(G) = {s ∈Σ∗: δ(s)!} the language generated                                                                   |β|)-steps earlier when α is observed. Clearly, we have that
+by G, where “!” means “is deﬁned”.                      ˆXG(α | α) = ˆXG(α). Also, since more information is used
+ A stochastic discrete-event system is modeled as a prob-                                                                   to infer the state of the system for the instant when β  is
+abilistic ﬁnite-state automaton (PFA) (G, p), where G =                                                             observed, we know that ˆXG(β | α) ⊆ˆXG(β), i.e, ˆXG(β | α)
+(X, Σ, δ, x0) is a DFA and p : X×Σ →[0, 1] is the transition                                                           has less uncertainty than ˆXG(β).
+probability function. Speciﬁcally, for any x ∈X, σ ∈Σ, we
+                                                      Example 1: Let us consider system G1 shown in Figure 1,
+write p(σ | x) the probability that event σ occurs from state
+                                                     where Σo = {a, c}. If string a ∈P(L(G)) is observed, then
+x. We assume that (i) ∀x ∈X : Pσ∈Σ p(σ | x) = 1; an (ii)  we know that ˆXG1(a) = {4, 5, 6}. If string ac ∈P(L(G)) is
+∀x ∈X, σ ∈Σ : p(σ | x) > 0 ⇔δ(x, σ)!. For any string                                                             observed, then we know that ˆXG1(a | ac) = {4, 5}. If string
+s ∈L(G), we denote by Pr(s) the probability that s occurs,                                                        acc ∈P(L(G)) is observed, then we know that ˆXG1(a  |
+i.e., Pr(ϵ) = 1 andPr(sσ) = Pr(s)p(σ | δ(s)).                                                          acc) = {4}. Clearly, we see that ˆXG1(a | acc) ⊆ˆXG1(a |
+B. Intruder Model                                         ac) ⊆ˆXG1(a). That is, our knowledge about the system’s
+                                                                       state for the instant when a is observed is improved when  In opacity analysis of DES, we assume that the intruder
+                                                   more future events are observed.is modeled as a passive observer that can observe partial
+                                                                        Finally, we deﬁne the following operators that will be usedbehavior of the system and then infer the secret of the system
+                                                                               later. Let r ∈2X be a set of states and σ ∈Σo be anbased on its imperfect information. To this end, we assume
+                                                            observable event. The unobservable reach is deﬁned by:that the event set Σ is partitioned into two disjoint sets: Σ =
+Σo ˙∪Σuo, where Σo is the set of observable events and Σuo
+                                          UR(r)={x∈X : ∃x′ ∈r, ∃s∈Σ∗uo s.t. δ(x′, s)=x}is the set of unobservable events. The natural projection P :
+Σ∗→Σ∗o is deﬁned recursively by                                                  The observable transition is deﬁned by:
+                         P(s)σ       if σ ∈Σo
+  P(ϵ) = ϵ and P(sσ) =                               (1)                         P(s)         if σ ∈Σuo            Nextσ(r)={x∈X : ∃x′ ∈r s.t. δ(x′, σ)=x}
+The natural projection is also extended to P  : 2Σ∗→2Σ∗o    Let α ∈Σ∗o be an observable string. Operator Ξ  : Σ∗o →
+by P(L) = {P(s) ∈Σ∗o : s ∈L}.                    2X×X is deﬁned by:
+  Based on its observation, the intruder can infer which state
+of the system could be in at some speciﬁc instant. Formally,   Ξ(α)={(x, x′)∈X×X : ∃s∈Σ∗s.t. P(s)=α∧x′ =δ(x, s)}
+
+                                                     103
+
+Let ˜r1, ˜r2 ∈2X×X be two sets of state pairs. Operator ◦:                𝑎/0.9    𝑎/0.9 𝑎/1.0                                            0       22X×X × 2X×X →2X×X is deﬁned by:                                                              𝑐 /0.1
+                                            𝑢/0.1         𝑏/0.1  4    ˜r1 ◦˜r2 = {(x1, x3) ∈X × X :
+           ∃x2 ∈X s.t. (x1, x2) ∈˜r1 ∧(x2, x3) ∈˜r2}                                            1       3 𝑎/0.9                                                    𝑎/1.0
+Let r ∈2X be a set of states. Operator ⊙: 2X →2X×X is
+deﬁned by:                                                                         Fig. 2.  System (G2, p2) with Σo = {a, b, c} and XS = {5}.
+⊙(r) = {(x, x′)∈X × X : ∃x∈r, ∃s∈Σ∗uo s.t. δ(x, s)=x′}
+
+    III. INFINITE-STEP OPACITY IN STOCHASTIC DES      cumulated probability of the violation of inﬁnite-step opacity,
+  In this section, we ﬁrst review the deﬁnition of inﬁnite-  we only need to consider those strings violating inﬁnite-step
+step opacity in logical DES. Then we propose the notion of   opacity for the ﬁrst time. Formally, we deﬁne the following
+almost inﬁnite-step opacity for stochastic DES.               language:
+A. Inﬁnite-Step Opacity in Logical DES                      LPIF = {s ∈LIF : ∀t < s s.t.  t̸ ∈LIF}       (5)
+  In opacity analysis, we assume that the system has a                                                   Now, we are already to deﬁne the notion of almost inﬁnite-
+“secret”. Speciﬁcally, we model the “secret” of the system                                                                 step opacity.
+as a  set of  states XS ⊆X. For example, in location-      Deﬁnition 2: (Almost Inﬁnite-Step Opacity) Let (G, p) be
+based services, a secret state may represent a secret location                                                           a PFA, Σo ⊆Σ be the set of observable events, XS ⊆X be
+corresponding to a hospital or a bank. Then, within this                                                           a set of secret state and θ < 1 be a threshold value. We say
+setting, inﬁnite-step opacity requires that the intruder can                                                                     that (G, p) is almost inﬁnite-step opaque (w.r.t. Σo, XS and
+never determine for sure that the system was (or is) at a
+                                                               θ) if Ps∈LPIF Pr(s) < θ.secret state for any previous (or current) instant. This notion                                                                       Essentially, almost inﬁnite-step opacity requires that the
+is formally deﬁned as follows.                                                        cumulated probability of  strings  that  violate inﬁnite-step
+  Deﬁnition 1: (Inﬁnite-Step Opacity [20]) Let G be a DFA,                                                              opacity in the logic sense is smaller than a given threshold θ.
+Σo ⊆Σ be a set of observable events and XS ⊆X be a set                                                  The reason why we consider language LPIF rather than lan-
+of secret states. We say that G is inﬁnite-step opaque (w.r.t.                                                      guage LIF is that, once the secret of the system is revealed
+Σo and XS) if ∀αβ ∈P(L(G)) : ˆXG(α | αβ)̸ ⊆XS.                                                    by some string, any of its continuation will also reveal the
+  To test inﬁnite-step opacity, one approach is to construct a                                                                       secret. Therefore, we only need to consider strings in LPIF
+structure called the two-way observer; the reader is referred                                                                   to avoid counting the probability of violation duplicately.
+to [32] for details on its veriﬁcation.                                                             Let us illustrate almost inﬁnite-step opacity by the follow-
+  Example 2: Let us return to system G1 shown in Figure 1.                                                             ing example.
+Suppose that state 4 is the unique secret state, i.e., XS =                                                      Example 3: Let us consider system (G2, p2) shown in
+{4}. Then we have {4} = ˆXG1(a  | acc) ⊆XS,  i.e., the                                                            Figure 2, where Σo = {a, b, c} and XS = {3}. Then we
+intruder knows for sure that the system was in a secret state                                                        have LIF = {uab, aca}Σ∗∩L(G2) and LPIF = {uab, aca}.
+2-steps ago when acc is observed. Therefore, the secret can
+                                                           Since Ps∈LPIF Pr(s) = 0.01 + 0.09 = 0.1, we know thatbe revealed and the system is not inﬁnite-step opaque.
+                                                                        this system is almost inﬁnite-step opaque for any threshold
+  Note that inﬁnite-step opacity in Deﬁnition 1 only provides
+                                                       θ > 0.1.
+a binary characterization, i.e., a system is either opaque or
+non-opaque. This notion does not consider the system’s tran-    IV. VERIFICATION OF ALMOST INFINITE-STEP OPACITY
+sition probability into account. For example, in Example 2,
+                                                                 In this section, we show how to formally verify almost
+one can verify that the only observable string that leads
+                                                                 inﬁnite-step opacity.
+to the violation of inﬁnite-step opacity is u1acc. Then the
+                                                    To verify almost inﬁnite-step opacity, the main idea  is
+probability of violating inﬁnite-step opacity is Pr(u1acc) =
+                                                                   to construct a new automaton that (i) recognizes LPIF; and0.0009, which is very small and this may still be tolerable
+                                                                                     (ii) tracks the original transition probability of (G, p). When
+in many applications. Therefore, to quantitatively evaluate
+                                             we consider current-state opacity (or initial-state opacity),
+inﬁnite-step opacity,  it may also be useful to consider the
+                                                               these requirements can be simply fulﬁlled by taking the
+transition probability of the system into account. This moti-
+                                                            product composition of G and  its current state estimator
+vates the deﬁnition of almost inﬁnite-step opacity that will
+                                                                   (or initial-state estimator). However, this task is much more
+be presented next.
+                                                             challenging for inﬁnite-step opacity as LPIF involves delayed
+B. Almost Inﬁnite-Step Opacity                                information. Therefore, we need a new information structure
+                                                                     that recognizes LPIF. This is detailed next.   First, we deﬁne the following language:
+                                                             Let G be a DFA. We deﬁne a new automaton
+ LIF = {s∈L(G) : ∃α≤P(s) s.t. ˆX(α | P(s))⊆XS} (4)
+                                                         VG = (Q, Σ, f, q0)                   (6)
+That is, LIF is the set of strings whose occurrences violate
+inﬁnite-step opacity for some instant. In order to consider the   where
+
+                                                     104
+
+                                                                       1, 1  ,                    2, 2  ,
+                                                              0,1        𝑐         0,2
+                                                               2,1                    2,2     𝑎       4, 4  ,
+                                                               1,1                    1,2
+                                                                                                         0,4
+                                                                *(3,1)+                 *(3,2)+
+                                                                                                         2,4
+                                                    𝑎        𝑏               1,4
+                                                                                                 3, 3  ,               3,4                                                                      1, 1  ,
+                                                                                     0,3               *(4,4)+
+                                                              0,1       𝑎              𝑎
+                                                                                      2,3
+                                                                     * 2,1 +
+                                                                                      1,3            𝑎                                                                     * 1,1 +
+                                                                                        *(3,3)+
+
+                                                     𝑐
+                                                                                                 4, 4  ,
+                                                                     2, 2,3  ,      𝑎    0,4  , 1,4                                         0, 0,1  ,     𝑎
+                                                         0,2  , 0,3  , 1,3                   𝑎
+                                  * 0,0  , 0,1  , (1,1)+                                     * 2,4  , 3,4 +
+                                                                 * 2,2  , 3,3 +
+                                                                                       *(4,4)+
+                         𝑢                          𝑎
+                                                                                                                        4, 4  ,                                                                                                 2, 2  ,
+                                                                     3, 2,3  ,      𝑏     0,2  , 1,2    𝑎     0,4  , 1,4                                         1, 0,1  ,     𝑎
+                                                         0,2  , 0,3  , 1,3                                   3,4
+                                  * 0,0  , 0,1  , (1,1)+                                        * 3,2 +
+                                                                 * 2,2  , 3,3 +                                    2,4
+                                                                                       *(2,2)+
+                                                                                                             *(4,4)+
+                                                                          𝑐
+                                          4, 4  ,                                             𝑎                                                                       3, 3  ,                    1, 1  ,
+                                   0,4  , 1,4
+                                                            0,3  , 1,3              0,1  , 1,1
+                                      3,4       𝑎                𝑎
+                                                               3,3                    3,1
+                                      2,4
+                                                               2,3                    2,1
+                                      1,4
+                                                                *(1,3)+                 *(1,1)+
+                                      *(4,4)+
+                                             𝑏          𝑐
+                                    𝑎
+                           𝑎                        2, 2  ,
+                                                            0,2  , 1,2
+                                                               3,2
+                                                               2,2
+                                                                *(1,2)+
+
+
+                                                    Fig. 3.  Automaton VG2 for the system in Figure 2.
+
+
+  • Q ⊆X × 2X × 22X×X is the set of states;              r = ˆXG(P(s)), where s is a string leading to (x, r, R). The
+  • Σ is the set of events;                                       transition function of this component is essentially the same
+  • f  : Q × Σ →Q is the transition function deﬁned by:   as the transition function of the standard observer automaton,
+     for any q = (x, r, R) ∈X × 2X × 22X×X and σ ∈Σ,     i.e., UR(Nextσ(·)). The third component R is used to track
+   we have                                                   the following information. Note that, R is a set of sets of
+                                                                       state pairs. Each ρ ∈R essentially represents the delayed                    (δ(x, σ), r, R)         if σ ∈Σuo
+       f(q, σ) =                                          (7)    state estimate of the system for some (current or previous)                    (δ(x, σ), r′, R′)       if σ ∈Σo
+                                                                       instant. Speciﬁcally, for any (x, x′) ∈ρ, x is a state the
+    where                                               system could be in at that instant and x′ is a state the system
+                                                           could be in currently from x′, and ρ consists of all such pairs
+        r′ =UR(Nextσ(r))                                (8)                                                                   for that speciﬁc instant. Although the number of previous
+     R′ ={{˜r ◦Ξ(σ)∈X × X : ˜r ∈ρ}∈2X×X : ρ ∈R}     instant may be inﬁnite, R is a ﬁnite set as there are only ﬁnite
+        ∪{⊙(r′)}                                        (9)   such conﬁgurations for all possible delayed state estimates.
+                                                              Therefore, upon the occurrence of a new observable event,
+  • q0 = (x0, r0, R0) is the unique initial state, where r0 =   say σ, we need to update the delayed state estimate for all
+    UR({x0}) and R0 = {⊙(r0)}.                          previous instant, i.e., {{˜r ◦Ξ(σ) : ˜r ∈ρ} : ρ ∈R}, and, at
+  Let us explain the intuition of the above construction. Note    the same time, remember the current state estimate {⊙(r′)}.
+that each state (x, r, R) in VG consists of three components,      Let us explain the construction of VG by the following
+which are used as follows. The ﬁrst component x simply   example.
+tracks the current state in the original system G. Hence, the     Example 4: Again,  let us  consider system G2 shown
+transition of f is consistent with δ for this component and we    in Figure  2.  Its corresponding automaton VG2  is shown
+have that L(VG) = L(G). The second component r tracks    in  Figure  3.  First,  VG2   starts  with  the  initial  state
+the current state estimate of the original system. That  is,   (x0, r0, R0) =   (0, {0, 1}, {{(0, 0), (0, 1), (1, 1)}}).  The
+
+                                                     105
+
+second component means that the current state estimate is   deﬁned by: for any q = (x, r, R), q′ = (x′, r′, R′) ∈˜Q,
+ˆXG2(ϵ) = {0, 1} and the third component means that, within
+the initial step, the system may start from state 0 and end up        Pσ∈Σ:f(q,σ)=q′ p(σ | x)   if q /∈QIF
+                                    with state 0, or start from state 0 and end up with state 1, or    pM(q′ | q)=  1                                  if q=q′ ∈QIF
+start from state 1 and end up with state 1. When observable        0                        otherwise
+event a occurs, we move to a new state (x1, r1, R1) =
+(2, {2, 3}, {{(0, 2), (0, 3), (1, 3)}, {(2, 2), (3, 3)}}),           and π0  : ˜Q →[0, 1] is the initial state distribution deﬁned
+where  {2, 3}   is  the  current   state  estimate  of  the   by π0(q0) =  1.1 Therefore, M  is constructed such that
+system, and  {(0, 0), (0, 1), (1, 1)} ∈ R0  is updated  to    all states in QIF ∩˜Q are absorbing, i.e., once we reach a
+{(0, 2), (0, 3), (1, 3)},  which  is  the  updated  knowledge    state in QIF ∩˜Q, we will stay in it forever. This absorbing
+about the system  for the  instant one step ago,  i.e., the    probability, denoted by pabsM , can be computed by [18]:
+delayed state estimate. At the same time, we need to add
+{⊙({2, 3})} to R2  in order to remember the new  state                      pabsM = X π0(q)P(q)               (13)
+estimate for the current instant.                                                q∈˜Q
+  Next, we formally summarize the properties of VG. First,
+for any ρ ∈2X×X, we deﬁne                            where P : ˜Q →R+0  is the vector of minimal non-negative
+                                                                 solution to the following equation
+        I1(ρ) = {x ∈X : ∃x′ ∈X s.t. (x, x′) ∈ρ}    (10)
+                              Pq′∈˜Q pM(q′ | q)P(q′)   if q /∈QIFAlso, for any R ∈22X×X, we also deﬁne                       P(q) =                                            (14)
+                                                               1                                 if q∈QIF
+            I1(R) = {I1(ρ) ∈2X : ρ ∈R}          (11)
+                                                      Note that, since L(VG) = L(G) and M is constructed by
+Then we have the following result, which essentially states    tracking the transition probability of the original system,
+the intuition of VG explained above.                   we know that pabsM = Ps∈LPIF Pr(s). Hence, we have the
+  Lemma 1: For any  string s ∈L(VG) =  L(G),  let   following main theorem.
+f(q0, s) = (xs, rs, Rs) be the state reached in VG via s     Theorem 1: Let (G, p) be a PFA and M be its associated
+from the initial state, then we have:               MC constructed above. Then (G, p) is inﬁnite-step opacity
+                                                                                w.r.t. threshold θ if and only if pabsM < θ.  (i) rs = ˆXG(P(s));
+                                                             Let us illustrate how to verify almost inﬁnite-step opacity  (ii) I1(Rs) = {ˆXG(α | P(s)) ∈2X : α ≤P(s)}.
+                                                    by the following example.
+  By Lemma 1, we know that, for any string s ∈L(VG)     Example 5:  Still, let us consider system (G2, p2) shown
+such that f(q0, s) = (x, r, R), I1(R) is actually the set of all    in Figure 2 and VG2  is shown  in Figure  3.  States  in
+delayed state estimates for all previous instant. Therefore, to  QIF are marked by red lines. For example, we know that
+determine whether or not s ∈LIF, it sufﬁces to determine    (2, {2}, {{(0, 2), (1, 2)}, {(3, 2)}, {(2, 2)}}) ∈QIF, since
+whether or not there exists ρ ∈R such that I1(ρ) ⊆XS.   I1({(3, 2)}) = {3} ⊆XS. Then its associated MC M is
+More speciﬁcally, let                                  shown in Figure 4. For the sake of simplicity, each state in
+                      M is renamed from M1 to M8. To compute the absorbing
+  QIF = {(x, r, R) ∈Q : ∃ρ ∈R s.t. I1(ρ) ⊆XS}   (12)    probability in QIF ∩˜Q, we need to solve the following
+                                                            equation
+Then we have the following result.
+  Lemma 2: For any  string s ∈L(VG) =  L(G),  let     P(M1) = 0.1 × P(M2) + 0.9 × P(M3)
+(x,    r, R)     =                                          =                                                             P(M4)
+s,  then     we          have                                          =                                                                                0.1 × P(M5) + 0.9 × P(M8)            f(q0, s) be the state reached in VG via string     P(M2)P(M3)                                                                                                                     (15)                                                     P(M4) = 0.1 × P(M6) + 0.9 × P(M8)
+                                          =                                                     P(M8)                                                             P(M8)
+                                          =                                                     P(M5)                                                             P(M6) = P(M7) = 1LPIF ={s∈L(G):[f(q0, s)∈QIF]∧[∀t<s:f(q0, s) /∈QIF]}    
+
+  By Lemma 2, it is clear that, to compute Ps∈LPIF Pr(s),    Note  that, the solution to Equation (15)  is not unique
+it sufﬁces to compute the probability of hinting a state in   as P(M8)  is a  free term. To obtain the minimal  solu-
+QIF  in a Markov chain associated to VG with transition    tion, we need  to  set P(M8) =  0 and we have P =
+probability reﬂecting the  original system (G, p). This  is    [0.1  0.1  0.1  0.1 1 1 1  0].  Therefore, we know  that
+                                                                                                                                                                 i.e., theformalizes as follows. First, we denote by ˜VG = (˜Q, Σ, ˜f, q0) Ps∈LPIF Pr(s) = pabsM = π0(M1) × P(M1) = 0.1,
+the accessible part of the automaton obtained by removing   system is almost inﬁnite-step opaque for any θ > 0.1, and
+all outgoing transitions from states in QIF. Then we deﬁne    this is consistent with our result in Example 3.
+a Markov Chain (MC) M = (˜Q, pM, π0), where the state
+space of the MC is the same as the state space of ˜VG and     1We assume w.l.o.g. that q0 ∈˜Q; otherwise it implies that the system is
+the transition probability function pM  : ˜Q × ˜Q →[0, 1] is    not inﬁnite-step opacity even for threshold θ = 1.
+
+                                                     106
+
+                                                                  3, 3  ,  (𝑀7)          [10]  J. Chen, M. Ibrahim, and R. Kumar. Quantiﬁcation of secrecy in par-                                        1, 1  ,
+                                                           0,3                              tially observed stochastic discrete event systems. IEEE Transactions                                    0,1        1.0
+                    (𝑀5)  * 2,1 +                  2,3      1.0            on Automation Sci. Eng., 14(1):185–195, 2017.
+                                                           1,3                   [11]  J. Dubreil, P. Darondeau, and H. Marchand. Supervisory control for                                       * 1,1 +
+                                                            *(3,3)+                        opacity. IEEE Transactions on Automatic Control, 55(5):1089–1100,
+                             0.1                                             2010.
+                                                                  4, 4  ,                  [12] Y. Falcone and H. Marchand. Enforcement and validation (at runtime)
+                                       2, 2,3  ,      0.9    0,4  , 1,4                      of various notions of opacity. Discrete Event Dynamic Systems: Theory          0, 0,1  ,      0.9
+                              0,2  , 0,3  , 1,3                        1.0    * 0,0  , 0,1  , (1,1)+                                     * 2,4  , 3,4 +           & Applications, pages 1–40, 2014.
+                                   * 2,2  , 3,3 +
+                                                            *(4,4)+                 [13] R. Jacob, J.-J. Lesage, and J.-M. Faure. Overview of discrete event
+  (𝑀1)                                             (𝑀8)
+        0.1                 (𝑀3)     0.9                                 systems  opacity: Models,  validation, and  quantiﬁcation.   Annual
+                                                                           Reviews in Control, 41:135–146, 2016.
+                                                                  2, 2  ,                  [14] C. Keroglou and C.N. Hadjicostis.  Initial state opacity in stochastic                                       3, 2,3  ,
+                                           0.1    0,2                                                                                                                               , 1,2                     1.0          1,            0,1                                  ,                                                                                             Conference                                                                                        des.                                                                                        In 18th IEEE                                                                                               on ETFA,                                                                                                                  pages 1–8,                                                                                                                              2013.                              0,2  , 0,3  , 1,3
+                                                                * 3,2    * 0,0                    , 0,1                                ,                 (1,1)+                                                                       +       1.0       [15]                                                                            C. Keroglou                                                                                    and C.N.                                                                                                                 Hadjicostis.                                                                                                                                 Probabilistic                                                                                                                         system                                                                                                                                            opacity in                                   * 2,2  , 3,3 +
+                                                            *(2,2)+                         discrete event systems.  In 13th International Workshop on Discrete
+  (𝑀2)                          (𝑀4)                                          Event Systems, pages 379–384, 2016.                                           (𝑀6)
+                                                                              [16]  F. Lin.   Opacity of  discrete event systems and  its  applications.
+                                                                               Automatica, 47(3):496–503, 2011.
+          Fig. 4.  Markov chain M for the system in Figure 2.                                                                              [17]  J. Mullins and M. Yeddes.  Opacity with orwellian observers and
+                                                                                              intransitive non-interference. In 12th Int. Workshop on Discrete Event
+                                                                                  Systems, pages 344–349, 2014.
+                                                                              [18]  J.R. Norris. Markov chains. Number 2. Cambridge University Press,
+                   V. CONCLUSION                                                                             1998.
+                                                                              [19] A. Saboori and C.N. Hadjicostis. Veriﬁcation of K-step opacity and
+  We investigated the analysis of inﬁnite-step opacity in          analysis of its complexity. IEEE Transactions on Automation Science
+the context of stochastic DES. A new notion called almost        and Engineering, 8(3):549–559, 2011.
+inﬁnite-step opacity was proposed to quantitatively evaluate    [20] A. Saboori and C.N. Hadjicostis. Veriﬁcation of inﬁnite-step opacity
+                                                                        and complexity considerations.  IEEE Transactions on Automatic
+the  probability  that  inﬁnite-step opacity  is  violated. An          Control, 57(5):1265–1269, 2012.
+effective approach was also provided for the veriﬁcation of    [21] A. Saboori and C.N. Hadjicostis. Veriﬁcation of initial-state opacity in
+almost inﬁnite-step opacity. The complexity of the veriﬁ-          security applications of discrete event systems. Information Sciences,
+                                                                            246:115–132, 2013.
+cation algorithm  is doubly-exponential in the size of the    [22] A. Saboori and C.N. Hadjicostis. Current-state opacity formulations in
+original system, which is higher than the complexity for the           probabilistic ﬁnite automata. IEEE Transactions on Automatic Control,
+veriﬁcation of almost current-state opacity. Intuitively, this         59(1):120–133, 2014.
+                                                                              [23]  S. Takai and Y. Oka. A formula for the supremal controllable and
+higher complexity comes from the fact that, in the analysis         opaque sublanguage arising in supervisory control. SICE J. Control,
+of almost inﬁnite-step opacity, one not only needs to track the        Measu. & Syst. Integration, 1(4):307–311, 2008.
+current state estimate of the system, but also needs to track    [24] Y. Tong, Z. Li, C. Seatzu, and A. Giua.  Decidability of opacity
+                                                                                    veriﬁcation problems in labeled Petri net systems. Automatica, 80:48–
+all possible delayed state estimates for previous instants.          53, 2017.
+Investigating more efﬁcient approach for the veriﬁcation of    [25] Y. Tong, Z. Li, C. Seatzu, and A. Giua.  Veriﬁcation of state-based
+almost inﬁnite-step opacity and establishing precise com-          opacity using Petri nets. IEEE Transactions on Automatic Control,
+                                                                             62(6):2823–2837, 2017.
+plexity for this problem are interesting future directions.         [26] Y.-C. Wu and S. Lafortune. Comparative analysis of related notions
+                                                                                    of opacity in centralized and coordinated architectures. Discrete Event
+                 REFERENCES                               Dynamic Systems: Theory & Applications, 23(3):307–339, 2013.
+                                                                              [27] Y.-C. Wu, G. Lederman, and  S. Lafortune.   Enhancing opacity
+                                                                                    of stochastic discrete event systems using insertion functions.   In [1] E. Badouel, M. Bednarczyk, A. Borzyszkowski, B. Caillaud, and
+                                                                        American Control Conference, pages 2053–2060, 2016.       P. Darondeau. Concurrent secrets. Discrete Event Dynamic Systems:
+                                                                              [28] X. Yin and S. Lafortune. A general approach for solving dynamic     Theory & Applications, 17(4):425–446, 2007.
+                                                                                  sensor activation problems for a class of properties.  In 54th IEEE [2] B.  B´erard, K. Chatterjee, and N. Sznajder.   Probabilistic opacity
+                                                                            Conference on Decision and Control, pages 3610–3615, 2015.      for markov  decision  processes.   Information Processing  Letters,
+                                                                              [29] X. Yin and S. Lafortune. A new approach for enforcing opacity via     115(1):52–59, 2015.
+                                                                                  supervisory control for partially-observed discrete-event systems.  In [3] B. B´erard, J. Mullins, and M. Sassolas. Quantifying opacity. Math.
+                                                                        American Control Conference, pages 377–383, 2015.      Structures in Computer Science, 25(2):361–403, 2015.
+                                                                              [30] X. Yin and S. Lafortune. On two-way observer and its application
+ [4] A. Bourouis, K. Klai, N. Ben Hadj-Alouane, and Y. El Touati. On the
+                                                                                         to  the  veriﬁcation  of  inﬁnite-step and K-step  opacity.   In 13th
+      veriﬁcation of opacity in web services and their composition. IEEE
+                                                                                      International Workshop on Discrete Event Systems, pages 361–366,
+     Transactions on Services Computing, 10(1):66–79, 2017.
+                                                                             2016.
+ [5] J.W. Bryans, M. Koutny, L. Mazar´e, and P. Ryan. Opacity generalised
+                                                                              [31] X. Yin and S. Lafortune.  A uniform approach for synthesizing
+      to transition systems.  International Journal of Information Security,
+                                                                                   property-enforcing supervisors for partially-observed discrete-event
+     7(6):421–435, 2008.
+                                                                                  systems. IEEE Transactions on Automatic Control, 61(8):2140–2154,
+ [6] J.W. Bryans, M. Koutny, and C. Mu. Towards quantitative analysis                                                                             2016.
+      of opacity. In Int. Symp. Trustworthy Global Comp., pages 145–163,                                                                              [32] X. Yin and S. Lafortune. A new approach for the veriﬁcation of
+     2012.                                                                                       inﬁnite-step and K-step opacity using two-way observers. Automatica,
+ [7] C.G. Cassandras and S. Lafortune.  Introduction to Discrete Event                                                                            80:162–171, 2017.
+     Systems. Springer, 2nd edition, 2008.                                                                              [33] B. Zhang, S. Shu, and F. Lin. Maximum information release while
+ [8]  F. Cassez, J. Dubreil, and H. Marchand. Synthesis of opaque systems                                                                                 ensuring opacity in discrete event systems.  IEEE Transactions on
+     with static and dynamic masks. Formal Methods in System Design,                                                                           Automation Science and Engineering, 12(4):1067–1079, 2015.
+     40(1):88–115, 2012.
+ [9]  S. Ch´edor, C. Morvan, S. Pinchinat, and H. Marchand. Diagnosis and
+     opacity problems for inﬁnite state systems modeled by recursive tile
+     systems.  Discrete Event Dynamic Systems: Theory & Applications,
+     25(1-2):271–294, 2015.
+
+
+                                                     107

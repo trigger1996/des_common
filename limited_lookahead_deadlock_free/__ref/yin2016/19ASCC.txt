@@ -1,0 +1,396 @@
+2019 12th Asian Control Conference (ASCC)
+Kitakyusyu International Conference Center
+Japan, June 9-12, 2019
+
+
+
+
+
+          Improved Approaches for Verifying I-Detectability of
+                          Discrete-Event Systems
+
+
+                               Zhaocong Liu, Xiang Yin and Shaoyuan Li
+
+
+      Abstract— In this paper, we investigate the initial-state de-   whether or not we can always detect the current state of
+     tection problem in the context of partially-observed discrete-    the system within a ﬁnite delay, while weak detectability
+    event systems. Speciﬁcally, we study the veriﬁcation of two                                                                   captures whether or not we can detect the current  state
+    properties called weak I-detectability and strong I-detectability.
+                                                                   of the system via some path. Veriﬁcation algorithms were   Weak detectability captures whether or not the  initial-state
+     of the system can be detected via some path, while strong    also provided for different notions of detectability in [22].
+     detectability captures whether or not the initial-state of the   In [18], a polynomial-time algorithm was provided for the
+    system can always be detected within a ﬁnite delay. In this    veriﬁcation of strong  detectability. However,  it has been
+    paper, we provide new veriﬁcation algorithms for checking these                                                      shown more recently by [9], [10], [38] that verifying weak
+    two properties. The idea is to use the reversed dynamic of the
+                                                                         detectability is PSPACE-hard. Therefore, it is unlikely that a    system to efﬁciently estimate the initial-state information. We
+    show that our new results improve the complexity of existing   polynomial-time algorithm exists for the veriﬁcation of weak
+    veriﬁcation algorithms for both properties. We illustrate our    detectability.
+     results by simple examples.                                     Since the seminal work of Shu and Lin, the concept of
+                                                                         detectability has been studied more extensively and has been                                I. INTRODUCTION
+                                                              extended to more different settings. In [19], the concept of
+       Discrete-event systems (DES) are dynamic systems with                                                              delayed detectability was proposed by allowing the usage
+    discrete state-spaces and event-driven dynamics. DES can be                                                                   of future observation for information smoothing. In [5], [6],
+    used to model both logic systems that are inherently event-                                                                        [23], detectability was investigated in the stochastic setting
+    driven and symbolic abstractions of continuous dynamic                                                       by considering  the  transition  probability  of  the system;
+    systems. In many problems, e.g., supervisory control and                                                               corresponding stochastic notions of detectability capturing
+     fault diagnosis, the state information of the system is usually                                                                    the probability of  state detection were also provided. In
+    crucial  in order  to make correct decisions. However,  in                                                                        [20], [30], the detectability enforcement problem was stud-
+   many real world applications, we do not usually have perfect                                                                           ied, where the goal  is to design a maximally-permissive
+    knowledge of the system due to measurement uncertainties.                                                                   supervisor such  that the controlled system  is detectable.
+    Therefore, state estimation and detection are important issues                                                                   Recently, different new types of detectability are proposed
+    in the analysis and design of partially-observed DES.                                                                       in the literature for different detection requirements, e.g.,
+      In the context of DES, the problem of state estimation                                                                   K-detectability  [3] and  trajectory  detectability  [35]. De-
+    dates back to the study of the property of observability; see,                                                                            tectability has also been extended to different system models,
+     e.g., [8], [13], [14]. In this problem, it is assumed that the                                                                  including nondeterministic systems [40], fuzzy systems [12],
+    system’s behavior is only partially-known and we want to                                                                         Petri net systems [11], [39], networked systems [15] and
+     infer the system’s “state” based on the imperfect information.                                                          modular systems [32].
+   The state estimation problem is closely related to many prac-                                                                     In some applications, we may not interested in knowing
+     tical problems, including fault diagnosis problem [29], [31],                                                                    the current-state of the system. Instead, we may be interested
+    [37], fault prognosis problem [24], [28] state disambiguation                                                                       in detecting the initial-state of the system. To this end, the
+    problem [16], [25], [33], [34], and information-ﬂow security                                                              concept of I-detectability was introduced by [21]. Speciﬁcal-
+    problem [4], [7], [36].                                                                                      ly, weak I-detectability captures whether or not the initial-
+       Recently, the state estimation of DES has been inves-                                                                            state of the system can be detected via some path, while
+    tigated  in a more systematic manner  in  the context of                                                                   strong I-detectability captures whether or not the initial-state
+     detectability. The concept of detectability was ﬁrst proposed                                                                   of the system can always be detected within a ﬁnite delay.
+   by Shu and Lin in [22], where several different notions of                                                                 Veriﬁcation algorithms were also provided in [21] for both
+     detectability, e.g., strong (periodic) detectability and weak                                                     weak I-detectability and strong I-detectability. More recently,
+    (periodic) detectability, are deﬁned. Speciﬁcally, the authors                                                                    the initial-state detection problem has also been studied in
+    of [22] considered DES modeled as ﬁnite-state automata                                                                    the stochastic setting [27]. The usefulness of I-detectability
+    with unobservable events. Then strong detectability captures                                                              has been supported by the work of  [1],  [2], where the
+       This work was supported by the National Natural Science Foundation of   authors apply I-detectability to smart home systems in order
+    China (61803259, 61833012).                                          to tracking unknown inhabitants in a region.
+       Z.  Liu,  X.  Yin  and  S.  Li  are  with  Department  of  Automation      In  this  paper, we  revisit  the  veriﬁcation  of weak  I-
+    and  Key  Laboratory  of  System  Control  and  Information  Process-
+      ing, Shanghai  Jiao Tong  University, Shanghai 200240, China. E-mail:    detectability and strong I-detectability as deﬁned in [21].
+   yinxiang@sjtu.edu.cn.                             The main contributions of this paper are as follows. First,
+
+978-4-88898-301-3 ©2019 JSME                              248
+
+we provide an improved approach for the veriﬁcation of   The natural projection is also extended to P  : 2Σ∗→2Σ∗o
+weak I-detectability. The complexity of previous algorith-   by: ∀L ⊆Σ∗: P(L) = {P(s) ∈Σ∗o : s ∈L}.
+m proposed in [21] requires O(|Σ|2|X|2), where |Σ| and      Finally, we make the following standard assumptions in
+|X| are the number of events and number of  states  in    the analysis of partially-observed DES:
+the system, respectively. By using the reversed observer,   A1 System G is deadlock-free,  i.e., ∀x ∈X, ∃σ ∈Σ  :
+we improve this complexity to O(|Σ|2|X|). Also, we also        δ(x, σ)!;
+provide an improved approach for the veriﬁcation of strong   A2 System G does not contain unobservable cycle,  i.e.,
+I-detectability, whose complexity is O(|Σ||X|2) compared      ∀x ∈X, ∀s ∈Σ∗uo : x /∈δ(x, s).
+with complexity O(|Σ||X|4) of the previous algorithm. The
+                                                            B. Initial-State Detectabilityidea is to construct a new structure called the reversed veriﬁer
+that tracks the dynamic of the system reversely. This idea      In the initial-state detection problem, we assume that the
+avoids using the state-augmenting procedure as used in [19]   system may initiated from states X0; however, which speciﬁc
+and improves the computational complexity.                     state the system starts from is unknown. Therefore, the goal
+  The rest of this paper is organized as follows. Section II    is to estimate and to detect the precise initial-state of the
+provides some necessary preliminaries. In Section III and IV,   system based on the observation. To this end, for any α ∈
+we study the veriﬁcation of weak I-detectability and the   P(L(G)), we deﬁne
+veriﬁcation of strong I-detectability, respectively. Finally, we      ˆX0(α) = {x0 ∈X0 : ∃s ∈L(G, x0) s.t. P(s) = α}   (2)
+conclude the paper in Section V.
+                                                              as the initial-state estimate of the system upon the occurrence
+                        II. PRELIMINARIES                                                              of α.
+A. System Model                                                In [21], two notions of initial-state detectability, weak I-
+  Let Σ be a ﬁnite set of events. A string s = σ1 . . . σn    detectability and strong I-detectability, are proposed in order
+is a ﬁnite sequence of events. We denote by |s| the length    to capture whether or not the initial-state of the system can
+of string s with |ϵ| = 0, where ϵ is the empty string. We   be detected. These two deﬁnitions are reviewed as follows.
+denote by Σ∗the set of all strings over Σ including the                                                             Deﬁnition 1: (Weak I-Detactability) A DES G is said to
+empty string ϵ. A language L ⊆Σ∗is a set of strings. We                                                       be weakly I-detectable w.r.t. Σo if there exists a string α ∈
+deﬁne Σϵ := Σ ∪{ϵ}.                               P(L(G)) such that |ˆX0(α)| = 1.
+  We consider a DES modeled as a non-deterministic ﬁnite-
+state automaton (NFA)                                        Deﬁnition 2: (Strong I-Detactability) A DES G is said to
+                                                       be strongly I-detectable w.r.t. Σo if
+           G = (X, Σ, δ, X0)                   (1)
+                                                     (∃n ∈N)(∀α ∈P(L(G)))[|α| ≥n ⇒|ˆX0(α)| = 1]   (3)
+where
+  • X is the ﬁnite set of states;
+                                                                           Intuitively, weak I-detectability requires that the initial-  • Σ is the ﬁnite set of events;
+  • δ  : X × Σ →2X  is the non-deterministic (partial)    state of the systems can be determined for some trajectory,
+                                                           while strong I-detectability requires that the initial-state of     transition function;
+                                                                the systems can be determined after a ﬁnite delay for any  • X0 ⊆X is the set of initial-states.
+                                                                       trajectory.For any x, x′ ∈X, σ ∈Σ, x′ ∈δ(x, σ) implies that there
+                                         We illustrate weak I-detectability and strong I-detectabilityexists a transition from x to x′ labeled with σ. Function
+                                                    by the following example.δ  is also extended to δ  : X × Σ∗→2X recursively as
+                                                      Example 1: Let us ﬁrst consider system G1 shown infollows: for any s ∈Σ∗and σ ∈Σ, we have δ(x, sσ) =
+                                                            Figure 1(a), where we have Σo = {a, b} and input arrow∪x′∈δ(x,s)δ(x′, σ). For each state x, we denote by L(G, x)
+                                                            without predecessor states presents that the corresponding
+the set of strings generated by G from x, i.e, L(G, x) = {s ∈
+                                                                       state is an initial state, i.e., we have X0 = {0, 1} in G1. NoteΣ∗: δ(x, s)!}, where “!” stands for “is deﬁned”. Therefore,
+                                                                     that this system is neither weakly I-detectable nor strongly
+L(G) = ∪x0∈X0L(G, x0) is the language generated by the
+                                                                    I-detectable, since the only possible observation is abbb . . .
+system.
+                                                      and we have ˆX0(abn) = {0, 1} for any n ≥0.
+  In many applications, the occurrence of event cannot be
+                                                         However, system G2 shown in Figure 1(b) is weakly I-
+perfectly observed. To capture the imperfect observation, we
+                                                                  detectable. For example, if we observe string ab, then we
+assume that the event set is partitioned as
+                                               know for sure that the system must initially from state 0 and
+             Σ = Σo ˙∪Σuo,                   we have ˆX0(ab) = {0}. However, this system is still not
+                                                               strongly I-detectable since ˆX0(an) = {0, 1} for any n ≥0,
+where Σo is the set of observable events and Σuo is the set                                                                                        i.e., we may not always be able to detect the initial-state of
+of unobservable events. The natural projection P : Σ∗→Σ∗o                                                                the system within a ﬁnite delay.
+is deﬁned recursively by: ∀s ∈Σ∗, σ ∈Σ                                                                        Finally, let us consider system G3 shown in Figure 1(c).
+                         P(s)σ   if σ ∈Σo            This system  is both weakly I-detectable and strongly  I-
+      P(ϵ) = ϵ,  P(sσ) =
+                          P(s)     if σ ∈Σuo             detectable. To see this, let us consider all possible observable
+
+                                                     249
+
+                   2                                2              𝑢     𝑎                       𝑢     𝑎
+               0         3   𝑏                  0         3   𝑏                  𝑎                             𝑎
+               𝑎                             𝑎
+
+                  𝑎                             𝑎               1         4   𝑏                  1         4   𝑎
+
+
+              (a) G1: neither weakly I-detectable nor strongly I-detectable.        (b) G2: weakly I-detectable but not strongly I-detectable.
+
+                                     2
+                              𝑢     𝑎
+                                0         3   𝑏                                  𝑎
+                                𝑏
+
+                                  𝑎                                1         4   𝑎
+
+
+                                                     (c) G3: both weakly I-detectable and strongly I-detectable.
+
+                              Fig. 1.  Examples to illustrate detectability, where we have Σo = {a, b} for G1, G2 and G3.
+
+
+strings with two events,  i.e., strings ab, ba and aa. Then     The idea of reversed observer was ﬁrst presented in [26]
+we have ˆX0(ab) = ˆX0(ba) = {0} and ˆX0(aa) = {1}.    for verifying opacity. Intuitively, it is similar to the standard
+Therefore, we know that the initial-state of the system can   observer automaton, but estimating  states  reversely. The
+always been detected within two steps. In the following   following theorem shows how to use the reversed observer
+sections, we will show formally how to verify weak  I-    to verify weak I-detectability.
+detectability and strong I-detectability.                      Theorem 1: System G is weakly I-detectable w.r.t. Σo if
+                                                      and only if there exists a state q ∈Q such that |q ∩X0| = 1.
+      III. VERIFICATION OF WEAK I-DETECTABILITY
+                                                                  Proof:  First, we claim that, for any α = σ1 . . . σn ∈
+  In [21], the authors have provided an algorithm for the   P(L(G)), we have
+veriﬁcation  of weak  I-detectability. The  idea  is  to  ﬁrst
+augment each state in G with the initial-state leading to this    f(X, σn . . . σ1) = {x ∈X : ∃s ∈L(G, x) s.t. P(s) = α}
+state, which leads to a new system with state-space X × X.                                                                (4)
+Then we can test weak I-detectability by constructing the    We prove this claim by induction on n. When n = 0, i.e,
+observer automaton of the augmented system. The overall  α = ϵ, we know that f(X, ϵ) = X Therefore, the induction
+complexity of the algorithm in [21] is O(|Σ|2|X|2). In this    basis holds. Now we assume that Equation (4) holds for
+section, we provide a new approach for verifying weak I-    |α| = n and consider string σ1 . . . σn+1 ∈P(L(G)). Then
+detectability that improves the complexity of the algorithm  we have
+in [21].                                                   f(X, σn+1σn . . . σ1)
+  To this end, we deﬁne a new (deterministic) ﬁnite-state
+                                               =f(f(X, σn+1 . . . σ2), σ1)automaton called the reversed observer
+                                                                       ∃x′ ∈f(X, σn+1 . . . σ2), ∃w ∈Σ∗uo
+            ObsR(G) = (Q, Σo, f, X)           =  x ∈X :                                                                                                                          s.t. x′ ∈δ(x, wσ1)
+where                                                                ∃s ∈L(G, x′), ∃w ∈Σ∗uo                                  =  x ∈X :
+  • Q ⊆2X is the set of states;                                                                 s.t. P(s) = σ2 . . . σn+1 ∧x′ ∈δ(x, wσ1)
+  • Σo is the set of observable events;                ={x ∈X : ∃s ∈L(G, x) s.t. P(s) = σ1 . . . σn+1}
+  • f : Q × Σo →Q is a (deterministic) transition function
+    deﬁned by: for any q ∈Q, σ ∈Σo, we have             This proves our claim in Equation (4) and we further know
+                                                                     that
+     f(q, σ)={x∈X : ∃x′ ∈q, ∃w∈Σ∗uo s.t. x′ ∈δ(x, wσ)}
+                                                 f(X, σn . . . σ1)∩X0 ={x∈X0 : ∃s∈L(G, x) s.t. P(s)=α}
+  • X ∈Q is the unique initial state, which is the set of all
+                                             =ˆX0(α)                             (5)     states in G.
+For the sake of simplicity, we only consider the reachable   Therefore, by Equation (5), that G is weakly I-detectable,
+part of ObsR(G).                                                                i.e., ∃α = σ1 . . . σn ∈P(L(G)) such that |ˆX0(α)| = 1, is
+
+                                                     250
+
+equivalent to the existence of a state f(X, σn . . . σ1) ∈Q     The reversed veriﬁer is motivated by the standard veriﬁer
+such that |f(X, σn . . . σ1) ∩X0| = |ˆX0(α)| = 1.                (or twin-machine) construction that has been widely used
+  Remark 1: Theorem 1 provides a direct approach for the    in the veriﬁcation of partially-observed DES. Essentially,
+veriﬁcation of weak I-detectability. Speciﬁcally, we just need    the structure tracks a pair of strings that have the same
+to construct ObsR(G) and  test whether or not a state q    projection. The main difference between our construction
+such that |q ∩X0| = 1 can be reached. If so, then G is   and the standard veriﬁer construction is that we track strings
+weakly I-detectability; otherwise, the system is not weakly   from all possible pairs of states and following the reversed
+I-detectable. The complexity of this approach only requires   dynamic of the original system.
+O(|Σo|2|X|). Recall that the complexity of the algorithm in     The following results shows the main properties of the
+[21] for checking weak I-detectability requires O(|Σo|2|X|2).   reversed veriﬁer.  First, we show that any pair of strings
+Therefore, our result provides an improved approach for   tracked by the reversed veriﬁer have the same observation.
+checking this notion.
+                                                                Proposition 1: For any sequence
+  We illustrate how to use Theorem 1 to check weak I-
+detectability by the following example.                                       (σ11,σ1-2)           (σ21,σ2-2)      (σn1 ,σn-2 )
+                                                            (x01, x02)   V    (x11, x12)   V       · · ·    V    (xn1, xn2)  Example 2: Let us  still consider systems G1 and G2
+shown  in Figures  1(a) and  1(b),  respectively. Their  re-    in VR(G), we have
+versed observers ObsR(G1) and ObsR(G2) are shown in                                                                                     (i) ∀i = 1, 2 : σni σn−1i     . . . σ1i ∈L(G, xni ); and
+Figures 2(a) and 2(b), respectively. For ObsR(G1), we have                                                                                       (ii) P(σn1 σn−11     . . . σ11) = P(σn2 σn−12     . . . σ12).
+|{0, 1, 2, 3, 4} ∩X0| = |{0, 1, 2} ∩X0| = |{0, 1}| = 2 and                                                                  Proof:  Property (i) follows directly from the fact that
+|{3, 4} ∩X0| = |∅| = 0. Therefore, by Theorem 1, we know                                                                   for any i = 1, 2 and for any k = 1, . . . , n, we have xk−1i  ∈
+that G1 is not weakly I-detectable. However, for ObsR(G2),                                                        δ(xki , σki ). Note that this includes the case when σki = ϵ.
+we have |{0, 2}∩X0| = |{0}| = 1. Therefore, by Theorem 1,                                                         For property  (ii), by the construction of VR(G), for each
+we know that G1 is weakly I-detectable.                                                  k = 1, . . . , n, there are only the following three cases:
+    IV. VERIFICATION OF STRONG I-DETECTABILITY          •  if σk1 ∈Σo, then P(σk1) = P(σk2) = σk1 = σk2
+                                                                  •  if σk1 ∈Σuo, then σk2 = ϵ and P(σk1) = P(σk2) = ϵ;
+  In this section, we investigate the veriﬁcation of strong      •  if σk1 = ϵ, then σk2 ∈Σuo and P(σk1) = P(σk2) = ϵ.
+I-detectability. Note that, in [21], the authors have already
+                                                              Therefore, we have P(σn1 . . . σ11) = P(σn2 . . . σ12).provided an algorithm for verifying strong I-detectability by
+                                                              Next, we show  that, for any pair of strings that have
+constructing a structure called the I-detector. The complexity
+                                                                the same observation, they will be included in the reversedof the algorithm proposed in [21]  is O(|Σ||X|4). In this
+                                                                    veriﬁer.
+section, we show that this complexity can also be improved
+by providing a new algorithm.                                  Proposition 2: For any two initial states x0,1, x0,2 ∈X0
+  Our approach for the veriﬁcation of strong I-detectability   and two strings s1 ∈L(G, x0,1), s2 ∈L(G, x0,2) such that
+is based on the construction of a new structure called the   P(s1) = P(s2), there must exist a sequence
+reversed veriﬁer. Speciﬁcally, the reversed veriﬁer for system
+                                                                                 (σ11,σ1-2)           (σ21,σ2-2)      (σn1 ,σn-2 )
+G is a NFA                                                 (x01, x02)   V    (x11, x12)   V       · · ·    V    (xn1, xn2)
+
+           VR(G) = (QV , ΣV , fV , Q0,V )             (6)    in VR(G) such that
+                                                                1) (xn1, xn2) = (x0,1, x0,2); andwhere
+                                                                2) For any i = 1, 2, si = σni σn−1i     . . . σ1i .
+  • QV = X × X is the set of states;                                                                  Proof: We prove by induction on the length of P(s1) =
+  • ΣV = (Σϵ × Σϵ) \ {(ϵ, ϵ)} is the set of events;                                                         P(s2).
+  • Q0,V = QV = X × X is the set of initial states;                                                               Induction Basis: When |P(s1)| = |P(s2)| = 0, for each
+  • The transition function fV  : QV ×ΣV →2QV is deﬁned                                                                           i = 1, 2, we can write si in the form of si = σ1i . . . σkii  ,
+     as follows. For any q = (x1, x2) ∈QV , σ ∈Σ, the                                                     where σji ∈Σuo. Therefore, for each i = 1, 2, there exist an
+     following transitions are deﬁned:
+                                                                              initial state ˜x0i ∈X0 and a sequence
+     (a) If σ ∈Σo, then
+                                                                                 σ1i-      σ2i-      σ i-ki                                                                                                  ˜x0i         ˜x1i           · · ·         ˜xki1          (10)        fV ((x1, x2), (σ, σ))                              (7)
+      ={(x′1, x′2) ∈QV  : x1 ∈δ(x′1, σ) ∧x2 ∈δ(x′2, σ)}      Therefore, we can  construct  the  following sequence  in
+                                              VR(G)
+     (b) If σ ∈Σuo, then
+                                                                                           (ϵ,σk22-)       (ϵ,σ22)              (ϵ,σ11)                                                                                                                                                                            , ˜x02)                                                                                                                                                   , ˜x12)  V- (˜xk11     fV ((x1, x2), (σ, ϵ)) ={(x′1, x2)∈QV  : x1 ∈δ(x′1, σ)}        (˜xk11  , ˜xk22 )   V      · · ·  V- (˜xk11
+                                                            (8)                  (σk11 -,ϵ)       (σ21,ϵ)           (σ11,ϵ)                                                                                                                             · · ·
+                                                                     V                                                    V- (˜x11, ˜x02)  V- (˜x01, ˜x02)     fV ((x1, x2), (ϵ, σ)) ={(x1, x′2)∈QV  : x2 ∈δ(x′2, σ)}
+                                                            (9)                                                                   satisfying the conditions 1) and 2) in the proposition.
+
+                                                     251
+
+                           {0,1,2,3,4}                 {0,1,2,3,4}
+                  𝑎        𝑏          𝑎        𝑏
+                                            𝑎                       𝑎                                                           {3}   𝑏                      {0,1,2}                                  {3,4}   𝑏   {0,1,2,4}
+                                      𝑎         𝑎
+                                                     {0,1, 4}   𝑎 {0,2}
+
+
+                                                    (a) ObsR(G1).                               (b) ObsR(G2).
+
+                                                         Fig. 2.  Examples of the reversed observer.
+
+
+  Induction Step: Let us assume that the proposition holds                                                                     {0,2}  (𝜖, 𝑢)
+when |P(s1)| = |P(s2)| = k and consider the case of             (𝑢, 𝜖)
+                                                                                 {2,2}|P(s1)| = |P(s2)| = k + 1. In this case, for each i = 1, 2,
+we can write si in the form of si = s′iσ0i σ1i . . . σkii  , where              (𝜖, 𝑢) {2,0}  (𝑢, 𝜖)  (𝑎, 𝑎)
+σ0i ∈Σo and ∀j ≥1  : σji ∈Σuo. Note  that, since                                                                          (𝑎, 𝑎)
+|P(s′1)| = |P(s′2)| = k, by the induction hypothesis, there          {0,0}               {3,3}    (𝑏, 𝑏) ⋯
+exists a sequence                                                              (𝑎, 𝑎)
+                    (t1,t2)                                                     (𝑎, 𝑎)
+      (x01, x02)  V- (xn1, xn2),                           where (t1, t2) ∈Σ∗V ,               {1,1}               {4,4}    (𝑎, 𝑎) ⋯
+such that ∀i = 1, 2 : (ti)R = s′i and (xn1, xn2) = (x0,1, x0,2).                       (𝑎, 𝑎)          (𝑎, 𝑎)
+Based on this sequence, we can further construct the follow-
+                                                                            {1,0}    {0,1}
+ing sequence in VR(G)
+
+                (ϵ,σk2                    2-)                                                                                            3.                                                                                            Part of the reversed veriﬁer VR(G2) for system G2 shown in                               · · ·   (˜xk11  , ˜xk22 )                                      (˜xk11  , ˜x12)                                                          (˜xk11  , ˜x02)        Fig.                               (ϵ,σ2V-2)                                                   (ϵ,σ1V-1)              V                                                                           Figure                                                                                             1(b).
+               (σk11 -,ϵ)       (σ21,ϵ)           (σ11,ϵ)                               · · ·                V- (˜x11, ˜x02)  V- (˜x01, ˜x02)              V
+               (σ01,σ0-2)             (t1,t2)                   We illustrate how to verify strong I-detectability using
+              V                   (x01, x02)  V- (xn1, xn2)              Theorem 2.
+satisfying the conditions 1) and 2) in the proposition.          Example 3: Let us consider system G2 shown in Fig-
+  In  order  to  state our main  result on  the  veriﬁcation   ure 1(b). We have discussed in Example 1 that this system is
+procedure, we ﬁrst introduce some concepts. Let VR(G) be   not strongly I-detectable; here, we verify this result by using
+the reversed veriﬁer. We denote by QI ⊆QV  the set of   Theorem 2. First, we construct the reversed veriﬁer VR(G2).
+states in which the ﬁrst and the second components are two   For the sake of simplicity, we only depict part of VR(G2) in
+different initial states, i.e.,                                   Figure 3, which is sufﬁcient for the purpose of disproving
+                                                                       detectability. Then we see that state (4, 4) is in a non-trivial
+  QI := {(x1, x2) ∈QV  : x1, x2 ∈X0 and x1̸ = x2}  (11)  SCC (since  it has a self-loop event). Moreover, we have
+                                                                   (1, 0), (0, 1) ∈REACHV ({(4, 4)}) and (1, 0), (0, 1) ∈QI.A strongly connected component (SCC)  in VR(G)  is a
+                                                              Therefore, by Theorem 2, we can conclude that G2 is notmaximal set of states C ⊆QV such that
+                                                               strongly I-detectable.
+            ∀q, q′ ∈C, ∃s ∈Σ∗V  : q′ ∈fV (q, s)        (12)    We conclude this section by discussing the complexity of
+                                                                verifying strong I-detectability using Theorem 2. In orderA SCC C ⊆QV  is said to be non-trivial if  it contains at
+                                                                   to check strong I-detectability, ﬁrst, we need to constructleast one transition in it, i.e., it is not a single state without
+                                                                the reversed veriﬁer, which contains at most |X|2 states and
+self-loops. For each SCC C, we denote by REACHV (C) the
+                                                          |Σ||X|2 transitions. Detecting all SCCs can be done in linearset of states reachable from C, i.e.,
+                                                           time in the size of the reserved veriﬁer using the well-known
+REACHV (C)={q ∈QV  : ∃q′ ∈C, s∈Σ∗V  s.t. q∈fV (q′, s)}.   Kosaraju’s algorithm; see, e.g., [17]. Searching all reachable
+                                                                      states from all non-trivial SCCs can also be done in linear
+  The following result provides a necessary and sufﬁcient
+                                                           time in the size of the reserved veriﬁer using a simple depth-
+condition for strong I-detectability.
+                                                                   ﬁrst search. Therefore, the overall complexity of verifying
+  Theorem 2: System G is strongly I-detectable w.r.t. Σo    strong I-detectability using Theorem 2 is O(|Σ||X|2); this
+if  and  only  if  for  any  non-trivial SCC C, we  have   improves the previous algorithm in [21] whose complexity
+REACHV (C) ∩QI = ∅.                                                 is O(|Σ||X|4).
+
+                                                     252
+
+                   V. CONCLUSION                              [18]  S. Shu and  F.  Lin, “Generalized  detectability  for  discrete event
+                                                                                   systems,” Syst. Control Let., vol. 60, no. 5, pp. 310–317, 2011.
+  In this paper, we revisited the veriﬁcation of initial-state                                                                              [19] ——, “Delayed detectability of discrete event systems,” IEEE Trans.
+detectability in the context of partially-observed DES. First,         Automatic Control, vol. 58, no. 4, pp. 862–875, 2013.
+we provided an improved approach for the veriﬁcation of    [20] ——, “Enforcing detectability in controlled discrete event systems,”
+                                                                IEEE Trans. Automatic Control, vol. 58, no. 8, pp. 2125–2130, 2013.
+weak I-detectability by using the reversed observer. The com-
+                                                                              [21] ——, “I-detectability of discrete-event systems,” IEEE Trans. Automa-
+plexity of the proposed algorithm is O(|Σ|2|X|) compared           tion Science and Engineering, vol. 10, no. 1, pp. 187–196, 2013.
+with complexity O(|Σ|2|X|2) of  the previous  algorithm.    [22]  S. Shu, F. Lin, and H. Ying, “Detectability of discrete event systems,”
+Then, we provided a new approach for the veriﬁcation of        IEEE Trans. Automatic Control, vol. 52, no. 12, pp. 2356–2359, 2007.
+strong I-detectability by using the reversed veriﬁer. The com-    [23]  S. Shu, F. Lin, H. Ying, and X. Chen, “State estimation and detectabili-
+plexity of the proposed algorithm is O(|Σ||X|2) compared           ty of probabilistic discrete event systems,” Automatica, vol. 44, no. 12,                                                                                    pp. 3054–3060, 2008.
+with complexity O(|Σ||X|4) of the previous algorithm. In    [24]  S. Takai, “Robust prognosability for a set of partially observed discrete
+the future, we plan to extend our results to the stochastic          event systems,” Automatica, vol. 51, pp. 123–130, 2015.
+setting and to investigate how to improve the computational    [25] W. Wang, S. Lafortune, and F. Lin, “An algorithm for calculating
+                                                                                       indistinguishable  states and  clusters  in  ﬁnite-state automata with
+complexity for verifying stochastic I-detectability [27].                  partially observable transitions,” Syst. Control Let., vol. 56, no. 9, pp.
+                                                                          656–661, 2007.
+                 REFERENCES                                 [26] Y.-C. Wu and S. Lafortune, “Comparative analysis of related notions
+ [1] M. Danancher,  J.-J. Lesage, and L.  Litz, “Model-based  location          of opacity in centralized and coordinated architectures,” Discrete Event
+                                                                    Dynamic Systems, vol. 23, no. 3, pp. 307–339, 2013.      tracking of an a  priori unknown number of inhabitants in smart
+     homes,” IEEE Transactions on Automation Science and Engineering,    [27] X. Yin, “Initial-state detectability of stochastic discrete-event systems
+      vol. 13, no. 2, pp. 1090–1101, 2016.                                       with probabilistic sensor failures,” Automatica, vol. 80, pp. 127–134,
+ [2] M. Fanti, G. Faraut, J.-J. Lesage, and M. Roccotelli, “An integrated         2017.
+     framework for binary sensor placement and inhabitants location track-    [28] ——, “Veriﬁcation of prognosability for labeled petri nets,” IEEE
+      ing,” IEEE Transactions on Systems, Man, and Cybernetics: Systems,          Transactions on Automatic Control, vol. 63, no. 6, pp. 1738–1744,
+      vol. 48, no. 1, pp. 154–160, 2018.                                         2018.
+ [3] C.  Hadjicostis and C.  Seatzu,  “K-detectability  in  discrete event    [29] X. Yin, J. Chen, Z. Li, and S. Li, “Robust fault diagnosis of stochastic
+     systems,” in 55th IEEE Conf. Decision and Control, 2016, pp. 420–           discrete event systems,” IEEE Transactions on Automatic Control,
+     425.                                                                    2019.
+ [4] R. Jacob, J.-J. Lesage, and J.-M. Faure, “Overview of discrete event    [30] X. Yin and S. Lafortune, “A uniform approach  for synthesizing
+     systems opacity: Models, validation, and quantiﬁcation,” Annual Re-          property-enforcing supervisors for partially-observed discrete-event
+     views in Control, vol. 41, pp. 135–146, 2016.                                 systems,” IEEE Trans. Automatic Control, vol. 61, no. 8, pp. 2140–
+ [5] C. Keroglou and C. Hadjicostis, “Detectability in stochastic discrete         2154, 2016.
+     event systems,” Syst. Control Letters, vol. 84, pp. 21–26, 2015.          [31] ——, “On the decidability and complexity of diagnosability for labeled
+ [6] ——, “Veriﬁcation of detectability in probabilistic ﬁnite automata,”           petri nets,” IEEE Transactions on Automatic Control, vol. 62, no. 11,
+     Automatica, vol. 86, pp. 192–198, 2017.                                      pp. 5931–5938, 2017.
+ [7]  S. Lafortune, F. Lin, and C. Hadjicostis, “On the history of diag-    [32] ——, “Veriﬁcation complexity of a class of observational properties
+      nosability and opacity in discrete event systems,” Annual Reviews in           for modular discrete events systems,” Automatica, vol. 83, pp. 199–
+      Control, 2018.                                                             205, 2017.
+ [8]  F. Lin and W. Wonham, “On observability of discrete-event systems,”    [33] ——, “Minimization of sensor activation in decentralized discrete-
+     Information sciences, vol. 44, no. 3, pp. 173–198, 1988.                      event systems,” IEEE Transactions on Automatic Control, vol. 63,
+ [9]  T. Masopust, “Complexity of deciding detectability in discrete event          no. 11, pp. 3705–3718, 2018.
+     systems,” Automatica, vol. 93, pp. 257–261, 2018.                       [34] ——, “A general approach for optimizing dynamic sensor activations
+[10]  T. Masopust and X. Yin, “Complexity of detectability, opacity and A-           for discrete event systems,” Automatica, 2019.
+      diagnosability for modular discrete event systems,” Automatica, vol.    [35] X. Yin, Z. Li, and W. Wang, “Trajectory detectability of discrete-event
+     101, pp. 290–295, 2019.                                                     systems,” Syst. Control Let., vol. 119, pp. 101–107, 2018.
+[11] ——, “Deciding detectability for labeled petri nets,” Automatica, 2019.    [36] X. Yin, Z. Li, W. Wang, and S. Li, “Inﬁnite-step opacity and K-step
+[12] A. Mekki, F. Lin, H. Ying, and M. Simoff, “Fuzzy detectabilities for          opacity of stochastic discrete-event systems,” Automatica, vol. 99, pp.
+     fuzzy discrete event systems,” in International Conference on Fuzzy         266–274, 2019.
+     Systems, 2017, pp. 1–6.                                                                              [37]  J. Zaytoon and S. Lafortune, “Overview of fault diagnosis methods
+[13] C. ¨Ozveren and A. Willsky, “Observability of discrete event dynamic                                                                                          for discrete event systems,” Annual Reviews in Control, vol. 37, no. 2,
+     systems,” IEEE Trans. Automatic Control, vol. 35, no. 7, pp. 797–806,                                                                                    pp. 308–320, 2013.
+     1990.                                                                              [38] K. Zhang, “The problem of determining the weak (periodic) detectabil-
+[14]  P. Ramadge, “Observability of discrete event systems,” in 25th IEEE                                                                                                   ity  of  discrete event systems  is PSPACE-complete,” Automatica,
+     Conf. Decision and Control, no. 25, 1986, pp. 1108–1112.                                                                                            vol. 81, pp. 217–220, 2017.
+[15] Y. Sasi and F. Lin, “Detectability of networked discrete event systems,”
+                                                                              [39] K. Zhang and A. Giua, “Weak (approximate) detectability of labeled
+     Discrete Event Dynamic Systems, vol. 28, no. 3, pp. 449–470, 2018.
+                                                                                               petri net systems with inhibitor arcs,” IFAC-PapersOnLine, vol. 51,
+[16] D. Sears and K. Rudie, “On computing indistinguishable states of
+                                                                                    no. 7, pp. 167–171, 2018.
+     nondeterministic ﬁnite automata with partially observable transitions,”
+                                                                              [40] K. Zhang and M. Zamani, “Detectability of nondeterministic ﬁnite
+      in 53rd IEEE Conf. Decision and Control, 2014, pp. 6731–6736.
+                                                                                            transition systems,” IFAC-PapersOnLine, vol. 50, no. 1, pp. 9272–
+[17] R. Sedgewick and K. Wayne, Algorithms.  Addison-Wesley Profes-
+                                                                             9277, 2017.
+      sional, 2011.
+
+
+
+
+
+                                                     253

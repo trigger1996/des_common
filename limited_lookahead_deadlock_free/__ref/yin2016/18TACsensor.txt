@@ -1,0 +1,886 @@
+              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 63, NO. 11, NOVEMBER 2018                                           3705
+
+      Minimization of Sensor Activation in
+     Decentralized Discrete-Event Systems
+
+                Xiang Yin    , Member, IEEE, and St´ephane Lafortune    , Fellow, IEEE
+
+
+
+
+  Abstract—We investigate the problem of dynamic sensor
+activation for decentralized decision making in partially
+observed discrete-event systems, where the system  is
+monitored by a set of agents. The sensors of each agent
+can be turned on/off online dynamically according to a
+sensor activation policy. We deﬁne a general decentralized
+decision-making problem called the decentralized state
+disambiguation problem, which covers the decentralized
+control problem, the decentralized fault diagnosis problem,
+and the decentralized fault prognosis problem. The goal is
+to ﬁnd a language-based minimal sensor activation policy
+for each agent such that the agents can always make a cor-
+rect global decision as a team. A novel approach to solve
+this problem is proposed. We adopt a person-by-person    Fig. 1.   Decentralized decision-making architecture with two agents,
+approach to decompose this decentralized minimization   where Ωi denotes Agent i’s sensor activation policy and PΩ i denotes
+problem  into two centralized constrained minimization   the information mapping induced by Ωi.
+problems. Each centralized constrained minimization prob-
+lem is then reduced to a fully centralized sensor activation
+problem that is solved effectively in the literature. The
+solution obtained is provably language-based minimal with
+                                                                 are “costly.” Therefore, in order to reduce sensor-related costs,
+respect to the system language.
+                                                                                               it is of interest to minimize, in some technical sense, the sen-
+  Index Terms—Decentralized decision making, discrete-   sor activations while maintaining some desired observational
+event systems (DES), dynamic sensor activation.                                                                   property.
+                                                                  In many large-scale systems, the information structure is de-
+                                I. INTRODUCTION                         centralized due to the distributed nature of the sensors. Under
+                                                                 the decentralized setting, the system is monitored by a set of
+    ECISION making under limited sensor capacities is an                                                              agents that make local decisions and send them to a coordina-
+     important problem in networked automated systems. ForD                                                                          tor. Then, the coordinator makes a global decision based on the
+example, in the fault diagnosis problem, the diagnosis module                                                                    local decisions received from each local agent. This decentral-
+needs to infer the occurrence of faults based on its observations.                                                               ized decision-making architecture is depicted in Fig. 1. In the
+In this paper, we investigate the decision-making problem in                                                               context of DES, many different decentralized decision-making
+discrete-event systems (DES) that operate under dynamic ob-                                                         problems have already been studied. For example, in the decen-
+servations. In this context, the system makes observations online                                                                      tralized supervisory control problem [1], [2], local supervisors
+through its sensors; these sensors can be turned ON/OFF dynam-                                                        need to disable/enable events dynamically in order to restrict the
+ically during the evolution of the system according to a sensor                                                         system such that some closed-loop behavior can be achieved. In
+activation policy that depends on the system’s observations. Due                                                                 the decentralized fault diagnosis problem considered in [3]–[5],
+to energy, bandwidth, or security constraints, sensors activations                                                                 the system is monitored by a set of local agents that work as
+                                                           a team in order to diagnose every occurrence of fault events.
+  Manuscript received March 16, 2017; revised August 18, 2017; ac-
+cepted December 1, 2017. Date of publication December 13, 2017; date   Similarly, in the decentralized fault prognosis problem [6], the
+of current version October 25, 2018. This work was supported in part by   local agents need to work as a team in order to predict every
+the U.S. National Science Foundation under Grant CCF-1138860 (Ex-   occurrence of fault events.
+peditions in Computing project ExCAPE: Expeditions in Computer Aug-
+mented Program Engineering) and Grant CNS-1446298. Recommended    The problem of optimal sensor selection for static observa-
+by Associate Editor S. Takai. (Corresponding author: Xiang Yin.)          tions has been widely studied in the DES literature (see, e.g.,
+  X. Yin is with the Department of Automation, Shanghai Jiao Tong   [7]–[10]). The goal in these works was to ﬁnd an optimal set
+University, Shanghai 200240, China (e-mail: xiangyin@sjtu.edu.cn).
+  S. Lafortune is with the Department of Electrical Engineering and   of observable events that is ﬁxed for the entire execution of
+Computer Science, University of Michigan, Ann Arbor, MI 48109 USA   the system and enforces a given DES-theoretic property. In the
+(e-mail: stephane@umich.edu).                                    context of dynamic observations, where sensors can be turned
+  Color versions of one or more of the ﬁgures in this paper are available
+online at http://ieeexplore.ieee.org.                             ON/OFF dynamically, the corresponding problem of optimal sen-
+   Digital Object Identiﬁer 10.1109/TAC.2017.2783048                  sor activation has also received a lot of attention in the literature;
+
+               0018-9286 © 2017 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                  See http://www.ieee.org/publications standards/publications/rights/index.html for more information.
+
+3706                                                       IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 63, NO. 11, NOVEMBER 2018
+
+
+see, e.g., [11]–[19] for a sample of this work and the recent sur-   the one obtained and solve the same minimization problem but
+vey paper [20] for an extensive bibliography. For example, in   for Agent 2. Essentially, we solve two centralized constrained
+[11]–[13] and [17], the problem of centralized dynamic sensor   minimization problems, since we need to take the other agent’s
+activation for enforcement of different diagnosability properties   information into account when we minimize the decisions of
+was solved. In [11] and [14], dynamic sensor activation for the   an agent. A novel approach is also proposed to reduce each
+purpose of centralized control was also studied. Recently, a gen-   centralized constrained minimization problem to a problem
+eral framework that solves a class of centralized dynamic sensor   that is solved effectively by an algorithm presented in [18].
+activation problems was proposed [18].                       Moreover, we prove that the solution obtained by our procedure
+  However, for the decentralized sensor activation problem,    is minimal w.r.t. the system language (i.e., over an inﬁnite set
+there are very few results in the literature. In [13], the prob-   in general), in contrast to the works reviewed above where
+lem of dynamic sensor activation for decentralized diagnosis is   minimality was w.r.t. a ﬁnite solution space. As special cases of
+studied. Speciﬁcally, a “window-based partition” approach is   the proposed framework, language-based sensor optimizations
+proposed in order to obtain a solution. The main drawback of   for decentralized diagnosis and decentralized control, which
+this approach is that the solution obtained is only optimal with  were  previously  open,  are  solved. These  language-based
+respect to (w.r.t.) a ﬁnite (restricted) solution space and may not   optimal decentralized  solutions  essentially come from the
+be language-based optimal in general, where “language-based   effective reduction from the decentralized problem to two
+optimal” means that no sensor activation policy deﬁned over   fully centralized problems and the language-based optimal
+the entire language domain can be strictly smaller (in terms of   solution found in [18] for the fully centralized case. Finally,
+set inclusion) than the synthesized solution. In other words, by  we show that the proposed framework is applicable to both the
+enlarging the solution space by reﬁning the state space of the   disjunctive architecture and the conjunctive architecture.
+system model, solutions better than the solution found in [13]     In general, a person-by-person approach in team decision
+could be obtained in principle. Similarly, in [14], the problem   problems may not terminate in a ﬁnite number of steps, since
+of dynamic sensor activation for decentralized control is also  we may need to iterate between the two constrained minimiza-
+studied, where the solution obtained is again optimal w.r.t. a   tion problems (see, e.g., [24]). However, since we consider a
+ﬁnite solution space. To the best of our knowledge, the problem   logical optimality criterion, our problem enjoys a monotonic-
+of language-based sensor optimization for decentralized diag-    ity property, which “decouples” the minimization objective to
+nosis or control has remained an open problem, as is mentioned  some extent. As a consequence, we can use the person-by-person
+in the recent survey [20].                                    approach to effectively solve this problem and iteration is not
+  One important reason for the lack of results for the decentral-   needed. Such a monotonicity property does not hold in general
+ized sensor activation problem is that decentralized multiplayer   for arbitrary decentralized synthesis problems, e.g., [22]–[24].
+decision problems are conceptually much more difﬁcult to solve     In the DES literature, the person-by-person approach has also
+than their corresponding centralized versions. In particular, to   been applied to many problems, e.g., the decentralized control
+synthesize a strategy for one agent, we need to know the strate-   problem [24] and the decentralized communication problem
+gies of the other agents, which are to be synthesized and again   [26]–[28]. In particular, in [13] and [14], the person-by-person
+depend on the unknown strategy of the ﬁrst agent. In general,   approach is also exploited for solving the decentralized sen-
+these types of problems have been discussed in the framework   sor activation problem for the purposes of decentralized control
+of team decision theory [21]. In the DES literature, it is well   and decentralized diagnosis, respectively. The differences be-
+known that many problems that are decidable in the centralized   tween this paper and [13], [14] are as follows. First, in [31] and
+setting become undecidable (e.g., the problem of synthesizing   [32], the authors restrict the solution spaces of the minimization
+safe and nonblocking supervisors [22], [23]) or open (e.g., the   problems to ﬁnite domains. However, in general, the solution
+problem of synthesizing maximally permissive safe supervisors   space of the decentralized minimization problem is inﬁnite over
+[24]) in the decentralized case, even when only two agents are   the system’s language. Therefore, one may ﬁnd solutions that
+involved.                                                        are better than those found in [13] and [14] but are not in the
+  In this paper, we propose a new approach to tackle the   prespeciﬁed ﬁnite solution spaces. This inﬁnite solution space
+problem of dynamic sensor  activation  for the purpose of    is also the fundamental difﬁculty in solving the decentralized
+decentralized decision making. The main contributions of this   minimization problem. However, our approach does not need
+paper are as follows. First, we formulate a general class of   this restriction, and consequently, the solution obtained in this
+decentralized decision-making problems called the decentral-   paper is language-based minimal. Moreover, the problem for-
+ized state disambiguation problem. We propose the notion of   mulation in our paper is more general compared with those in
+decentralized distinguishability, which covers coobservability,   [13] and [14]. Consequently, the results in this paper can be used
+K-codiagnosability, and coprognosability. Second, to solve   to ﬁnd language-based minimal solutions for a class of decen-
+the dynamic sensor activation problem, we adopt a person-by-   tralized sensor activation problems under both the disjunctive
+person approach (see, e.g., [25] and the references therein) to  and conjunctive architectures, while the results in [13] and [14]
+decompose the decentralized minimization problem to two con-   can only be applied to speciﬁc problems under the disjunctive
+secutive centralized minimization problems. We ﬁrst minimize   architecture. However, due to the unrestricted solution space,
+the sensor activation policy for Agent 1 by keeping the policy of   our algorithm has a higher complexity than those in [13] and
+Agent 2 ﬁxed. Then, we ﬁx Agent 1’s sensor activation policy to   [14].
+
+YIN AND LAFORTUNE: MINIMIZATION OF SENSOR ACTIVATION IN DECENTRALIZED DISCRETE-EVENT SYSTEMS                               3707
+
+
+  The remainder of this paper is organized as follows. Section II   are currently “unobservable” (i.e., their sensors are turned OFF).
+describes the model of the system under dynamic observations.   Therefore, the codomain of L, i.e., Σo, is the set of potential
+In Section III, we formulate the decentralized state disambigua-   observable events. To make Ω implementable, the pair (R, Θ)
+tion problem and the decentralized minimization problem that   needs to satisfy the following conditions:
+we solve in this paper. Section IV shows how to solve the central-      (C-1) L(R) = Σ∗;
+ized constrained minimization problem by reducing it to a fully      (C-2) (∀q, q′ ∈QR)(∀σ∈Σ : δR(q, σ) = q′)[q̸=q′ ⇒σ∈
+centralized problem. In Section V, we present our algorithm for            Θ(q)].
+synthesizing a minimal decentralized solution. In Section VI,    The above conditions say that the sensing decision can be up-
+we show how speciﬁc problems, e.g., sensor activation for de-   dated (by updating the state of R) only when a monitored event
+centralized diagnosis/control/prognosis, can be solved by the   occurs. Moreover, Ω can react to any execution of the system
+proposed framework. We also extend our results to the conjunc-   as L(G) ⊆L(R) = Σ∗. In general, QR could be an inﬁnite set.
+tive architecture. Finally, we conclude the paper in Section VII.   However, we will show later that the optimal sensor activation
+Preliminary and partial versions of some of the results in this   policies of interest in this paper can always be constructed with
+paper are presented in [29]. However, Yin and Lafortune [29]   ﬁnite state spaces.
+only investigated K-codiagnosability, which is a special case   We say that the observations are static if the set of observable
+of the general framework proposed in this paper. Moreover, the   events is ﬁxed a priori. We denote by ΩΣo the corresponding
+approach used in this paper to solve the constraint minimization   sensor activation policy for the static observation with the set
+problem is more efﬁcient than the state-partition-automaton-   of observable events Σo. Speciﬁcally, ΩΣo = (R, Θ) is given
+based approach in [29].                                        by: 1) QR = {q0,R}; 2) ∀σ ∈Σo : δR(q0,R, σ) = q0,R; and 3)
+                                                        Θ(q0,R) = Σo.
+                                                         Given a sensor activation policy Ω = (R, Θ), we deﬁne                               II. PRELIMINARIES
+                                                                 the corresponding information mapping PΩ : L(G)→Σ∗o re-
+A. System Model                                              cursively as follows:
+  Let Σ be a ﬁnite set of events. A string is a ﬁnite sequence
+                                                                                  PΩ(s)σ,  if σ ∈Θ(δR(s))of events in Σ. We denote by Σ∗the set of all ﬁnite strings                                                         PΩ(ϵ) = ϵ,  PΩ(sσ) =
+over Σ including the empty string ϵ. For any string s ∈Σ∗, we                              PΩ(s),   if σ̸ ∈Θ(δR(s)).
+denote by |s| its length with |ϵ| = 0. A language L ⊆Σ∗is a
+set of strings. We deﬁne L/s := {t ∈Σ∗: st ∈L} as the set of   That is, PΩ(s) is the observation of string s under Ω. For any
+continuations of string s in L. The preﬁx closure of language   language L ⊆Σ∗, we deﬁne PΩ(L) = {PΩ(s)∈Σ∗o : ∃s∈L}.
+L ⊆Σ∗is L = {s ∈Σ∗: ∃w ∈Σ∗s.t. sw ∈L}. We say that     For any two sensor activation policies Ω = (R, Θ) and Ω′ =
+L is preﬁx-closed if L = L. We say that language L is live if   (R′, Θ′), we write that Ω′ ⊆Ω if
+∀s ∈L, ∃σ ∈Σ : sσ ∈L, i.e., any string in L can be extended
+to arbitrarily long length.                                          ∀s ∈L(G) : Θ′(δR′(s)) ⊆Θ(δR(s))          (1)
+  We consider a DES modeled as a deterministic ﬁnite-state
+                                                       and write that Ω′ ⊂Ω ifautomaton G = (Q, Σ, δ, q0), where Q is the ﬁnite set of states,
+Σ is the ﬁnite set of events, δ : Q × Σ →Q is the partial tran-
+                                                                          [Ω′ ⊆Ω] ∧[∃s∈L(G) : Θ′(δR′(s))̸=Θ(δR(s))].    (2)
+sition function, and q0  is the initial state. The function δ is
+extended to Q × Σ∗in the usual way (see, e.g., [30]). The be-
+havior of the system G starting from state q ∈Q is described  C. State Estimate
+by the preﬁx-closed language L(G, q) = {s ∈Σ∗: δ(q, s)!},                                                              Let s ∈L(G) be a string generated by the system. We denote
+where “!” means “is deﬁned.” For the sake of simplicity, we                                                     by EGΩ (s) ⊆Q the state estimate upon the occurrence of s w.r.t
+also write δ(q, s) as δ(s) and write L(G, q) as L(G) if q = q0.  Ω and the state space of G. Speciﬁcally, for any s ∈L(G), we
+                                                         have
+B. Information Mapping
+                                                EGΩ (s) := {δ(t) ∈Q : ∃t∈L(G) s.t. PΩ(s) = PΩ(t)}.
+  We consider a general dynamic observation setting, where
+the observability properties of events can be controlled by a                                                                    Clearly,  if PΩ(s) = PΩ(t), then EGΩ (s) = EGΩ (t). To com-
+sensor activation policy during the evolution of the system. Let                                                             pute EGΩ (s), we can construct the observer of G. Let Ω =
+Σo ⊆Σ be the set of events that can become observable by ac-   (R, Θ), R = (QR, Σ, δR, q0,R) be a sensor activation policy.
+tivating some sensors. A sensor activation policy is deﬁned as a                                                   The observer for G under Ω is
+pair Ω = (R, Θ), where R = (QR, Σ, δR, q0,R) is a determin-
+istic automaton such that L(R) = Σ∗and Θ : QR →2Σo  is a               ObsΩ(G) = (X, Σo, f, x0)               (3)
+labeling function that speciﬁes the current set of “observable”
+events within Σo. Speciﬁcally, for any s ∈Σ∗, Θ(δR(s)) de-  where X ⊆2Q × QR is the state space, and for any state x ∈X,
+notes the set of events that are monitored after the occurrence  we write x = (I(x), R(x)), where I(x) ∈2Q and R(x) ∈QR.
+of s. While an event is monitored, any occurrence of it will be  The partial transition function of the observer f : X×Σo →X
+observed. In other words, after string s, events in Σo \ Θ(δR(s))    is deﬁned as follows: for any x = (ı, q), x′ = (ı′, q′)∈X and
+
+3708                                                       IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 63, NO. 11, NOVEMBER 2018
+
+
+
+
+
+Fig. 2.  Examples of sensor activation policies and observers. (a) System G. (b) Ω1. (c) ObsΩ 1 (G). (d) Ω2. (e) ObsΩ 2 (G).
+
+
+σ ∈Θ(q) ⊆Σo, f(x, σ) = x′ iff                          on the information received from each local agent. Let I be the
+                                                            index set of local agents. For each agent i ∈I, we denote by Ωi
+                       q′ = δR(q, σ)                                                                                    its sensor activation policy and by Σo,i the set of events that can                                                              (4)
+                               ı′ = URΘ(q ′)(Nextσ(ı))                  be monitored in Ωi. For the sake of simplicity, we develop all
+                                                                       results hereafter for the case of two agents, i.e., I = {1, 2}. The
+where for any ı ∈2Q, σ ∈Σo, and θ ∈2Σo , we have                                                                   principle can be extended to an arbitrary number of agents. We
+ Nextσ(ı) = {q1 ∈Q : ∃q2 ∈ı s.t. δ(q2, σ) = q1}              deﬁne the pair of sensor activation policies as ¯Ω = [Ω1, Ω2].
+                                                                  In order to formulate the decentralized decision-making prob-
+ URθ(ı) = {q1 ∈Q : ∃q2 ∈ı, ∃s∈(Σ \ θ)∗s.t. δ(q2, s) = q1}.                                                            lem, we need to specify the following three ingredients.
+Intuitively, Nextσ(ı) is the set of states that can be reached from      1) What requirement the global decision has to fulﬁll?
+some state in ı immediately after observing σ and URθ(ı) is the      2) What information each local agent can send to the coor-
+set of states that can be reached unobservably from some state in         dinator?
+ı under the set of monitored events θ. Finally, the initial state      3) What rule the coordinator uses to calculate a global deci-
+of ObsΩ(G) is x0 = (URΘ(q0 , R )({q0}), q0,R). Then, the state         sion based on the local decisions?
+estimate EGΩ (s) can be computed by I(f(PΩ(s))) = EGΩ (s), i.e.,      Hereafter, we refer to the ﬁrst ingredient as the speciﬁcation
+                                                               of the decentralized decision-making problem. The last twothe state components of the observer state reached upon PΩ(s)
+is the state estimator value after s. Also, if Ω′ ⊆Ω, then we have   ingredients arereferredtoas the architectureof thedecentralized
+                                                           decision-making problem.∀s ∈L(G) : EGΩ (s) ⊆EGΩ′(s) [17].
+                                                                 Several different speciﬁcations have been studied separately  Example 1: Consider the system G in Fig. 2(a). Let Σo,1 =
+                                                                    in the literature for decentralized decision-making problems,{o, a} and Σo,2 = {o, b} be two sets of observable events. As
+                                                                              e.g., to diagnose every occurrence of fault events [3], [4], to pre-shown in Fig. 2(b), Ω1 is a sensor activation policy with the
+                                                                      dict every occurrence of fault events [6] or to control the systemset of observable events Σo,1. The labeling function is spec-
+                                                                           [1], [2]. In this paper, we do not study a speciﬁc speciﬁcation.iﬁed by the set of events associated with each state in the
+                                                                   Instead, we deﬁne a general class of speciﬁcations called de-ﬁgure. Initially, event o is monitored by Ω1. Once o is ob-
+                                                                  centralized state disambiguation. As shown later in Section VI,served, Ω1 changes to monitor event a. Finally, Ω1 turns all
+                                                many existing decentralized decision-making problems are spe-sensors OFF when a is observed. The corresponding observer
+                                                                         cial cases of the decentralized disambiguation problem. For-ObsΩ1 (G) is shown in Fig. 2(c). For example, for the string
+                                                                mally, we deﬁne a speciﬁcation as a pair of state setsoof1a ∈L(G), we have that PΩ1 (oof1a) = oa and I(f(oa)) =
+{6} = EGΩ (oof1a). Similarly, Fig. 2(b) shows a sensor activa-               T = QTA × QTB ⊆Q × Q.                (5)
+tion policy Ω2 with the set of observable events Σo,2. Clearly,
+Ω2 always monitors all events in Σo,2, i.e., Ω2 = ΩΣo , 2 . There-   Intuitively, speciﬁcation T is used to capture the following re-
+fore, the observer ObsΩ2 (G) shown in Fig. 2(c) is the standard   quirement. State set QTA represents the set of states at which the
+observer (see, e.g., [30]) if we ignore the second component of   global system must take some desired action associated to T
+each state.                                              and state set QTB represents the set of states at which the global
+                                                         system should not take such an action. Then, the system must
+    III. DECENTRALIZED STATE DISAMBIGUATION PROBLEM     be able to distinguish between states in QTA and states in QTB
+                                                             (under certain decentralized architecture, which will be speci-
+  In this section, we ﬁrst deﬁne the notion of decentralized
+                                                     ﬁed later) when a state in QTA is reached; otherwise, the desireddistinguishability. Then, we formulate the decentralized sensor
+                                                                 action associated to T cannot be taken safely.
+minimization problem for the purpose of state disambiguation.
+                                                            Regarding the architecture of the decentralized decision-
+                                                     making problem, here, we consider the following mechanism,
+A. Decentralized Distinguishability
+                                                      which is widely used in the literature for many different prob-
+  In the decentralized decision-making problem, at each instant,   lems [1]–[4], [6]. We assume that communication between each
+each local agent sends highly compressed information, i.e., a lo-   agent and the coordinator is costly, and only a binary decision
+cal decision, to the coordinator based on its local (dynamic) ob-    is allowed for each agent at each instant. That is, each local
+servation. Then, the coordinator makes a global decision based   agent can only send to the coordinator a highly compressed
+
+YIN AND LAFORTUNE: MINIMIZATION OF SENSOR ACTIVATION IN DECENTRALIZED DISCRETE-EVENT SYSTEMS                               3709
+
+
+decision “1” or “0,” which correspond to “take the action” and  and IT1 = IT2 = {1, 2}. We can verify that G is decentralized
+“do not take the action,” respectively. Then, the coordinator has   distinguishable w.r.t. {T1, T2} and [ΩΣo , 1 , ΩΣo , 2 ]. For exam-
+two possible fusion rules to obtain a global decision from local   ple, for speciﬁcation T1 and string of1a such that δ(of1a) =
+decisions.                                             6 ∈QT1A  , we have 1 ∈IT1 and EGΩΣ o , 1 (of1a) ∩QT1B = {6} ∩
+   1) The disjunctive rule: issue “1” globally if and only if one   {1, 2, 3, 5, 7} = ∅. However,  if we add another speciﬁcation
+       local agent issues “1.”                                T3 = {4} × {1, 2} to {T1, T2}, then G will not be decentralized
+   2) The conjunctive rule: issue “1” globally if and only if all                                                                   distinguishable. For example, for δ(of1) = 4 ∈QT3A  , we have
+       local agents issue “1.”                          EGΩΣ o , 1                                                                  (of1) ∩QT3B = {2, 4} ∩{1, 2}̸ = ∅and EGΩΣ o , 2 (of1) ∩   Hereafter, we will develop the main results based on the
+                                                    QT3B = {2, 4, 6} ∩{1, 2}̸ = ∅, i.e., none of the agents can dis-disjunctive rule. We will discuss how to extend our results to
+                                                                  tinguish speciﬁcation T3.the conjunctive case in Section VI-D.
+                                                     Remark 1: The state disambiguation problem and its sensor  In general, the system may have multiple distinct objectives,
+                                                                    activation have been studied in the literature in the centralizedi.e., it needs to distinguish different states pairs for different
+purposes. For the sake of generality, we consider m speciﬁ-   setting (see, e.g., [17], [31], and [32]). Compared to its central-
+cations and denote by T = {T1, . . . , Tm} the set of speciﬁca-   ized counterpart, the decentralized disambiguation problem has
+tions, where Tk = QTkA × QTkB ⊆Q × Q, Tk ∈T. Also, for the   the following important difference. In the centralized setting,
+sake of generality, for each Tk ∈T, we deﬁne ITk ⊆I as the   speciﬁcation QA × QB and speciﬁcation QB × QA are equiv-
+                                                                    alent in the sense that if the system can distinguish state q1 fromnonempty set of agents that can contribute to the decision as-
+sociated to Tk. If ITk  is a singleton, then the global decision   state q2, then it can also distinguish q2 from q1. However, it is
+will be “1” if the unique agent in ITk issues “1.” However, in   not the case in the decentralized setting, and we cannot swap QA
+the case that |ITk | > 1, since we consider the disjunctive ar-  and QB arbitrarily. One can easily verify that G is decentralized
+chitecture, the global decision will be “1” if one agent in ITk    distinguishable w.r.t. QA × QB does not necessarily imply that
+                                                                                               it is decentralized distinguishable w.r.t. QB × QA. Moreover,issues “1.” Therefore, an agent must be able to distinguish any
+                                                           our procedure for solving the sensor activation problem in thestates pair in Tk unambiguously when it issues “1”; otherwise,
+                                                                decentralized setting is completely different from those in thea wrong global decision may be made. This observation leads
+                                                                  centralized case.to the following deﬁnition of decentralized distinguishability.
+   Deﬁnition 1: (Decentralized distinguishability). Let G be the
+                                                         B. Problem Formulation and Solution Overviewsystem, T = {T1, . . . , Tm} be a set of speciﬁcations, and ¯Ω =
+[Ω1, Ω2] be a pair of sensor activation policies. We say that G is     Let T be the set of speciﬁcations. Then, the goal of the sensor
+decentralized distinguishable w.r.t. ¯Ω and T if                    activation problem is to ﬁnd an optimal pair of sensor activation
+                                                                    policies ¯Ω = [Ω1, Ω2] such that the system is decentralized dis-
+      (∀Tk ∈T)(∀s ∈L(G) : δ(s) ∈QTkA )(∃i ∈ITk )          tinguishable w.r.t. ¯Ω and T. In this paper, we consider the logical
+      [EGΩi (s) ∩QTkB = ∅]                                  (6)   optimality criterion that is widely used in the literature [13], [14],
+                                                                     [20]. Speciﬁcally, for any ¯Ω = [Ω1, Ω2] and ¯Ω′ = [Ω′1, Ω′2], the
+   Intuitively, the above deﬁnition says the following. For any   inclusion ¯Ω′ ⊆¯Ω means that
+speciﬁcation Tk ∈T, for any string that goes to a state in QTkA  ,                       ∀i ∈I : Ω′i ⊆Ωi                     (7)
+i.e., a state at which we must take the action associated to Tk,
+there must exist at least one local agent in ITk that knows for  and the strict inclusion ¯Ω′ ⊂¯Ω means that
+sure that we can take such an action. Note that, in our setting,                         [¯Ω′ ⊆¯Ω] ∧[∃i ∈I : Ω′i ⊂Ωi].             (8)
+only QTkB  are the set of states at which we cannot take the action
+associated to Tk. In other words, there is no harm in taking the   We are now ready to formulate the problem of minimal sensor
+action if the system is in Q \ (QTkA ∪QTkB ). This is why, we   activation for decentralized state disambiguation.
+require EGΩi (s) ∩QTkB = ∅rather than EGΩi (s) ⊆QTkA  . We will     Problem 1: Let G be the system and T = {T1, . . . , Tm} be
+show later in Section VI that K-codiagnosability, coobservabil-   a set of speciﬁcations. For each agent i ∈{1, 2}, let Σo,i ⊆Σ
+                                                        be the set of observable events. Find sensor activation policiesity, and coprognosability are all instances of decentralized dis-
+                                                 ¯Ω∗= [Ω∗1, Ω∗2] such that we have the following.tinguishability. Note that, if QTkA ∩QTkB̸ = ∅for some Tk ∈T,
+then G will not be decentralized distinguishable for any sensor      C1. G is decentralized distinguishable w.r.t. ¯Ω∗and T.
+                                                           C2. ¯Ω∗is minimal, i.e., there does not exist another ¯Ω′ ⊂¯Ω∗activation policies ¯Ω. This phenomenon may occur in the fault
+                                                                               that satisﬁes (C1).prognosis problem as we will discuss later in Section VI-C.
+                                                     Remark 2: In [13] and [14], “suboptimal” solutions to two  Example 2: We  still consider the system G in Fig. 2(a),
+and Σo,1 = {o, a} and Σo,2 = {o, b} are two sets of observ-   special cases of Problem 1, the decentralized control problem
+                                                       and the decentralized diagnosis problem, are provided, in theable events. We assume that the observations are static, i.e.,
+Ω1 = ΩΣo , 1 and Ω2 = ΩΣo , 2 . Let us consider the following set   sense that the solutions found therein are minimal among all
+of speciﬁcations: T = {T1, T2}, where                           solutions over given ﬁnite restricted solution spaces. In prin-
+                                                                        ciple, the solutions found in [13] and [14] could be improved
+         T1 = QT1A × QT1B = {6} × {1, 2, 3, 5, 7}           by employing ﬁner partitions and repeating the optimization
+                                                              procedure. In this paper, we are aiming for a language-based
+         T2 = QT2A × QT2B = {5, 7} × {1, 2, 4, 6}            minimal solution, in the sense that the notion of strict inclusion
+
+3710                                                       IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 63, NO. 11, NOVEMBER 2018
+
+
+of sensor activation policies is deﬁned in terms of the strings      C1. G is decentralized distinguishable w.r.t. [Ω1, Ω2] and T.
+in L(G) [see (2) and (8)]. In other words, we do not impose, a      C2. For any Ω′i satisfying (C1), we have Ω′i̸ ⊂Ωi.
+priori, any constraints on the solution space of each Ωi. Hence,    The above problem is different from both the centralized
+no better solution can be obtained by reﬁning the state space  and decentralized minimization problems. In the centralized
+of G and repeating the solution procedure. To the best of our   minimization problem, where only one agent is involved, to
+knowledge, such a language-based optimal solution to the de-   maintain distinguishability, we need to require that
+centralized sensor activation problem has never been reported
+in the literature. Moreover, Problem 1 is more general than the       ∀Tk ∈T, ∀s ∈L(G) : (EGΩ (s) × EGΩ (s)) ∩Tk = ∅
+problems studied in [13] and [14].
+  Before we formally tackle Problem 1, let us ﬁrst provide a  where Ω is the centralized sensor activation policy. In other
+brief overview of our solution approach. We adopt the person-   words, the agent should always be able to distinguish states
+by-person approach that has been widely used in decentralized   in QTkA  from states in QTkB  for any Tk ∈T. However, in the
+optimization problems. Speciﬁcally, we decompose the decen-   decentralized disambiguation problem, it is possible that there
+tralized minimization problem to a set of centralized constrained   exists a string s ∈L(G), δ(s) ∈QTkA such that EGΩi (s) ∩QTkB̸ =
+minimization problems, and for each such problem, we only at-   ∅, but EGΩj (s) ∩QTkB = ∅, where j ∈ITk . Therefore, Agent j
+tempt to minimize one agent’s sensor activation policy, while the  may “help” Agent i to resolve the ambiguity. In other words, to
+other one is ﬁxed. However, the following questions arise. First,   solve the constrained minimization problem for one agent, we
+by taking the person-by-person approach, iterations involving  must take the other agent’s sensor activation policy into account.
+minimization for each agent may be required in general, and
+such iterations may not terminate in a ﬁnite number of steps.                                                         B. Problem Reduction
+We will show that in our particular problem, such iterations are
+not required. This is due to the so-called monotonicity property      First, we recall a general class of fully centralized sensor
+that arises in dynamic sensor activation problems. The second   activation problems that is studied in [18].
+question of interest is how to minimize the sensor activation pol-     Problem 3: (Centralized sensor minimization problem for
+icy of one agent when the policy of the other agent is ﬁxed. This   IS-based property). Let G = (Q, Σ, δ, q0) be the system and
+problem is different from the fully centralized minimization  ϕ : 2Q →{0, 1} be a function. Find a sensor activation policy
+problem, since we should not only consider the information of  Ω such that we have the following.
+the agent whose sensor activation policy we are minimizing, but      C1. ∀s ∈L(G) : ϕ(EGΩ (s)) = 1.
+we must also take into account the information available to the      C2. For any Ω′ satisfying (C1), we have Ω′̸ ⊂Ω.
+other agent, whose sensor activation policy is ﬁxed. Therefore,     Problem 3  is a fully centralized sensor activation prob-
+the true information state (IS) for this minimization problem   lem, since only one agent is involved. In particular, function
+consist of: 1) the knowledge of the agent whose sensor activa-  ϕ : 2Q →{0, 1} is referred to as an IS-based property. This
+tion policy is being minimized; and 2) this agent’s inference of   problem is studied in more detail in [18], where an algorithm
+the other agent’s potential knowledge of the system based on    is provided that solves this problem effectively by returning a
+that agent’s own information. To resolve this information de-   ﬁnite sensor activation policy satisfying the requirements. Note
+pendence, we develop a novel approach, by which we encode   that the algorithm in [18] also guarantees by construction that
+the second agent’s knowledge into the system model. This is   the synthesized sensor activation policy satisﬁes the implemen-
+discussed in the next section.                                       tation conditions (C-1) and (C-2). In general, a minimal sen-
+                                                                 sor activation policy does not exist for an arbitrary property,
+          IV. CONSTRAINED MINIMIZATION PROBLEM              e.g., detectability or diagnosability without a prespeciﬁed delay.
+                                                       However, for an IS-based property, a minimal sensor activation
+  In this section, we tackle the problem of minimizing the                                                                policy does exist, and it is ﬁnitely realizable; this is because an
+sensor activation policy for one agent when the sensor acti-                                                            IS-based property can be checked over the state estimates of the
+vation policy of the other one is ﬁxed. This problem is also                                                             system. Therefore, if we can reduce Problem 2 to Problem 3,
+referred to as the centralized constrained minimization prob-                                                             then it means that Problem 2 can also be solved effectively, and
+lem herafter. Throughout this section, i ∈{1, 2} denotes the                                                                 the solution will be ﬁnitely realizable. We now show that such
+agent whose sensor activation policy is being minimized, while                                                           a reduction is possible by using automata V and ˜V , which are
+j ∈{1, 2}, j̸ = i, denotes the other agent whose sensor activa-                                                      deﬁned next.
+tion policy is ﬁxed.                                                              Let G be the system and Ωj be the ﬁxed sensor activation
+                                                                     policy, where Ωj = (Rj, Θj) and Rj = (QjR, Σ, δjR, qj0,R). We
+A. Constrained Minimization Problem                                                      deﬁne a new automaton
+  Problem 2: (Centralized  constrained  minimization  prob-
+lem). Let G be the system and T = {T1, . . . , Tm} be a set of               V = (QV , δV , ΣV , q0,V )                (9)
+speciﬁcations. Let i, j ∈{1, 2}, i̸ = j be two agents. Suppose
+that the sensor activation policy Ωj for Agent j is ﬁxed. Find  where QV ⊆Q × QjR × Q × QjR  is the set of states, ΣV =
+a sensor activation policy Ωi for Agent i such that we have the  (Σ ∪{ϵ}) × (Σ ∪{ϵ}) is the set of events, and q0,V = (q0,
+following.                                                          qj0,R, q0, qj0,R) is the initial state.
+
+YIN AND LAFORTUNE: MINIMIZATION OF SENSOR ACTIVATION IN DECENTRALIZED DISCRETE-EVENT SYSTEMS                               3711
+
+
+  The transition function δV  : QV × ΣV →QV  is deﬁned as
+follows: for any (q1, qR1 , q2, qR2 ) and σ ∈Σ, the following tran-
+sitions are deﬁned.
+   1) If σ ∈Θj(qR1 ) and σ ∈Θj(qR2 ), then
+              δV ((q1, qR1 , q2, qR2 ), (σ, σ))
+      = (δ(q1, σ), δjR(qR1 , σ), δ(q2, σ), δjR(qR2 , σ)).
+   2) If σ ∈Θj(qR1 ) and σ /∈Θj(qR2 ), then
+                    δV ((q1, qR1 , q2, qR2 ), (ϵ, σ))
+                                                                               Fig. 3.  Automaton ˜V .
+          = (q1, qR1 , δ(q2, σ), δjR(qR2 , σ)).
+   3) If σ /∈Θj(qR1 ) and σ ∈Θj(qR2 ), then
+                                                     The modiﬁed automaton ˜V has the following properties. First,
+                    δV ((q1, qR1 , q2, qR2 ), (σ, ϵ))                                             we have that L(˜V ) = L(G). Clearly, L(˜V ) ⊆L(G) since a
+          = (δ(q1, σ), δjR(qR1 , σ), q2, qR2 ).                transition in ˜V is deﬁned only when the corresponding transition
+                                                                    in G is deﬁned. Also, for any string s ∈L(G), we know that
+   4) If σ /∈Θj(qR1 ) and σ /∈Θj(qR2 ), then                       (s, s) ∈L(V ), which implies that s ∈L(˜V ). Second, for any
+                                                        s ∈L(˜V ) = L(G), we know that                    δV ((q1, qR1 , q2, qR2 ), (σ, ϵ))
+                                                              δ ˜V (s)          = (δ(q1, σ), δjR(qR1 , σ), q2, qR2 )
+                                    = {(δ(s), δjR(s), δ(t), δjR(t)) ∈Q˜V  : (s, t) ∈L(V )}                    δV ((q1, qR1 , q2, qR2 ), (ϵ, σ))
+                                    = {(δ(s), δjR(s), δ(t), δjR(t)) ∈Q˜V  : t ∈L(G) ∧PΩj (s)          = (q1, qR1 , δ(q2, σ), δjR(qR2 , σ)).
+                                                        = PΩj (t)}.    (10)
+  The above construction follows the well-known M-machine
+(or twin-plant) construction that was originally used for the ver-   Therefore, for any string s ∈L(G) = L(˜V ), if (q1, qR1 , q2, qR2 )
+iﬁcation of (co)observability [33]–[35], but we generalize it to  ∈δ ˜V (s), then it implies that δ(s) = q1 and state q2 cannot be
+the dynamic observation setting. Essentially, V  tracks a pair   distinguished from q1 under Ωj. For any x ∈2Q ˜V , we denote
+of strings that look the same for Agent j under Ωj. Speciﬁ-  by I1(x) = {q1 ∈Q : (q1, qR1 , q2, qR2 ) ∈x} the set of states in
+cally, the ﬁrst two components are used to track a string in the   the ﬁrst component of x. Then, for any sensor activation policy
+original system, and the last two components are used to track  Ω, by (10), we have EGΩ (s) = I1(EΩ˜V (s)) for any s ∈L(G).
+a string that looks the same as the ﬁrst string. Since we are     Example 3: Let us  still consider the system G shown in
+considering the dynamic observation setting, we also need to   Fig. 2(a). Suppose that the ﬁxed Ωj  is the sensor activation
+track states in the sensor activation policy in order to determine   policy Ω2 shown in Fig. 2(d), i.e., Ωj always monitors o and
+the set of monitored events, this is why the second (respectively,    b. Then, automaton ˜V constructed from G and Ωj is shown in
+fourth) component always moves together with the ﬁrst (respec-                                                                   Fig. 3. Clearly, we see that L(˜V ) = L(G). For string of1a ∈
+tively, third) component. Therefore, for any (s1, s2) ∈L(V ), we  L(˜V ) = L(G), we have that δ ˜V (of1a) = {(6, 1, 2, 1), (6, 1, 4,
+have that PΩj (s1) = PΩj (s2). Similarly, for any t, w ∈L(G)                                                 ˜V
+                                                                    1), (6, 1, 6, 1)} and I1(EΩj (of1a)) = I1({(2, 1, 2, 1), (4, 1, 2,such that PΩj (t) = PΩj (w), there exists (s1, s2) ∈L(V ) such
+                                                                    1), (6, 1, 2, 1), (2, 1, 4, 1), (4, 1, 4, 1),(2, 1, 6, 1), (4, 1, 6, 1), (6,
+that s1 = t and s2 = w, i.e., state (δ(t), δjR(t), δ(w), δjR(w)) is   1, 6, 1)}) = {2, 4, 6} = EGΩj (of1a).reachable in V .
+                                                    Now, let us show how to use ˜V to reduce the constraint min-  Next, we modify V as follows. For each transition in V , we
+                                                               imization problem, i.e., Problem 2, to a fully centralized min-have the following.
+                                                               imization problem, i.e., Problem 3. First, we deﬁne the distin-   1) If the event is in the form of (σ, σ) or (σ, ϵ), then we
+                                                                   guishability function DF : 2Q ˜V →{0, 1} as follows: for each      replace the event by σ.
+                                              x ∈2Q ˜V , we have   2) If the event is in the form of (ϵ, σ), then we replace the
+      event by ϵ.                                                                    1,    if ∀Tk ∈T : (c-i) or (c-ii) holds
+  We denote by ˜V = (Q˜V , δ ˜V , Σ˜V , q0, ˜V ) the modiﬁed automa-     DF(x) =                                           (11)                                                                                      0,   otherwise
+ton. Similar modiﬁcation was also used in [36] and [37] in the
+static observation setting for different purpose. Intuitively, ˜V   where conditions (c-i) and (c-ii) are deﬁned as follows.
+only keeps the ﬁrst component of the event of each transition        (c-i) i ∈ITk and (I1(x) × I1(x)) ∩Tk = ∅.
+in V , since this part corresponds to the transition in the real        (c-ii) j ∈ITk and ∀q1 ∈I1(x) ∩QTkA  , ∀(q1, qR1 , q2, qR2 ) ∈
+system. Note that ˜V is a nondeterministic automaton, since ϵ-         x : (q1, q2) /∈Tk.
+transition is allowed. Therefore, δ ˜V (s) is the set of states that     Let us explain the intuition of the above two conditions in
+can be reached from q0, ˜V via s.                                 function DF. Suppose that Ωi is the sensor activation policy to
+
+3712                                                       IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 63, NO. 11, NOVEMBER 2018
+
+
+be synthesized for Agent i. Let s ∈L(G) be a string such that   that
+δ(s) ∈QTkA  , i.e., the coordinator must take the action associated
+                                                             ˜V                          (∃s ∈L(G) : δ(s) ∈QTkA )(∀p ∈ITk )[EGΩp (s) ∩QTkB̸ = ∅].
+to Tk when s is executed. Then, EΩi (s) is the state estimate                                                           (13)
+w.r.t. the state space of ˜V under Ωi. Essentially, the function   Let us consider the following three cases for ITk .
+DF evaluates whether or not decentralized distinguishability    Case 1: ITk = {i}.
+is fulﬁlled by checking whether or not x := EΩi˜V (s) satisﬁes     Let us consider (c-i), since (c-ii) is violated directly. By (13),
+conditions (c-i) and (c-ii), which can be interpreted as follows.   since δ(s) ∈QTkA ∩EGΩi (s) and QTkB ∩EGΩi (s)̸ = ∅, we have
+   1) If (c-i) holds, then we know that Agent i can contribute
+       to the global decision associated to Tk, since i ∈ITk .   (I1(EΩi(s))×˜V      I1(EΩi(s)))˜V    ∩Tk = (EGΩi(s) × EGΩi(s)) ∩Tk̸ = ∅.
+      Moreover, it can contribute to the right decision since it
+     knows for sure that the action associated to Tk has to   Therefore, (c-i) is also violated and DF(EΩi˜V (s)) = 0.
+      be taken, since (EGΩi (s) × EGΩi (s)) ∩Tk = ∅. Therefore,    Case 2: ITk = {j}.
+      the disambiguation requirement is fulﬁlled even without     Let us consider (c-ii), since (c-i) is violated directly. We
+      looking at Agent j.                                                      still consider string s in (13). We have δ(s) ∈EGΩi (s) ∩QTkA =
+   2) If (c-i) does not hold, then we know that either Agent i   I1(EΩi˜V (s)) ∩QTkA  . Since EGΩj (s) ∩QTkB̸ = ∅,  there  exists a
+      cannot contribute to the global decision associated to Tk                                                                      string t ∈L(G) such that PΩj (s) = PΩj (t) and δ(t) ∈QTkB  .
+      or Agent i cannot make a right decision due to states am-
+                                                           This implies that (δ(s), δ(t)) ∈Tk. Since PΩj (s) = PΩj (t),                                                                            ˜V
+       biguity, i.e., ∃q1, q2 ∈EGΩi (s) = I1(EΩi (s)) : (q1, q2) ∈  by the construction of ˜V , (δ(s), δjR(s), δ(t), δjR(t)) ∈δ ˜V (s) ⊆
+      Tk. In order to issue the right global decision, Agent j        ˜V                                                                                  ˜V
+                                                  EΩi (s). Therefore, (c-ii) is also violated and DF(EΩi (s)) = 0.     must be able to help Agent i to distinguish those am-
+                                                       Case 3: ITk = {1, 2}.      biguous strings, i.e., condition (c-ii) needs to hold. First,
+                                                            For string s in (13), since EGΩi (s) ∩QTkB̸ = ∅, by the same     Agent j should be able to contribute to the global de-
+       cision associated with Tk, i.e., j ∈ITk . Then, for any   argument as in Case 1, (c-i) does not hold. Since EGΩj (s) ∩
+       string t that looks the same as s for Agent i and leads  QTkB̸ = ∅, by the same argument as in Case 2, (c-ii) also does
+       to a state in QTkA  , there should not exist another string   not hold. Therefore, DF(EΩi˜V (s)) = 0.
+    w that looks the same as t for Agent j and leads to     Overall, for each case, there exists a string s ∈L(G) such that
+      a state in QTkB  . Recall that ˜V  is constructed by track-  DF(EΩi˜V (s)) = 0, which completes the contrapositive proof.
+      ing all states that cannot be distinguished from q1 by    (⇒) Still by contrapositive. Suppose that there exists a string
+     Agent j. Therefore, Agent i can infer which states Agent j                                                   ˜V
+                                                        s ∈L(G) such that DF(EΩi (s)) = 0. Then, there exists Tk ∈      cannot distinguish by using ˜V . Speciﬁcally, if for any                                                                                     ˜V
+                                      T such that none of (c-i) and (c-ii) holds for EΩi (s). Next, we       (q1, qR1 , q2, qR2 ) ∈x : (q1, q2) /∈Tk, then we know that
+                                                                                        still consider the following three cases for ITk .       there is no such a string w that can confuse Agent j for
+                                                       Case 1: ITk = {i}.     some string t, i.e., Agent j can make a right decision
+                                                              Since (c-i) does not hold, we have (EGΩi (s) × EGΩi (s)) ∩Tk =      associated to Tk.
+   Finally, we would like to remark that, although speciﬁcation   (I1(EΩi˜V (s)) × I1(EΩi˜V (s))) ∩Tk̸ = ∅. This implies that ∃w ∈
+T is deﬁned over the state space of G, the distinguishability  L(G) such that δ(w) ∈QTkA  , PΩi (s) = PΩi (w) and EGΩi (w) ∩
+function DF is deﬁned over the state space of ˜V , i.e., we need to  QTkB = EGΩi (s) ∩QTkB̸ = ∅. Therefore, we have (∃w ∈L(G) :
+solve Problem 3 for the modiﬁed system ˜V . However, this is not                                                     δ(w) ∈QTkA )[EGΩi (w) ∩QTkB̸ = ∅], i.e., G is not decentralizeda problem, since the ﬁrst component of a state ˜V exactly carries                                                                   distinguishable.
+the same state information in G, i.e., I1(EΩi˜V (s)) = EGΩi (s) for    Case 2: ITk = {j}.
+any Ωi. Moreover, since L(˜V ) = L(G), we know that ˜V and G     Since (c-ii) does not hold, we have
+have the same observable behavior under any sensor activation
+policy. Therefore, we can ﬁrst use ˜V to synthesize a sensor   ∃q1 ∈EGΩi (s) ∩QTkA  , ∃(q1, qR1 , q2, qR2 )∈EΩi˜V (s): (q1, q2)∈Tk.
+activation policy and then use it to monitor G.
+                                                           Since (q1, qR1 , q2, qR2 ) ∈EΩi˜V (s), there exists a string t ∈L(˜V )  We summarize the above discussions by the following theo-
+rem.                                = L(G), such  that PΩi (s) = PΩi (t) and (q1, qR1 , q2, qR2 ) ∈
+  Theorem 1: Let G be the system and T = {T1, . . . , Tm} be   δ ˜V (t), which further implies  that q1 = δ(t) and there ex-
+a set of speciﬁcations. Let ˜V be the automaton constructed based    ists w ∈L(G) such that q2 = δ(w) and PΩj (t) = PΩj (w).
+on Ωj. Then, G is decentralized distinguishable w.r.t. [Ω1, Ω2]   Therefore, {q1, q2} ⊆EGΩj (t) = EGΩj (w). Since (q1, q2) ∈Tk,
+and T if and only if                                we know that q1 ∈QTkA  and q2 ∈QTkB  . Overall, for Tk ∈T,
+                                             we have (∃t ∈L(G) : δ(t) ∈QTkA )[EGΩj (t) ∩QTkB̸ = ∅], i.e., G                                                             ˜V
+             ∀s ∈L(G) : DF(EΩi (s)) = 1           (12)    is not decentralized distinguishable.
+                                                       Case 3: ITk = {1, 2}.
+   Proof: (⇐) By contraposition. Suppose that L(G) is not     Since (c-ii) does not hold, by the same argument as in Case 2,
+decentralized distinguishable. Then, there exists Tk ∈T, such   there exists ∃t ∈L(G) such that PΩi (s) = PΩi (t), δ(t) ∈QTkA
+
+YIN AND LAFORTUNE: MINIMIZATION OF SENSOR ACTIVATION IN DECENTRALIZED DISCRETE-EVENT SYSTEMS                               3713
+
+
+
+
+
+Fig. 4.   Decentralized minimal solutions. (a) Ω∗1. (b) Ω∗2
+
+
+and EGΩj (t) ∩QTkB̸ = ∅. Since (c-i) does not hold, by the same
+argument as in Case 1, we know that EGΩi (s) ∩QTkB̸ = ∅. Since
+PΩi (s) = PΩi (t), we have EGΩi (t) ∩QTkB̸ = ∅. Therefore
+
+  (∃t ∈L(G) : δ(t) ∈QTkA )(∀p ∈ITk )[EGΩp (t) ∩QTkB̸ = ∅]
+
+i.e., G is not decentralized distinguishable.
+  Overall, G is not decentralized distinguishable for each case.   Similarly, for 7 ∈I1(x) ∩QT2A  , (7, 1, 7, 1) is the only state in x
+This completes the contrapositive proof.           ■  whose ﬁrst component is 7 and (7, 7) /∈T2. Therefore, condition
+  In the above development, the essence of using ˜V  is that    (c-ii) holds, and we still have DF(x) = 1.
+we can encode Agent j’s information, i.e., Ωj, into the system
+model in order to reduce the constrained minimization problem                    V. SYNTHESIS ALGORITHM
+for Agent i to a fully centralized minimization problem. That
+is, ˜V is a nondeterministic reﬁnement of G that carries both the     In this section, we ﬁrst present an algorithm that solves the
+                                                                decentralized sensor activation problem by using the resultsoriginal state information in G and some useful information of
+Ωj. Once ˜V is constructed, we will not use Ωj anymore, since  we developed so far. Then, we prove the correctness of the
+                                                                algorithm.all useful information, i.e., which pairs of states Agent j cannot
+distinguish, has been encoded in ˜V . Finally, using Theorem 1,    Our synthesis algorithm is formally presented in Algorithm 1.
+                                                                     Essentially, Algorithm 1 solves two centralized constrained min-we have the following result.
+                                                               imization problems. First, we set Agent 2’s sensor activation   Corollary 1: Problem 2 is decidable.
+                                                                policy to be ΩΣo , 2 , i.e., the most conservative one, and solve   Proof: By Theorem 1, it is clear that Problem 2 is a special
+case of Problem 3 by considering system ˜V and setting ϕ to be   the constrained minimization problem for Agent 1. Then, we ﬁx
+DF : 2Q ˜V →{0, 1}. Since Problem 3 can be effectively solved,   the obtained sensor activation policy for Agent 1 and solve the
+                                                               constrained minimization problem for Agent 2. However, theProblem 2 can also be effectively solved.          ■
+                                                              following question arises: “After the above procedure, do we  Example 4: We return to the system G in Fig. 2(a) with
+                                                        need to ﬁx Agent 2’s new sensor activation policy and go backΣo,1 = {o, a} and Σo,2 = {o, b}. We still consider speciﬁca-
+                                                                    to minimize Agent 1’s sensor activation policy again?” In othertions T = {T1, T2} deﬁned in Example 2. We assume that
+                                                           words, we need to answer whether or not iterations between twothe sensor activation policy Ω2 shown in Fig. 2(d) is ﬁxed for
+Agent 2 and the corresponding automaton ˜V has been shown in   centralized constrained minimization problems are required in
+                                                               order to obtain a decentralized minimal solution. Hereafter, weFig. 3. Now, we want to synthesize sensor activation policy Ω1
+                                                   show that such iterations are not necessary for our problem,such that G is decentralized distinguishable. By deﬁning func-
+                                                       and Algorithm 1 indeed yields a decentralized minimal solu-tion DF for ˜V and applying the synthesis algorithm in [18], we
+obtain a minimal sensor activation policy Ω∗1 shown in Fig. 4(a).   tion in the above two steps. This is because of the following
+                                                           monotonicity property, which generalizes the results in [13] andSince the main purpose of this paper is to show how to solve the
+                                                                     [14].decentralized minimization problem, the reader is referred to
+                                               Lemma 1: (Monotonicity property). Let G be the system, T[18] for more details about the solution approach to Problem 3.
+Here, instead of showing how to ﬁnd Ω∗1, let us verify that Ω∗1   be a set of speciﬁcations, and ¯Ω = [Ω1, Ω2] and ¯Ω′ = [Ω′1, Ω′2]
+                                                        be two sensor activation policies such that ¯Ω′ ⊆¯Ω. Then, G issatisﬁes function DF.
+                                                                decentralized distinguishable w.r.t. ¯Ω′ and T implies that G is  For example, for speciﬁcation T1, we consider string of1a
+                                                                                       ˜V             decentralized distinguishable w.r.t. ¯Ω and T.
+such that δ(of1a) = 6 ∈QTkA  . Then we have x = EΩ∗1 (of1a) =                                                                 Proof: Since G is decentralized distinguishable  w.r.t.  ¯Ω′
+{(6, 1, 6, 1)}, i.e., I1(x) = {6}. Therefore, condition (c-i) holds                                                       and T, then ∀Tk ∈T, ∀s ∈L(G) : δ(s) ∈QTkA  , we have ∃i ∈for x, and we have DF(x) = 1. For speciﬁcation T2, let us
+                                                              {1, 2} : EGΩ′i (s) ∩QTkB = ∅. Since ¯Ω′ ⊆¯Ω, we know that ∀i ∈consider string f2b such that δ(f2b) = 5 ∈QT2A  . Then, we
+                                                                                                                              i ⊆Ωi, which implies that EGΩi (s) ⊆EGΩ′i (s) for anyhave x = EΩ∗˜V 1 (f2b) = {(1, 1, 1, 1), (3, 1, 1, 1, ), (1, 1, 3, 1), (3,   {1, 2} : Ω′
+1, 3, 1), (5, 1, 5, 1), (7, 1, 7, 1)}, i.e., I1(x) = {1, 3, 5, 7}. For   s ∈L(G). Therefore, ∀Tk ∈T, ∀s ∈L(G) : δ(s) ∈QTkA  , we
+this case, condition (c-i) does not hold for x since 1 ∈I1(x) ∩   have ∃i ∈{1, 2} : EGΩi (s) ∩QTkB = ∅, i.e., G is also decentral-
+QT2B  . However, for 5 ∈I1(x) ∩QT2A = {5, 7}, (5, 1, 5, 1) is the   ized distinguishable w.r.t. ¯Ω.                 ■
+only state in x whose ﬁrst component is 5 and (5, 5) /∈T2.   We are now ready to prove the correctness of Algorithm 1.
+
+3714                                                       IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 63, NO. 11, NOVEMBER 2018
+
+
+  Theorem 2: Let ¯Ω∗be the output of Algorithm 1. Then, ¯Ω∗    all sensors OFF after b is observed, since once b occurs, Agent 2
+solves Problem 1.                                                  will know for sure that the system is in state 5 or 7, and there
+   Proof: It is clear that G is decentralized distinguishable w.r.t.    is no need to monitor any event. Therefore, [Ω∗1, Ω∗2] is a mini-
+¯Ω∗and T, since decentralized distinguishability is guaranteed  mal pair of sensor activation policies that ensure decentralized
+in each centralized constrained minimization problem. It re-   distinguishability.
+mains to show that ¯Ω∗is minimal; we proceed by contradiction.     Remark 5: We conclude this section by discussing the com-
+Let us assume that there exists another sensor activation pol-   plexity of synthesis algorithm. Suppose that we ﬁrst ﬁx Agent 2.
+icy ¯Ω′ = [Ω′1, Ω′2] such that G is decentralized distinguishable    Initially, Ω2 = ΩΣo , 2 and its automaton only contains a single
+w.r.t. ¯Ω′ and T and ¯Ω′ ⊂¯Ω∗. The second condition means that   state. To solve the constraint optimization problem when Ω2 is
+∃i, j ∈{1, 2}, i̸ = j, such that Ω′i ⊂Ω∗i and Ω′j ⊆Ω∗j. Suppose   ﬁxed, ﬁrst, we need to construct ˜V , which is polynomial in the
+that i = 1 and j = 2. Then, we know that Ω∗1 is obtained by   size of G and Ω2. However, since an observer-like constructed is
+ﬁxing Agent 2’s sensor activation policy to be ΩΣo , 2 , where   exploited, the algorithm in [18] requires exponential complexity
+Ω′2 ⊆Ω∗2 ⊆ΩΣo , 2 . By Lemma 1, we know that “G is decen-    w.r.t. the size of the system, i.e., ˜V , and the size of the solution
+tralized distinguishable w.r.t. [Ω′1, Ω′2]” implies that “G is de-  Ω∗1  is also exponential in the size of ˜V . Again, constructing
+centralized distinguishable w.r.t. [Ω′1, ΩΣo , 2 ].” However, since    ˜V when Agent 1 is ﬁxed only requires polynomial complexity
+Ω′1 ⊂Ω∗1, this contradicts to the fact that Ω∗1 is a solution to    w.r.t. Ω∗1, but synthesizing Ω∗2 requires exponential complexity
+Problem 2. Similarly, suppose that i = 2 and j = 1. Then, we   again. Therefore, the overall complexity is doubly exponential
+know that Ω∗2 is obtained by ﬁxing Agent 1’s sensor activation    w.r.t. the size of G. Such a doubly exponential complexity arises
+policy to be Ω∗1, where Ω′1 ⊆Ω∗1. By Lemma 1, we know that   in many synthesis problems, where two incomparable observa-
+“G is decentralized distinguishable w.r.t. [Ω′1, Ω′2]” implies that   tions are involved (see, e.g., [24] and [38]).
+“G is decentralized distinguishable w.r.t. [Ω∗1, Ω′2].” However,     Remark 6: In this paper, we adopt a logical optimality cri-
+since Ω′2 ⊂Ω∗2, it again contradicts the fact that Ω∗2 is a solution   terion that has been widely used in the literature. One possible
+to Problem 2.                        ■   future direction is to consider a numerical cost function that in-
+  Remark 3: Recall that in the synthesized minimal decen-   troduces a quantitative objective. This numerical setting is much
+tralized policy Ω∗= [Ω∗1, Ω∗2], each Ω∗i is a pair. Therefore, to  more challenging to deal with, in particular in the decentralized
+implement Ω∗, for each agent i, one can ﬁrst store the ofﬂine   setting. Speciﬁcally, using the person-by-person approach for
+computed Ω∗i at local site i. To run Ω∗i online, we just need to re-   this setting may have the following problems. First, how to
+member the current state in Ω∗i and the current sensing decision   solve the constrained optimization problem for a quantitative
+is the output of this state. Whenever a new event is observed, we   objective may be very different from the approach developed
+just update the current state based on the transition function of   in this paper. Second, iterations are needed in general and the
+Ω∗i , move to a new state of Ω∗i and update the sensing decision   convergence may not be guaranteed as the domain of languages
+to be the output of this new state, and so forth. This is also the    is inﬁnite. Moreover, even if the person-by-person iteration con-
+same way for implementing a supervisor (see, e.g., [30]).         verges, it may only converge to a local optimal solution. These
+  Remark 4: In general, the minimal solution to Problem 1   questions are very interesting future directions but are already
+is not unique due to the following reasons. First, for each  beyond the scope of this paper.
+centralized constraint minimization problem involved in Algo-
+rithm 1, the minimal solution is not unique in general [18]. There
+                                                                       VI. APPLICATION OF THE DECENTRALIZED STATE
+may exist two incomparable centralized minimal solutions to
+                                                                   DISAMBIGUATION PROBLEM
+Problem 2 or 3. Second, the decentralized minimal solution
+obtained by Algorithm 1 also depends on the order of the cen-     In  this section, we show  that the notions of K-codiag
+tralized constraint minimization problems. To implement Al-   nosability, coobservability, and coprognosability are instances
+gorithm 1, we can randomly select an order for each agent. In   of decentralized  distinguishability. Therefore, the proposed
+general, ﬁxing Agent 1 ﬁrst and ﬁxing Agent 2 ﬁrst may result  framework is applicable for solving the dynamic sensor activa-
+in different minimal solutions. However, in any case, solution   tion problems for the purposes of decentralized fault diagnosis,
+¯Ω∗returned by Algorithm 1 is guaranteed to be minimal in the   decentralized control, and decentralized fault prognosis.
+sense that other minimal solutions must be incomparable with
+¯Ω∗.
+                                                        A. Decentralized Fault Diagnosis
+  We illustrate Algorithm 1 by an example.
+  Example 5: Again, consider the system G in Fig. 2(a) and     In the decentralized fault diagnosis problem, the local agents
+speciﬁcations T = {T1, T2} deﬁned in Example 2. Let Σo,1 =   need to work as a team such that any fault be diagnosed within a
+{o, a} and Σo,2 = {o, b}, respectively, be the set of observable  bounded number of steps. Formally, we denote by ΣF ⊆Σuo the
+events for Agent 1 and Agent 2. Initially, we set Ω2 = ΩΣo , 2    set of fault events. We assume that ΣF is partitioned into m fault
+and solve the constrained minimization problem for Agent 1;   types: ΣF = ΣF1 ˙∪. . . ˙∪ΣFm ; we denote by Π the partition and
+this has been solved in Example 4, and we obtained Ω∗1 shown in  by F = {1, . . . , m} the index set of the fault types. For any k ∈
+Fig. 4(a). Next, we ﬁx Ω∗1 for Agent 1 and solve the constrained  F, we deﬁne Ψ(EFk ) = {sf ∈L(G) : f ∈EFk } to be the set
+minimization problem for Agent 2. Then, we obtain the sensor   of strings that end with a fault event of type k. We write EFk ∈s,
+activation policy Ω∗2 as shown in Fig. 4(b). We see that Ω∗2 turns    if {s} ∩Ψ(EFk )̸ = ∅. The notion of K-codiagnosability was
+
+YIN AND LAFORTUNE: MINIMIZATION OF SENSOR ACTIVATION IN DECENTRALIZED DISCRETE-EVENT SYSTEMS                               3715
+
+
+                                                             speciﬁc example, we see that Tdiag is indeed the same speci-
+                                                              ﬁcation T deﬁned in Example 2. Therefore, the solution we
+                                                             obtained in Example 5 has solved the sensor activation problem
+                                                                    for 1-codiagnosability.
+
+                                                         B. Decentralized Supervisory Control
+
+                                                           Another important decentralized decision-making problem is
+Fig. 5.  Augmented system ˜G.                                      the decentralized supervisory control problem [1], [2]. In this
+                                                           problem, each local agent i ∈I can disable events in Σc,i ⊆Σ
+                                                           dynamically based on its local observation Ωi. We deﬁne Σc =
+                                                             ∪i∈IΣc,i as the set of all controllable events, and for each σ ∈proposed in the literature to capture whether or not any fault can
+                                                         Σc, we deﬁne Ic(σ) = {i ∈I : σ ∈Σc,i} as the set of agentsbe diagnosed within K steps [3], [4].
+                                                                      that can disable σ. The control objective is to make sure that the   Deﬁnition 2: (K-codiagnosability). Let K ∈N. We say that
+                                                              closed-loop system achieves a desired language L(H) ⊆L(G).live language L(G) is K-codiagnosable w.r.t. ¯Ω, ΣF , and Π if
+                                                   The key property regarding the decentralized information in this
+ (∀k ∈F)(∀s ∈Ψ(ΣFk ))(∀t ∈L(G)/s : |t| ≥K)            problem is the notion of coobservability; it together with the
+                                                              notion of controllability provides the necessary and sufﬁcient (∃i ∈{1, 2})(∀w ∈L(G))[PΩi (w) = PΩi (st) ⇒ΣFk ∈w].
+                                                               conditions for exactly achieving a given speciﬁcation language.                                                         (14)
+                                        We recall its deﬁnition from [1].
+  To show  that K-codiagnosability can be formulated as     Deﬁnition 3: (Coobservability). We say that L(G) is coob-
+decentralized  distinguishability, following similar construc-   servable w.r.t. L(H), Σc,1, Σc,2, and ¯Ω if
+tions in [17] and [19], we ﬁrst reﬁne the state space of G
+by deﬁning a new automaton ˜G = (˜Q, Σ, ˜δ, ˜q0), where ˜Q ⊆       (∀s ∈L(H))(∀σ ∈Σc : sσ ∈L(G) \ L(H))
+Q × {−1, 0, 1 . . . , K}m,  ˜q0 = (q0, −1, . . . , −1) and the par-        (∃i ∈Ic(σk))[P Ωi−1 (PΩi (s)){σ} ∩L(H) = ∅].      (15)tial transition function ˜δ : ˜Q × Σ →˜Q is deﬁned by: for any
+(q, n1, . . . , nm) ∈˜Q and σ ∈Σ, we have                           Hereafter, we assume that H = (QH , Σ, δH , q0,H ) is a strict
+                                                        subautomaton of G, i.e.:
+  ˜δ((q, n1, . . . , nm), σ) = (δ(q, σ), n1 + Δ1, . . . , nm + Δm)        1) QH ⊆Q;
+                                                                   2) ∀s ∈L(H) : δH (s) = δ(s);where for each i ∈{1, . . . , m}, Δi is deﬁned by
+                                                                   3) ∀s ∈L(G) \ L(H) : δ(s) ∈X \ XH .
+             0,    if [ni = K] or [ni = −1 ∧σ̸ ∈ΣFi ]              This assumption is without loss of generality, since we can
+   Δi =
+             1,    if [0 ≤ni < K] or [ni = −1 ∧σ ∈ΣFi ].      always reﬁne H and G such that it holds [39]. The reﬁnement
+                                                                     essentially takes the product of H of G, and the resulting system
+Intuitively, ˜G simply unfolds G by “counting” the number of   contains at most |QH | × |Q| states. Now, suppose that Σc =
+steps since each type of fault has occurred. Since L(˜G) = L(G),   {σ1, . . . , σm} is the set of controllable events. We deﬁne a set
+we can synthesize a sensor activation policy for G based on ˜G.   of speciﬁcations Tcont = {T1, T2, . . . , Tm} as follows: for each
+For any state ˜q = (q, n1, . . . , nm) ∈˜G, we denote by [˜q]i its   Tk ∈T, we have
+(i + 1)th component, i.e., ni.
+                                                           QTkA = {q ∈QH  : δ(q, σk)! ∧δH (q, σk)¬!}  Based on ˜G, we deﬁne a set of speciﬁcations Tdiag = {T1,
+T2, . . . , Tm} as follows: for each Tk ∈T, we have                   QTkB = {q ∈QH  : δH (q, σk)!}
+QTkA = {q ∈˜Q : [q]k = K} and QTkB = {q ∈˜Q : [q]k = −1}.   with ITk = Ic(σk), where “¬!” means “is not deﬁned.”
+                                                                            Intuitively, for each controllable event σk ∈Σc, QTkA  is theThe following result reveals that, to enforce K-codiagnosability,
+                                                                       set of states at which σk must be disabled for safety purposes,it sufﬁces to enforce decentralized distinguishability for Tdiag.
+                                                           while QTkA  is the set of states at which σk must be enabled to  Theorem 3: A live language L(G) is K-codiagnosable w.r.t.
+¯Ω, ΣF and Π if and only if ˜G is decentralized distinguishable   achieve L(H). The following result reveals that coobservability
+w.r.t. ¯Ω and Tdiag.                                                          is also a special case of decentralized distinguishability with
+                                                                        Tcont.  Example 6: Let us consider again system G shown  in
+                                                       Theorem 4: Let G be the system and H be the speciﬁcationFig. 2(a). Suppose that ΣF = ΣF1 ˙∪ΣF2 = {f1}˙∪{f2}. Let us
+                                                           automaton. Then, L(G) is coobservable w.r.t. L(H), Σc,1, Σc,2,consider K = 1. Then, the reﬁned automaton ˜G is shown in
+                                                       and ¯Ω if and only if G is decentralized distinguishable w.r.t. ¯ΩFig. 5 . For example, state q = (6, 1, −1) means that 1)the sys-
+                                                       and Tcont.tem is at state 6 in G, 2)f1 has occurred for more than one step
+(since [q]1 = K), and 3) f2 has not occurred (since [q]2 = −1).
+                                                      C. Decentralized Fault Prediction
+Then,  Tdiag = {T1, T2}  is deﬁned by T1 = {(6, 1, −1)} ×
+{(1, −1, −1), (2, −1, −1), (3, −1, 0), (5, −1, 1), (7, −1, 1)}        In some safety-critical systems, we may not only want to di-
+and T2 = {(5, −1, 1), (7, −1, 1)} × {(1, −1, −1), (2, −1, −1),   agnose any fault after its occurrence, but also want to predict any
+(4, 0, −1), (6, 1, −1)}. Since ˜G and G are isomorphic for this   fault before it occurs [40]. In [6], the notion of coprognosability
+
+3716                                                       IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 63, NO. 11, NOVEMBER 2018
+
+
+was proposed to capture whether or not any fault occurrence   Therefore, there is no need to deﬁne a conjunctive version of
+can be predicted in a decentralized system. The deﬁnition is   decentralized distinguishability; it is just a matter of how the
+reviewed as follows.                                           speciﬁcation Tk is deﬁned.
+   Deﬁnition 4: (Coprognosability). We  say  that  language     For example, in [2], the notion of D&A-coobservability was
+L(G) is coprognosable w.r.t. ¯Ω and ΣF  if                     proposed as a complement of coobservability.1 We recall its
+                                                                 deﬁnition.
+    (∀s ∈Ψ(ΣF ))(∃t ∈{s} : ΣF̸ ∈t)                                                              Deﬁnition 5: (D&A-coobservability). We say that L(G) is
+    (∃i ∈{1, 2})(∀u ∈P Ωi−1 (PΩi (t)) : ΣF /∈u)              D&A-coobservable w.r.t. L(H), Σc,1, Σc,2, and ¯Ω if
+                                                           (∀s ∈L(H))(∀σ ∈Σc : sσ ∈L(H))   (∃K ∈N)(∀v ∈L(G)/u)[|v| ≥K ⇒ΣF ∈uv].    (16)
+  To proceed further, we assume that the state space of G is      (∃i ∈Ic(σk))[P Ωi−1 (PΩi (s)){σ} ∩L(G) ⊆L(H)].   (17)
+partitioned as Q = QN ˙∪QF such that we have the following:        Intuitively, D&A-coobservability requires that for any string
+   1) ∀s ∈L(G) : δ(s) ∈QN ⇔ΣF̸ ∈s;                       for which σ has to be enabled, there exists at least one agent
+   2) ∀s ∈L(G) : δ(s) ∈QF ⇔ΣF ∈s.                        that knows for sure that σ should not be disabled. We can also
+  Note that, this assumption is without loss of generality, since                                                             formulate D&A-coobservability as an instance of decentralized
+we can simply reﬁne the state space of G such that this assump-                            C J     C J   C J      C J                                                                    distinguishability by deﬁning Tcont = {T 1   , T 2   , . . . , Tm  },
+tion holds.                                                          C J                                                      where for each T k  ∈T, we have
+  In order to formulate coprognosability as an instance of de-
+                                                                           T kC J
+centralized distinguishability, we need the notions of nonindi-      QA  = {q ∈QH  : δH (q, σk)!}
+cator states and boundary states, which are initially introduced
+                                                                           T kC J
+in [6]. We say that a state q ∈Q is:                    QB  = {q ∈QH  : δ(q, σk)! ∧δH (q, σk)¬!}
+   1) a nonindicator  state,  if q ∈QN  and ∀K ∈N, ∃s ∈                                                C J                                                           with ITk = Ic(σk). The proof of the correctness of Tcont  is     L(G, q) : |s| ≥K ∧ΣF /∈s;
+                                                                omitted, since it is similar to the proof of Theorem 4.
+   2) a boundary state, if ∃f ∈ΣF  : δ(q, f)!.
+                                                                      Similarly,  one  can  also  show  that  conjunctive K-
+  We denote by NQ and ∂Q the set of nonindicator states and
+                                                                codiagnosability  [5], [41] and conjunctive coprognosability
+the set of boundary states, respectively.
+                                                                     [42], [43] are instances of decentralized distinguishabiity; we
+  With these notions, we deﬁne a simple speciﬁcation Tpre :=                                   C J      C J
+                                                                         just need to deﬁne new speciﬁcations Tdiag and Tpre by swap-
+{T1}, where QT1A = ∂Q and QT1B = NQ with IT1 = I. The fol-                                                           ping each QTkA and QTkB  in Tdiag and Tpre, respectively.lowing result reveals that, to enforce coprognosability, it sufﬁces
+to enforce decentralized distinguishability with Tpre.
+                                                                                              VII. CONCLUSION  Theorem 5: L(G) is coprognosable w.r.t. ¯Ω and ΣF  if and
+only if G is decentralized distinguishable w.r.t. ¯Ω and Tpre.      We presented a novel approach for solving the problem of
+  Remark 7: Note that ∂Q and NQ need not be disjoint. By the   decentralized sensor activation for a class of properties. We
+above theorem, the system will not be coprognosable under any   proposed the notion of decentralized distinguishability, which
+sensor activation policies if ∂Q ∩NQ̸ = ∅.                      covers coobservability, K-codiagnosability, and coprognosabil-
+                                                                                     ity. To enforce decentralized distinguishability, we ﬁrst adopted
+D. Extension to the Conjunctive Architecture               a person-by-person approach to decompose the decentralized
+                                                           minimization problem to two consecutive centralized con-
+  So far, we have shown that K-codiagnosability, coobserv-
+                                                                   strained minimization problems. Then, a novel approach was
+ability, and coprognosability are special cases of decentralized
+                                                          proposed to reduce each centralized constrained minimization
+distinguishability. As we mentioned earlier, all results in this
+                                                       problem to a fully centralized sensor activation that is solved ef-
+paper are developed based on the disjunctive architecture, i.e.,
+                                                                     fectively in the literature. Finally, we showed that the decentral-
+the coordinator issues “1” globally if and only if one local agent
+                                                               ized solution obtained by our methodology is language-based
+issues “1.” Alternatively, one may also use the conjunctive rule
+                                                           minimal.
+to obtain a global decision, i.e., the coordinator issues “0” glob-
+ally if and only if one local agent issues “0.” In this case, suppose
+                                                                      APPENDIX
+that a string leading to a state in QTkB  is executed and a global
+decision “0” has to be made. Then, a local agent must know   A. Proofs Not Contained in the Main Body
+that the system is not in QTkA unambiguously when it issues “0”;     Proof of Theorem 3
+otherwise, a wrong global decision may be made at some state                                                                 Proof: (⇒) By contraposition. Suppose that ˜G is not de-
+in QTkA  . Therefore, we need to require that                                                                  centralized distinguishable. Then, we know that there exist
+  (∀s ∈L(G) : δ(s) ∈QTkB )(∃i ∈ITk )[EGΩi (s) ∩QTkA = ∅].
+                                                                              1Here, “D&A” stands for “disjunctive & antipermissive.” Also, coobservabil-
+By comparing the above requirement with decentralized dis-    ity in Deﬁnition 3 is referred to as C&P-coobservability, where “C&A” stan-
+tinguishability, which is deﬁned in terms of the disjunctive   dards for “conjunctive & permissive.” The reason why C&P-coobservability
+                                                                           corresponds to decentralized distinguishability in the disjunctive architecture
+architecture, we see that this requirement is indeed the same     is that Rudie and Wonham [1] consider the conjunction of enablements, while
+as decentralized distinguishability by swapping QTkA  and QTkB  .    Tcont captures the disjunction of disablements; they are essentially equivalent.
+
+YIN AND LAFORTUNE: MINIMIZATION OF SENSOR ACTIVATION IN DECENTRALIZED DISCRETE-EVENT SYSTEMS                               3717
+
+
+k ∈{1, . . . , m} and a string s ∈L(G) such that q := ˜δ(s) ∈   for each i ∈{1, 2}, since PΩi (s) = PΩi (si), we know that
+QTkA  , and for each i ∈{1, 2}, there exists qi ∈EΩi˜G (s) such that     ∀t ∈{s}, ∃ti ∈{si} : PΩi (t) = PΩi (ti) ∧ΣF /∈ti.   (19)
+qi ∈QTkB  . Then, we know that, for each i ∈{1, 2}, there exists
+                                                          Moreover, since qi ∈NQ which is reachable from δ(ti), wea string si ∈L(G) such that ˜δ(si) = qi and PΩi (s) = PΩi (si).
+                                                know that, for any K ∈N, there exists a string wi such thatBy the deﬁnition of Tk, q ∈QTkA implies that [q]k = K. Accord-
+                                                                tiwi ∈L(G), ΣF /∈tiwi and |wi| ≥K. Overall, we know thating to the construction of ˜G, ˜δ(s) = q implies that we can write
+s = uv such that u ∈Ψ(ΣFk ) and |v| ≥K. For each i ∈{1, 2},     (∃sf ∈Ψ(ΣF ))(∀t ∈{sf} : ΣF̸ ∈t)
+since qi ∈QTkB  , we know that [qi]k = −1, which implies that                         −1
+                                                                (∀i ∈{1, 2})(∃ti ∈P Ωi (PΩi (t)) : ΣF /∈ti)ΣFk /∈si. Overall, we know that
+                                              (∀K ∈N)(∃wi ∈L(G)/ti)[|wi| ≥K ∧ΣF̸ ∈tiwi]   (20)
+ (∃k ∈F)(∃u ∈Ψ(ΣFk ))(∃v ∈L(G)/u : |v| ≥K)
+                                                                                          i.e., G is not coprognosable w.r.t. ¯Ω and ΣF .
+ (∀i ∈{1, 2})(∃si ∈L(G))[PΩi (uv) = PΩi (si) ∧ΣFi̸ ∈si]     (⇐) Suppose that G is not coprognosable, i.e., (20) holds.
+                                                         (18)                                                           Let sf be a string satisfying (20). Let t be a preﬁx of s
+                                                          such that ΣF /∈t and tf ′ ∈{s} for some f ′ ∈ΣF . Then,
+i.e., L(G) is not K-codiagnosable.                                             we know that q := δ(t) ∈∂Q. According to (20), we know
+  (⇐)  Still by contraposition. Suppose that ˜G  is not K-                                                                           that, for each agent i ∈{1, 2}, there exists a string ti ∈L(G)
+codiagnosable, i.e., (18) holds. Let q := ˜δ(uv), q1 := ˜δ(s1) and                                                          such that 1) ΣF /∈ti; 2) (∀K ∈N)(∃wi ∈L(G)/ti)[|wi| ≥
+q2 := ˜δ(s2). Then, according to the deﬁnition of ˜G, we know K ∧ΣF̸ ∈tiwi]; and 3) PΩi (ti) = PΩi (t). The ﬁrst two con-
+that [q]k = K, [q1]k = [q2]k = −1, which implies that q ∈QTkA    ditions imply that qi := δ(ti) ∈NQ. Moreover, the last con-
+and q1, q2 ∈QTkB  . Moreover, since for each i = 1, 2, PΩi (uv) =   dition implies that {q, qi} ⊆EGΩi (t). Overall, we know that
+PΩi (si), we know that qi ∈EΩi˜G (si) = EΩi˜G (uv), i.e., EΩi˜G (uv) ∩   (∃t ∈L(G) : δ(t) ∈∂Q)(∀i ∈{1, 2})[EGΩi (t) ∩NQ = ∅],  i.e.,
+QTkB̸ = ∅. Overall, we know that (∃Tk ∈T)(∃uv ∈L(˜G) : ˜δ G is not decentralized distinguishable.            ■
+(uv) ∈QTkA )(∀i ∈{1, 2})[EΩi˜G (uv) ∩QTkB̸ = ∅], i.e., ˜G is not
+decentralized distinguishable w.r.t. Tdiag.          ■                     REFERENCES
+
+                                                                                      [1] K. Rudie and W. Wonham, “Think globally, act locally: Decentralized
+                                                                                   supervisory control,” IEEE Trans. Automat. Control, vol. 37, no. 11,
+Proof of Theorem 4                                                           pp. 1692–1708, Nov. 1992.
+                                                                                      [2]  T.-S. Yoo and S. Lafortune, “A general architecture for decentralized
+   Proof: (⇒) By contraposition. Suppose that G is not de-         supervisory control of discrete-event systems,” Discrete Event Dyn. Syst.,
+centralized distinguishable. Then, we know that there exist        Theory Appl., vol. 12, no. 3, pp. 335–377, 2002.
+Tk ∈T, s ∈L(G) : δ(s) ∈QTkA  such that for each i ∈ITk ,     [3] R. Debouk, S. Lafortune, and D. Teneketzis, “Coordinated decentralized                                                                                     protocols for failure diagnosis of discrete event systems,” Discrete Event
+there exists ti ∈L(G) such that PΩi (s) = PΩi (ti) and δ(ti) ∈        Dyn. Syst., Theory Appl., vol. 10, no. 1–2, pp. 33–86, 2000.
+QTkB  . Let σk ∈Σc be the controllable event associated with     [4] W. Qiu and R. Kumar, “Decentralized failure diagnosis of discrete event
+Tk. Then, δ(s) ∈QTkA  implies that s ∈L(H), sσk ∈L(G) \         no.systems,”2, pp. 384–395,IEEE Trans.Mar.Syst.,2006.Man, Cybern. A, Syst., Humans, vol. 36,
+L(H) and δ(ti) ∈QTkB  implies that tiσk ∈L(H). Moreover,     [5] Y. Wang, T.-S. Yoo, and S. Lafortune, “Diagnosis of discrete event sys-
+ITk = Ic(σk). Overall, we know that ∃s ∈L(H), σk ∈Σc        tems using decentralized architectures,” Discrete Event Dyn. Syst.: Theory
+                                                                                         Appl., vol. 17, no. 2, pp. 233–263, 2007.
+such that sσk ∈L(G) \ L(H) and for each i ∈Ic(σk), tiσk ∈     [6] R. Kumar and S. Takai, “Decentralized prognosis of failures in discrete
+P Ωi−1 (PΩi (s)){σk} ∩L(H)̸ = ∅, i.e., L(G) is not coobservable.         event systems,” IEEE Trans. Automat. Control, vol. 55, no. 1, pp. 48–59,
+  (⇐) By contraposition. Suppose that L(G) is not coobserv-          Jan. 2010.
+                                                                                      [7] A. Haji-Valizadeh and K. Loparo, “Minimizing the cardinality of an events
+able. Then, we know that ∃s ∈L(H), σk ∈Σc : sσk ∈L(G) \          set for supervisors of discrete-event dynamical systems,” IEEE Trans.
+L(H) such that for each i ∈Ic(σk), there exists ti ∈L(G)        Automat. Control, vol. 41, no. 11, pp. 1579–1593, Nov. 1996.
+such that tiσk ∈L(H) and PΩi (s) = PΩi (ti). For the above     [8]  T.-S. Yoo and S. Lafortune, “NP-completeness of sensor selection prob-
+                                                                           lems arising in partially observed discrete-event systems,” IEEE Trans.
+s and ti, we know that δ(s) ∈QTkA  and δ(ti) ∈QTkB  . There-        Automat. Control, vol. 47, no. 9, pp. 1495–1499, Sep. 2002.
+fore, for s and σk, we know that for each i ∈ITk = Ic(σk),     [9]  S. Jiang, R. Kumar, and H. Garcia, “Optimal sensor selection for discrete-
+δ(ti) ∈EGΩi (ti) ∩QTkB = EGΩi (s) ∩QTkB̸ = ∅, i.e., G is not de-         event systems with partial observation,” IEEE Trans. Automat. Control,                                                                                              vol. 48, no. 3, pp. 369–381, Mar. 2003.
+centralized distinguishable.                 ■    [10]  J. Basilio, S. Lima, S. Lafortune, and M. Moreira, “Computation of min-
+                                                                               imal event bases that ensure diagnosability,” Discrete Event Dyn. Syst.,
+                                                                           Theory Appl., vol. 22, no. 3, pp. 249–292, 2012.
+Proof of Theorem 5                                                     [11] D. Thorsley and D. Teneketzis, “Active acquisition of information for
+                                                                                    diagnosis and supervisory control of discrete event systems,” Discrete
+   Proof: (⇒) By contraposition. Suppose that G is not de-        Event Dyn. Syst., Theory Appl., vol. 17, no. 4, pp. 531–583, 2007.
+centralized distinguishable. Then, we know that there exists    [12]  F. Cassez and S. Tripakis, “Fault diagnosis with static and dynamic ob-
+s ∈L(G) such that q := δ(s) ∈∂Q and for each i ∈{1, 2},          servers,” Fundam. Informat., vol. 88, no. 4, pp. 497–540, 2008.                                                                               [13] W. Wang, S. Lafortune, A. R. Girard, and F. Lin, “Optimal sensor acti-
+there exists qi ∈EGΩi (s) such that qi ∈NQ, i.e., there exists a         vation for diagnosing discrete event systems,” Automatica, vol. 46, no. 7,
+string si ∈L(G) such that ΣF /∈si, δ(si) = qi and PΩi (s) =         pp. 1165–1175, 2010.
+PΩi (si). Since q ∈∂Q, we know that ∃f ∈ΣF  : sf ∈Ψ(ΣF ).    [14] W.sensorWang,activationS. Lafortune,in discreteF. Lin, eventand A.systemsR. Girard,for“Minimizationthe purpose ofof control,”dynamic
+Let t ∈{s} be an arbitrary preﬁx of s such that ΣF /∈t. Then,       IEEE Trans. Automat. Control, vol. 55, no. 11, pp. 2447–2461, Nov. 2010.
+
+3718                                                       IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 63, NO. 11, NOVEMBER 2018
+
+
+
+[15]  S. Shu, Z. Huang, and F. Lin, “Online sensor activation for detectability    [39] H. Cho and S. Marcus, “On supremal languages of classes of sublanguages
+      of discrete event systems,” IEEE Trans. Autom. Sci. Eng., vol. 10, no. 2,          that arise in supervisor synthesis problems with partial observation,” Math.
+     pp. 457–461, Apr. 2013.                                                     Control Signal. Syst., vol. 2, no. 1, pp. 47–69, 1989.
+[16] D. Sears and K. Rudie, “Efﬁcient computation of sensor activation de-    [40]  S. Genc and S. Lafortune, “Predictability of event occurrences in partially-
+      cisions in discrete-event systems,” in Proc. 52nd IEEE Conf. Decision        observed discrete-event systems,” Automatica, vol. 45, no. 2, pp. 301–311,
+      Control, 2013, pp. 6966–6971.                                              2009.
+[17] E. Dallal and S. Lafortune, “On most permissive observers in dynamic    [41]  T. Yamamoto and S. Takai, “Conjunctive decentralized diagnosis of dis-
+     sensor activation problems,” IEEE Trans. Automat. Control, vol. 59, no. 4,          crete event systems,” in Proc. 4th IFAC Workshop Dependable Control
+     pp. 966–981, Apr. 2014.                                                        Discrete Syst., 2013, pp. 67–72.
+[18] X. Yin and S. Lafortune, “A general approach for solving dynamic sensor    [42] A. Khoumsi and H. Chakib, “Conjunctive and disjunctive architectures
+      activation problems for a class of properties,” in Proc. 54th IEEE Conf.          for decentralized prognosis of failures in discrete-event systems,” IEEE
+     Decision Control, 2015, pp. 3610–3615.                                        Trans. Autom. Sci. Eng., vol. 9, no. 2, pp. 412–417, Apr. 2012.
+[19] X. Yin and S. Lafortune, “Codiagnosability and coobservability under dy-    [43] X. Yin and Z. Li, “Decentralized fault prognosis of discrete event systems
+     namic observations: Transformation and veriﬁcation,” Automatica, vol. 61,         with guaranteed performance bound,” Automatica, vol. 69, pp. 375–379,
+     pp. 241–252, 2015.                                                        2016.
+[20] D. Sears and K. Rudie, “Minimal sensor activation and minimal com-
+     munication in discrete-event systems,” Discrete Event Dyn. Syst., Theory
+      Appl., vol. 26, no. 2, pp. 295–349, 2016.
+[21] Y.-C. Ho, “Team decision theory and information structures,” Proc. IEEE,
+      vol. 68, no. 6, pp. 644–654, Jun. 1980.
+[22]  S. Tripakis, “Undecidable problems of decentralized observation and con-                      Xiang Yin (M’17) was born in Anhui, China, in
+       trol on regular languages,” Inf. Process. Lett., vol. 90, no. 1, pp. 21–28,                        1991. He received the B.Eng. degree from Zhe-
+     2004.                                                                                            jiang University, Hangzhou, China, in 2012, and
+[23]  J. Thistle, “Undecidability in decentralized supervision,” Syst. Control                          the M.S. and Ph.D. degrees from the Univer-
+       Lett., vol. 54, no. 5, pp. 503–509, 2005.                                                                    sity of Michigan, Ann Arbor, MI, USA, in 2013
+[24] A. Overkamp and J. H. van Schuppen, “Maximal solutions in decentralized                      and 2017, respectively, all in electrical engineer-
+     supervisory control,” SIAM J. Control Optim., vol. 39, no. 2, pp. 492–511,                              ing.
+     2000.                                                                                Since 2017, he has been with Shanghai Jiao
+[25]  J.  H.  van  Schuppen,  “Control  of  distributed  stochastic  systems-                      Tong University, Shanghai, China, where he is
+      introduction, problems, and approaches,” in Proc. 18th IFAC World Congr.,                            currently an Associate Professor with the De-
+     2011, pp. 4446–4452.                                                                 partment of Automation. His research interests
+[26] R. Boel and J. H. van Schuppen, “Decentralized failure diagnosis for   include supervisory control of discrete-event systems, model-based fault
+      discrete-event systems with costly communication between diagnosers,”   diagnosis, formal methods, security, and their applications to cyber and
+      in Proc. 6th Int. Workshop Discrete Event Syst., 2002, pp. 175–181.        cyber-physical systems.
+[27] K. Rudie, S. Lafortune, and F. Lin, “Minimal communication in a dis-       Dr. Yin was a recipient of the Outstanding Reviewer Award from
+      tributed discrete-event system,” IEEE Trans. Automat. Control, vol. 48,   Automatica in 2016, the Outstanding Reviewer Award from the IEEE
+     no. 6, pp. 957–975, Jun. 2003.                                   TRANSACTIONS ON AUTOMATIC CONTROL in 2017, and the IEEE Confer-
+[28] W. Sadid, S. Ricker, and S. Hashtrudi-Zad, “Nash equilibrium for com-   ence on Decision and Control (CDC) Best Student Paper Award Finalist
+     munication protocols in decentralized discrete-event systems,” in Proc.    in 2016. He is the co-Chair of the IEEE CSS Technical Committee on
+    IEEE Amer. Control Conf., 2010, pp. 3384–3389.                        Discrete-Event Systems.
+[29] X. Yin and S. Lafortune, “Minimization of sensor activation in decentral-
+      ized fault diagnosis of discrete event systems,” in Proc. 54th IEEE Conf.
+     Decision Control, 2015, pp. 1014–1019.
+[30] C. Cassandras and S. Lafortune, Introduction to Discrete Event Systems,
+     2nd ed. Berlin, Germany: Springer, 2008.
+[31] W. Wang, S. Lafortune, and F. Lin, “An algorithm for calculating in-
+      distinguishable states and clusters in ﬁnite-state automata with partially
+     observable transitions,” Syst. Control Lett., vol. 56, no. 9, pp. 656–661,                        St´ephane Lafortune (F’99) received the B.Eng.
+     2007.                                                                           degree  from  the  Ecole  Polytechnique  de
+[32] D. Sears and K. Rudie, “On computing indistinguishable states of nonde-                             Montr´eal, Montr´eal, QC, Canada, in 1980, the
+      terministic ﬁnite automata with partially observable transitions,” in Proc.                       M.Eng. degree from McGill University, Montr´eal,
+     53rd IEEE Conf. Decision Control, 2014, pp. 6731–6736.                                               in 1982, and the Ph.D. degree from the Univer-
+[33]  J. Tsitsiklis, “On the control of discrete-event dynamical systems,” Math.                                sity of California, Berkeley, CA, USA, in 1986, all
+      Control, Signals Syst., vol. 2, no. 2, pp. 95–107, 1989.                                                  in electrical engineering.
+[34] K. Rudie and J. Willems, “The computational complexity of decentralized                           Since September 1986, he has been with
+      discrete-event control problems,” IEEE Trans. Automat. Control, vol. 40,                          the University of Michigan, Ann Arbor, MI, USA,
+     no. 7, pp. 1313–1319, Jul. 1995.                                                    where he currently is a Professor of electrical
+[35] Y. Huang, K. Rudie, and F. Lin, “Decentralized control of discrete-event                         engineering and computer science. He is the
+     systems when supervisors observe particular event occurrences,” IEEE   lead developer of the software package UMDES and co-developer of
+     Trans. Automat. Control, vol. 53, no. 1, pp. 384–388, Feb. 2008.       DESUMA with L. Ricker. He coauthored, with C. Cassandras, the text-
+[36]  T.-S. Yoo and S. Lafortune, “Decentralized supervisory control with con-   book entitled Introduction to Discrete Event Systems (2nd ed. New York,
+      ditional decisions: Supervisor realization,” IEEE Trans. Automat. Control,   NY, USA: Springer, 2008). His research interests include discrete-event
+      vol. 50, no. 8, pp. 1205–1211, Aug. 2005.                           systems including multiple problem domains: modeling, diagnosis, con-
+[37]  S. Yokota, T. Yamamoto, and S. Takai, “Computation of the delay bounds    trol, optimization, and applications to computer and software systems.
+     and synthesis of diagnosers for decentralized diagnosis with conditional       Dr. Lafortune was a recipient of the Presidential Young Investigator
+      decisions,” Discrete Event Dyn. Syst., Theory Appl., vol. 27, no. 1, pp. 45–   Award from the National Science Foundation in 1990 and the George S.
+     84, 2017.                                                       Axelby Outstanding Paper Award from the IEEE Control Systems Society
+[38]  J. Dubreil, P. Darondeau, and H. Marchand, “Supervisory control for    in 1994 (for a paper coauthored with S.-L. Chung and F. Lin) and in 2001
+      opacity,” IEEE Trans. Automat. Control, vol. 55, no. 5, pp. 1089–1100,    (for a paper coauthored with G. Barrett). He is the Editor-in-Chief of the
+    May 2010.                                                        Journal of Discrete Event Dynamic Systems: Theory and Applications.

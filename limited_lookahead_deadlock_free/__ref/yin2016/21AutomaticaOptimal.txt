@@ -1,0 +1,1046 @@
+                                                            Automatica 123 (2021) 109359
+
+
+                                            Contents lists available at ScienceDirect
+
+                              Automatica
+
+
+                                         journal homepage: www.elsevier.com/locate/automatica
+
+
+
+Optimal supervisory control with mean payoff objectives and under
+partial observation✩
+Yiding Ji a, Xiang Yin b,∗, Stéphane Lafortune a
+a Department of Electrical Engineering and Computer Science, University of Michigan, Ann Arbor, MI, USA
+b Department of Automation, Shanghai Jiao Tong University, Shanghai, China
+
+
+a r t i c l e    i n f o             a b s t r a c t
+
+
+Article history:                    We investigate optimal mean payoff supervisory control problems on partially observed discrete event
+Received 14 June 2019                       systems modeled as weighted finite-state automata. The event weights capture variations of a given
+Received in revised form 19 May 2020            resource (i.e., energy) expended or replenished during the operation of the system and the mean payoff
+Accepted 13 October 2020                             is then defined as the average of the accumulative event weights. Two supervisory control problems
+Available online xxxx
+                                             are considered in this work. For the first, the system is equipped with a fixed amount of initial energy
+Keywords:                                      to support its operation and the supervised system should always have a nonnegative energy level.
+Discrete event systems                         For the second, the limit mean payoff of any event sequence should never drop below zero in the
+Supervisory control                            supervised system. We further optimize the worst case limit mean payoff of infinite event sequences
+Partial observation                          under both scenarios. The two problems are solved sequentially. In order to capture information on
+Optimal control                             both the state estimate and the energy level of the system, we define energy information states which
+Algorithmic game theory
+                                             incorporate sufficient information for the decision making of the supervisor. Then we propose the
+                                                      First Cycle Energy Inclusive Controller (FCEIC) and further transfer the supervisory control problems
+                                               into two-player games with properly defined objectives on the FCEIC. Finally, we perform a min–max
+                                            search on the game graphs to synthesize the optimal supervisors for both scenarios.
+                                                              © 2020 Elsevier Ltd. All rights reserved.
+
+
+
+
+1. Introduction                                                     (2004), Gu, Wang, Li, and Wu (2018), Komenda and Masopust
+                                                                     (2017), Lin, Masopust, Wonham, and Su (2019), Schmidt and
+   Supervisory control has been thoroughly studied under the     Breindl (2014), Shu and Lin (2015, 2017), Takai and Ushio (2003)
+framework of discrete event systems (DES). The supervisor re-    and Yin and Lafortune (2017). Recently, a novel approach was
+stricts the behavior of the plant (system) by enabling and dis-    developed in Yin and Lafortune (2016a) to synthesize maximally
+abling  events,  so  that  the  given  specification  is  achieved.    permissive partial-observation supervisors without assumptions
+Supervisory control has been thoroughly discussed under various    on the relationship between controllable and observable events.
+DES models from different perspectives (Cassandras & Lafortune,      It was then extended to a uniform approach in Yin and Lafortune
+2008; Wonham & Cai, 2019).                                                               (2016b) for the enforcing a series of qualitative properties in DES.
+   In the context of DES, due to the limited sensing capabilities                                                                          In addition to logical properties, supervisory control has also
+and measurement noises, the plant is usually partially observed,
+                                                          been investigated under some quantitative performance mea-
+which gives rise to supervisory control under partial observation.
+                                                                         sures. Optimal supervisory control is one problem of particu-
+Many works fall into this category, see, e.g., Alves, Carvalho, and
+                                                                               lar interest, where different frameworks have been developed.
+Basilio (2016), Alves, da Cunha, Carvalho, Moreira, and Basilio
+                                                                  For example, Sengupta and Lafortune (1998) defined both event
+(2019), Cai, Zhang, and Wonham (2015), Giua, Seatzu, and Basile
+                                                           enablement and disablement costs, then found the controller
+                                                             with minimum total costs to reach the designated states. This
+ ✩Research supported in part by the US National Science Foundation, China                                                         framework was extended in Marchand, Boivineau, and Lafortune
+under grant CNS-1738103, also by National Natural Science Foundation of China
+                                                                (2002) and Pruekprasert and Ushio (2016b) to consider partialunder grants 61803259, 61833012. The material in this paper was partially
+presented at the 57th IEEE Conference on Decision and Control, December 17–19,    observation of the system. Furthermore, Pruekprasert, Ushio, and
+2018, Miami Beach, Florida, USA. This paper was recommended for publication    Kanazawa (2016) solved an infinite horizon optimal supervisory
+in revised form by Associate Editor Christoforos Hadjicostis under the direction     control problem under the framework of mean payoff games
+of Editor Christos G. Cassandras.
+  ∗Corresponding author.                                          with perfect information. A closely related problem of optimal
+     E-mail addresses:  jiyiding@umich.edu (Y. Ji), yinxiang@sjtu.edu.cn (X. Yin),     stabilization by supervisory control was investigated in  Han,
+stephane@umich.edu (S. Lafortune).                                     Chen, and Su (2019) and Pruekprasert and Ushio (2016a, 2016b).
+
+
+https://doi.org/10.1016/j.automatica.2020.109359
+0005-1098/© 2020 Elsevier Ltd. All rights reserved.
+
+Y.  Ji, X. Yin and S. Lafortune                                                                                                    Automatica 123 (2021) 109359
+
+Along with the deterministic setting, optimal supervisory control     similar to the minimax criterion in optimal control theory (Başar &
+in probabilistic DES was studied in Pantelic and Lawford (2012).     Bernhard, 2008). This is consistent with our problem formulation
+   Motivation In many engineering applications, the system may    where we optimize the worst limit mean payoff. However, we
+generate or consume some resources over a relatively long time    cannot directly apply the minimax criterion as our problem is dis-
+horizon and it is often essential to maintain a reasonable rate of    cussed under partial observation. Instead, we propose the Energy
+resource generation/consumption. Consider the power manage-     Inter Connected System to ‘‘retrieve’’ the unobservable strings in
+ment system for hybrid electric vehicles (Malikopoulos, 2014).    the FCEIC. So the minimum/maximum payoffs for both players
+A positive or negative torque is demanded from the powertrain    are correctly evaluated before the optimal control strategy is
+depending on the driving mode, e.g., cruising or braking. The    determined by a min–max search.
+power from the electric machine is regulated by tuning the torque      Our supervisory control framework is also in contrast with
+so that the torque complies with the driving mode. The electric    algorithmic game theory for reactive synthesis (Apt & Grädel,
+machine generates power by consuming electrical energy from    2011; Baier & Katoen, 2008). First, there is a plant, i.e., a system to
+the battery in the motor mode, and it absorbs power from the    be controlled, and a separate supervisor (controller) in our work.
+driveline to charge the battery in the generator mode. When     Additionally, the supervised system is closed-loop in the sense
+the vehicle is cruising, the engine should consistently provide     that the ‘‘input’’ to the supervisor is the set of strings generated by
+sufficient power so that the vehicle moves smoothly. Here the su-    the system so far and the ‘‘output’’ of the supervisor is a control
+pervisory control scheme may be applied to determine the power     decision to inform the system what events are allowed to occur.
+flow over a long time range when the vehicle is on the road.    Furthermore, the supervisor may allow multiple events to occur
+Note that the supervisor’s observations may be compromised by    simultaneously, then the system decides what event to execute
+measurement uncertainty or noise.                                   next. This mechanism is similar to the so-called multi-strategy
+   Contributions The above situation inspires us to investigate     in algorithmic games (Apt & Grädel, 2011), under which one
+infinite horizon optimal supervisory control under partial obser-    player may choose more than one outgoing edges at its position.
+vation, which has never been investigated in DES before to the     In general, the supervisor may only have limited control and
+best of our knowledge. We term the resource associated with    observation capabilities, i.e., some events of the system can never
+the system as energy, which is a generic term. The system is    be disabled and some events are not observed by the supervisor.
+modeled as a weighted automaton and the limit average weight    Those limitations are usually not characterized in algorithmic
+characterizes the rate of energy generation/consumption, which    games for reactive synthesis. The above mentioned differences
+is to be optimized. Specifically, we consider two cases where    impose additional difficulties on directly applying existing results
+the supervisor entails an optimal limit mean payoff. The first is     of quantitative algorithmic games to solve the supervisory control
+that the system is granted with certain amount of initial energy    problem in our work, thus special techniques are necessary.
+to support its operation and the energy level should never drop         Specifically, this work leverages some results from mean pay-
+below 0. The second is that the limit mean payoff should always     off games where the first player maximizes the limit average
+be above a given threshold. Correspondingly, we formulate two     payoffs (weights) of traversed edges while the second player
+supervisory control problems and solve them in sequence.          minimizes them. Well structured solutions were proposed for the
+   In the first phase, energy information states are defined to     perfect information mean payoff game (Zwick & Paterson, 1996),
+incorporate information on state estimates and energy level of the    where both players know the complete history of the game up
+system. Next we transfer the supervisory control problems into     to their current positions. The more challenging case is mean
+two-player games between the supervisor and the ‘‘environment’’    payoff games with imperfect information where one player does
+(system) on the First Cycle Energy Inclusive Controller (FCEIC).    not know the exact state or actions of its opponent. Such games
+By construction, the supervisor’s winning strategies in the FCEIC    are in general undecidable (Hunter, Pauly, Pérez, & Raskin, 2018).
+achieve a nonnegative energy level or a sufficiently large limit     Briefly speaking, the undecidability is due to the presence of
+mean payoff. In the second phase, the optimal control strategies     indefinite cycles with total payoffs of different signs. The game
+are synthesized by solving a minimax game on a substructure    graph is unfolded to determine the winner of the game. However,
+of the FCEIC. Those strategies in turn solve our proposed control    the unfolding is never halted so no player is able to claim winning
+problems after minor manipulation.                               the game. Some decidable classes were presented in Hunter et al.
+   Related works Our solution methodology is inspired by the     (2018), which put some restrictions to eliminate the indefinite
+literature on infinite horizon optimal/stochastic control and algo-     cycles. These results motivate our problem settings.
+rithmic games in computer science. Here we briefly highlight our      Our work is not the first to investigate problems in DES by
+novelty compared with existing research from both fields.           leveraging results from algorithmic game theory, see, e.g., Ji, Yin,
+   Infinite horizon optimal/stochastic control under partial ob-    and Lafortune (2019a), Pruekprasert and Ushio (2017), Pruekprasert
+servation has long been a challenging problem (Bertsekas, 2012;     et al. (2016), Yin and Lafortune (2016a) and Yin and Lafortune
+Krishnamurthy, 2016). Optimal policy existence problem for in-    (2016b). However, both Yin and Lafortune (2016a) and Yin and
+finite horizon partially observable Markov Decision Processes    Lafortune (2016b) focused on supervisory control for qualitative
+(MDPs) is generally undecidable, either with discounted or av-     properties and Pruekprasert et al. (2016) discussed optimal mean
+erage reward objectives (Madani, Hanks, & Condon, 2003). To    payoff supervisory control under  full observation. In contrast
+solve the infinite horizon optimal supervisory control problems,     to this work as well, Pruekprasert and Ushio (2017) studied
+we make some necessary assumptions on the system (plant) and    supervisory control under fixed-initial-credit energy games and a
+solve the problems under two-player quantitative games. It turns    more recent work (Ji, Yin, & Lafortune, 2019b) studied supervisory
+out that we may solve the game to synthesize supervisors by     control under local mean payoff constraints, defined over a finite
+only focusing on the ‘‘first’’ simple cycles since the mean payoff    number of events. Finally, Ji et al. (2019a) discussed a different
+game  is a type of first-cycle games (Aminof & Rubin, 2017),    problem, namely opacity enforcement under energy constraints.
+so our game-theoretic technique is significantly different from       Organization The following sections are organized as follows.
+the existing methods to solve optimal control and MDPs (Bert-    Section 2 describes the system model. In Section 3, we for-
+sekas, 2012; Puterman, 2005), such as value/policy iteration or    mulate two optimal mean payoff supervisory control problems
+simulation/approximation methods. To synthesize the optimal    under partial observation. Section 4 introduces energy informa-
+supervisor on the FCEIC, we perform a min–max search which is     tion states and the First Cycle Energy Inclusive Controller (FCEIC)
+
+                                                                   2
+
+Y.  Ji, X. Yin and S. Lafortune                                                                                                    Automatica 123 (2021) 109359
+
+                                                                                                                                ei+1as the game graph for each problem. In Section 5, we analyze     for  i ≤j, if xi ei−→xi+1 −−→· · · ej−→xj+1 is the only cycle that
+some relevant properties of the FCEIC and partially solve the two    appears infinitely often in the run r, then we have:
+proposed problems. Then in Section 6, we completely solve the
+two problems by finding the optimal solution from the partial              1                                                                   Vmp(r) =      j∑ ω(el)                                     (2)
+solutions obtained in Section 5. Finally, Section 7 concludes the                       j −i + 1
+paper and raises potential directions for future work.                                                  l=i
+  A preliminary version of this work appears in  Ji, Yin, and      The event set E is partitioned as E = Ec∪Euc, where Ec is the set
+Lafortune (2018) with partial results. The major improvements     of controllable events and Euc is the set of uncontrollable events.
+of this work are two-fold. First, we consider mean payoff super-   G is partially observed and E is also partitioned as E = Eo ∪Euo,
+visory control under constraints imposed by the system’s energy    where Eo and Euo are the sets of observable and unobservable
+capacity, i.e., Problem 1 in Section 3, which is not discussed in Ji     events, respectively. The natural projection P   : E∗→  E∗o  is
+et al. (2018). Second, we further investigate the optimal control of     recursively defined as: ∀t′ ∈E∗, e ∈E, P(ϵ) = ϵ, P(t) = P(t′e) =
+worst-case limit mean payoffs in Section 6, which is not treated     P(t′)P(e) where P(e) = e if e ∈Eo and P(e) = ϵ if e ∈Euo ∪{ϵ}.
+in Ji et al. (2018) either.                                        The system G is controlled by a supervisor S  : P[L(G)] →
+                                                                 2X that dynamically enables/disables events (Cassandras & Lafor-
+2. System model                                                    tune, 2008). Let S be the set of supervisors. We also use S/G to
+                                                                  represent the controlled system under S. Accordingly, we denote
+   The system is modeled as a weighted finite-state automaton:    by L(S/G) the language generated in S/G and Run(S/G) the set of
+                                                               runs in S/G, respectively. A control decision γ ∈2E is called ad-
+G = (X, E, f , x0, ω)                                                      missible if Euc ⊆γ , i.e., uncontrollable events are never disabled.
+where X  is the finite state space, E is the finite set of events,   We let Γ = {γ ∈2E  : Euc ⊆γ } be the set of admissible control
+f   : X × E → X  is the partial transition function, x0 ∈ X     decisions and only consider Γ in the remainder of the work.
+is the initial state, ω   :  E →Z is the weight function that      The supervisor only has partial observation of the system.
+assigns an integer to each event. We view the event’s weight as    Given G and a set of states q ⊆X, the unobservable reach, denoted
+its energy payoff. A positive number stands for energy gain while a    by UR(q), is defined as: UR(q) =  {x′ ∈ X   :  ∃x ∈  q, s ∈
+negative number stands for energy cost. The transition function is    E∗uo,  s.t. f (x, s) = x′}. Specifically, the unobservable reach under a
+extended to X×E∗in the standard manner and we still denote the     set of events γ ⊆E, denoted by URγ (q), is defined as: URγ (q) =
+extended function by f . The language generated by G is defined as      {x′ ∈X  : ∃x ∈q, s ∈(Euo ∩γ )∗,  s.t. f (x, s) = x′}. The observable
+L(G) = {s ∈E∗: f (x0, s)!} where ! means ‘‘is defined’’. We denote    reach under event eo ∈Eo, denoted by Nexteo(q), is defined as:
+by s ≤u if string s is a prefix of u, and s < u if s ≤u, s̸ = u. The     Nexteo(q) = {x′ ∈X : ∃x ∈q s.t. f (x, eo) = x′}.
+function ω is additive and its domain can be extended to E∗by      The observer of G is defined as: Obs(G) =  (Xobs, Eo, δ, xobs,0)
+letting ω(ϵ) = 0, ω(seo) = ω(s) + ω(eo) for all s ∈E∗and e ∈E.    where Xobs ⊆2X  is the state space; xobs,0 =  UR({x0}) is the
+The (accumulative) payoff of sinL(G) is the sum of each event’s      initial state and δ is the transition function where ∀xobs ∈Xobs,
+weight in s, i.e. ω(s). G may also have v0 ∈N as its initial energy.     ∀eo ∈Eo: δ(xobs, eo) = UR(Nexteo(xobs)). The event weight function
+                                                                                       is omitted here in the definition. An observer state is also termed   In this work, we assume that safety is satisfied a priori and
+                                                               a (current) state estimate of the system.we do not include marked states in G. Instead, we consider
+the (weak) liveness property: a system G is live if its generated
+language L(G) is live, i.e., ∀s ∈L(G), ∃u ∈E, s.t. su ∈L(G). That     3. Problem formulations
+is, there is a transition defined at each state in G so every finite
+string may have an infinite suffix. This requirement is without        In this section, we formulate the optimal mean payoff su-
+loss of generality since it can be relaxed by adding observable    pervisory control problems with and without the constraint of
+self-loops at states where no active events are defined.             nonnegative energy level, respectively. Before stating them, we
+                                                                                       first assume that there are no unobservable loops in L(G), and   Given G, for x1, x2 ∈X and e ∈E, we write x1 e−→x2  if
+f (x1, e) = x2. A run in G is a sequence of alternating states and     this assumption holds throughout the remainder of this work.
+                     e1       e2       en−1
+events: r = x1 −→x2 −→· · · −−→xn and it may be infinitely long.                                                        Assumption 1 (No Unobservable Loops). Given an automaton G,
+We denote the set of all runs in G by Run(G), and specifically, the    ∀x ∈X, ∀s ∈E∗\ {ϵ}, [f (x, s) = x] ⇒[P(s)̸ = ϵ].
+set of infinite runs by Runinf (G), so that Run(G) ⊂Runinf (G). A run
+is called initial if its initial state is the initial state of G. Run r forms
+                                                       Problem 1 (Optimal Mean Payoff Supervisory Control Under Par-
+a cycle if x1 = xn, and r is called simple if ∀i, j ∈{1, 2, . . . , n −1},                                                                                          tial Observation-nonnegative Energy Level Case). Given system G
+i̸ =   j ⇒    xi̸ =  xj.  If r  is a cycle, the corresponding string                                                             with initial energy v0 ∈N, design a supervisor S∗∈S such
+e1e2 · · · en−1 forms a loop, which is also called simple if r is simple.                        e1       e2        en                                       that: (i) L(S∗/G) is live; (ii) ∀r ∈Run(S∗/G): EL(r) ≥0; (iii)
+   Given r = x1 −→x2 −→· · · −→xn+1,                                                  its (accumulative) payoff      infr∈Runinf (S∗/G) Vmp(r) = supS∈S infr∈Runinf (S/G) Vmp(r).                                            1
+is ∑ni=1 ω(ei) and its mean payoff is n ∑ni=1 ω(ei). The system’s
+energy level after r is written as EL(r) = v0 + ∑ni=1 ω(ei). The        In other words, the supervised system satisfies the follow-
+energy level changes dynamically with event occurrences.           ing conditions: (i) it is live; (ii) its energy level for any run is
+   For infinite runs, we also define Vmp  : Runinf (G) →R as the    nonnegative; (iii) its worst case limit mean payoff is maximized.
+                                                                     e1       e2            As a variant, we require the supervisor to enforce nonnegative
+limit mean payoff of an infinite run. Given r = x1 −→x2 −→· · ·,
+                                                                          limit mean payoffs. To study the new problem, we make Assump-
+                       n                                                 tion 2 on the system. Given an observer state xobs ∈Xobs, we let             1
+               infVmp(r) = lim     ∑ ω(ei)                                     (1)     Loop(xobs) = {l ∈E∗o \ {ϵ} : δ(xobs, l) = xobs and ∀l′ <  l s.t.  l′̸ =       n→∞             n
+                      i=1                                                ϵ, δ(xobs, l′)̸ = xobs} be the set of non-ϵ simple loops starting from
+Since G is with finite state space and the weight of each event is      xobs. Given string  l ∈Loop(xobs), we let SimLp(xobs, l) =  {t ∈
+bounded, the limit of the infimum of the sequence { 1n ∑ni=1 ω(ei)}    E∗\{ϵ} : ∃x ∈xobs s.t. f (x, t) = x, P(t) = l and ∀t′ < t, f (x, t′)̸ = x}
+always exists. Notice that the value of Vmp(r) does not depend on    be the set of non-ϵ simple loops with the same projection l and
+any sequence that appears finitely often when r is infinite. Also     starting from some state in xobs.
+
+                                                                   3
+
+Y.  Ji, X. Yin and S. Lafortune                                                                                                    Automatica 123 (2021) 109359
+
+                                                                             4. First cycle energy inclusive controller
+
+
+                                                             As a first step of solving Problems 1 and 2, we define energy in-
+                                                                   formation states and First Cycle Energy Inclusive Controller (FCEIC)
+                                                                     to transform both problems to two-player games between the
+                                                                   supervisor and the environment. The FCEIC is the game struc-
+                                                                            ture, which records the update of current state estimates and
+                                                                 the energy level of the system under control. It is inspired by
+                                                                 the Bipartite Transition System and All Enforcement Structure
+                                                                        in Yin and Lafortune (2016a, 2016b), which include supervisors
+                                                                   enforcing several logical properties in DES. We build two FCEICs
+              Fig. 1. An automaton with unambiguous cycle payoffs.             (one for each problem): they are similar to each other except that
+                                               we impose nonnegative energy level on the FCEIC for Problem 1.
+
+Assumption 2 (Unambiguous Cycle Payoffs). Given G and its ob-      4.1. Energy information states
+server Obs(G), ∀xobs ∈Xobs, ∀l ∈Loop(xobs), and ∀s, s′ ∈SimLp(xobs, l),
+we have either ω(s) < 0 ⇒ω(s′) < 0 or ω(s) ≥0 ⇒ω(s′) ≥0.          In order to track state estimates and string payoffs, we de-
+                                                                          fine energy information states which provide a compact way of
+   In other words, for two simple loops with the same projection,
+                                                              encoding information. Here we let |·| be the cardinality of a set.their payoffs should have the same sign. This assumption is in-
+                                                                     Before giving the definition, we  first present some neces-spired by the decidable classes of mean payoff games with partial
+                                                                    sary order relations for vectors in Zn. Given two vectors v1 =observation in Hunter et al. (2018). Later on in Section 4, we will
+see how this assumption guarantees a finite game structure for     [v1(1), v1(2), . . . , v1(n)], v2 = [v2(1), v2(2), . . . , v2(n)] ∈Zn, we
+solving Problem 2. We say that a system is with unambiguous cycle    denote by v1 ≤v2 (respectively v1 ≥v2) if ∀1 ≤i ≤n, v1(i) ≤
+payoffs if it satisfies Assumption 2. Checking Assumption 2 may be     v2(i) (respectively v1(i) ≥v2(i)). We also denote by v1 < v2
+reduced to comparing the accumulative weights of every pair of       if ∀1 ≤i ≤n, v1(i) ≤v2(i) and ∃1 ≤j ≤n, v1(j) <  v2(j)
+simple cycles in G. By graph theory, the number of simple cycles     (respectively ∀1 ≤i ≤n, v1(i) ≥v2(i) and ∃1 ≤j ≤n,
+in a graph may be exponential with respect to the number of     v1(j) > v2(j)), i.e., at least one element in v1 is strictly smaller
+states, thus it may take exponential time to verify the assumption.     (larger) than the element at the same position in v2.
+
+Example 1.  Let the system G in Fig. 1 be with Euo = {u1, u2} and    Definition 1 (Energy Information States). Given system G, an en-
+Eo = {o1, o2, o3}. The weight of each event is shown in the figure.    ergy information state is a tuple qe = (q, v) ∈2X × (∪|X|k=1Zk).
+                                      u1       o1       o2
+There are 4 simple cycles: x0 −→x1 −→x3 −→x0 with payoff 2,     Let Est(qe) and Lev(qe) denote the state estimate and energy level
+x0 −→x2u2   −→x4o1   −→x0o2    with payoff 1, x0 −→x1u1   −→x3o1   −→x0o3    with    components of qe, respectively. So qe = (Est(qe), Lev(qe)).
+                       u2      o1      o3
+payoff −1 and x0 −→x2 −→x4 −→x0 with payoff −2. So G is with       Denote by Q E the set of energy information states. There are
+unambiguous cycle payoffs.                                 two components in an energy information state qe: a current
+                                                                 estimate of the system state and a vector representing the energy
+Problem 2 (Optimal Mean Payoff Supervisory Control Under Partial     level of the system when reaching the states in the estimate. Each
+Observation-nonnegative Mean Payoff Case). Given system G with     state in Est(qe) corresponds to a value in Lev(qe), whose dimen-
+unambiguous cycle payoffs and mean payoff threshold v ∈N,     sion equals the number of states in the state estimate. Given x ∈
+design a supervisor S∗∈S such that: (i) L(S∗/G) is live; (ii)     Est(qe), we also write Lev(qe, x) as the element in Lev(qe) that cor-
+∀r ∈  Runinf (S∗/G): Vmp(r) ≥v;  (iii) infr∈Runinf (S∗/G) Vmp(r) =    responds to x. When Est(qe) = {x1, x2 · · · xk}, Lev(qe) is usually ex-
+supS∈S infr∈Runinf (S/G) Vmp(r).                                       pressed in a vector form [Lev(qe, x1), Lev(qe, x2), . . . , Lev(qe, xk)].
+  Compared with Problem 1, we still require that the supervised    By convention in this work, elements in Lev(qe) are placed in an
+system be live and the worst case limit mean payoff be optimized.     increasing order w.r.t. state names in Est(qe). Let⃗0 be the vector of
+The difference is that we omit the requirement of nonnegative      all 0s with proper dimensions. We call qe desirable if Lev(qe) ≥⃗0,
+energy level. Instead, the limit mean payoff (rate of energy gain)       i.e., nonnegative energy level for every state in Est(qe).
+of any infinite run is required to be above a given threshold v (not     We define an order ≼over Q E: for qe1, qe2 ∈Q E, qe1 ≼qe2  if
+necessarily 0) in (ii)  . However, given v̸ = 0, we may subtract v     Est(qe1) =  Est(qe2) and Lev(qe1) ≤Lev(qe2). We also say that qe2
+from the weight of each event and equivalently evaluate whether    subsumes qe1  if qe1 ≼qe2, i.e., qe2 shares the same state estimate
+the limit mean payoff is above 0. Hence, we simply let v = 0 in    with qe1 and the energy level vector of qe2 is no less than that of
+the following discussion without loss of generality.                    qe1 in a point-wise sense. We define another order ≺over Q E:
+   Specifically, we call the  first two conditions in Problem 1                                                                          for qe1, qe2 ∈Q E, qe1 ≺qe2 if Est(qe1) = Est(qe2), Lev(qe1) < Lev(qe2).
+(respectively Problem 2) as its mean payoff decision problem which
+                                                               That is to say, qe1 and qe2 have the same state estimate and theredoes not consider optimization. In both Problems 1 and 2, the
+                                                                          exists i ≥1 such that Lev(qe1)(i) < Lev(qe2)(i). By Dickson’s lemmaoptimal supervisor should maximize the worst case limit mean                                                                             (see, e.g., Levy, 2002), ‘‘≤’’ on nonnegative integer space Nk is a
+payoff. We may imagine that the supervisor is ‘‘playing a game’’                                                                       well-quasi ordering for any k ∈N+. We further argue that ≼on
+against an antagonistic opponent, where the supervisor  is to
+                                                                      desirable energy information states is also a well-quasi ordering,
+maximize its mean payoff while its opponent is to prevent the
+                                                                                                          i.e., for any infinite sequence of desirable energy informationsupervisor. Note that the two sides may have asymmetric in-
+                                                                         states qe1, qe2 · · ·, there exist two indexes i < j, such that qei ≼qej .formation since the supervisor only has partial observation of
+the system. Thus,  it is essential to construct proper estimates     We call qae ∈ Q E × Γ an augmented energy information
+for current states and the energy level of the system so that     state, which augments an energy information state with a control
+the supervisor makes correct decisions. In the following dis-     decision. Let IE(qae), Γ (qae) denote the energy information state
+cussion, we solve Problems 1 and 2 sequentially: we first find    component and control decision component of qae, respectively,
+solutions to their corresponding mean payoff decision problems,    so qae = (IE(qae), Γ (qae)). With a slight abuse of notation, we also
+then completely solve them by resolving the optimization issues.    use Lev(qae, x) to stand for Lev(IE(qae), x) where x ∈Est(IE(qae)). An
+
+                                                                   4
+
+Y.  Ji, X. Yin and S. Lafortune                                                                                                    Automatica 123 (2021) 109359
+
+augmented energy information state qae is also called desirable if    Given a control-observation sequence ρ′ as in Definition 4, we have
+Lev(IE(qae)) ≥⃗0. Then we discuss how (augmented) energy infor-     that ∀x ∈Est(IE(qaen )):
+mation states are updated when the supervisor makes decisions
+                                                                 min          : ∃˜x ∈Est(qe1),  s.t. f (˜x, s) = x′}       (4)or enabled observable events occur.                                   Lev(qaen , x′) = s∈Str(ρ′){ω(s)
+
+Definition 2 (γ -successor).                           For γ ∈Γ , qae ∈ Q E × Γ  is a                                                                   Proof. See the Appendix. □                              Eγ -successor of qe ∈Q   if: (i) Est(IE(qae)) = URγ (Est(qe)); (ii)
+∀x′ ∈Est(IE(qae)), Lev(qae, x′) = minξ{Lev(qe, x) + ω(ξ)  : ∃x ∈      The proof of Proposition 1 is in a dynamic programming man-
+Est(qe), ξ ∈(Euo ∩γ )∗s.t. f (x, ξ) = x′}.                                 ner. Since we account for the minimum string payoff when cre-
+                                                                     ating a new eo-successor or γ -successor, the minimum payoff    If qae is a γ -successor of qe, then the state estimate of IE(aae) is
+                                                                                       is computed by taking the minimal energy value of all stringsthe unobservable reach of Est(qe) under γ and we append IE(aae)
+                                                                     consistent with the observation. Note that those strings onlywith the control decision γ . We also track the minimum energy
+                                                                              differ in their unobservable substrings.level under γ , which is achieved by some unobservable string ξ
+reaching a possible state in Est(IE(qae)).
+                                                                                   4.2. Construction of the FCEIC
+Definition 3 (eo-successor). For eo ∈  Eo, qe ∈ Q E  is an eo-
+successor of qae ∈ Q E × Γ  if:  (i) eo ∈ Γ (qae) =  γ and       Next we transfer Problems 1 and 2 to games between the
+Est(qe) =  Nexteo(Est(IE(qae)));  (ii) ∀x ∈  Est(qe), Lev(qe, x) =    supervisor and the environment. In general, the games are infinite
+minx′{Lev(qae, x′) + ω(eo) : ∃x′ ∈Est(IE(qae)) s.t. f (x′, eo) = x}.         since we require livness and evaluate limit mean payoffs. To
+                                                                             efficiently solve the problems, we define a compact information
+    If qe is an eo-successor of qae, then the state estimate com-     structure called the First Cycle Energy Inclusive Controller (FCEIC)
+ponent of qe  is the observable reach of Est(IE(qae)) under eo.    by considering the ‘‘first cycles’’ formed in the games.
+Meanwhile, we track the minimum energy level when eo occurs      The two variants of FCEICs are formally defined by construc-
+and a certain state in Est(qae) is reached. When there is a sequence                                                                              tion,  i.e., by adding feasible eo-successors and γ -successors to
+of alternating control decisions and observable events, we intro-
+                                                                 the state space recursively in Algorithms 1 and 2, respectively.
+duce control-observation sequence to characterize the update of
+                                                          The FCEICs with respect to system G for both problems are
+(augmented) energy information states.
+                                                                 constructed in a similar way and of the same generic form
+                                                              (QYF , QZF , E, f yz,F   fzy,F Γ , ye0, QlF , v0) where:Definition 4 (Control-observation Sequence). A control-observation
+sequence is a sequence of alternating energy/augmented energy      • QYF ⊆Q E is the set of energy information states;
+information states, observable events and control decisions:          • QZF ⊆Q E × Γ  is the set of augmented energy information
+           γ1                                                                                                                                   F , ze = (IE(ze), Γ (ze));                                                                                                                        Zρ = qe1 −→qae                                                                                                                                                                              F               1 −→qee1   2 −→qaeγ2   2  · · · −−→qaeγn−1   n−1 −−→qeen−1   n or                       statesF      Fand for ze ∈QF
+                                                            •  f yz : QY × Γ →QZ  is the transition function from QY states           γ1        e1      γ2          γn−1         en−1      γn
+                                                                                                             F states, where for all ye ∈QYF , γ ∈Γ and ze ∈QZF ,ρ′ = qe1 −→qae1 −→qe2 −→qae2  · · · −−→qaen−1 −−→qen −→qaen                  to QZ
+where ∀i ≤n, γi ∈Γ , ei ∈Eo, qei ∈Q E, qaei ∈Q E × Γ , qaei   is a              [f yz(ye,F    γ ) = ze]⇔[ze is a γ -successor of ye];
+γi-successor of qei and qei+1 is an ei-successor of qaei  .                  •  f zyF  : QZF × Eo →QYF is the transition function from QZF states
+                                                            γ1        e1       γ2           to QYF states, where for all ze ∈QZF , eo ∈Eo and ye ∈QYF ,
+   By convention, we also denote by ρk = qe1 −→qae1 −→qe2 −→              [f zy(ze,F     eo) = ye]⇔[ye is an eo-successor of ze];
+          γk−1           ek−1                           γ1          e1        γ2
+qae2  · · · −−→qaek−1 −−→qek and ρ′k =  qe1 −→qae1 −→qe2 −→      • Γ is the set of admissible control decisions;
+         γk−1                        ek−1                                      γk
+                                 k −→qae                                           k  , for 1 ≤k ≤n. Strings are      • ye0 ∈ QYF  is the  initial energy information state whereqae2  · · · −−→qae               k−1 −−→qe
+generated under the control decisions in such sequences.                   Est(ye0) = {x0} and Lev(ye0) = v0;
+                                                            • QlF ⊂QYF is the set of leaf states where no transitions are
+Definition 5 (Strings Generated By a Control-observation Sequence).         defined and we partition QlF = QlgF ∪Qlb;F
+Given a control-observation sequence ρ or ρ′, the set of strings      • v0 ∈N is the initial energy of the system.
+generated by ρ is defined recursively as: ∀1 ≤k ≤n,
+   Str(ρ1) ={ϵ}                                                      For simplicity, QY                                                                                                                          F states are also named Y-states and QZF states
+   Str(ρ′1) ={ξ1 ∈E∗uo : ∃x ∈Est(qe1), x′ ∈Est(IE(qae1 )),                 are named Z-states in the remainder of the work. A Z-state ze is
+            ξ1 ∈(γ1 ∩Euo)∗s.t. f (x, ξ1) = x′}                        deadlock free if ∀x ∈Est(IE(ze)), ∃e ∈Γ (ze), s.t. f (x, e)!, i.e., at
+                                                                           least one event is enabled at every state in the state estimate of
+Str(ρk+1) ={s′kek : ∃x ∈Est(qe1), x′ ∈Est(IE(qaek )), x′′ ∈Est(qek+1),         ze. Otherwise, ze is called a deadlocking state. Since there are no
+                  s′k ∈Str(ρ′k),  s.t. f (x, s′k) = x′, f (x′, ek) = x′′}             unobservable loops in G by Assumption 1, a deadlock free Z-state
+Str(ρ′k+1) ={sk+1ξk+1 : ∃x ∈Est(qe1), x′ ∈Est(qek+1), x′′ ∈             always has transitions defined out of it.
+             Est(IE(qaek+1)), sk+1 ∈Str(ρk+1), ξk+1 ∈(γk+1 ∩Euo)∗,         The FCEIC in general describes a game between the supervisor
+                                                         and the environment. A Y-state is an energy information state
+                  s.t. f (x, sk+1) = x′, f (x′, ξk+1) = x′′}                  where the supervisor issues control decisions. If the supervisor
+   The  following  proposition shows  that  given  a  control-     issues an admissible control decision γ , f yzF transition is defined
+observation sequence, the energy level vector of an energy or    out of a Y-state, which follows the definition of γ -successor.
+augmented energy information state always tracks the minimum   A Z-state is an augmented energy information state, where the
+payoff of strings reaching the states in the state estimate.          environment selects observable events to occur from the events
+                                                              enabled by the supervisor. When a particular observable event eo
+Proposition 1.   Given a control-observation sequence ρ as in      is selected to occur by the environment, fzyF transition is defined
+Definition 4, we have that ∀x ∈Est(qen):                            out of a Z-state, which follows the definition of eo-successor. Then
+                                                                                                it is again the supervisor’s turn to make the next control decision.
+Lev(qen, x) = s∈Str(ρ){ω(s)min          : ∃˜x ∈Est(qe1),  s.t. f (˜x, s) = x}         (3)     This is consistent with the mechanism of supervisory control
+
+                                                                   5
+
+Y.  Ji, X. Yin and S. Lafortune                                                                                                    Automatica 123 (2021) 109359
+
+Algorithm 1 Construction of the FCEIC for Problem 1              under partial observation where the supervisor’s decisions get
+                                                            updated after the occurrence of observable events. In this manner,
+ Input: G, v0
+                             F     F       F    F              F                      the two players take turns to play and a game is formed. Output:         FCEIC =                                 , E, f yz, f                (QY , QZ                                           zy, Γ , ye0, Ql , v0)                  The procedure FirstCyclei where i ∈{1, 2} in either algorithm                                              F                                   F                       F       F
+ 1: QY = {ye0}, QZ = ∅, Ql = ∅, Qlb = ∅;                             builds the state space of the FCEIC by a depth-first search like
+ 2: FirstCycle1(ye0, FCEIC);                                             process. We first discuss FirstCycle1 in Algorithm 1. In this process,
+ 3: Return FCEIC;                                   we only add deadlock free Z-states to the structure and ensure
+ 4: procedure FirstCycle1(ye, FCEIC)                                  that there are events enabled at every state in the state estimate
+ 5:    for γ ∈Γ do                                                   of any Z-state. In lines 16, 17 and 18 of Algorithm 1, if the newly
+ 6:        Let ze be the γ -successor of ye;                       added energy safe state ˜ye subsumes a non-leaf state yej on the run
+ 7:          if ze is deadlock free and energy safe then                  starting from the initial state, then the two energy information
+                                                        F                             states share the same state estimate but the new state  ˜ye has 8:        Add transition ye γ−→ze to fyz;
+ 9:              if ze /∈QZF then                                     a higher or equal energy level vector compared with yej . We
+10:          QZF = QZF ∪{ze};                                      also know that some simple cycles with nonnegative payoffs
+                                                                   are formed in the system for the first time. Then we terminate11:              for eo ∈γ ∩Eo do
+                                                                  searching and add the new state as a leaf state of the FCEIC. That12:                 Let ˜ye be an eo-successor of ze;
+                                                                 F                           is why we call this structure first cycle energy inclusive controller.13:             Add transition ze eo−→˜ye to f zy;                     In the following sections, we will explain in more detail why it
+14:                       if ˜ye /∈QYA then                                           is sufficient to consider simple cycles to solve Problem 1. On the
+15:              QYF = QYF ∪{˜ye};                             other hand, if a new Z-state or Y-state is not energy safe, we stop
+16:                           if ˜ye is energy safe then                     searching since the system’s energy level drops below 0 at some
+                                                                    γ0
+17:                               if there exists a run: ye0 −→                                                                ze0 −→e0      state, thus the second requirement in Problem 1 is violated.
+            γn−1                                                            Similarly for FirstCycle2 of Algorithm 2, in lines 16 and 18, if
+    ye1 · · · −−→zen−1 e−→˜ye and ∃j < n, s.t. yej ≼˜ye then              the newly added state ˜ye subsumes or is subsumed by an existing
+18:                           Stop  searching                                        from   ˜ye,  define     state on the run from initial state ye0 to  ˜ye, we know that the                                                     F       F                              F       F    Sub(˜ye) = yej , let Ql = Ql  ∪{˜ye}, Qlg = Qlg ∪{˜ye};             two energy information states share the same state estimate and
+19:                        else FirstCycle1(˜ye, FCPEC);                            ˜ye has a higher, lower or equal energy level vector compared
+20:                    else Stop searching from ˜ye, let QlF = QlF ∪    with that state. We also know that some simple cycles with
+     {˜ye} and QlbF = QlbF ∪{˜ye};                                     nonnegative or negative payoffs are formed in the system for the
+                                                                                       first time. Then we terminate searching and add the new state
+                                                                                                                 ˜ye as a leaf state of the FCEIC. Since Problem 2 does not require
+Algorithm 2 Construction of the FCEIC for Problem 2               nonnegative energy level of the system, the states created by
+                                                                             FirstCycle2 are not necessarily energy safe.
+ Input: G, v0                             F     F       F    F              F                          Next, we partition leaf Y-states as: QlF = QlgF ∪QlbF where QlgF
+ Output: FCEIC = (QY , QZ , E, f yz, f zy, Γ , ye0, Ql , v0)                                                                      F                                                                   represents good leaf states and Qlb represents bad leaf states. In the       F              F           F           F
+ 1: QY = {ye0}, QZ = ∅, Ql = ∅, Qlb = ∅;                          FCEIC for Problem 1, a good leaf state is energy safe and subsumes
+ 2: FirstCycle2(ye0, FCEIC);                                        a non-leaf state, while a bad leaf state is energy unsafe. If a good
+ 3: Return FCEIC;                                                          leaf state is reached, there are simple cycles with nonnegative
+ 4: procedure FirstCycle2(ye, FCEIC)                                 payoffs in the system whose energy level would be nonnegative
+ 5:    for γ ∈Γ do                                                forever if those cycles are traversed indefinitely. However, if a bad
+ 6:        Let ze be a γ -successor of ye;                                  leaf state is reached, there exists some string so that the energy
+ 7:          if ze is deadlock free and energy safe then                  level of the system drops below 0. Similarly, in the FCEIC for
+                                                        F                        Problem 2, a good leaf state subsumes a non-leaf state while a 8:        Add transition ye γ−→ze to f yz;
+ 9:              if ze /∈QZF then                                  bad leaf state is subsumed by a non-leaf state. If a good leaf state
+10:          QZF = QZF ∪{ze};                                              is reached, we know there exist simple cycles with nonnegative
+                                                                    payoffs in the system;  if bad leaf state is reached, there exist11:              for eo ∈γ ∩Eo do
+                                                               simple cycles with negative payoffs. In both algorithms, we define12:                 Let ˜ye be an eo-successor of ze;
+                                                                 F                     Sub(ye) to store the preceding state subsumed by good leaf state13:             Add transition ze eo−→˜ye to f zy;                         ye. Actually, the supervisors in both Problems 1 and 2 should
+14:                       if ˜ye /∈QYA then                                reach good leaf states and avoid bad ones, which is explained in
+15:              QYF = QYF ∪{˜ye};                       more detail later on. Finally, if no state subsumes another, we call
+                                                                  γ0
+16:                           if there exists a run:  ye0  −→                                                               ze0  −→e0      FirstCycle recursively in both algorithms until no more new states
+            γn−1                                                      are added to the structure. We may also show that Algorithm 1
+    ye1 · · · −−→zen−1 e−→˜ye and ∃j < n, s.t. yej ≼˜ye then            and Algorithm 2 return a finite and acyclic structure.
+17:                     Stop   searching  from     ˜ye,   define
+    Sub(˜ye) = yej , let QlF = QlF ∪{˜ye}, QlgF = QlgF ∪{˜ye};            Theorem 1.  Algorithm 1 returns a finite structure.
+                                                             γ0       e0       γ1
+18:                           if There exists a run: ye0 −→ze0 −→ye1 −→
+            γn−1                                                      Proof. By contradiction. Assume that the FCEIC is infinite. Since
+    ze1 · · · −−→zen−1 e−→˜ye and ∃j < n, s.t. ˜ye ≺yej then                 E, Γ ⊆2E and Eo are finite, the number of transitions at each
+19:                     Stop searching from ˜ye, let QlF = QlF ∪     state in the structure is finite. By König’s lemma (Levy, 2002) and
+     {˜ye} and QlbF = QlbF ∪{˜ye};                                     Algorithm 1, there exists an infinite run ye0 −→zeγ0   0 −→yee0   1 −→zeγ1   1 · · ·
+20:                       elseFirstCycle2(˜ye, FCEIC);                      in the FCEIC and it is never the case that ∃yei , yej , i < j, s.t. yei ≼yej .
+                                                           However, this contradicts with ≼being a well-quasi ordering on
+                                                              energy safe energy information states. □
+
+
+                                                    Theorem 2.  Algorithm 2 returns a finite structure.
+
+                                                                   6
+
+Y.  Ji, X. Yin and S. Lafortune                                                                                                    Automatica 123 (2021) 109359
+
+
+Table 1
+Energy and augmented energy information states in Fig. 3.
+
+ State name             State components
+  ye0                        {{x0}, 3}
+  ze0                        {{x0, x1, x2}, [3, 1, 0], γ0}
+  ye1                        {{x3, x4}, [2, 1]}
+  ze1                        {{x3, x4, x5, x6, x7, x8, x9, x10}, [2, 1, 5, 2, 7, 2, 6, 5], γ1}
+  ye2                        {{x12}, 4}
+  ze2                        {{x12}, 4, γ0}
+  ye2−2                      {{x12}, 6}
+  ze8                        {{x9, x12, x14}, [0, 4, 3], γ2}′
+  ye2−3                      {{x12}, −2}
+  ye2−4                      {{x12}, 6}
+  ye3                        {{x13}, 2}
+  ze3                        {{x13}, 2, γ0}
+  ye3−2                      {{x13}, 4}                                                                                Fig. 2. The automaton G in Example 2.
+  ze9                        {{x10, x13, x15}, [1, 2, 1], γ3}
+  ye3−3                      {{x13}, −2}
+  ye3−4                      {{x13}, 4}
+  ze4                        {{x3, x4, x5, x7}, [2, 1, 5, 7], γ4}
+  ye1−2                     {{x3, x4}, [3, 2]}
+  ze5                        {{x3, x4, x6, x8}, [2, 1, 2, 2], γ5}
+  ye1−3                     {{x3, x4}, [3, 2]}
+  ze6                        {{x3, x4}, [2, 1], γ0}
+  ye1−4                      ye1−4 = {{x3, x4}, [3, 2]}
+  ye1−5                      ye1−5 = {{x3, x4}, [3, 2]}
+
+
+
+Proof. By contradiction. Assume that the FCEIC is infinite. Since
+E, Γ ⊆2E and Eo are finite, the number of transitions defined
+at each state in the structure is finite. Then by König’s                                          lemma                                                                                                      Fig. 3. The first cycle energy controller in Example 2 (without ze7).                                                                     γ0                                                                                     e0
+(see, e.g., Levy, 2002), there exists an infinite run ye0 −→ze0 −→
+     γ1
+ye1 −→ze1 · · · in the FCEIC such that it is neither the case that
+∃yei , yej , i <  j, s.t. yei ≼yej nor the case that yej ≺yei . That means        In the FCEIC, the game is initiated from ye0 where the only
+there exist yei , yej  (i < j) and integers k̸ = l s.t. Est(yei ) = Est(yej ),     feasible control decision is γ0.  If the supervisor plays γ0, a Z-
+Lev(yei )(k) ≤Lev(yej )(k) and Lev(yei )(l) > Lev(yej )(l) for elements     state ze0  is reached where the environment selects observable
+in Lev(yei ) and Lev(yej ). Hence there exist two simple cycles in G:    event o1 to occur. Then the supervisor takes the turn to play
+     e1            en                        e′1                e′n                               at ye1 and the rest of the structure is interpreted in a similar              · · ·                                                   ·                                                     ·                 and                    −→x′                                                      · −→x′                                               ∈Est(ye                                                                                                  ),x1  −→x2         −→x1                                                   x1,                                      2                                                  1 s.t.                                                                     x′1                                                                                                                                                  i                                 x′1                                                            way.                                                                       Notice                                                                                  that                                                                                           at                                                                                                supervisor                                                                                                                 issues control                                                                                                                           decision                                                                                                  ye2, if the      =                                                ·                                                  ·                                                    ·                 ≥0                                     and                                                    ω(e′                                 <P(e1       · · · en)                          ω(e1                                      en)                                · · e′n),                                                                                  · · · e′n)                 P(e′1 ·                                                              1                                                                     and                                                                                          disables                                                                                          then a deadlocking                                                                                                                          Z-state                                                                   γ2 (enables                                                                                         c3                                                                                                                        c5),                                                                                                                                               ze7 is0. However, this contradicts with Assumption 2 that G is with
+                                                                   reached, where no event can occur at x14 after c5 is disabled.unambiguous cycle payoffs. □
+                                                           Here ze7  is not included in the FCEIC by Algorithm 1 and we
+   The size of the state space of the FCEIC is bounded by non-    mark it by a blue cross in Fig. 3. Meanwhile, we calculate the
+primitive recursive Ackermann functions (see, e.g., Rackoff, 1978)    energy level vector of each state. For example, Est(ye0) =  {x0},
+following a similar argument as Hunter et al. (2018) and Pérez     Lev(ye0) = v0 = 3; since ze0 is the γ0-successor of ye0, we have
+(2017). Mean payoff games with incomplete information were     that Est(IE(ze0)) =  URγ0(Est(ye0)) =  {x0, x1, x2}, Lev(ze0, x1) =
+also solved by evaluating first simple cycles after the game graphs    min{ω(a1), ω(a3)} =  1, Lev(ze0, x2) = min{ω(a2), ω(a4)} = 0
+are unfolded in Hunter et al. (2018).                           and ze0 = {{x0, x1, x2}, [3, 1, 0], γ0}; since ye1 is the o1-successor
+                                                                        of ze1, we have that Est(ye1) =  Nexto1({x0, x1, x2}) =  {x3, x4},
+Example 2.   In this example, we construct a first cycle energy     Lev(ye1, x3) = Lev(ze0, x1) + ω(o1) = 2, Lev(ye1, x4) = Lev(ze0, x2) +
+inclusive controller following Algorithm 1. Let the system G in    ω(o1) = 1 and ye1 = {{x3, x4}, [2, 1]}.
+Fig. 2 be with Eo = {o1, o2, o3, o4}, Euo = {a1, a2, a3, a4, b1, b2, c1,      From the table, we find that ye1 ≼ye1−2, ye1 ≼ye1−3, ye1 ≼ye1−4,
+c2, c3, c4.c5}, Ec = {c1, c2, c3, c4, c5}, Euc = {a1, a2, a3, a4, b1, b2,     ye1 ≼ye1−5, ye2 ≼ye2−2, ye2 ≼ye2−4, ye3 ≼ye3−2 and ye3 ≼ye3−4 by
+o1, o2, o3, o4}. The weight of each event is shown in the figure    evaluating their energy level vectors. We also find two unsafe
+and the system has initial energy v0 =  3. Then all admissible     states ye2−3 and ye3−3 since Lev(ye2−3) = −2 and Lev(ye3−3) = −2.
+control decisions are: γ0 = Euc, γ1 = {c1, c2}∪Euc, γ2 = {c3}∪Euc,     After checking all states in Fig. 3, we stop adding new states from
+                                                                                                                                                                                   F =γ2′ = {c3, c5}∪Euc, γ3 = {c4}∪Euc, γ4 = {c1}∪Euc, γ5 = {c2}∪Euc.    the leaf states of the FCEIC. Then we have good leaf states Qlg
+For simplicity, we only include feasible controllable events at the     {ye1−2, ye1−3, ye1−4, ye1−5, ye2−2, ye2−4, ye3−2, ye3−4} and bad leaf states
+corresponding states in the admissible control decisions.         QlbF = {ye2−3, ye3−3}. For example, when ye1−2 is reached, we locate
+   Then we follow Algorithm 1 to build the FCEIC in Fig. 3. For                                                                                     c1       b1
+                                                                  three simple cycles with nonnegative payoffs in G: x3 −→x5 −→simplicity of the graph, we do not put the energy level vectors in                                                                                              o1                             o1                                  o1
+the figure but show them in Table 1. The elements in each energy     x7 −→x3 with payoff 6, x3 −→x3 with payoff 1 and x4 −→x4 with
+level vector are placed in the same order as the order of states in    payoff 1. The bad leaf states actually come from the two simple
+                                                                                                                                            o2         c3         c5
+the corresponding state estimate.                                    cycles with negative payoffs in G: x9 −→x12 −→x14 −→x9 with
+
+                                                                   7
+
+Y.  Ji, X. Yin and S. Lafortune                                                                                                    Automatica 123 (2021) 109359
+
+payoff −6 and x10 −→x13o3    −→x15c4    −→x10b2     with payoff −4. Those    the player. Since positional strategies are sufficient to win a finite
+two cycles should be avoided if we want to solve Problem 1.         safety game (Apt & Grädel, 2011), we assume that both players
+                                                                  play positional strategies in the remainder of this section.
+Example 3.  The system G is the same as the one in Example 2       Following the transitions in the FCEIC, we can specify control
+and we construct the FCEIC following Algorithm 2. It happens that     decisions from Y-states and the control decisions are updated
+the FCEIC is the same as the one in Fig. 3. Specifically, ye2−3 ≺ye2     after observable events occur from Z-states. Thus, the control
+and ye3−3 ≺ye3, so ye2−3 and ye3−3 are also bad leaf states in this     strategies in the FCEIC work in the same way as standard super-
+example. They are due to the two simple cycles with negative     visors. In what follows, we will use the words ‘‘supervisor’’ and
+                                                                            ‘‘supervisor’s strategy (control strategy)’’ interchangeably.payoffs mentioned at the end of Example 2. Again, those two
+                                           We define the supervisor’s winning region Wins as the set ofcycles should be avoided if we want to solve Problem 2.
+                                                                         states from which the supervisor has a strategy to only reach good
+                                                                             leaf states for sure regardless of the environment’s strategies. To5. Mean payoff decision problems
+                                                                    solve Problem 1 or Problem 2, the supervisor should only reach
+                                                         good leaf states. Actually, the procedures to obtain Wins for both   In this section, we show that there exist solutions for the mean
+                                                            problems are the same after the FCEIC is built. Hence we presentpayoff decision problems mentioned at the end of Section 3 if and
+                                                         one unified algorithm, i.e., Algorithm 3, to compute Wins.only if the supervisor has strategies to win the game on the FCEIC.
+Therefore the first two requirements of Problems 1 and 2 are    Algorithm 3 Compute the winning region of the FCEIC
+satisfied. The last requirement (optimization) in both problems     Input: FCEIC returned by Algorithm 1 or Algorithm 2
+will be discussed and addressed in the next section. The following     Output: Wins for Problem 1 or Problem 2
+analyses of this work apply to both FCEICs returned by Algorithm       1: while ∃ye ∈QYF \ Qlg,F  s.t. ye has no successor do
+1 and Algorithm 2, so we will not distinguish them but just use
+                                                                                        2:   Remove ye and all ze ∈QZF , such that fzy(ze,F     eo) = ye forthe term ‘‘FCEIC’’ when there is no confusion.
+                                                       some eo ∈Eo;
+   By the construction process of Algorithms 1 and 2, we stop
+                                                                                        3:    Take the accessible part of the structure;
+expanding the game graph when the first cycles with positive
+                                                                                        4: Denote the structure by FCEICw and return its states;payoffs are formed or the energy level drops below 0. Therefore,
+the runs in the FCEIC (defined by either Algorithm 1 or 2) are     We briefly discuss the process in Algorithm 3, which calculates
+finite control-observation sequences. We denote by Run(F) the    the winning region in a fixed point calculation manner. All bad leaf
+set of runs in the FCEIC. Given rf ∈Run(F), we write ye ∈rf     states are removed first as well as their preceding Z-states. Then
+(respectively ze ∈rf ) if ye (respectively ze) is a Y-state (respec-   we further prune away Y-states that have no successor states and
+tively Z-state) in rf . We also let LastY (rf ) and LastZ(rf ) be the last     their preceding Z-states in an iterative manner. Notice that when
+Y-state and Z-state of rf , respectively. Specifically, we denote by   we remove a Y-state, we also need to remove all its preceding
+Runy(F) (respectively Runz(F)) the set of runs whose last states     Z-states, otherwise the already enabled observable events are
+are Y-states (respectively Z-states).                               blocked from happening. However, when a Z-state is deleted,
+   Then we discuss strategies for both players in the FCEIC, which   we will only remove its preceding Y-state if the Y-state has no
+indicate the choices for players when  it is their turn to play.     successors. The reason is that the supervisor is still able to avoid
+Define the supervisor’s strategy (control strategy) as a function    the removed Z-state when it has other successors. The algorithm
+πs   :  Runy(F) → Γ and the environment’s strategy as πe   :    stops when no more states can be removed. In this way, we make
+Runz(F) →  Eo. Both players select a transition according to    sure that only good leaf states are reached under certain control
+their strategies when it is their turn to play. Since the supervisor     strategies and we have the winning region. That is, any control
+only has partial observation of the system and makes decisions     strategy in the FCEICw is a winning control strategy in the FCEIC,
+from state estimates, we call its strategy observation based. De-    and all winning control strategies are in the FCEICw. It is possible
+note the set of all supervisor’s strategies by Πs and the set of     that Algorithm 3 returns an empty set thus the environment
+all environment’s strategies by Πe.  If the supervisor plays πs    always wins the game regardless of the supervisor’s strategies.
+and the environment plays πe from the initial state ye0, then a         Intuitively, Algorithm 3 is similar to calculating the supremal
+unique initial run, denoted by rf (πs, πe), is generated. We also let     controllable sublanguage in supervisory control under full obser-
+                         γ1        e1           γn−1          en−1                vation (Cassandras & Lafortune, 2008). The bad leaf states are
+Run(ye, πs) = {ye −→ze1 −→ye2 · · · −−→zen−1 −−→yen  : ∀i <                                                          viewed as undesirable marked states while the good leaf states                   γ1        e1            γi−1          ei−1
+n, γi = πs(ye −→ze1 −→ye2 · · · −−→zei−1 −−→yei )} be the set    are viewed as desirable ones; transitions for  fyzF are viewed as
+of runs starting from ye and consistent with control strategy πs,     controllable while transitions for f zyF are viewed as uncontrollable.
+i.e., the control decisions in the run are specified by πs.               Next we discuss how a supervisor solving the mean payoff
+   In the FCEIC, we say the supervisor wins the game  if only     decision problem is obtained. In the FCEIC, the supervisor either
+good leaf states are reached, otherwise, the environment wins the    aims to achieve a nonnegative energy level (corresponding to
+game if at least one bad leaf state is reached. So the game on the    Algorithm 1 and Problem 1) or a nonnegative limit mean payoff
+FCEIC is a safety game under full observation after introducing the    (corresponding to Algorithm 2 and Problem 2). If only good leaf
+energy information states. Either the supervisor or the environ-     states are reached under a wining control strategy in the FCEIC,
+ment has a winning strategy from any state in the FCEIC, since    then only simple cycles with a nonnegative payoff are formed
+safety games are determined (Apt & Grädel, 2011).                    in the supervised system. Since the energy level vector in an
+  A strategy πi ∈Πi for player  i ∈{s, e} in the FCEIC is    energy information state returns the minimum string payoff by
+information state based if the decisions only depend on the current    Proposition 1, the payoffs of strings with the same observation
+energy or augmented energy information state. In other words,    and reaching the same state are all nonnegative if the minimum
+πi ∈Πi is information state based if πi(rf ) = πi(r′f ) for all rf , r′f ∈     string payoff is nonnegative.
+Run(F) such that Last(rf ) = Last(r′f ). Therefore, information state        Therefore, we  let the supervisor make the same decision
+based strategies for the supervisor and the environment can be    whenever the state estimate of a good leaf state  is reached.
+represented by πs : QYF →Γ and πe : QZF →Eo, respectively. Such     Intuitively speaking, the supervisor ‘‘ignores’’ the actual energy
+a strategy is also called positional in the literature, see, e.g., Apt     level of the system and just views the game starting from a good
+and Grädel (2011), as it only depends on the current position of     leaf state ye as the same game that starts from the state subsumed
+
+                                                                   8
+
+Y.  Ji, X. Yin and S. Lafortune                                                                                                    Automatica 123 (2021) 109359
+
+by ye. In Algorithms 1 and 2, we define Sub(ye) as the state that
+subsumes ye. We may imagine that ye is ‘‘merged’’ with Sub(ye)
+by letting all transitions going to ye lead to Sub(ye) instead. In this
+manner, the game on the FCIEIC is extended to be infinite and we
+call the resulting game as an extended game. This is essentially
+the process of strategy transfer discussed in Aminof and Rubin
+(2017) and Hunter et al. (2018), which transfers the strategies on
+the induced finite game to the original infinite game. A similar
+procedure is presented in Section 5 of Pruekprasert et al. (2016).
+In this way, the supervisor perpetually completes cycles with
+nonnegative payoffs since every simple cycle has a nonnegative
+payoff. Thus, the limit mean payoff and energy level also become
+nonnegative for infinite runs. The goal of the supervisor is either
+to achieve a nonnegative energy level (extended game for Prob-
+lem 1) or a nonnegative limit mean payoff (extended game for      Fig. 4. The FCEICw with dashed green lines connecting good leaf states with
+                                                                                            their subsumed states; Wins is the set of all states.  (For interpretation of the
+Problem 2). Both objectives may be evaluated by focusing on the                                                                                     references to color in this figure legend, the reader is referred to the web version
+first cycles formed by the supervisor and we stop expanding the      of this article.)
+game graph when the first cycles are formed.
+   Overall, we claim that any control strategy in the FCEICw
+solves the mean payoff decision problem of Problem 1 or Prob-                                                                   Proof.  The proof is similar to that of Theorem 3 and we just
+lem 2. Conversely, we also claim that if the mean payoff decision                                                                 sketch it here. We show the ‘‘only  if’’ part by contrapositive as
+problem has solutions, then there exist winning control strate-                                                                         well. If no winning control strategy exists, then Wins is empty
+gies in the FCEIC returned by either Algorithm 1 or 2. Formally                                                          by Algorithm 3, i.e., no matter what decisions made by the su-
+speaking, the following two theorems hold.                                                                        pervisor, there always exist runs ending in bad leaf states. The
+                                                                   supervisor only form cycles with negative payoffs so that the limit
+Theorem 3.   There exists a supervisor solving the mean payoff
+                                                  mean payoff for any run is negative and no supervisor solves the
+decision problem of Problem 1  if and only  if the supervisor has a
+                                                  mean payoff decision problem of Problem 2.
+winning strategy in the FCEIC defined by Algorithm 1.
+                                                            The ‘‘if’’ part. If there exists a winning strategy for the super-
+                                                                        visor in the FCEIC, then the supervisor achieves nonnegative limit
+Proof. The ‘‘only if’’ part. Proof by contrapositive, i.e., if there does
+                                                  mean payoff since are cycles in the FCEICw are with nonnegative
+not exist a winning control strategy in the FCEIC, then there does
+                                                                         payoffs. The supervisor is also live, so it solves the mean payoff
+not exist a supervisor solving the mean payoff decision problem.
+                                                                    decision problem of Problem 2. □
+If no winning control strategy exists, Wins is empty by Algorithm
+3. So ∀πs ∈Πs, ∃πe ∈Πe,  s.t. LastY (rf (πs, πe)) ∈ QlF ⇒        Therefore, we have shown the soundness and completeness
+LastY (rf (πs, πe)) ∈Qlb,F  i.e, no matter what control decisions are     of Algorithms 1 and 2. Overall, we transform the mean payoff
+made, there always exist runs ending in bad leaf states. So for πs,     decision problem for Problem 1 (Problem 2) into a safety game
+there always exists a run r consistent with πs in the supervised    under perfect information and solve it by finding winning control
+system such that V(r) < 0, i.e., the supervised system’s energy                                                                            strategies. We end this section with an example.
+level becomes negative under πs for some string. That is to say,
+no supervisor solves the mean payoff decision problem.
+                                                      Example 4.  We revisit Example 2 (Example 3) to find the
+   The ‘‘if’’ part. Suppose that πs is a winning control strategy in                                                           winning regions of the FCEIC following Algorithm 3. Since the
+the FCEIC. We follow Algorithm 3 and obtain Wins and FCEICw, so                                                         good (bad) leaf states in both examples coincide, the winning
+πs is also in the FCEICw. In the following discussion, we imagine
+                                                                   regions for both examples remain the same. The FCEICw is shown
+that all transitions leading to a leaf state ye in the FCEICw lead to
+                                                                        in Fig. 4, where green dashed lines connect each good leaf state
+Sub(ye) so that the game on the FCEICw becomes infinite-duration.
+                      γ0       e0         γn−1        en−1                   with the state subsumed by  it, indicating that the supervisor
+That is, ∀rf = ye0 −→ze0 −→yei · · · −−→zen−1 −−→yen ∈Run(ye0, πs)    always makes the same decision from the two connected states.
+where ye0 is the initial state of the FCEIC, if yen ∈Qlg,F  then we    So the game is extended to be infinite-duration. In building the
+                                                                     γ0        e0
+extend the domain of πs by letting πs(rf ) = πs(ye0 −→ze0 −→    FCEICw, shaded states ye2−3 and ye3−3 in Fig. 3 are bad leaf states,
+       em−1
+                                                                                                                                 2−4            m) for some m < n and yem ⪯yen. Whenever Est(yen) is    thus are pruned by Algorithm 3. Meanwhile, good leaf states yeyei · · · −−→ye
+                                                         and ye3−4 are also removed as they become no longer accessiblereached again, the control strategy (supervisor) makes the same
+decision as if Est(yen) is reached for the first time. By perpetually    from the initial state ye0 after their preceding Z-states ze8 and ze9
+making the same decision whenever a state estimate is reached,    are removed. That means that the supervisor should not choose
+the supervisor guarantees that the energy level after any string in    γ2′ at ye2 or γ3 at ye3, otherwise, the environment may choose o2 at
+the supervised system never becomes negative. The reasons are     ze8 or o3 at ze9 to reach some bad leaf states and wins the game.
+that all states in the FCEICw are energy safe and the energy level      Then we present a winning control strategy indicated by blue
+does not decrease when we form the extended games.                lines in Fig. 4. As is seen, the supervisor S issues γ0 at ye0, γ1 at
+   Finally, since there are no deadlocking Z-states and every Y-     ye1, γ0 at ye2 and γ0 at ye3. If S makes those decisions infinitely
+state has successors in the FCEICw, πs is live if we follow a similar     often, then only cycles with nonnegative payoffs are formed in
+argument as in Section 5 of Yin and Lafortune (2016b). Thus, πs    the supervised system. Finally we show the supervised system
+solves the mean payoff decision problem of Problem 1. □         under this strategy in Fig. 5. Compared with the original system in
+                                                                                  Fig. 2, the cycles with a negative payoff have been broken. Then it
+Theorem 4.   There exists a supervisor solving the mean payoff      is easy to verify that the supervised system is live and all infinite
+decision problem of Problem 2  if and only  if the supervisor has a    runs have a positive limit mean payoff. Thus, S solves the mean
+winning strategy in the FCEIC defined by Algorithm 2.                 payoff decision problem of Problem 1 (Problem 2).
+
+
+                                                                   9
+
+Y.  Ji, X. Yin and S. Lafortune                                                                                                    Automatica 123 (2021) 109359
+
+                                                                                 Intuitively, the EICS is similar to the structure after parallel
+                                                              composition between the FCEICw and G. It explicitly shows both
+                                                                 observable and unobservable reaches between and within states
+                                                                        of the FCEICw. A state in the EICS contains a state from the FCEICw
+                                                         and a state from G. There are three types of  f EICS transitions
+                                                                 defined in the EICS. The first type indicates the supervisor’s de-
+                                                                        cisions from certain states of the system, so the first component
+                                                                        of an EICS state changes from a Y-state to its succeeding Z-state
+                                                                        in the FCEICw and the second component stays the same. The
+                                                            second type indicates the unobservable reaches within Z-states
+                                                                        in the FCEICw, so the first state component of (ze, x1) stays the
+                                                      same and the second component becomes x2 = f (x1, e) under e ∈
+         Fig. 5. A supervisor solving the mean payoff decision problem.        Γ (ze) ∩Euo. The third type indicates observable reaches between
+                                                                    Y-states and Z-states in the FCEICw, so the first component gets
+                                                            updated from a Z-state to its succeeding Y-state in the FCEICw
+6. Mean payoff optimization problems                        and the second component also gets updated by the enabled
+                                                                 observable event. With the EICS built, we are able to explicitly see
+   Based on results of the preceding section, we continue to find   how strings are generated under control decisions in the FCEICw.
+the control strategy that optimizes the worst-case limit mean      The leaf states of the EICS contain leaf states of the FCEICw,
+payoff to completely solve Problem 1 and Problem 2 in this    which also indicate simple cycles in the FCEICw. For a leaf state
+section. Our method is inspired by the technique of solving min–     (ye, x) ∈QlEICS , we are able to track simple loops starting from
+max games (Osborne & Rubinstein, 1994), however, additional    x ∈Est(ye) by following transitions between (˜ye, x) and (ye, x),
+                                                                                                                                                                     γ0
+analysis  is necessary here due to the partial observation. As    where ˜ye ⪯ye. We define Lpsim(ye, x) = {t ∈E∗: ∃rf = ye0 −→
+there is no difference between the procedures of synthesizing           e0         γn−1        en−1
+                                                                            ze0 −→ye1 · · · −−→zen−1 −−→ye ∈Run(Fw), s.t. ∃j < n, yej ⪯ye, t ∈
+the optimal control strategies for both problems, we present a
+uniform approach in the following discussion.                          Str(yej γj−→zej  ej−→· · · −−→zeγn−1   n−1 −−→ye),en−1         f (x, t) = x} as the set of
+   In the FCEICw, we denote by Run(Fw) the set of runs and    simple loops starting from x. For a simple loop t ∈Lpsim(ye, x), we
+Runleaf (Fw) the set of runs ending in a good leaf state, respectively.    define its mean payoff as Vsl(t) = ω(t)|t|  .
+                          γ0
+Given a run rf = ye0 −→ze                             0 −→yee0   1 · · · −−→zeγn−1   n−1 −−→yeen−1   n ∈Run(Fw)       Furthermore, we define Vleaf  : Runleaf (Fw) →R to characterize
+                                                                 the (limit) mean payoff of runs ending in a leaf state of thewith yej ≼yen for some j < n where yen is a leaf state, we know that
+simple loops with nonnegative payoffs are generated from each    FCEICw. If a run  rf ends in a leaf state ye, we have Vleaf (rf ) =
+state in state estimate Est(yej ).                                                       x∈Est(ye)min  t∈Lpsim(ye,x)min    Vsl(t),  i.e., the minimum possible mean payoff
+   In order to determine the mean payoffs of strings generated by     of all simple loops formed from states in Est(ye). We take the
+runs in the FCEICw, we need to know exactly what observable and   minimum mean payoff among simple loops to characterize the
+unobservable events are in the string. However, we only know     (limit) mean payoff of the run, since only the cyclic part of
+the observable events from transitions in the FCEICw since the    a run contributes to the limit mean payoff and the supervisor
+unobservable transitions are hidden within each state. For the    maximizes the worst-case limit mean payoff. With a slight abuse
+purpose of explicitly revealing the inner connections between     of notation, we let Vleaf (Last(rf )) stand for Vleaf (rf ).
+states by unobservable strings inside each Y-state or Z-state in       Given a pair of strategies πs ∈Πs and πe ∈Πe in the FCEICw,
+the FCEICw, we introduce a new transition system called the   we let rf (πs, πe) be the unique initial run generated under (πs, πe)
+Energy Inter Connected System (EICS), which is inspired by the                                                       F                                                         and its last state Last(rf (πs, πe)) ∈Qlg. Then we define the optimal
+Inter Connected System proposed in Yin and Lafortune (2016a).                                                                     control strategy which maximizes the worst mean payoffs of runs.
+
+Definition 6 (Energy Inter Connected System (EICS)). Given the                                                                  Definition 7 (Optimal Control Strategy in the FCEICw). A winning
+FCEICw with respect to G, its corresponding Energy Inter Con-     control strategy π∗s in the FCEICw is optimal ifnected System (EICS) is defined as a tuple: EICS = (Q EICS, EEICS, f EICS,
+qEICS0   , QlEICS ) where                                        min Vleaf (rf (π∗s , πe)) = max min Vleaf (rf (πs, πe))              (5)
+                                                                        πe∈Πe                     πs∈Πs πe∈Πe
+  • Q EICS ⊆(QYF × X) ∪(QZF × X) is the state space such that:          Since the FCEICw is acyclic and the number of positional strate-
+                             EICS             F                                    gies for both players are finite, the optimal control strategy al-
+       – (ye, x) ∈Q      if ye ∈QY and x ∈Est(ye);
+                             EICS             F                            ways exists. Here we are ready to synthesize a (positional) op-
+       – (ze, x) ∈Q      if ze ∈QZ and x ∈Est(IE((ze)));             timal control strategy from the FCEICw and present Algorithm
+  • EEICS = E ∪Γ is the set of events in the EICS;                     4. From Definition 7, an optimal control strategy maximizes its
+  •  f EICS : Q EICS × EEICS →Q EICS is the partial transition function   mean payoff against the antagonistic environment’s strategies,
+                                                         which minimize the supervisor’s mean payoff. So the super-     defined as: ∀γ ∈Γ , ∀e ∈E:
+                                                                        visor and the environment play a min–max game (Osborne &
+       –  f EICS((ye, x1), γ ) = (ze, x2) if x1 = x2 in G and f yz(ye,F    γ )     Rubinstein, 1994) on the FCEICw, where the supervisor is the
+      = ze in the FCEICw;                                 maximizer and the environment is the minimizer. In Algorithm
+       –  f EICS((ze, x1), e) =  (ze, x2)  if  f (x1, e) =  x2 in G and     4, we leverage backward induction (Osborne & Rubinstein, 1994)
+          e ∈Γ (ze) ∩Euo;                                           to determine an optimal control strategy on the FCEICw.
+       –  f EICS((ze, x1), e) =  (ye, x2) if  f (x1, e) =  x2 in G, e ∈         First we compute the string mean payoffs from the leaf states
+       Γ (ze) ∩Eo and fzy(ze,F     e) = ye in the FCEICw;                of the EICS. Furthermore, it is possible to calculate Vleaf (rf (πs, πe))
+                                                          from the FCEICw, with the EICS defined. Specifically, the EICS is
+  • qEICS0  = {ye0, x0} is the initial state;                          used to determine the mean payoffs of simple loops from the
+  • QlEICS = {(ye, x) ∈Q EICS : ye ∈QlgF in the FCEICw} is the set of     leaf states of the FCEICw in line 5 of Algorithm 4. For a leaf state
+      leaf states where no transitions are defined.                       (ye, x) ∈QlEICS , we can always find another state (˜ye, x) ∈Q EICS
+
+                                                                   10
+
+Y.  Ji, X. Yin and S. Lafortune                                                                                                    Automatica 123 (2021) 109359
+
+such that ˜ye ⪯ye in the FCIECw. Then we track f EICS transitions to    Algorithm 4 Synthesize an optimal control strategy
+find both observable and unobservable events between (˜ye, x) and
+               EICS                                                      Input: the FCEICw and the EICS
+(ye, x) ∈Ql      . Afterwards, we determine Lpsim(ye, x) and calculate     Output: An optimal strategy πs for Problem 1 or 2Vsl(t) for each t  ∈Lpsim(ye, x). There may be multiple simple                                                                                        1: for leaf state ye in FCEICw doloops formed from x ∈Est(ye), with different mean payoffs. Then
+                                                                                        2:    for leaf state (ye, x) in EICS do
+we calculate Vleaf (ye), the minimum mean payoff of all possible                                                                                        3:       Get Lpsim(ye, x) following transitions in EICS;
+simple loops formed from all states in Est(ye). Vleaf (ye) is also the                                                                                        4:       for t ∈Lpsim(ye, x) do
+minimum possible mean payoff that the supervisor may achieve
+                                                                                        5:           Calculate Vsl(t);when state estimate Est(ye) is reached.
+   Then we run Procedure Optimal to assign a value VF(qe) to each       6:    Calculate Vleaf (ye) = x∈Est(ye)min  t∈Lpsim(ye,x)min    Vsl(t);
+state qe in the FCEICw. In this procedure, we first determine the                          F       F
+                                                                                        7: for qe ∈QY ∪QZ dovalues to leaf states in line 6. Next we propagate backwards to
+                                                                                        8:    VF(qe) = Optimal(qe);
+determine the values of predecessor states until the root state is                          F      F
+assigned a value. Specifically, if the current state is a Z-state, we       9: for ye ∈QY \ Ql do
+assign the minimum value of its successor states to it in line 18,     10:     Find one γ ∈Γ ,  s.t. ∃ze ∈QZF ,  fyz(ye,F    γ ) =  ze and
+since the environment always minimizes the mean payoff of the        VF(ye) = VF(ze);
+supervisor. If the current state is a Y-state (not a leaf state), we     11:    Return π∗s (ye) = γ ;
+assign the maximum value of its successor states to it in line 21,     12: procedure Optimal(qe)
+since the supervisor always maximizes its mean payoff. This min–     13:    for qe ∈QlF do
+max procedure is consistent with Definition 7 where the optimal     14:        VF(qe) = Vleaf (qe);
+supervisor maximizes the worst-case payoff it may achieve. The     15:       Return VF(qe);
+procedure goes on until a value is assigned to the initial state ye0      16:    for qe ∈(QYF ∪QZF ) \ QlF do
+of the FCEICw. Since the FCEICw is finite, Algorithm 4 terminates     17:          if qe ∈QZF then
+                                                                                                                                                                         F {Optimal(˜qe)     :   ∃eo  ∈after all states are assigned their values.                                  18:           VF(qe)  =    min˜qe∈QY
+  When Procedure Optimal is implemented, we can assign or-                       F                                                                            Eo,  s.t. f zy(qe, eo) = ˜qe};ders to states in the FCEICw so that a state is evaluated after
+                                                                                 19:          Return VF(qe);all its successors are evaluated. This is essentially the process
+of backward induction in solving min–max games (Osborne &     20:          if qe ∈QYF then
+                                                                                                                                                                         F {Optimal(˜qe)     :   ∃γ   ∈Rubinstein, 1994). After obtaining VF values, we specify the op-     21:           VF(qe)  =    max˜qe∈QZ
+timal control decisions at Y-states of the FCEICw, which consti-      Γ ,  s.t. fyz(qe,F    γ ) = ˜qe};
+tute the optimal control strategy. It is possible that there are     22:          Return VF(qe);
+multiple optimal control decisions at the current Y-state when
+some of the successor states have the same VF value. Then we
+randomly choose a control decision. Similar min–max search
+processes were presented in Pruekprasert et al. (2016) and Wu       Suppose that one predecessor state of ze  is  ˜ye and  ˜ye has
+and Lafortune (2016) to synthesize optimal strategies of mean    successor states ze1, . . . , zem (ze is one of them). Then the super-
+payoff games, for the specific problems discussed in those works.     visor maximizes its VF value among the successor states of  ˜ye,
+                                                                                                          i.e., we let VF(˜ye) = maxzei VF(zei ) where  i ≤m. Since VF(zei )
+                                                                                       is the minimum mean payoff of some simple loop, VF(˜ye) still
+                                                          maximizes the minimum mean payoffs of simple loops obtained
+   After obtaining an optimal positional control strategy in the
+                                                          from some leaf states in the FCEICw. Thus, the supervisor loses
+FCEICw, we again let the supervisor make the same decision from                                                       no information when making decisions by evaluating VF(ze). By
+the current Y-state as from the state subsumed by it. In this way,
+                                                              Algorithm 4, the supervisor chooses the control decision that
+the game is extended to be infinite and we obtain a supervisor
+                                                          maximizes VF(zei ). Then we repeat the same argument backwardsthat perpetually issues control decisions to generate a live sys-
+                                                                     to the root state. In this way, we show that by evaluating the
+tem. Intuitively, the supervisor always traverses the simple cycle
+                                                                    VF values for Y-states or Z-states, the supervisor correctly per-
+with the highest mean payoff since alternating between cycles
+                                                            forms maximization among VF values from its successors and the
+with different mean payoffs does not result in a higher mean                                                            environment correctly performs minimization.
+payoff. Hence, a positional strategy is sufficient to solve Problem 1                                                                             Finally VF(ye0) = maxπs∈Πs minπe∈Πe Vleaf (rf (πs, πe)) holds. Then
+(Problem 2), summarized in the following theorem.                                               we extend πs to a supervisor S∗by the same argument as in
+                                                                 the proof of Theorem 3, i.e., imagine that each leaf state in the
+Theorem 5.   If π∗s  is returned by Algorithm 4, then we can extend    FCEICw is ‘‘merged’’ with the state subsumed by it and let the
+π∗s to a supervisor S∗that solves Problem 1 (Problem 2).              supervisor make the same decision whenever the same state
+                                                                 estimate is reached. By checking the transitions in the EICS, we
+Proof. By Algorithm 4, for every leaf state ye ∈Qlg,F  Vleaf (ye) =     find a run in S∗/G leading to VF(ye0) =  infr∈Runinf (S∗/G) Vmp(r) =
+minx∈Est(ye) mint∈Lpsim(ye,x) Vsl(t).  Let  string  t∗(ye) be such  that    supS∈S infr∈Runinf (S/G) Vmp(r). So S∗solves Problem 1 (Problem 2). □
+Vsl(t∗(ye)) = minx∈Est(ye) mint∈Lpsim(ye,x) Vsl(t) =  Vleaf (ye). Suppose                                                                                       F     We analyze the complexity for Algorithm 4, which essentiallythat a Z-state ze can reach                           k leaf states ye1, ye2, . . . , yek ∈Qlg,    performs a minimax search. Results in Du and Pardalos (2013)                                  F
+i.e., ∀i ≤k, ∃ei ∈Eo, s.t. f zy(ze, ei) = yei . Thus we know:           show that the time complexity of the minimax search is O(bn) and
+VF(ze) = min{VF(ye1), . . . , VF(yek)} = min{Vsl(t(ye1)), . . . , Vsl(t(yek))}     the space complexity is O(bn), where b is the maximum number
+                                                                        of choices at each point in the search tree and n is the depth
+Let string t∗(ze) be such that Vsl(t∗(ze)) =  min{Vsl(t(ye1)), . . . ,     of the tree. For Algorithm 4, we have b = max{2|Ec|, |Eo|} and
+Vsl(t(yek))} so it has the minimum loop mean payoff. The environ-    n = 2 · 2|X| + 1 in the worst case. Here 2|Ec| is the maximum
+ment still locates the string whose simple loop has the minimum    number of control decisions at a state and there are at most
+mean payoff, by evaluating Vleaf (ye). From the EICS, we explicitly    2 · 2|X| + 1 states between any two states in the FCEICw. Thus
+know which cyclic string has the minimum loop mean payoff.     we obtain the complexity bounds for Algorithm 4.
+
+                                                                   11
+
+Y.  Ji, X. Yin and S. Lafortune                                                                                                    Automatica 123 (2021) 109359
+
+
+
+
+
+                                                                                                Fig. 7. Optimal decisions of the supervisor at each Y-state are indicated in red;
+                                                                                 the VF values for each state of the FCEICw are also shown in the figure.  (For
+                                                                                        interpretation of the references to color in this figure legend, the reader  is
+                                                                                       referred to the web version of this article.)
+
+
+
+
+Fig. 6. The energy inter-connected system w.r.t. the FCEICw in Example 4. The
+blue and green dashed rectangles correspond to the Y-states and Z-states in    For example, the top green dashed rectangle corresponds to
+the FCEICw, respectively. The leaf states are marked in double blue lines.  (For
+                                                                  three states in the EICS, i.e. (ze0, x0), (ze0, x1) and (ze0, x2) whereinterpretation of the references to color in this figure legend, the reader  is
+referred to the web version of this article.)                                      Est(IE(ze0)) =  {x0, x1, x2}. Specifically, blue and green dashed
+                                                                     rectangles correspond to the Y-states and Z-states of the FCEICw
+                                                                         respectively. As is seen, the EICS is a tree-like structure whose
+                                                                             leaf states (ye1−2, x3), (ye1−2, x4), (ye1−3, x3), (ye1−3, x4), (ye1−4, x3),  We further discuss the structure of the optimal strategy from
+                                                                               (ye1−4, x4),  (ye1−5, x3),  (ye1−5, x4),  (ye2−2, x12) and  (ye3−2, x13) areAlgorithm 4. Given strategies (πs, πe) ∈Πs × Πe and an initial
+run r′f ∈Run(Fw), let rf (r′f ; πs, πe) be the run that has ‘‘prefix’’ r′f ,    marked in double dark blue lines.                                                          With the EICS built, we proceed to find the optimal control
+continues under (πs, πe) and ends in a leaf state of the FCEICw.
+                                     γ1        e1       γ2         en                strategy by Algorithm 4. We start by calculating the values of Vleaf
+Formally, rf (r′f ; πs, πe) = r′f −→ze1 −→ye2 −→· · · −→yen where     for each leaf state of the FCEICw. For example, in the EICS, there
+          F                                γ1                          γ1       e1                                                                                     o1
+yen ∈Qlg, γ1 = πs(r′f ), e1 = πe(r′f −→ze1) and γi = πs(r′f −→ze1 −→    are two simple cycles between Y-states ye1 and ye1−2, i.e., x3 −→x3
+     γ2                                 γ1        e1       γ2                                          c1        b1        o1ye2 −→· · · ei−→yei ), ei = πe(r′f −→ze1 −→ye2 −→· · · γi−→zei ) for    and x3 −→x5 −→x7 −→x3. Then we obtain Vsl(o1) = 1 (for
+all 2 ≤i ≤n. We write rf (r′f ; πs, πe) as rf (Last(r′f ); πs, πe) since      x3), Vsl(c1b2o1) = 2 and Vsl(o1) = 1 (both for x4). Therefore,
+both players’ decisions only depend on their current positions.     VF(ye1−2) = min{1, 2} = 1. Similarly, we obtain the VT values for
+Now we are ready to show that the optimal control strategy    other leaf states in the FCEICw, which are shown in Fig. 7. Next,
+enjoys a structural property resembling subgame perfect equilib-   we apply backward induction from the leaf states until the root
+rium in game theory (Osborne & Rubinstein, 1994) and Bellman’s     state, then determine an optimal control strategy. In this process,
+optimality principle in dynamic programming (Bertsekas, 2012).    we always choose to minimize at Z-states and maximize at Y-
+                                                                              states. By Algorithm 4, we know VF(ze1) = min{2, 23} =  23 and
+Proposition 2.  Let π∗s be a control strategy returned by Algorithm     VF(ze4) = VF(ze6) = 1. Thus, we have the supervisor’s decisions
+4, then for any initial run r′f ∈Run(Fw), we have:                       at each Y-state, which are indicated by solid red lines in Fig. 7.
+                                                   An optimal supervisor enables c1 upon observing o1, as shown in
+min Vleaf (rf (r′f ; π∗s , πe)) = max min Vleaf (rf (r′f ; πs, πe))       (6)     Fig. 8. The worst limit mean payoff is 1 in the supervised system.πe∈Πe                        πs∈Πs πe∈Πe
+                                                                         Actually, it is also optimal for the supervisor to disable both c1
+Proof. See the Appendix. □                                and c2 at ye1, which yields the same worst case limit mean payoff.
+                                                                    Notice that choosing γ4 or γ6 at ye1 is optimal in the sense that
+   This proposition illustrates the structure of the optimal control    the environment also follows its ‘‘optimal strategy’’ to minimize
+strategy obtained from Algorithm 4. If the supervisor follows the    the supervisor’s limit mean payoff. If the supervisor deviates from
+strategy indicated by Algorithm 4 from its current position, then    γ4 or γ0 and chooses γ1 at ye1, then the environment may choose
+its onward decisions still constitute an optimal strategy in the     o1 at ze1, which leads to leaf state ye1−5 and a potentially lower limit
+remaining game, which can be viewed as a ‘‘subgame’’ (Osborne &   mean payoff  23. Interestingly,  if the environment also deviates
+Rubinstein, 1994). In other words, the supervisor has no incentive    from choosing o1 from ze1 by choosing o2 or o3, then the supervisor
+to deviate from its optimal strategy given that the environment    should choose γ0 at ye2 and ye3, which yields a better limit mean
+does its best to minimize the supervisor’s mean payoff. As seen    payoff for the supervisor compared with the case of choosing γ4
+from the proof, this result  is due to the backward induction     at ye1. Those two decisions are optimal in the ‘‘subgame’’ given
+process of maximization and minimization in Algorithm 4.           that ye2 or ye3  is reached and viewed as starting points of the
+                                                           subgame. This is consistent with Proposition 2.
+Example 5.  We revisit Example 4 and find an optimal con-
+trol strategy to solve Problems 1 and 2 completely. First we     7. Conclusion
+obtain the EICS w.r.t. the FCEICw in Fig. 6. For simplicity of the
+graph, we still preserve the state names from G and use dashed        This work studied infinite horizon optimal supervisory control
+rectangles to indicate the Y-states or Z-states of the FCEICw.    under partial observation for the  first time in discrete event
+
+                                                                   12
+
+Y.  Ji, X. Yin and S. Lafortune                                                                                                    Automatica 123 (2021) 109359
+
+                                                      From what we just proved,
+                                                                      Lev(qek+1, x′) = min{Lev(qek+1, x) + ω(ξk+1) : ∃x ∈qk+1,
+                                                                                                        ξk+1
+
+                                                                                    ξk+1 ∈(Euo ∩γk+1)∗s.t. f (x, ξk+1) = x′}
+                                            = min{ω(s′k+1) : ∃˜x ∈Est(qe1), s′k+1 ∈Str(ρ′k+1) s.t.
+                                                                                                                                                                          s′k+1
+                                                                                                                                s′k+1 = sk+1ξk+1, f (˜x, s′k+1) = x′}
+                                                           Thus the result holds at k + 1, completing the proof. □
+
+             Fig. 8. An optimal supervisor solving Problems 1 and 2.
+                                                                          Proof of Proposition 2:
+
+                                                                   Proof.  By definition, the FCEICw  is an acyclic structure and
+                                                                 the depth of  its runs  is thus bounded. In the FCEICw, there
+systems. We considered two optimal control scenarios, then for-     exists a positive integer m such that every leaf state can be
+mulated two supervisory control problems correspondingly. To    reached within m steps from the initial state. Then we prove
+this end, we defined energy information states and the First Cycle     this proposition by induction on the number of steps for an
+Energy Inclusive Controller (FCEIC) for each problem. Based on      initial run to reach leaf states of the FCPECw. In other words,
+the FCEIC, each problem was transformed into a finite game with   we show that VF(Last(r′f )) =  minπe∈Πe Vleaf (rf (r′f ; π∗s , πe)) =
+perfect information and proper objectives. As an intermediate    maxπs∈Πs minπe∈Πe Vleaf (rf (r′f ; πs, πe)) for any initial run r′f .
+solution step, we solved the mean payoff decision problems via        Induction Basis: Consider the case when the last state of r′f
+safety games. Finally we solved a min–max game to find the      is a leaf states in the FCPECw. Then this proposition becomes
+optimal control strategy among partial solutions. For future work,    Theorem 5, thus, it naturally holds.
+                                                                          Inductive Hypothesis: Suppose that the result holds for any r′fit would be of interest to explore infinite horizon optimal super-
+                                                                     that reaches leaf states within at most k steps, where k ≤m −2visory control with other quantitative performance objectives and
+                                                                          for some integer m > 2. In addition, the function Optimal in the
+under partial observation. In addition, it would also be worth-
+                                                                algorithm assigns VF(Last(r′f )) = minπe∈Πe Vleaf (rf (r′f ; π∗s , πe)) =while to investigate the application of the theoretical framework
+                                                              maxπs∈Πs minπe∈Πe Vleaf (rf (r′f ; πs, πe)) to the last state of r′f .developed herein on specific engineering platforms such as the
+                                                                        Induction Step: Consider r′f that reaches leaf states within atpower management system of electric hybrid vehicles.
+                                                        most k+2 steps. Suppose that Last(r′f ) = LastY (r′f ) = y′e. We know
+                                                                     that there exists ze = fyz(y′e,F    γ ) for some γ ∈Γ and specifically,
+Appendix. Proofs of propositions                                                         ˜ze =  fyz(y′e,F    γ ∗) for γ ∗= π∗s (y′e, γ ∗). Thus, succeeding Z-state
+                                                                            ze =  f yz(y′e,F    γ ) of y′e reaches a leaf state within at most k + 1
+   Proof of Proposition 1:                                                                          steps. By Algorithm 4, VF(y′e) =  VF(˜ze) = maxze VF(ze). Also
+                                                     some  f zyF  transitions are defined from ze and lead to succeed-
+Proof.  Proof by induction. Consider the observable string t =    ing Y-state ye which reaches the leaf states within at most k
+e1 · · · en−1 (n ≥1). We also use the notations ρk and ρ′k from     steps. By the inductive hypothesis, minπe∈Πe Vleaf (rf (ye; π∗s , πe)) =
+Definition 5 in the following discussion.                          maxπs∈Πs minπe∈Πe Vleaf (rf (ye; πs, πe)) for any r′f with Last(r′f ) =                                                            γ1
+   Induction Basis: n = 1 and consider qe1 or qe1 −→qae1  . The result      ye. Again from Algorithm 4, we know:
+                                                                      γ1
+obviously holds for single state qe1 and also holds for qe1 −→qae1 by     VF(ze) = min VF(ye) = min min Vleaf (rf (ye; π∗s , πe))
+Definition 5 and the definition of γ -successor.                                                ye                 ye  πe∈Πe
+   Inductive Hypothesis: we assume the lemma holds when n = k,      = min Vleaf (rf (ze; π∗s , πe)) = max min Vleaf (rf (ze; πs, πe))
+                                                                                  πe∈Πe                        πs∈Πs πe∈Πe
+i.e., for control-observation sequences ρk and ρ′k.
+   Induction Step: when n =  k + 1, consider ρk+1 and ρ′k+1.    thus the result holds for runs whose last states reach the leaf
+First, qek+1  is an ek-successor or qaek  . Let Est(IE(qaek )) =  q′k and     states of the FCEICw within k + 1 steps. Furthermore, we have:
+Est(qek+1) = qk+1, then ∀x ∈qk+1,                                         VF(y′e) = max VF(ze) = max min Vleaf (rf (ze; π∗, πe))
+                                                                                                                    ze                  ze  πe∈Πe
+Lev(qek+1, x) = min{Lev(qaek , x′)+ω(ek) : ∃x′ ∈q′k, s.t. f (x′, ek) = x}      = min Vleaf (rf (y′e; π∗, πe))
+                            x′                                                                 πe∈Πe
+By the inductive hypothesis and Definition 5, we have:            = max min Vleaf (rf (y′e; πs, πe))
+                                                                                      πs∈Πs πe∈Πe
+               minLev(qek+1, x) = min                         {ω(s′k) + ω(ek) : ∃˜x ∈Est(qe1), s′k ∈Str(ρ′k)      Therefore the result holds for k + 2, completing the proof. □                             x′                                         s′k
+                      s.t. f (˜x, s′k) = x′}                                  References
+       = min {ω(sk+1) : ∃˜x ∈Est(ye1), sk+1 ∈Str(ρk+1) s.t.           Alves, M. V.  S., Carvalho,  L.  K., &  Basilio,  J.  C. (2016). New algorithms for
+                   sk+1                                                                        verification of relative observability and computation of supremal relatively
+                                                                                     observable sublanguage.  IEEE  Transactions on Automatic  Control,  62(11),
+                sk+1 = s′kek, f (˜x, sk+1) = x}                                  5902–5908.
+Then qaek+1 is a γk+1-successor of qek+1. Let Est(qek+1) = qk+1 and      Alves,C. M.(2019).V. S., Robustda Cunha,supervisoryA. E. C., controlCarvalho,ofL.discreteK., Moreira,eventM.systemsV., & Basilio,againstJ.
+Est(IE(qaek+1)) = q′k+1, so ∀x′ ∈q′k+1,                                               intermittent loss of observations. International Journal of Control, 1–13.
+Lev(qaek+1, x′) = min {Lev(qek+1, x) + ω(ξk+1) : ∃x ∈qk+1,                 Aminof,254, B.,195–216.& Rubin, S. (2017). First-cycle games. Information and Computation,                   ξk+1
+                                                                                       Apt, K. R., & Grädel, E. (2011). Lectures in game theory for computer scientists.
+               ξk+1 ∈(Euo ∩γk+1)∗s.t. f (x, ξk+1) = x′}                    Cambridge University Press.
+
+                                                                   13
+
+Y.  Ji, X. Yin and S. Lafortune                                                                                                    Automatica 123 (2021) 109359
+
+
+Baier, C., & Katoen, J.-P. (2008). Principles of model checking. MIT press.              Shu,  S., & Lin,  F. (2015). Supervisor synthesis for networked discrete event
+Başar, T., & Bernhard, P. (2008). H-infinity optimal control and related minimax        systems with communication delays. IEEE Transactions on Automatic Control,
+    design problems: a dynamic game approach. Springer.                                   60(8), 2183–2188.
+Bertsekas,  D.  P.  (2012). Dynamic programming and optimal  control. Athena     Shu, S., & Lin, F. (2017). Predictive networked control of discrete event systems.
+    Scientific.                                                                           IEEE Transactions on Automatic Control, 62(9), 4698–4705.
+Cai, K., Zhang, R., & Wonham, W. M. (2015). Relative observability of discrete-      Takai, S., & Ushio, T. (2003). Effective computation of an Lm (g)-closed, control-
+    event systems and its supremal sublanguages. IEEE Transactions on Automatic           lable, and observable sublanguage arising in supervisory control. Systems &
+    Control, 60(3), 659–670.                                                               Control Letters, 49(3), 191–200.
+Cassandras, C. G., & Lafortune, S. (2008). Introduction to discrete event systems    Wonham, W. M., & Cai, K. (2019). Supervisory control of discrete-event systems.
+   (2nd ed.). Springer.                                                                    Springer.
+Du, D., & Pardalos, P. M. (2013). Minimax and applications. Springer.             Wu, Y.-C., & Lafortune, S. (2016). Synthesis of optimal insertion functions for
+Giua, A., Seatzu, C., & Basile, F. (2004). Observer-based state-feedback control         opacity enforcement. IEEE Transactions on Automatic Control, 61(3), 571–584.
+    of timed Petri nets with deadlock recovery. IEEE Transactions on Automatic      Yin, X., & Lafortune, S. (2016a). Synthesis of maximally permissive supervisors
+    Control, 49(1), 17–29.                                                                      for partially-observed discrete-event systems. IEEE Transactions on Automatic
+Gu,  C., Wang,  X.,  Li,  Z., & Wu, N. (2018). Supervisory control of state-tree          Control, 61(5), 1239–1254.
+    structures with partial observation. Information Sciences, 465, 523–544.            Yin, X., & Lafortune, S. (2016b). A uniform approach for synthesizing property-
+Han, X., Chen,  Z., & Su, R. (2019). Synthesis of minimally restrictive optimal         enforcing supervisors  for partially-observed discrete-event systems. IEEE
+    stability-enforcing supervisors for nondeterministic discrete event systems.          Transactions on Automatic Control, 61(8), 2140–2154.
+    Systems & Control Letters, 123, 33–39.                                                Yin, X., & Lafortune, S. (2017). Synthesis of maximally-permissive supervisors
+Hunter, P., Pauly, A., Pérez, G. A., & Raskin, J.-F. (2018). Mean-payoff games with          for the range control problem. IEEE Transactions on Automatic Control, 62(8),
+    partial observation. Theoretical Computer Science, 735, 82–110.                    3914–3929.
+Ji,  Y., Yin, X., & Lafortune, S. (2018). Mean payoff supervisory control under     Zwick, U., & Paterson, M. (1996). The complexity of mean payoff games on
+    partial observation. In Proceedings of the 57th IEEE conference on decision and         graphs. Theoretical Computer Science, 158(1–2), 343–359.
+    control (pp. 3981–3987).
+Ji, Y., Yin, X., & Lafortune, S. (2019a). Enforcing opacity by insertion functions
+   under multiple energy constraints. Automatica, 108, Article 108476.                                    Yiding Ji received the Bachelor of Engineering degree
+Ji, Y., Yin, X., & Lafortune, S. (2019b). Supervisory control under local mean payoff                                of Electrical Engineering and Automation from Tianjin
+    constraints. In 58th IEEE conference on decision and control (pp. 1043–1049).                                University, China, in 2014, the Master of Science degree
+Komenda,  J., & Masopust, T. (2017). Computation of controllable and coobserv-                         and the Ph.D degree of Electrical and Computer Engi-
+    able sublanguages in decentralized supervisory control via communication.                             neering from the University of Michigan, United States,
+    Discrete Event Dynamic Systems: Theory and Applications, 27(4), 585–608.                                    in 2016 and 2019, respectively. From 2019 to 2020, he
+                                                                                          worked as a postdoc researcher at Division of Systems
+Krishnamurthy, V. (2016).  Partially observed Markov decision processes: From
+                                                                                                             Engineering, Boston University, United States.
+     filtering to controlled sensing. Cambridge University Press.
+                                                                                                             His research interests include discrete event sys-
+Levy, A. (2002). Basic set theory, Vol. 13. Courier Corporation.                                                                                                         tems, formal methods, control systems, game theory
+Lin, L., Masopust, T., Wonham, W. M., & Su, R. (2019). Automatic generation of                         and cyber security. He is now a member of IEEE and the
+    optimal reductions of distributions. IEEE Transactions on Automatic Control,     IEEE Control Systems Society Technical Committee on Discrete Event Systems.
+    64(3), 896–911.
+Madani, O., Hanks, S., & Condon, A. (2003). On the undecidability of probabilistic
+    planning and related stochastic optimization problems. Artificial Intelligence,                          Xiang Yin was born in Anhui, China, in 1991. He
+    147(1–2), 5–34.                                                                                         received the B.Eng degree from Zhejiang University in
+Malikopoulos, A. A. (2014). Supervisory power management control algorithms                             2012, the M.S. degree from the University of Michigan,
+                                                                                    Ann Arbor, in 2013, and the Ph.D degree from the
+    for  hybrid  electric  vehicles: A  survey.  IEEE  Transactions on  Intelligent
+                                                                                                              University  of Michigan, Ann Arbor,  in 2017,  all  in
+    Transportation Systems, 15(5), 1869–1885.
+                                                                                                                             electrical engineering.
+Marchand, H., Boivineau, O., & Lafortune, S. (2002). On optimal control of a class                                                                                                               Since 2017, he has been with the Department of
+    of partially observed discrete event systems. Automatica, 38(11), 1935–1943.                            Automation, Shanghai Jiao Tong University, where he
+Osborne, M.  J., & Rubinstein, A. (1994). A course in game theory. Massachusetts                                       is an Associate Professor. His research interests include
+    Institute of Technology press.                                                                        formal methods,  control  of  discrete event systems,
+Pantelic, V., & Lawford, M. (2012). Optimal supervisory control of probabilis-                         model based fault diagnosis, security and their appli-
+     tic discrete event systems. IEEE Transactions on Automatic Control, 57(5),      cations to cyber and cyber–physical systems. Dr. Yin received the Outstanding
+   1110–1124.                                                              Reviewer Awards from Automatica, the IEEE Transactions on Automatic
+                                                                       Control and the Journal of Discrete Event Dynamic Systems. Dr. Yin alsoPérez, G. A. (2017). The fixed initial credit problem for partial-observation energy
+                                                                                   received the IEEE Conference on Decision and Control (CDC) Best Student Paper
+   games is ack-complete. Information Processing Letters, 118, 91–99.
+                                                                   Award Finalist in 2016. He is the co-chair of the IEEE Control Systems Society
+Pruekprasert, S., & Ushio, T. (2016a). Optimal stabilizing controller for the region
+                                                                                    Technical Committee on Discrete Event Systems.
+    of weak attraction under the influence of disturbances. IEICE Transactions on
+    Information and Systems, 99(6), 1428–1435.
+Pruekprasert, S., & Ushio, T. (2016b). Optimal stabilizing supervisor of quanti-                          Stéphane Lafortune received the B.Eng degree from
+    tative discrete event systems under partial observation. IEICE Transactions                              Ecole Polytechnique de Montréal in 1980, the M.Eng
+   on Fundamentals of Electronics, Communications and Computer Sciences, 99(2),                            degree from McGill University in 1982, and the Ph.D
+   475–482.                                                                                         degree from the University of California at Berkeley
+Pruekprasert,  S., & Ushio, T. (2017). Supervisory control of partially observed                                in 1986, all in electrical engineering. Since September
+    quantitative discrete event systems for fixed-initial-credit energy problem.                             1986, he has been with the University of Michigan, Ann
+                                                                                                              Arbor, where he is a Professor of Electrical Engineering
+    IEICE Transactions on Information and Systems, 100(6), 1166–1171.
+                                                                                           and Computer Science. Lafortune  is a Fellow of the
+Pruekprasert,  S., Ushio,  T., & Kanazawa,  T. (2016). Quantitative supervisory
+                                                                                                         IEEE (1999) and of IFAC (2017). He received the Pres-
+    control game for discrete event systems. IEEE Transactions on Automatic                                                                                                                       idential Young Investigator Award from the National
+    Control, 61(10), 2987–3000.                                                                            Science Foundation in 1990 and the George S. Axelby
+Puterman, M.  L. (2005). Markov decision processes: discrete stochastic dynamic     Outstanding Paper Award from the Control Systems Society of the IEEE in
+   programming. John Wiley & Sons.                                        1994 (for a paper co-authored with S.-L. Chung and F. Lin) and in 2001 (for a
+Rackoff, C. (1978). The covering and boundedness problems for vector addition     paper co-authored with G. Barrett). Lafortune’s research interests are in discrete
+    systems. Theoretical Computer Science, 6(2), 223–231.                           event systems and include multiple problem domains: modeling, diagnosis,
+Schmidt, K. W., & Breindl, C. (2014). A framework for state attraction of discrete      control, optimization, and applications to computer and software systems. He co-
+    event systems under partial observation. Information Sciences, 281, 265–280.     authored, with C. Cassandras, the textbook Introduction to Discrete Event Systems
+                                                                                                   - Second Edition (Springer, 2008). Lafortune is Editor-in-Chief of the Journal of
+Sengupta, R., & Lafortune, S. (1998). An optimal control theory for discrete event
+                                                                               Discrete Event Dynamic Systems: Theory and Applications.
+    systems. SIAM Journal on Control and Optimization, 36(2), 488–541.
+
+                                                                   14

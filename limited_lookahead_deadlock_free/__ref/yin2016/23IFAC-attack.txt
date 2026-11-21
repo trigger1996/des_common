@@ -1,0 +1,445 @@
+Preprints of the 22nd IFAC World Congress
+Yokohama, Japan, July 9-14, 2023
+
+
+
+
+               Attack-Resilient Supervisory Control under
+                                                 ⋆                    Energy-Bounded Attacks
+
+                        Jingshi Yao ∗Shaoyuan Li ∗Xunyuan Yin ∗∗Xiang Yin ∗
+
+                    ∗Department of Automation, Shanghai Jiao Tong University, Shanghai
+                         200240, China (E-mail: yaojingshi, syli,yinxiang@sjtu.edu.cn).
+                         ∗∗School of Chemistry, Chemical Engineering and Biotechnology,
+                     Nanyang Technological University, 62 Nanyang Drive, Singapore,
+                                637459 (E-mail: xunyuan.yin@ntu.edu.sg).
+
+
+          Abstract: In this paper, we investigate the problem of synthesizing safe supervisors for discrete-
+           event systems under attacks. Specifically, we consider an important class of attacks called the
+            actuator enablement attacks (AE-attacks), where an attacker can additionally enable events
+           that are disabled by the supervisor originally. We assume that the attacker consumes certain
+            units of energy each time to launch an attack, and its total energy budget is bounded. Our goal
+                is to synthesize an attack-resilient supervisor such that the closed-loop system is still safe under
+          any attack whose capability is constrained by the energy bound. We provide a necessary and
+              sufficient condition for the existence of such an attack-resilient supervisor based on the notion
+             of safety threshold. When the existence condition holds, an attack-resilient supervisor can be
+             effectively synthesized by dynamically estimating the remaining energy of the attacker. We show
+           the synthesized supervisor is maximally permissive in terms of the nominal behavior without
+            attack.
+
+           Keywords: Energy-Bounded Attacks, DES, Supervisory Control, Safety
+
+                    1. INTRODUCTION                     (2022); Yao et al. (2020); Zhu et al. (2019) and the recent
+                                                         survey Rashidinejad et al. (2019).
+The supervisory control theory in the context of discrete-                                                           Existing works on cyber-attacks in DES mostly focus on
+event systems (DES) is an important formal methodology                                                          the following problems: (i) how to model different attacks;
+for the design of high-level logical controllers for dynamic                                                                                (ii) how to detect and defend against attacks from the
+systems Cassandras and Lafortune (2008). In this frame-                                                              supervisor’s point of view; and  (iii) how to synthesize
+work, uncertainties in the environment are abstracted as                                                           attack strategies from the attacker’s point of view. For
+uncontrollable events and the design objective is to synthe-                                                       example, in Carvalho et al. (2018), the authors investigate
+size a supervisor that disables/enables events dynamically                                                          the modeling of three different types of attacks including
+so that the closed-loop system under control satisfies some                                                          actuator enablement attacks, sensor erasure attacks, and
+desired specifications Liu et al. (2022b); Yin and Lafortune                                                            sensor insertion attacks; attack detection methods as well
+(2016).                                                            as defence strategies are also provided. Modeling and
+Due to the development of communication and network   detection of cyber-attacks have also been studied in Fritz
+technologies, in many modern applications, supervisors   et  al. (2019); Wang et  al. (2021) by using Petri nets.
+are implemented over networks. Such a networked archi-   In Lin  et  al. (2019); Meira-G´oes  et  al. (2020, 2019);
+tecture, on the one hand, makes the implementation of   Su (2018), the problem of synthesizing sensor deception
+the supervisory control systems more flexible, but on the   attacks and actuator attackers against a given supervisor
+other hand, makes the overall system more vulnerable to   are investigated. In Meira-G´oes et al. (2020); Wakaiki et al.
+cyber-attacks. For example, an attacker may manipulate   (2019); Wang and Pajic (2019), the authors investigate
+the sensor readings of the supervisor/actuator by intruding  how to synthesize robust supervisors that are safe under
+the communication channels so that incorrect control logic    all possible attacks.
+will be executed. In the past five years, modeling and                                              Our work also investigates supervisory control under at-
+control of discrete-event systems under attacks have drawn                                                            tacks from the supervisor’s point of view. That is, we want
+considerable attention in the literature; see, e.g., Gao et al.                                                            to synthesize an attack-resilient supervisor such that the
+(2019); He et al. (2021); Khoumsi (2019); Lin et al. (2020);                                                             closed-loop system stays safe under possible attacks. In
+Liu et al. (2022a); Ma and Cai (2021); Matsui and Cai                                                                practice, synthesizing an absolutely safe system for any
+(2019); Tong et al. (2022); Xie et al. (2022); Yang and Yin                                                              possible attacks is very restrictive or even impossible. For
+                                                       example, in denial-of-service (DoS) attacks, the attacker
+⋆This work was supported by the National Natural Science Foun-   can always consume more bandwidth than that can be
+dation of China (62061136004, 62173226, 61833012). Xunyuan Yin   provided by the user to achieve its goal. Therefore, it is
+acknowledges the financial support from Ministry of Education,
+                                                                  of practice to investigate the rationality of the attacker in
+Singapore, under its Academic Research Fund Tier 1 (RS15/21).
+
+
+©2023 the authors. Accepted by IFAC for publication           10344
+under a Creative Commons Licence CC-BY-NC-ND
+
+Preprints of the 22nd IFAC World Congress
+Yokohama, Japan, July 9-14, 2023
+
+
+
+terms of the trade-offbetween its energy consumption and  We consider a discrete-event system modeled by a deter-
+its attack benefits.                                           ministic finite-state automaton (DFA)
+To this end, in the work, we formulate an attack-resilient             G = (X, Σ, δ, x0),
+supervisory control problem under energy-bounded attacks.   where X is a finite set of states, Σ is a finite set of events,
+Specifically, we consider the class of actuator enablement   δ : X × Σ →X is a (partial) transition function such that
+attacks (AE-attacks), where an attacker can additionally   δ(x, σ) = x′ means that there exists a transition from state
+enable events that are disabled by the supervisor originally.  x to x′ labeled by event σ, and x0 ∈X is the initial state.
+However, in contrast to existing works, here we investigate  The transition function can be extended to δ : X×Σ∗→X
+this problem more quantitatively by assuming that the   recursively in the usual manner. For the sake of simplicity,
+attacker will consume certain units of energy each time  we write δ(x0, s) as δ(s). Then the language generated by
+to launch an attack, and its total energy budget is upper-  G is defined by L(G) = {s ∈Σ∗: δ(s)!}, where ! means
+bounded by a value ∆≥0. Our design objective is to    “is defined”. We define EG(s) = {σ ∈Σ : sσ ∈L(G)} as
+design a so-called ∆-safe supervisor, which is safe under   the set of active events defined at state δ(s).
+any attackers whose total energy consumption along any
+                                               To enforce the system G to satisfy some desired speci-string is no more than ∆. Our approach essentially follows
+                                                                     fications, one  is interested in synthesizing a supervisor,the idea of “assume-guarantee synthesis” in the sense that
+                                                     which disables the occurrences of events dynamically onwe only guarantee the correctness of the solution when the
+                                                          the system based on its observation. In the context ofenvironment’s action satisfies the assumption on its total
+                                                           supervisory control of discrete event systems, we assumecapability and its rationality. In our context, the energy-
+                                                          that the event set is partitioned as Σ = Σc ˙∪Σuc, wherebound ∆can either be interpreted as the actual energy
+                                                 Σc is the set of controllable events and Σuc is the set ofbudget of the attacker, or be interpreted as the security-
+                                                            uncontrollable events. Then a supervisor can be presentedlevel the supervisor can provide in the sense that under
+                                                   by a function:how powerful attacks the system is still safe.
+                                                           S : L(G) →Γ,
+To solve the attack-resilient supervisor synthesis problem,                                                    where Γ = {γ ∈2Σ  : Σuc ⊆γ} is the set of admissible
+we generalize the standard supervisor synthesis problem                                                               control decisions or control patterns, which means that un-
+following the idea of “defend the boundary”. Specifically,                                                               controllable events can never be disabled by the supervisor.
+we introduce the notion of safety threshold, which is the                                      We denote by S(G) the set of all possible supervisors for G.
+smallest energy unit the attacker needs at each state to                                              The closed-loop system under control is denoted by S/G
+threaten the safety of the system. In  fact, the safety                                                  and the nominal language generated by S/G, denoted by
+threshold of a state corresponds to the security-level of                                                   L(S/G), is defined recursively by:
+the system when this state is the initial state. Then the
+nominal supervisor synthesized tries to prevent the system     • ϵ ∈L(S/G);
+from reaching states whose safety thresholds are smaller     • for any s ∈Σ∗, σ ∈Σ, we have sσ ∈L(S/G) iff
+than or equal to the energy bound of the attacker. When                 [s ∈L(S/G)] ∧[sσ ∈L(G)] ∧[σ ∈S(s)].
+the attacker launches an enablement attack, the supervisor
+may realize the presence of attack by observing events   In this work, we consider safety as the main design objec-
+that are not in the nominal behavior. Then the supervisor    tive of the supervisor. Formally, the safety specification is
+can estimate the remaining energy budget of the attacker   described by a prefix-closed sub-language K = K ⊆L(G).
+and use this information to improve the permissiveness of  The supervisor S  is said to be safe  if L(S/G) ⊆K.
+the behavior under attack. We show that the synthesized   In the nominal case, it is well-known that a maximally
+strategy is ∆-safe and maximally permissive in terms of   permissive safe supervisor exists and it can be synthesized
+the nominal behavior of the system.                     by computing the supremal controllable sub-language of
+                                             K; see, e.g., Cassandras and Lafortune (2008).
+The remaining part of the paper is organized as follows.
+Some basic preliminaries on supervisory control of DES   Suppose that the specification language K is recognized by
+are introduced in Section 2. In Section 3, we formulate the   a DFA H = (X′, Σ, δ′, x0). We assume that H is a strict
+attack-resilient supervisor control problem under energy-   sub-automaton of G, i.e., (i) ∀s ∈L(H)  : δ(s) = δ′(s);
+bounded attacks. The solvability of this problem is estab-   and (ii) ∀s ∈L(G) \ L(H)  : δ(s) /∈X′. Note that this
+lished in Section 4. In Section 5, the attack-resilient su-   assumption is without loss of generality because one can
+pervisor is proposed for our problem. Finally, we conclude   always refine the state-space of G, in polynomial time,
+the paper in Section 6.                                   such that the  strict sub-automation relation holds for
+                                                          the refined system; see,  e.g., the appendix of Yin and
+                                                        Lafortune (2017). Then under this assumption, we can
+                                                               define Xbad = X \ X′ as the set of unsafe/illegal states.
+                      2. PRELIMINARY                      Therefore, a string s is in K if and only if δ(s) /∈Xbad.
+
+Let Σ be a set of events. A string over Σ is a finite sequence             3. SUPERVISORY CONTROL UNDER
+s = σ1 · · · σn, σi ∈Σ. We denote by Σ∗the set of all         ENERGY-BOUNDED ATTACKS
+strings over Σ including the empty string ϵ. A language
+L ⊆Σ∗is a set of strings. The prefix closure of language L   In the standard supervisory control framework, upon the
+is L = {s ∈Σ∗: ∃t ∈Σ∗, st ∈L} and a language L is said   occurrence of string s, supervisor S will issue a new control
+to be prefix-closed if L = L. We say string t is a prefix of   decision S(s) and send  it to each actuator to prevent
+s denoted by t ≤s if t ∈{s}.                               events in Σ \ S(s) from happening. However, in networked
+
+
+                                                       10345
+
+Preprints of the 22nd IFAC World Congress
+Yokohama, Japan, July 9-14, 2023
+
+
+
+cyber-physical systems, such control command may not be   In this sense, Let ∆≥0 be a non-negative integer that
+perfectly received by the actuators. The control decision   represents an energy budget. Given system G, we say that
+value may be manipulated by a malicious attacker, either   attacker A is ∆-bounded w.r.t. a given supervisor S if
+by intruding the communication channel or by physically              ∀s ∈L(S∨A/G) : costA(s) ≤∆.
+attacking the actuators.
+                                      We assume that the cost function w  is known to the
+In this work, since our main concern for the closed-loop   supervisor. Note that this does not mean the supervisor
+system is safety, there is always no harm if the attacker   need to know the exact cost of the attacker. Instead, it
+further restricts the behavior of the system by disabling    is reasonable that the supervisor have some knowledge of
+events additionally. Therefore, we focus on a more mean-   the system and can analyze the vulnerability of the system
+ingful type of attacks called the AE-attacks. Under AE-   through which the supervisor can have a robust estimate
+attacks, a supervisor, whose nominal behavior is safe, may    of the real cost function. In fact, the outcome of function
+become unsafe because some undesired behaviors that are  w used by the supervisor is larger than the real cost.
+originally disabled in the nominal language may still occur.                                               Then for a given energy bound ∆, we denote by A∆(S)
+Formally, we denote by Σa ⊆Σc the set of controllable   the set of all ∆-bounded AE-attackers w.r.t. supervisor
+events vulnerable to AE-attacks, and the AE-attacker can   S. Our design objective  is to synthesize a supervisor
+be presented by a function:                               such that the closed-loop system  is safe under any ∆-
+                                                  bounded AE-attackers, which  is formulated as the  fol-            A : L(G) →2Σa
+                                                         lowing Attack-Resilient Supervisor Control Problem under
+that decides which events to enable additionally based on   Energy-Bounded Attacks (ARSC-EBA).
+its current observation.
+                                            Problem 1. (ARSC-EBA) Given system G = (X, Σ, δ, x0),
+Then, given system G, supervisor S and AE-attacker A,
+                                                               safety specification K = K ⊆L(G), attack cost function
+the total control effect can be considered as the disjunction                                     w  : Σ →N and an energy bound ∆≥0, synthesize a
+of their decisions, and the closed-loop language under
+                                                            supervisor S that is safe under any ∆-bounded AE-attacks,
+attack, denoted by L(S∨A/G), is defined recursively by
+                                                                                      i.e.,
+  • ϵ ∈L(S∨A/G);                                    ∀A ∈A∆(S) : L(S∨A/G) ⊆K,           (1)
+  • for any s ∈Σ∗, σ ∈Σ, we have sσ ∈L(S∨A/G) iff     or equivalently,
+       [s ∈L(S∨A/G)] ∧[sσ ∈L(G)] ∧[σ ∈S(s) ∪A(s)]        ∀A ∈A∆(S), ∀s ∈L(S∨A/G) : δ(s)̸ ∈Xbad.    (2)
+                                                   Such a supervisor is also referred to as a ∆-safe supervisor.If the AE-attacker can enable evens in Σa  arbitrarily
+without any constraint, then it suffices to also consider
+Σa as uncontrollable events from the designer’s point of
+view for the purpose of safety. Then this problem can be  Remark 1. Essentially, here we are considering an as-
+solved by the standard SCT. In this work, we consider a   sume guarantee type of synthesis problem in the sense
+more practical setting by assuming that                    that we only need to guarantee safety under the environ-
+                                                        ment’s assumption that the attacker is ∆-bounded. Such
+  • the attacker consumes a certain units of energy to   an energy-bounded condition has different interpretations
+     launch an enablement attack for events in Σa at each   in different contexts:
+     instant;
+  • the total energy of the attacker is bounded.             • If the system  is known to be working against an
+                                                                 attacker that has at most ∆units of energy budget,
+To this end, we consider a cost function for attacks:            then clearly such a solution provides us an attack-
+              w : Σ →N,                                    resilient supervisor that guarantees safety by taking
+                                                              the energy limit of the attacker into account.
+that assigns each event an attack cost or energy con-                                                        • In most cases, however, the energy bound of the at-
+sumption units. Furthermore, we assume that ∀σ ∈Σuc :                                                                 tacker is unknown. In this case, however, parameter ∆
+w(σ) = 0, i.e., the attacker is free to enable uncontrol-                                                                                      is still meaningful because it can be interpreted as the
+lable events because those events are always enabled by                                                                        security-level the supervision system can guarantee in
+default, and ∀σ ∈Σc \ Σa  : w(σ) = ∞, i.e., the attacker                                                              the sense that how powerful attacks the supervision
+cannot attack those events that are not vulnerable. We                                                          system can tolerate robustly.
+also extend the cost function to w : Σ∗→N by, for any
+string s = σ1σ2 . . . σn, we have w(s) = Pni=1 w(σi) with
+                                                     Here we give a simple example to  illustrate how thew(ϵ) = 0.
+                                                  bounded energy assumption of the attacker affects super-
+Note that, at each state, the attacker may choose to enable   visor synthesis for safe property.
+a set of events and we assume that the cost is additive.                                           Example 1. Let us consider system G shown in Figure 1,
+Besides, an event may be activated by the supervisor
+                                                    where the set of controllable events  is Σc = {b, c, d, e}
+and attacked by the attacker at the same time where the
+                                                  and the set of vulnerable events is Σa = {c, d, e}. The
+attacker will not consume energy for this attack. Then for                                                           attack cost for each vulnerable event is given by: w(c) =
+any string s ∈L(S∨A/G), we use costA(s) to denote the                                                                     1, w(d) = 3, and w(e) = 2. The safety specification is
+upper limit of the total energy consumption of the attacker
+                               K = {ϵ, a, ad, ab, abc}, i.e., Xbad = {x4}. Let ∆denote
+as:                                                          the total energy units of the attacker.  If ∆< 1, then
+              costA(s) = X X  w(σ)                 the intruder does not have enough energy to launch any
+                            s′∈{s} σ∈A(s′)                       attack. Then the optimal supervisor S1 can be obtained
+
+
+                                                       10346
+
+Preprints of the 22nd IFAC World Congress
+Yokohama, Japan, July 9-14, 2023
+
+
+                 a      d       e                      attacker A ∈AθG(x0)(S) ⊆A∆(S) and a string s ∈L(S∨
+              x0      x1      x3      x4                                            A/G) such that δ(s) ∈Xbad. This contradicts to Equa-
+                            c                                tion (2) and Problem 1 has no solution. (only if) When
+                        b
+                                                      θG(x0) > ∆, according to Definition 1, we know that
+                      x2                                  there exists a supervisor S ∈S(G) such that for any
+                                                            attacker A ∈A∆(S) and string s ∈L(S∨A/G), we have
+                                                                             δ(s)̸ ∈Xbad, which means that Problem 1 has at least one
+Fig. 1. System G with Xbad = {x4} Σc = {b, c, d, e},                                                                solution.
+    Σa = {c, d, e}, w(c) = 1, w(d) = 3 and w(e) = 2
+by the standard supervisory control algorithm, which just   However, the definition of safety threshold itself is mainly
+disables event e at state x3. If 1 ≤∆< 2, then although   motivated by the existential quantifiers and the universal
+the attacker can enable event c, S1  is still safe because   quantifiers in Problem 1. It does not provide a constructive
+event e still cannot be attacked. If 2 ≤∆< 3, then the   way to compute θG(x) for each state x ∈X. Recall
+attacker can enable event e and S1 is not safe. In order to   that in the standard safe supervisor synthesis algorithm
+achieve safety, one needs to use supervisor S2 that disables   without attacks (or the well-known supremal controllable
+event d at state x1, disables event c at state x2 and disables   sub-language algorithm), whether or not a state is safe
+event e at state x3. In this case, if the attack choose to    is computed by back-tracking from a unsafe state taking
+enable c, then it will not have enough energy remaining to   the issue of uncontrollable events into account. In other
+enable e. If 3 ≤∆< 5, then S2 is not safe again and we   words, a state  is not safe  if there exists a sequence of
+need to disable event b in addition to S2. Finally, if ∆≥5,   uncontrollable events from this state to an unsafe state in
+then there is no safe supervisor because the attacker can   Xbad. Here, we are essentially considering a quantitative
+always spend 5 energy units to enable events d and e.   version of this problem. In particular, we say a state is
+Based on the above discussion, we observe that,  if the   not ∆-safe w.r.t. attackers with energy budget ∆if there
+energy bound ∆is smaller than five, then there exists at    exists a sequence of events from this state to an unsafe
+least one attack-resilient supervisor for G. In other words,    state, and the total attack cost incurred along this string
+for the system G the highest security-level the supervisor    is no more than ∆.
+can guarantee is 5.                                                           Formally, for any state x ∈X, we denote by Lbad(x) =
+                                                       {s ∈Σ∗: δ(x, s) ∈Xbad} the set of strings that lead to     4. EXISTENCE OF THE ATTACK-RESILIENT
+                                                          unsafe states from state x. Then the above discussed idea
+               SUPERVISOR
+                                                                               is formalized by the following result.
+In this section, we investigate the solvability of Problem 1,   Proposition 1. Given system G = (X, Σ, δ, x0) and un-
+i.e., under what condition there exists a ∆-safe supervisor.   safe states Xbad, for each state x ∈X, we have
+In order to synthesize an ∆-safe supervisor or to decide                                                                     θG(x) =  min   w(s).               (4)
+whether or not such a supervisor exists, our approach is                                s∈Lbad(x)
+to think from the attacker’s point of view. Specifically, we
+want to determine, for each state, the minimum energy   Clearly, if θG(x) < ∞, then it means that there exists at
+units an AE-attacker needs in order to threaten the safety    least one string s ∈(Σuc ∪Σa)∗such that δ(x, s) ∈Xbad.
+of the system. When the system enters a state and this  Then to compute θG(x), it suffices to compute the smallest
+value of the state is smaller than the current energy units of   cost from state x to region Xbad via strings where only
+the attacker, then the attacker has the potential to achieve   uncontrollable events and vulnerable events are involved.
+its objective against safety no matter what the supervisor   This is essentially a shortest-path-like problem, which can
+does. This concept is formulated as the safety threshold as   be done by back-tracking the threshold value from states
+follows.                                                  Xbad. Algorithm 1 provides one of the methods to compute
+                                                          the threshold by back-tracking.
+Definition 1. Given system G = (X, Σ, δ, x0) and unsafe
+states Xbad, the safety threshold for state x ∈X, denoted
+by θG(x), is the minimum energy units an AE-attack needs  Algorithm 1: Compute Safety Threshold
+to have at state x so that it can make sure that the system                                                   Input: controlled system G = (X, Σ, δ, x0), cost
+is unsafe. Formally, we have                                                                   function w, set of bad states Xbad
+          (   ∀S ∈S(Gx), ∃A ∈A∆(S), )       Output: safety threshold θG
+  θG(x) = arg min ∆:    ∃s ∈L(S∨A/Gx),          ,  (3) 1 for x ∈Xbad do
+          ∆                s.t. δ(x, s) ∈Xbad            2    θG(x) ←0
+where Gx = (X, Σ, δ, x) is the DFA by changing the initial 3 end
+state from x0 to x.                                      4 for x ∈X \ Xbad do
+                                                         5    θG(x) ←∞
+                                                         6 endThe following result shows how to characterize the solv-
+                                                         7 repeatability of Problem 1 in terms of the safety threshold, which
+                                                         8    for each transition x = δ(x′, σ), σ ∈Σuc ∪Σa dois straightforward based on the definition.
+                                                         9        θG(x′) = min{θG(x) + w(σ), θG(x′)}
+Theorem 1. Problem 1 has no solution  if and only  if                                                        10   end
+θG(x0) ≤∆.
+                                                        11 until θG converges;
+Proof 1. (if) When θG(x0) ≤∆, according to the Def-
+inition 1, for any supervisor S ∈S(G), there exists an
+
+
+                                                       10347
+
+Preprints of the 22nd IFAC World Congress
+Yokohama, Japan, July 9-14, 2023
+
+
+
+        5. SYNTHESIS OF ATTACK-RESILIENT
+              SUPERVISORS
+                                                                       x5          x3     x1
+                                                                           x6According to Theorem 1, starting from any state x ∈
+X, there exists an attack-resilient supervisor against ∆-
+                                                                              x4bounded AE-attacks only when θG(x) > ∆. Specifically,
+we follow the idea of “defend the boundary” by avoiding
+reaching states whose safety threshold is no more than ∆.                  x0     x2
+Formally, we define
+        X∆bad = {x ∈X : θG(x) ≤∆}                                             (a) Map for the robot
+as the set of extended unsafe states w.r.t. parameter ∆.                        b      d      d                                                                     x0      x2      x4      x6
+Therefore, the basic role of the supervisor is to keep the
+                                                                                          c        c
+nominal behavior within X \ X∆bad. However, the question                           b      a
+is that what if the system under control goes beyond the                        b
+nominal behavior due to attacks, i.e., when a state in X∆Bad                 x1      x3      x5                                                                    ais reached. Here, we propose the following supervision
+strategy.                                                                              (b) Automaton G in Example 2
+
+Specifically, if the supervisor observes the occurrence of an
+                                                              Fig. 2. Workspace for the robot and the automaton model
+event σ that is originally disabled by the nominal super-
+                                                                     in Example 2, where Σc = {a, c, d}, Σa = {c, d},
+visor, then it knows for sure that the attacker has spent
+                                                         Xbad = {x6}, w(c) = 1, w(d) = 3, w(a) = ∞and
+at least w(σ) units of energy. Therefore, the supervisor
+                                                           w(b) = 0
+can deduce that the attack has at most ∆′ = ∆−w(σ)
+energy budget remained. Then by taking the information   the attacker has ∆units of energy. Therefore, S′ is not
+into account, the “boundary to defend” can be relaxed   ∆0-safe, which is a contradiction.
+from X∆bad to X∆′bad. Based on this idea, we propose the
+notion of optimistic supervisor Soptm  : L(G) →Γ that  We provide an example to illustrate the concept of the
+works online according to Algorithm 2. As line 6-8 shows,   safety threshold and the optimistic supervisor.
+once the attack behaviour is detected by observing events
+                                              Algorithm 2: Supervisor Synthesisinconsistent with the nominal behavior, the value of ∆,
+which is our estimate of the remaining energy budget of   Input: G = (X, Σ, δ, x0), w, θG(·) and ∆
+the attacker, will decrease. Since X∆bad becomes smaller,  Output: control decision Soptm(s) at each instant
+the control decision will have more event choices.         1 s ←ϵ
+The following theorem shows that the optimistic supervi- 2 γ ←{σ′ ∈Σ : δ(sσ′) /∈X∆bad}
+                                                         3 apply control decision Soptm(ϵ) = γsor is safe against any ∆-bounded AE-attacks.
+                                                         4 while event σ is observed do
+Theorem 2.  If θG(x0) > ∆, then Soptm  is ∆-safe as 5    s ←sσ
+defined in Problem 1, i.e., for any A ∈A∆(Soptm), ∀s ∈ 6      if  σ̸ ∈γ then
+L(Soptm∨A/G), δ(s)̸ ∈Xbad.                             7    ∆←∆−w(σ)
+                                                         8   endFurthermore, we show that the optimistic supervisor is
+not only optimal (least restrictive) in terms of nominal 9    γ ←{σ′ ∈EG(s) : δ(sσ′) /∈X∆bad}
+behavior, but  is  also maximally-permissive under any 10    apply control decision Soptm(s) = γ
+attack.                                                 11 end
+Theorem 3. For any ∆-safe supervisor S′, we have
+                                           Example 2. We consider a robot moving in a workspace (1) L(S′/G) ⊆L(Soptm/G); and
+                                                 shown in Fig. 2(a). The workspace consists of several (2) for any A ∈A∆(Soptm) ∩A∆(S′), we further have
+                                                  rooms connected by one-way doors as depicted in the    L(S′∨A/G) ⊆L(Soptm∨A/G).
+                                                                     figure. Each time when the robot enters a room, the
+Proof. The first result can be regarded as a special case   supervisor can determine which doors to  close, where
+of the second result by adopting the 0-bounded attacker   the rightward doors cannot be closed. Initially, the robot
+A : L(G) →∅. Hereafter, we prove (ii) by contradiction.    is in room x0, and our objective  is to keep the robot
+Let ∆0 record the initial value of ∆. Assume that there   from reaching room x6. Furthermore, we assume that the
+exists a ∆0-safe supervisor S′ such that L(S′ ∨A/G)̸ ⊆   downward doors and the upward doors can be forced to
+L(Soptm∨A/G) for an attacker A ∈A∆0(Soptm)∩A∆0(S′).   open by an attacker with one unit and three units of
+This means that there exists a string s = tσ such that   energy, respectively, for each instant.
+σ ∈S′(t) \ Soptm(t) and ∀t′ < t, S′(t′) ⊆Soptm(t′). Then  We use automaton G to model the mobility of the robot
+since σ /∈Soptm(t), δ(tσ) ∈X∆bad, where ∆= ∆0 −   as shown in Fig. 2(b), where events a, b, c and d represent
+Ptσ≤s∧σ /∈Soptm(t) w(σ) according to Algorithm 2. For the   that the robot passes a leftward door, a rightward door,
+worst case, for any tσ ≤s, A(t) = σ when σ /∈Soptm(t)   a downward door and a upward door, respectively. Then
+and A(t) = ∅otherwise. Then the remaining energy of   the set of controllable events set is Σc = {a, c, d}, the set
+the intruder is ∆0 −costA(s) = ∆. So the system under    of vulnerable events set  is Σa = {c, d} and the safety
+S′ will reach state δ(sσ) such that θG(δ(sσ)) ≤∆and   specification is captured by unsafe states Xbad = {x6}.
+
+
+                                                       10348
+
+Preprints of the 22nd IFAC World Congress
+Yokohama, Japan, July 9-14, 2023
+
+
+
+The cost function for attacker  is w(c) =  1, w(d) =  3,   Liu, S., Trivedi, A., Yin, X., and Zamani, M. (2022a).
+w(a) = ∞and w(b) = 0. Using Algorithm 1, we can     Secure-by-construction synthesis of cyber-physical sys-
+calculate the safety threshold for each state as θG(x1) =     tems. Annual Reviews in Control.
+∞, θG(x0) = θG(x2) = θG(x3) =  4, θG(x4) = 3 and   Liu, Z., Yin, X., Shu, S., Lin, F., and Li, S. (2022b). Online
+θG(x4) = 1. Now we set the security level for the system     supervisory control of networked discrete event systems
+as ∆= 3 and synthesize the most permissive supervisor     with control delays. IEEE Transactions on Automatic
+Soptm that is resilient to all attackers with energy bound     Control, 67(5), 2314–2329.
+∆by Algorithm 2. Nominally, Soptm will disable event d at   Ma, Z. and Cai, K. (2021).  Optimal secret protections
+state x2 and disable event c at state x3. If the supervisor      in discrete-event systems. IEEE Transactions on Auto-
+observes event c from state x3, it will updated ∆to 3 −     matic Control.
+w(c) = 2. For this case, we have X2bad = {x5, x6} and   Matsui, S. and Cai, K. (2019).   Secret securing with
+Soptm will disable event a at state x4. However, when the     multiple protections and minimum costs. In 58th IEEE
+supervisor observes event d from state x2, it will update     Conference on Decision and Control (CDC), 7635–7640.
+∆to 3 −w(d) = 0. For this case, we have X0bad = {x6}   Meira-G´oes, R., Kang, E., Kwong, R., and Lafortune, S.
+and Soptm will enable event a at state x4.                     (2020). Synthesis of sensor deception attacks at the su-
+                                                              pervisory layer of cyber–physical systems. Automatica,
+                                                              121, 109172.
+                      6. CONCLUSION
+                                                             Meira-G´oes, R., Kwong, R., and Lafortune, S. (2019).
+                                                             Synthesis of sensor deception attacks for systems mod-
+In this paper, we formulated and solved an attack-resilient                                                                eled as probabilistic automata.  In American Control
+supervisory control problem under the assumption that                                                         Conference (ACC), 5620–5626.
+the total energy of the attacker is bounded. A simple nec-                                                          Rashidinejad, A., Wetzels, B., Reniers, M., Lin, L., Zhu,
+essary and sufficient condition of the problem was obtained                                                                Y., and Su, R. (2019). Supervisory control of discrete-
+for the existence of ∆-safe supervisor by introducing the                                                            event systems under attacks: an overview and outlook.
+concept of safety threshold. Furthermore, we showed how                                                            In European Control Conference, 1732–1739.
+to synthesize a maximally-permissive ∆-safe supervisor so                                                          Su, R. (2018). Supervisor synthesis to thwart cyber attack
+that the closed-loop system is safe under any possible AE-                                                         with bounded sensor reading alterations. Automatica,
+attacks whose energy  is upper-bounded by ∆and has                                                                 94, 35–44.
+minimum constraints. Note that, in this work, we only                                                      Tong, Y., Wang, Y., and Giua, A. (2022). A polynomial
+considered the actuator enablement attacks because the                                                        approach to verifying the existence of a threatening
+main design objective considered is safety. In future work,                                                              sensor attacker. IEEE Control Systems Letters, 6, 2930–
+we plan to investigated non-blocking supervisor synthesis                                                             2935.
+under both actuator enablement and actuator disablement                                                        Wakaiki, M., Tabuada, P., and Hespanha, J. (2019). Super-
+attacks. Also, we plan to investigate how to synthesize ∆-                                                               visory control of discrete-event systems under attacks.
+safe supervisors under the partial observation setting.                                                  Dynamic Games and Applications, 9(4), 965–983.
+                                                Wang, Y., Li, Y., Yu, Z., Wu, N., and Li, Z. (2021). Super-
+             REFERENCES                           visory control of discrete-event systems under external
+                                                                 attacks. Information Sciences.
+Carvalho,  L., Wu, Y., Kwong, R., and Lafortune,  S.                                                Wang, Y. and Pajic, M. (2019). Attack-resilient supervi-
+  (2018). Detection and mitigation of classes of attacks in                                                             sory control of discrete-event systems. In IEEE Confer-
+  supervisory control systems. Automatica, 97, 121–133.                                                           ence on Decision and Control (CDC), 2015–2020.
+Cassandras, C. and Lafortune, S. (2008). Introduction to                                                             Xie, Y., Yin, X., and Li, S. (2022).  Opacity enforcing
+  Discrete Event Systems. Springer.                                                             supervisory control using nondeterministic supervisors.
+Fritz, R., Schwarz, P., and Zhang, P. (2019).  Modeling                                              IEEE Tran. Automatic Control, 67(12), 6567–6582.
+   of cyber attacks and a time guard detection for ICS                                                     Yang, S. and Yin, X. (2022). Secure your intention: On
+  based on discrete event systems. In European Control                                                             notions of pre-opacity in discrete-event systems. IEEE
+  Conference (ECC), 4368–4373.                                                           Transactions on Automatic Control.
+Gao, C., Seatzu, C., Li, Z., and Giua, A. (2019). Multiple                                                       Yao, J., Yin, X., and Li, S. (2020). On attack mitiga-
+  attacks detection on discrete event systems.  In IEEE                                                                tion in supervisory control systems: A tolerant control
+  Conf. Systems, Man and Cybernetics, 2352–2357.                                                           approach.  In 59th IEEE Conference on Decision and
+He, Z., Ma, Z., and Tang, W. (2021). Performance safety                                                           Control (CDC), 4504–4510. IEEE.
+  enforcement in strongly connected timed event graphs.                                                         Yin, X. and Lafortune, S. (2017). Synthesis of maximally-
+  Automatica, 128, 109605.                                                             permissive supervisors for the range control problem.
+Khoumsi, A. (2019).   Sensor and actuator attacks  of                                              IEEE Trans. Automatic Control, 62(8), 3914–3929.
+  cyber-physical systems: A study based on supervisory                                                         Yin, X. and  Lafortune,  S.  (2016).  A uniform  ap-
+  control of discrete event systems. In 8th International                                                         proach for synthesizing property-enforcing supervisors
+  Conference on Systems and Control (ICSC), 176–182.                                                                     for partially-observed discrete-event systems.  IEEE
+Lin, L., Thuijsman, S., Zhu, Y., Ware, S., Su, R., and                                                           Transactions on Automatic Control, 61(8), 2140–2154.
+  Reniers, M. (2019).  Synthesis of supremal successful                                                      Zhu, Y., Lin, L., and Su, R. (2019). Supervisor obfusca-
+  normal actuator attackers on normal supervisors.  In                                                                tion against actuator enablement attack. In European
+  American Control Conference (ACC), 5614–5619.                                                           Control Conference, 1760–1765.
+Lin, L., Zhu, Y., and Su, R. (2020).  Synthesis of covert
+  actuator attackers for free.  Discrete Event Dynamic
+  Systems, 30, 561–577.
+
+
+                                                       10349

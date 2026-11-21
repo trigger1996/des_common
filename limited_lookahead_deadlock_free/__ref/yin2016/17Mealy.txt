@@ -1,0 +1,434 @@
+2576                                                 IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 62, NO. 5, MAY 2017
+
+Technical Notes and Correspondence
+
+    Supervisor Synthesis for Mealy Automata With Output Functions:
+             A Model Transformation Approach
+
+                                          Xiang Yin
+
+
+  Abstract—Recently, Ushio and Takai have proposed a Mealy-   modeling measurement uncertainties, since it can capture both state-
+automata-based framework to study the non-blocking supervisory   dependent observations [4], [18], [20] and nondeterministic outputs,
+control problem under partial observation. This framework can
+                                                            which includes intermittent sensor failures [1] and observation losseshandle observation uncertainties by taking both state-dependent
+observations and nondeterministic outputs into account. In this    [7]. Mealy-automata-based framework has also been used in the fault
+technical note, we propose a model-transformation-based ap-   diagnosis problem; see, e.g., [6], [15].
+proach to solve the supervisor synthesis problem in this frame-     Although many different approaches have been proposed in the lit-
+work. First, we propose a transformation algorithm that transforms
+                                                                          erature to tackle the supervisory control problem under observation
+the non-blocking supervisor synthesis problem for Mealy automata
+to a conventional supervisory synthesis problem under partial ob-   uncertainties, several fundamental problems still remain. First, most
+servation, which can be solved effectively by an existing algorithm.   of the existing works only address the supervisor existence problem,
+Then we show that the supervisor synthesized for the transformed   which requires to achieve a given speciﬁcation exactly. However, the
+problem indeed solves the original problem. Our results bridge the   supervisor synthesis problem, which is more important in practice, has
+gap between the conventional supervisory control framework un-
+                                                                      received little attention. In fact, the supervisor synthesis problem is fun-der partial observation and the recently proposed Mealy automata
+framework where nondeterministic output function is used.          damentally more difﬁcult than the supervisor existence problem. For
+                                                                        the partially-observed case, even in the conventional supervisory con-
+  Index Terms—Discrete event systems, mealy automata, non-
+                                                                                    trol framework, the supervisor synthesis problem had remained open
+blockingness, supervisor synthesis, supervisory control.
+                                                                           for more than twenty years, until it was solved very recently by our
+                                                         work [21]. Moreover, the issue of non-blockingness is more difﬁcult                                     I. INTRODUCTION
+                                                                           to handle than the safety requirement. For example, [17] only provides
+     upervisory control under partial observation is an important prob-   sufﬁcient conditions for the existence of non-blocking supervisor and
+    lem that has drawn considerable attention in the discrete-event   the supervisor synthesis problem is still not considered.systemsS   (DES) literature. This problem was initiated in [3], [8], where      In this technical note, we also consider the Mealy automata frame-
+the partial observability is modeled by using projection function or   work, which is general enough to capture many other frameworks.
+mask function. Under this conventional framework, an event in a DES  We solve a general supervisor synthesis problem in this framework
+is either an observable event or an unobservable event. However, in   for both safety and non-blockingness speciﬁcations without imposing
+many cases, the observation of the system is both nondeterministic   any restrictive assumption. We propose a model-transformation-based
+and state-dependent due to communications, sensor failures or mea-   approach that consists of two stages. First, we provide a transforma-
+surement uncertainties. Therefore, several more advanced observation   tion algorithm that transforms the synthesis problem in the Mealy
+models have been proposed recently in order to handle these issues;   automata framework to a synthesis problem in the conventional frame-
+see, e.g., [1], [4], [7], [9], [11]–[14], [17]–[19]                       work. Therefore, this allows us to use the synthesis algorithm developed
+  In [11]–[13], the problem of sensor failure tolerant supervisory con-   in [21] to solve the transformed problem. Second, we show that the pro-
+trol was formulated. In this framework, the occurrence of an observ-   posed transformation preserves all desired properties of the closed-loop
+able event can be observed only when its associated sensor works   system, i.e., safety, non-blockingness and maximal permissiveness. In
+normally. In other words, an originally observable event can become   other words, the supervisor synthesized for the transformed system is
+unobservable after a sensor failure occurs. In [19], the supervisory   indeed the desired maximally permissive safe and non-blocking super-
+control problem was studied by using nondeterministic mask. In [4],   visor for the original system. We believe that this transformation-based
+the authors studied the decentralized supervisory control problem by   approach brings new insights to this problem and it also bridges the gap
+assuming that the observation is state-dependent (or transition-based).   between the conventional supervisory control framework and several
+In [1], [7], the supervisory control problem under observation losses   recently proposed frameworks.
+was addressed. Recently, Ushio and Takai [17] provided a framework    We note that the model transformation technic proposed in this note
+for supervisory control problem under partial observation by using    is similar to the notion of language lifting proposed in [19]. However,
+Mealy automata. It was shown that Mealy automata is very suitable for   they have the following signiﬁcant differences. First, the notion of lan-
+                                                             guage lifting is deﬁned for the purpose of supervisor existence, while
+                                                                  our transformation technic is also suitable for the purpose of supervi-
+  Manuscript received June 13, 2016; accepted August 9, 2016. Date   sor synthesis. Second, our results are developed based on the Mealy
+of publication August 17, 2016; date of current version April 24, 2017.
+                                                                automata framework which is more general than the nondeterministicRecommended by Associate Editor S. Takai.
+  The author is with the Department of Automation, Shanghai Jiao Tong   mask used in [19]. Finally, the transformation proposed in this techni-
+University, Shanghai 200240, China (e-mail: xiangyin.sjtu@gmail.com;   cal note allows us to handle non-blockingness speciﬁcation, which is
+xiangyin@umich.edu).                                                   also not addressed in [19].
+   Digital Object Identiﬁer 10.1109/TAC.2016.2601118
+
+
+               0018-9286 © 2016 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                  See http://www.ieee.org/publications standards/publications/rights/index.html for more information.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 62, NO. 5, MAY 2017                                                                2577
+
+
+
+  The rest of this note is organized as follows. In Section II, we
+review the conventional supervisory control framework under partial
+observation and the supervisory control problem in the Mealy automata
+framework by using nondeterministic output function. In Section III,
+we show how to effectively solve the supervisor synthesis problem
+in the Mealy automata framework. Speciﬁcally, a transformation
+algorithm is proposed and the correctness of the transformation is
+                                                                               Fig. 1.  For GM , we have Σc = {σ1, σ2}. Also, we use double circles to
+proved. Section IV discusses some further results for the case where the                                                                 denote marked states in GM . (a) Mealy Automaton GM . (b) Speciﬁcation
+output function is deterministic. We conclude this note in Section V.    K.
+
+                      II. DISCRETE EVENT SYSTEM MODEL
+                                                                          Hereafter, we will only use the fact that SSCPPO can be effectively
+  Let Σ be a ﬁnite set of events. A ﬁnite string s = σ1 . . . σn is ﬁnite   solved and the reader is referred to [21] for more details about the
+sequence of events in Σ and we denote by |s| the length of s. We   solution.
+use ϵ to denote the empty string with |ϵ| = 0. We denote by Σ∗the
+set of all ﬁnite strings including ϵ. A language L ⊆Σ∗is a set of   B. Supervisory Control of Mealy Automata With Output
+strings. The preﬁx-closure of language L is deﬁned as L := {w ∈Σ∗:   Function
+∃v ∈Σ∗s.t.wv ∈L}, where “s.t.” means “such that”. We say that L is
+                                                                         In [17], a Mealy-automata-based supervisory control framework ispreﬁx-closed if L = L. For two sets A and B, A ⊆B means that A is
+                                                                proposed to address both nondeterministic outputs and state-dependenta subset of B; A ⊂B means that A is a proper subset of B. We also
+                                                                        observations. This framework is reviewed as follows. A Mealy automa-denote by A̸ ⊂B that A is not a proper subset of B.
+                                                                     ton with nondeterministic output function is
+
+A. Standard Supervisory Control Under Partial Observation              GM = (Q, Σ, f, q0, Qm , Δ, λ)                 (1)
+
+ A ﬁnite-state automaton (FSA) is G = (Q, Σ, f, q0, Qm ), where Q   where (Q, Σ, f, q0, Qm ) is a FSA, Δ is a ﬁnite set of output sym-
+is the ﬁnite set of states, Σ is the ﬁnite set of events, f : Q × Σ →Q is   bols and λ : Q × Σϵ →2Δ ϵ  is the nondeterministic output function,
+the partial transition function, q0 ∈Q is the initial state and Qm ⊆Q is   where Σϵ := Σ ∪{ϵ} and Δϵ := Δ ∪{ϵ}. We also denote by Δ∗the
+the set of marked states. The transition function f is extended to Q × Σ∗    set of all ﬁnite strings over Δ including ϵ. Let q ∈Q be a state and
+in the usual manner. The language generated by G is L(G):={s∈Σ∗:  σ ∈Σ be an event deﬁned at q. Then λ(q, σ) describes the set of po-
+f(q0, s)!}, where “!” means “is deﬁned”. The language marked by G    tential observations for this transition, which may include ϵ. We deﬁne
+is Lm (G):={s∈Σ∗: f(q0, s) ∈Qm }.                               λ(q, ϵ) = {ϵ} for any q ∈Q. The generated and marked languages
+  In the supervisory control framework [10], we assume that Σ is   of GM  are the same as the generated and marked languages of the
+partitioned as Σ = Σc ˙∪Σu c, where Σc and Σu c denote the set of con-   corresponding FSA, respectively, i.e., L(GM ) := {s ∈Σ∗: f(q0, s)!}
+trollable events and the set of uncontrollable events, respectively. Under   and Lm (GM ) := {s ∈Σ∗: f(q0, s) ∈Qm }. We denote by O : Σ∗→
+the partial observation assumption [3], [8], we also assume that Σ is  2Δ ∗the nondeterministic observation mapping. Formally, O is deﬁned
+partitioned as Σ = Σo ˙∪Σu o, where Σo and Σu o denote the set of ob-   recursively by
+servable events and the set of unobservable events, respectively. We
+                                                                                    • O(ϵ) = {ϵ};denote by P  : Σ∗→Σ∗o the natural projection; see, e.g., [2]. A (par-
+tial observation) supervisor is a function S : P (L(G)) →2Σ c , where    • O(sσ) = {αδ ∈Δ∗: α ∈O(s) ∧δ ∈λ(f(q0, s), σ)}.
+S(s) is the set of events enabled after observing s ∈P (L(G)) (un-     Mapping O is also extended to 2Σ ∗by O(L) = {α ∈Δ∗: ∃s ∈
+controllable events are always enabled by default). We denote by S/G  L s.t. α ∈O(s)}.
+the closed-loop system under control and L(S/G) can be computed    An extended event  is a tuple (σ, δ) ∈Σ × Δϵ, where (ϵ, ϵ)  is
+recursively as follows:                                                  the empty extended event. An extended string is a sequence of ex-
+                                                                  tended events. For any extended string s = (σ1, δ1) . . . (σn , δn ) ∈•  ϵ ∈L(S/G); and
+                                                    (Σ × Δϵ)∗, we deﬁne ΘΣ (s) := σ1 . . . σn and ΘΔ (s) := δ1 . . . δn•     [sσ ∈L(S/G)]
+                                                                      as its ﬁrst and its second components, respectively. For any string
+  ⇔[sσ ∈L(G)] ∧[s∈L(S/G)] ∧[σ ∈S(P (s)) ∪Σu c].
+                                                                σ1 . . . σn ∈L(GM ), we say that δ1 . . . δn  is an output realization
+  We deﬁne Lm (S/G) = L(S/G) ∩Lm (G). Supervisor S is said to   of σ1 . . . σn  if δ1 . . . δn ∈O(σ1 . . . σn ). Note that the output re-
+be non-blocking if Lm (S/G) = L(S/G).                                 alization of a string is not unique in general. An extended string
+  Let K = K ⊆L(G) be a non-empty preﬁx-closed speciﬁcation lan-   s = (σ1, δ1) . . . (σn , δn ) ∈(Σ × Δϵ)∗is said to be generated by GM
+guage. The standard supervisor control problem under partial observa-    if ΘΣ (s) ∈L(GM ) and ΘΔ (s) is an output realization of ΘΣ (s). We
+tion (SSCPPO) is formulated as follow.                               denote by Le(GM ) the set of extended strings generated by GM .
+   Problem II.1. (SSCPPO) Let G be a plant FSA designed with con-     Example II.1 Let us consider Mealy automaton GM  in Fig. 1(a),
+trollable events Σc and observable events Σo. Let K ⊆L(G) be   where we have Σ = {σ1, σ2} and Δ = {δ1, δ2}. For each transition,
+a non-empty speciﬁcation language. Find a non-blocking supervisor   the set of symbols on the right hand side of “σ/” denotes λ(q, σ), which
+S : P (L(G)) →2Σ c such that                                                   is the set of potential outputs of this transition. For σ1σ2 ∈L(GM ),
+ 1. S is safe, i.e., L(S/G) ⊆K; and                         we have that O(σ1σ2) = {δ1δ1, δ2δ1}. Therefore, (σ1, δ1)(σ2, δ1) ∈
+ 2. S  is maximally permissive,  i.e., for any non-blocking S′  s.t.  Le(GM ).
+   L(S′/G)⊆K, we have L(S/G)̸⊂L(S′/G).                     Under the Mealy automata framework, we still assume that Σ =
+   Remark II.1 The reason why we require L(S/G)̸⊂L(S′/G) rather   Σc ˙∪Σu c, where Σc ⊆Σ is the set of controllable events. However, we
+than L(S′/G)⊆L(S/G) is that a supremal solution satisfying the lat-   do not consider observable events, since observation has already been
+ter does not exist in general. Instead, there may have several incom-   speciﬁed by the output function, which is more general than using Σo.
+parable maximal solutions that solve SSCPPO. It was shown in [21]   Therefore, a supervisor is deﬁned as a function S : O(L(GM )) →2Σ c .
+that SSCPPO can be solved without any assumption on Σc and Σo.  We also denote by S/GM the closed-loop system under control and
+
+2578                                                               IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 62, NO. 5, MAY 2017
+
+
+
+denote by Le(S/GM ) the generated extended language, which can be  One instance where these two conditions coincide is discussed in
+computed recursively as follows:                                      Section IV.
+
+•  (ϵ, ϵ) ∈Le(S/GM );
+                                                                                                               III. SYNTHESIS OF MAXIMALLY PERMISSIVE NON-BLOCKING• [sa∈Le(GM )]∧[s∈Le(S/GM )]∧[ΘΣ (a)∈S(ΘΔ (s))∪Σu c]
+                                                                            SUPERVISORS  ⇔[sa ∈Le(S/GM )].
+                                                                         In this section, we discuss how to solve SCPMNF. Our approach
+  We also deﬁne                                                                          consists two stages:
+   Le,m (S/GM ) = {s ∈Le(S/GM ) : ΘΣ (s) ∈Lm (GM )}     (2)    1) First, we transform SCPMNF to SSCPPO, which can be effectively
+                                                                        solved by the algorithm proposed in [21].
+   L(S/GM ) = {s ∈Σ∗: ∃t ∈Le(S/GM ) s.t. ΘΣ (t) = s}    (3)
+                                                                       2) Then we show that the supervisor synthesized for the transformed
+   Lm (S/GM ) = L(S/GM ) ∩Lm (GM ).                       (4)     SSCPPO also solves the original SCPMNF.
+
+We say that supervisor S : O(L(GM )) →2Σ c is strongly non-blocking   A. The Transformation Algorithm
+if Le,m (S/GM ) = Le(S/GM ).
+                                                                                       First, we present the model transformation procedure.   Remark II.2 In the Mealy automata framework, Σ∗is the domain
+of the actual behavior of the system, while Δ∗is the domain of the     Let GM = (Q, Σ, Δ, f, λ, q0, Qm ) be the Mealy automaton under
+observed behavior of the system. In other words, suppose that event σ ∈   control and K = K ⊆L(GM ) be the preﬁx-closed speciﬁcation lan-
+Σ occurs at x ∈X, then σ is the actual event generated by the system   guage. We denote by PΣ  : (Σ ∪Δ)∗→Σ∗the natural projection from
+                                         Σ ∪Δ to Σ. We construct a new FSA ˜G = ( ˜Q, ˜Σ, ˜f, q0, Qm ) andand λ(x, σ) is the set of observations the supervisor may observe.
+                                                                  a new preﬁx-closed speciﬁcation language ˜K ⊆L( ˜G) by AlgorithmTherefore, we can only disable the occurrences of events in Σc. Once
+event σ ∈Σ occurs at state x ∈X, we cannot choose observation in  MODEL-TRANSF as follows.
+λ(x, σ) due to measurement uncertainties. In particular, if the output is
+ϵ, then it means that nothing is observed upon the occurrence of σ due    Algorithm 1 MODEL-TRANSF
+to the lack of sensor or sensor failure.                                   input : GM = (Q, Σ, Δ, f, λ, q0, Qm ), K and Σc.
+   Remark II.3  It was shown in [17] that standard non-blockingness       output: ˜G = ( ˜Q, ˜Σ, ˜f, q0, Qm ), ˜K, ˜Σc and ˜Σo.
+condition,  i.e., Lm (S/GM ) = L(S/GM ),  is not adequate for the    1    Build a new FSA ˜G = ( ˜Q, ˜Σ, ˜f, q0, Qm ), where
+Mealy automata framework. For example, let us consider GM  in           • ˜Q = Q ∪(Q × Σ) is the set of states;
+Fig. 1(a) and consider supervisor S deﬁned as follows:                            • ˜Σ = Σ ∪Δϵ is the set of events;
+                                                                                           • q0 is the initial state, which is the same as GM ;                         ∅          if α = δ2
+               S(α) =                                         (5)           • Qm is the set of marked states, which is the same as GM ;
+                        {σ1}   otherwise                                  • ˜f : ˜Q × ˜Σ →˜Q is the transition function deﬁned by:
+                                                                                                      (i) For any q ∈Q ⊂˜Q and σ ∈Σ ⊂˜Σ, we have
+We have that Lm (S/GM ) = {σ1σ1} = {ϵ, σ1, σ1σ1} = L(S/GM ).
+However, string σ1 will be blocked if its output is δ2. This is because                            ˜f(q, σ) = (q, σ) if f(q, σ)!                 (6)
+that Lm (S/GM ) = L(S/GM ) only guarantees that each string can
+reach a marked state under a particular output realization. Recall that             (ii) For any (q, σ) ∈(Q × Σ) ⊂˜Q and δ ∈Δϵ ⊂˜Σ, we have
+the output realization for a string is not unique in general. In order
+                                                                                                    ˜f((q, σ), δ) = f(q, σ) if δ ∈λ(q, σ)            (7)to resolve this issue, we need to require that any string cannot be
+blocked under any output realization. This is why the notion of strong                     −1                                                            2    Set ˜K ←P Σ (K) ∩L( ˜G)
+non-blockingness is used in this framework.                                                            3    Set ˜Σc ←Σc
+   Still, we consider a preﬁx-closed speciﬁcation language K = K ⊆                                                            4    Set ˜Σo ←Δ;
+L(GM ). Then we formulate the supervisory control problem for Mealy
+automata with nondeterministic output function (SCPMNF).
+   Problem II.2. (SCPMNF) Let GM be a plant Mealy automaton de-      In Algorithm MODEL-TRANSF, language ˜K deﬁned in line 2 can
+signed with controllable events Σc. Let K ⊆L(GM ) be a speciﬁcation   be recognized as follows. Let H be the FSA generating K, i.e., L(H) =
+language. Find a strongly non-blocking supervisor S : O(L(GM )) →  K. First, we add self-loop for each event in Δ at each state in H and
+2Σ c  s.t.                                                           denote by ˜H the resulting FSA. Then, we take the product composition
+ 1. S is safe, i.e., L(S/GM ) ⊆K;                                    of ˜H and ˜G and it is easy to verify that the resulting product FSA
+ 2. S is maximally permissive, i.e., for any strongly non-blocking S′   generates ˜K.
+      s.t. L(S′/GM )⊆K, we have that Le(S/GM )̸⊂Le(S′/GM ).        Remark III.1 Let us discuss the intuition of the proposed transfor-
+   Remark II.4 Similar to the blockingness issue, the maximal permis-   mation algorithm. The key idea is to separate the control and observa-
+siveness is also deﬁned in terms of the extended language rather than the   tion that are originally coupled in the Mealy automaton GM without
+generated language. For example, let us still consider GM in Fig. 1(a)   essentially affecting the real dynamic of the system. In fact, we see that
+and supervisor S deﬁned by Equation (5). Suppose that S′ is another   the transformed FSA ˜G is bipartite automaton consisting of two types
+supervisor deﬁned by S′(α) = {σ1}, ∀α ∈Δ∗. Then we have that   of states Q and Q × Σ. Intuitively, a state in Q is a real system state
+L(S/GM ) = L(S′/GM ) = {σ1σ1},  i.e., their generated languages   from which we make a control decision and then move to a state in
+are exactly the same. However, (σ1, δ2)(σ1, δ1) ∈Le(S′/GM ) but  Q × Σ, which is just a intermediate state. From this intermediate state,
+(σ1, δ2)(σ1, δ1) /∈Le(S/GM ). This implies that S′ is more permis-    all output symbols associated with this transition can occur and each
+sive than S under some possible observation realization of a string,   of them leads to the same system state that is reached in the original
+although their generated languages are the same. This is why we   model. This essentially captures the state-dependent nondeterministic
+choose Le(S/GM )̸ ⊂Le(S′/GM ) as the maximal permissiveness   output without affecting the system’s dynamic. The set of controllable
+criterion. In general, Le(S/GM )̸ ⊂Le(S′/GM ) and L(S/GM )̸ ⊂   events is still Σc. Because the transformed FSA is bipartite, after a
+L(S′/GM ) are incomparable, i.e., neither condition implies the other.   system event is generated, it forces an output symbol, including ϵ, to
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 62, NO. 5, MAY 2017                                                                2579
+
+
+
+                                                                        Proof: We prove by induction on the length of the string. Clearly,
+                                                                        ϵ ∈L(S/ ˜G) and (ϵ, ϵ) ∈Le(S/GM ) by deﬁnition. Now, we assume
+                                                                              that Equation (8) holds for n = k and we want to show that it still holds
+                                                                           for n = k + 1.
+                                                                                       First,  we   suppose   that   (σ1, δ1) . . . (σk , δk )(σk + 1, δk + 1)∈
+                                                  Le(S/GM ). By the deﬁnition of Le(S/GM ), this implies that:
+                                                                       1) (σ1, δ1) . . . (σk , δk )∈Le(S/GM );
+                                                                       2) (σ1, δ1) . . . (σk , δk )(σk + 1, δk + 1)∈Le(GM ); and
+Fig. 2:  For ˜G: ˜Σc = {σ1, σ2} and ˜Σo = {δ1, δ2}. (a) Transformed ˜G.                                                                       3) σk + 1 ∈S(δ1 . . . δk ) ∪Σu c.
+(b) Speciﬁcation ˜K.
+                                                    By  the  induction  hypothesis,  1)  implies  that σ1δ1 . . . σk δk ∈
+occur before the next system event is generated. Finally, we would  L(S/ ˜G).  By  the  transformation  algorithm,  we  know   that
+like to remark that, although event in Σ and event in Δ are generated    ˜f(q0, σ1δ1 . . . σk δk ) = f(q0, σ1 . . . σk ) =: qk , which  also  implies
+alternatively in order, they are occurring simultaneously physically.    that ˜f(qk , σk + 1)!. Moreover, since δk + 1 ∈λ(qk , σk + 1), we also have
+However, we will show later that such discrepancy is not an issue for    ˜f(qk , σk + 1δk + 1)!. Since PΔ (σ1δ1 . . . σk δk ) = δ1 . . . δk , we know
+the purpose of synthesis.                                                    that σk + 1 ∈S(PΔ (σ1δ1 . . . σk δk )). Moreover, since σk + 1 ∈˜Σu o and
+   Remark III.2 In [5], a similar transformation was used for the pur-   δk + 1 ∈˜Σu c, we have that σ1δ1 . . . σk δk σk + 1δk + 1 ∈L(S/ ˜G).
+pose of learning and inference. However, in the present technical note,     Next, we suppose σ1δ1 . . . σk + 1δk + 1 ∈L(S/ ˜G). We also have:
+we use the transformation for the purpose of control synthesis. It is not    1) σ1δ1 . . . σk δk ∈L(S/ ˜G);
+always true that a transformation that preserves some desired property    2) σ1δ1 . . . σk δk σk + 1δk + 1 ∈L( ˜G);
+for the original system can still preserve the same desired property    3) σk + 1 ∈S(P (σ1δ1 . . . σk δk ))∪Σu c = S(δ1 . . . δk )∪Σu c.
+for the closed-loop system under control. Consequently, we need to    By the induction hypothesis, 1) implies that (σ1, δ1) . . . (σk , δk )∈
+handle the issues of observability, controllability and the speciﬁcation  Le(S/GM ). Moreover, 2) implies  that f(qk , σk + 1)! and δk + 1 ∈
+language, which do not exist in [5]. Moreover, the output function in [5]   λ(qk , σk + 1), where  qk =f(q0, σ1 . . . σk ).  Therefore, by  σk + 1 ∈
+is deterministic, while we consider non-deterministic output function   S(δ1 . . . δk ) ∪Σu c,  we  have  (σ1, δ1) . . . (σk , δk )(σk + 1, δk + 1)∈
+in the present technical note.                              Le(S/GM ).                             ■
+  Let us illustrate the transformation algorithm Algorithm MODEL-     With the above result, next, we show that safety is preserved under
+TRANSF by the following example.                                    the proposed transformation.
+   Example III.1 Let us still consider the Mealy automaton GM shown     Lemma III.2 Let GM be the Mealy automaton, ˜G be the trans-
+in Fig. 1(a) and the speciﬁcation language K generated by the FSA   formed FSA and S : Δ∗→2Σ c be a supervisor. Then we have
+shown in Fig. 1(b). Then the transformed FSA ˜G and the transformed
+speciﬁcation language ˜K are shown in Figs. 2(a) and (b), respectively.              L(S/GM ) ⊆K ⇔L(S/ ˜G) ⊆˜K               (9)
+Note that the automaton that generates the transformed speciﬁcation                                                                        Proof: (⇒) Suppose that L(S/GM ) ⊆K. Let us consider an arbi-
+language ˜K can be obtained by ﬁrst adding self-loops with Δϵ  at    trary string σ1δ1 . . . σn δn ∈L(S/ ˜G). Then, by Lemma III.1, we know
+each state in the automaton generating K and then taking the parallel                                                                              that (σ1, δ1) . . . (σn , δn ) ∈Le(S/GM ), which implies σ1 . . . σn ∈
+composition with the transformed plant ˜G. Initially, if σ1 ∈Σ occurs,                                                L(S/GM ) ⊆K. Therefore, σ1δ1 . . . σn δn ∈P Σ−1 (K) ∩L( ˜G) = ˜K.
+then we move to intermediate state (0, σ1). From this state, two possible   Note that for any string in L(S/ ˜G) that ends up with a symbol in Σ,
+output δ1 and δ2 can occur and both of them lead to system state 1,  we can always extend it to a string ending up with a symbol in Δ,
+which is the same state reached by σ1 from state 0 in the original   since all events in Δ are uncontrollable. Therefore, considering string
+model GM .                                                                σ1δ1 . . . σn δn is w.l.o.g.
+                                                       (⇐) Suppose that L(S/ ˜G) ⊆˜K. Let us consider an arbitrary
+B. Correctness of the Transformation
+                                                                             string σ1 . . . σn ∈L(S/GM ). Let (σ1, δ1) . . . (σn , δn ) ∈Le(S/GM )
+  Now, we discuss how to use the transformed model to synthesize a   be an extended string such that δ1 . . . δn  is an output realization of
+non-blocking supervisor that works for the original model.             σ1 . . . σn . By Lemma III.1, we know that σ1δ1 . . . σn δn ∈L(S/ ˜G).
+  We note that one important property of the transformation is that,  Assume that σ1 . . . σn /∈K, then we know that σ1δ1 . . . σn δn /∈
+although the event sets of GM and ˜G are different, the domain of  P Σ−1 (K) ∩L( ˜G) = ˜K. However, it contradicts the fact that L(S/ ˜G) ⊆
+control decisions and the domain of observations for each model are   ˜K. Therefore, σ1 . . . σn ∈K, i.e., L(S/GM ) ⊆K.        ■
+exactly the same. Speciﬁcally, for both GM and ˜G, a control decision     The following is a Corollary of Lemma III.2.
+is an element in 2Σ c and an observation is a sequence of symbols      Corollary III.1 Let  S : Δ∗→2Σ c   be  a   supervisor.  Then
+in Δ∗. Therefore, for supervisor S : PΔ (L( ˜G)) →2Σ                                                                                            c designed for  L(S/GM ) = ΘΣ (Le(S/GM )) = PΣ (L(S/ ˜G)),  where PΣ  : (Σ ∪
+˜G, where PΔ  : ˜Σ∗→Δ∗, it is still a well-deﬁned supervisor for GM ,  Δ)∗→Σ∗.
+since PΔ (L( ˜G)) = O(L(GM )) ⊆Δ∗. This allows us to directly use     Next, we show that non-blockingness is also preserved under the
+the supervisor synthesized for the transformed model ˜G to control the   proposed transformation.
+original model GM .                                      Lemma III.3 Let GM be the Mealy automaton, ˜G be the trans-
+                                                                                                                                                                              c be a supervisor. Then S is a strongly  Note that, for any string s in L(S/ ˜G), we can always write it in   formed FSA and S : Δ∗→2Σ
+the form of s = σ1δ1 . . . σn δn ∈(ΣΔϵ)∗, where σi ∈Σ and δi ∈Δϵ   non-blocking supervisor for GM , if and only if, S is a non-blocking
+That is, if two events in Σ appear in succession in s, then we insert an   supervisor for ˜G, i.e.,
+ϵ-event in between. The following result says that, under the control
+of the same supervisor S : Δ∗→2Σ c , GM and ˜G essentially generate       Le,m (S/GM ) = Le(S/GM ) ⇔Lm (S/ ˜G) = L(S/ ˜G)     (10)
+the same behavior.
+  Lemma III.1 Let GM be the Mealy automaton and ˜G be the trans-      Proof: (⇒) By  contradiction. Suppose  that Le,m (S/GM ) =
+formed FSA. Let S : Δ∗→2Σ c be a supervisor. Then             Le(S/GM )   and   assume    that  Lm (S/ ˜G) ⊂L(S/ ˜G).   Let
+                                                                σ1δ1 . . . σn δn ∈L(S/ ˜G) \ Lm (S/ ˜G)  be  a  blocked  string. By
+  (σ1, δ1) . . . (σn , δn )∈Le(S/GM )⇔σ1δ1 . . . σn δn ∈L(S/ ˜G).  (8)  Lemma  III.1, we know  that  (σ1, δ1) . . . (σn , δn ) ∈Le(S/GM ).
+
+2580                                                               IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 62, NO. 5, MAY 2017
+
+
+
+Since  S    is   strongly   non-blocking   for  GM ,  we   can
+ﬁnd           (σ1, δ1) . . . (σn , δn )(σn + 1, δn + 1) . . . (σn + k , δn + k ) ∈
+Le,m (S/GM ).   Again,  by  Lemma    III.1,  we  know   that
+σ1δ1 . . . σn δn σn + k δn + k ∈L(S/ ˜G).   By    the    deﬁnition    of
+Le,m (S/GM ), we know that σ1 . . . σn + k ∈Lm (GM ). Therefore,
+we know that ˜f(q0, σ1δ . . . σn + k δn + k ) = f(q0, σ1 . . . σn + k ) ∈Qm ,
+i.e., σ1δ . . . σn + k δn + k ∈Lm (S/ ˜G). This contradicts the fact that
+σ1δ1 . . . σn δn is a blocked string.
+  (⇐) By  contradiction. Suppose  that Lm (S/ ˜G)=L(S/ ˜G) and    Fig.  3.  Two  incomparable maximal  solutions.  (a) L(S1/ ˜G).  (b)
+                                                            L(S2/ ˜G).assume that Le,m (S/GM )⊂Le(S/GM ). Let (σ1, δ1) . . . (σn , δn )∈
+Le(S/GM ) be a blocked string. By Lemma III.1, σ1δ1 . . . σn δn ∈
+L(S/ ˜G).  Since  S   is  non-blocking   for   ˜G,  we  can  ﬁnd   transformed parameters as an instance of SSCPPO. Then we exploit
+σ1δ1 . . . σn δn . . . σn + k δn + k ∈Lm (S/ ˜G). By Lemma   III.1, we   Algorithm NB-SOLU recently proposed in [21] to solve the trans-
+know   that   (σ1, δ1) . . . (σn , δn )(σn + 1, δn + 1) . . . (σn + k , δn + k ) ∈   formed standard supervisory control problem. Algorithm NB-SOLU is
+Le(S/GM ).        Since        σ1δ1 . . . σn + k δn + k ∈Lm (S/ ˜G),   rather complicated and it is beyond the scope of this technical note;
+by     the     transformation,    f(q0, σ1 . . . σn + k ) ∈Qm ,      i.e.,   the reader is referred to [21] for more details and examples. Note that
+(σ1, δ1) . . . (σn , δn )(σn + 1, δn + 1) . . . (σn + k , δn + k )∈Le,m (S/GM ).    the complexity of Algorithm NB-SOLU is exponential in the size of
+This contradicts the assumption (σ1, δ1) . . . (σn , δn ) is blocked.  ■   ˜G and the transformed model ˜G is linear in the size of the original
+   Finally, we show that supervisor S solves SSCPPO if and only if it   Mealy automaton GM . Therefore, the overall complexity of Algorithm
+solves SCPMNF.                                    MEALY-SYNT is exponential in the size of GM . However, such an
+   Theorem III.1 S is a maximally permissive safe and non-blocking   exponential complexity is known to be unavoidable under the partial
+supervisor for the transformed FSA ˜G with respect to ˜K, ˜Σc and ˜Σo, if   observation setting [16].
+and only if, S is a maximally permissive safe and strongly non-blocking    We illustrate the transformation-based synthesis method by the fol-
+supervisor for GM with respect to K and Σc                         lowing example.
+   Proof: (⇒) By contradiction. Let us assume that S is not max-     Example III.2 We still consider the Mealy automaton GM shown
+imally permissive for GM . Then we know that there exists another   in Fig. 1(a) and the speciﬁcation language K generated by the FSA
+safe and strongly non-blocking supervisor S′ such that Le(S/GM ) ⊂   shown in Fig. 1(b). Then the transformed FSA ˜G and the transformed
+Le(S′/GM ). Then,  for any  string σ1δ1 . . . σn δn ∈L(S/ ˜G), by   speciﬁcation language ˜K have been shown in Figs. 2(a) and (b), respec-
+Lemma  III.1, we know  that (σ1, δ1) . . . (σn , δn ) ∈Le(S/GM ) ⊂    tively, where ˜Σc = Σ and ˜Σo = Δ. Note that, it was shown in [21] that
+Le(S′/GM ). Again, by Lemma III.1, this implies that σ1δ1 . . . σn δn ∈  SSCPPO does not have a unique supremal supervisor in general and it
+L(S′/ ˜G). Note that for any string σ1δ1 . . . σn , we can always extend  may have several incomparable maximal supervisors. For example, for
+it to a string in the form of σ1δ1 . . . σn δn , since δn  is uncontrol-   the transformed problem, there are two incomparable maximal super-
+lable. Therefore, L(S/ ˜G) ⊆L(S′/ ˜G). Now let us consider a string   visors S1 and S2, whose closed-loop behaviors are shown in Figs. 3(a)
+(σ1, δ1) . . . (σn , δn ) ∈Le(S′/GM ) \ Le(S/GM ). By Lemma III.1,   and (b), respectively. For S1, by choosing to enable both σ and σ2
+we know that σ1δ1 . . . σn δn ∈L(S′/ ˜G) \ L(S/ ˜G). Therefore, we    initially, we cannot enable σ2 after observing δ1, since we are not sure
+know that L(S/ ˜G) ⊂L(S′/ ˜G). Moreover, by Lemma III.2 and III.3,   whether the system is at state 1 or 2. However, for S2, by choosing
+we know that S′ is safe and strongly non-blocking for GM implies that   to disable σ2  initially, event σ2 can be enabled after observing δ1,
+S′ is also safe and non-blocking for ˜G. However, this contradicts the   since we know for sure that the current state is 1. Note that, although
+fact that S is a maximally permissive safe and non-blocking supervisor  Le(S1/GM ) and Le(S2/GM ) are incomparable, for this example, we
+for ˜G.                                                          have that L(S2/GM ) ⊂L(S1/GM ). But, as we discussed earlier, it
+  (⇐) Still by contradiction. Assume that S is not maximally permis-   does not imply that S1 is more permissive than S2, since S1 does not
+sive for ˜G. Then there exists a safe and non-blocking supervisor S′ such   allow σ2 to occur after observing δ2, while it is allowed by S2.
+that L(S/ ˜G) ⊂L(S′ ˜G). By Lemma III.1, similar to the “only if” part,
+                                                                                       IV. FURTHER RESULTS ON MAXIMAL PERMISSIVENESS
+we know that Le(S/GM ) ⊂Le(S′/GM ). Moreover, by Lemma III.2
+and III.3, we know that S′ is safe and non-blocking for ˜G implies      In the above development, we have shown how to synthesize a maxi-
+that S′ is also safe and strongly non-blocking for GM . However, this   mally permissive safe and non-blocking supervisor for Mealy automata
+contradicts the fact that S is a maximally permissive safe and strongly   with nondeterministic output function. Note that the maximally permis-
+non-blocking supervisor for GM .                  ■   siveness is deﬁned in terms of the extended language of the closed-loop
+                                                                    system, i.e., a supervisor S is maximal if for any other safe and non-
+                                                                   blocking supervisor S′, we have Le(S/GM )̸ ⊂Le(S′/GM ). The mo- Algorithm 2 MEALY-SYNT
+                                                                              tivation for the this requirement has been discussed in Remark II.4.
+   input: GM , K and Σc.
+                                                              However, in addition to the above requirement, one may impose an
+   output: S∗.
+                                                                         additional requirement in terms of the generated language L(S/GM ) 1    Obtain ˜G and ˜K by Algorithm MODEL-TRANSF;
+                                                             and require that, for any other safe and non-blocking supervisor S′, we
+ 2   Using Algorithm NB-SOLU in [21] to synthesize a maximally
+                                                                         also have L(S/GM )̸ ⊂L(S′/GM ). In general, the synthesized max-        permissive non-blocking supervisor S∗for ˜G with respect to
+        ˜K, ˜Σc and ˜Σo;                                               imally permissive supervisor does not satisfy the above requirement.
+                                                                For example, the supervisor S2 in Fig. 3(b) is a maximally permissive 3   return S∗as the maximally permissive safe and
+                                                                          supervisor, but L(S2/GM ) ⊂L(S1/GM ).
+       non-blocking supervisor for GM ;
+                                                                            Hereafter, we consider a special case, under which the synthesized
+                                                                      supervisor is not only maximally permissive in terms of the extended
+  Based on Theorem III.1, Algorithm MEALY-SYNT is proposed in   language but also maximally permissive in terms of the generated
+order to solve SCPMNF. First, we transform the Mealy automaton GM    language. We say that the output function λ : Q × Σϵ →2Δ ϵ is deter-
+and its speciﬁcation K to ˜G and ˜K, respectively, and formulate the   ministic if ∀s ∈Q, ∀σ ∈Σϵ : |λ(q, σ)| = 1. Then the following result
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 62, NO. 5, MAY 2017                                                                2581
+
+
+
+reveals that the synthesized maximally permissive supervisor is also   gorithm was proposed to transform this problem to a supervisor syn-
+maximal in terms of the generated language when the output function    thesis problem in the conventional framework. We showed that the
+is deterministic.                                                       supervisor synthesized for the transformed problem solves the original
+   Theorem IV.1 Suppose that the output function λ for GM  is deter-   synthesis problem, since the transformation preserves all desired prop-
+ministic. Let S a maximally permissive safe and strongly non-blocking    erties of the closed-loop system. Therefore, the general non-blocking
+supervisor. Then for any other safe and strongly non-blocking supervi-   supervisor synthesis problem under observation uncertainties was
+sor S′, we have that L(S/GM )̸ ⊂L(S′/GM ).                          solved.
+   Proof: By contradiction. Suppose that S a maximally permissive
+safe and strongly non-blocking supervisor. We assume that there                   ACKNOWLEDGMENT
+exists another safe and strongly non-blocking supervisor S′ such that                                                           The author thanks the anonymous reviewers for their useful com-
+L(S/GM ) ⊂L(S′/GM ).                                                             ments on improving this technical note.
+   First, we claim  that Le(S/GM ) ⊆Le(S′/GM ). To  see  this,
+we show that s ∈Le(S/GM ) implies s ∈Le(S′/GM ) by induc-                        REFERENCES
+tion on the length of s. Clearly, the induction basis holds, since
+(ϵ, ϵ) ∈Le(S/GM ) and  (ϵ, ϵ) ∈Le(S′/GM ) by deﬁnition. Now,     [1] M. V. S. Alves, J. C. Basilio, A. E. Carrilho da Cunha, L. K. Carvalho,
+                                                                         and M. V. Moreira. Robust supervisory control against intermittent loss of
+let us assume that for any (σ1, δ1) . . . (σk , δk ) ∈Le(S/GM ), we         observations. In Proc. 12th Int. Workshop Disc. Event Syst., vol. 12, pp.
+have (σ1, δ1) . . . (σk , δk ) ∈Le(S′/GM ). For the induction step, let        294–299, 2014.
+us consider an extended string (σ1, δ1) . . . (σk , δk )(σk + 1, δk + 1) ∈     [2] C. G. Cassandras and S. Lafortune. Introduction to Discrete Event Systems.
+Le(S/GM ). This implies that                                   New York: Springer, 2nd ed., 2008.
+                                                                                      [3] R. Cieslak, C. Desclaux, A. S. Fawaz, and P. Varaiya. Supervisory control
+ 1) (σ1, δ1) . . . (σk , δk ) ∈Le(S/GM );                                                                                     of discrete-event processes with partial observations. IEEE Trans. Autom.
+ 2) (σ1, δ1) . . . (σk , δk )(σk + 1, δk + 1) ∈Le(GM );                              Control, vol. 33, no. 3, pp. 249–260, 1988.
+ 3) σk + 1 ∈S(δ1 . . . δk ).                                                         [4] Y. Huang, K. Rudie, and F. Lin. Decentralized control of discrete-event
+  Since the output function is deterministic, the output realization of        systems when supervisors observe particular event occurrences. IEEE
+σ1 . . . σ2 is unique, which is δ1 . . . δn . Therefore, we know that σk + 1 ∈         Trans. Autom. Contr., vol. 53, no. 1, pp. 384–388, 2008.
+                                                                                      [5] M. N. Irfan, C. Oriat, and R. Groz. “Model inference and testing, ”in
+S′(δ1 . . . δk ); otherwise σ1 . . . σk σk + 1̸ ∈L(S′/GM ), which contra-        Advances in Computers, vol. 89, pp. 89–139, 2013.
+dicts the fact that L(S/GM ) ⊂L(S′/GM ). Moreover, by the induction     [6] N. Kanagawa and S. Takai, “Diagnosability of discrete event systems
+hypothesis, 1) implies that (σ1, δ1) . . . (σk , δk ) ∈Le(S′/GM ). There-         subject to permanent sensor failures,” Int. J. Control, vol. 88, no. 12,
+fore, we know that (σ1, δ1) . . . (σk , δk )(σk + 1, δk + 1) ∈Le(S′/GM ).          pp. 2598–2610, 2015.
+                                                                                      [7]  F. Lin, “Control of networked discrete event systems: Dealing with com-
+  Since  L(S/GM ) ⊂L(S′/GM ),  we   consider   a    string                                                                              munication delays and losses,” SIAM J. Control Optimiz., vol. 52, no. 2,
+σ1 . . . σn σn + 1 ∈L(S′/GM ) such  that σ1 . . . σn ∈L(S/GM ) but         pp. 1276–1298, 2014.
+σ1 . . . σn σn + 1̸ ∈L(S/GM ). This implies that σn + 1 /∈S(δ1 . . . δn ).     [8]  F. Lin and W. M. Wonham, “On observability of discrete-event systems,”
+Still, since the output function is deterministic, we know that the         Inform. Sci., vol. 44, no. 3, pp. 173–198, 1988.
+unique output  realization of σ1 . . . σ2  is  δ1 . . . δn ,  i.e.,  for any     [9]  S.-J. Park and K.-H. Cho, “Delay-robust supervisory control of discrete
+                                                                                   event systems with bounded communication delays,” IEEE Trans. Autom.
+(σ1, δ′1) . . . (σn , δ′n ) ∈Le(S/GM ), we  have  δ′i = δi, i = 1, . . . n.          Contr., vol. 51, no. 5, pp. 911–915, 2006.
+Therefore,  σn + 1 /∈S(δ1 . . . δn )   implies   that  σ . . . σn σn + 1 /∈    [10]  P. J. Ramadge and W. M. Wonham, “Supervisory control of a class of
+L(S/GM ). This together with Le(S/GM ) ⊆Le(S′/GM ) implies          discrete event processes,” SIAM J. Control Optimiz., vol. 25, no. 1, pp. 206–
+that Le(S/GM ) ⊂Le(S′/GM ), which contradicts the fact that S is         230, 1987.
+                                                                               [11] K. Rohloff. “Sensor failure tolerant supervisory control,” in Proc. 44th
+a maximally permissive supervisor.                 ■                                                                 IEEE Conf. Decision and Control, pp. 3493–3498, 2005.
+   Remark IV.1  It is worth remarking that using Mealy automata with    [12] K. Rohloff, “Bounded sensor failure tolerant supervisory control,” in Proc.
+deterministic output function is still more general than using the con-         11th Int. Workshop Discrete Event Systems, pp. 272–277, 2012.
+ventional natural projection or mask framework, since it allows state-    [13] A. M. S´anchez and F. J. Montoya. “Safe supervisory control under ob-
+                                                                                             servability failure,” Discrete Event Dynam. Syst.: Theory & Appl., vol. 16,dependent observations. In fact, the supervisory control problem under
+                                                                                     no. 4, pp. 493–525, 2006.
+transition-based observation investigated by [4] is essentially a special    [14]  S. Shu and F. Lin, “Supervisor synthesis for networked discrete event sys-
+case of Mealy automata with deterministic output function. Specif-        tems with communication delays,” IEEE Trans. Autom. Control, vol. 60,
+ically, we can deﬁne Δ = Σ and for each q ∈Q, σ ∈Σ, we have         no. 8, pp. 2183–2188, 2015.
+λ(q, σ) = σ or ϵ. Namely, λ(q, σ) = σ if this transition is observable    [15]  S. Takai and T. Ushio, “Veriﬁcation of codiagnosability for discrete
+                                                                                   event systems modeled by mealy automata with nondeterministic out-
+and λ(q, σ) = ϵ if this transition is unobservable. Although [4] studies                                                                                   put functions,” IEEE Trans. Autom. Control, vol. 57, no. 3, pp. 798–804,
+a decentralized control problem, only supervisor existence conditions        2012.
+are provided. Therefore, our transformation-based approach also solves    [16]  J. N. Tsitsiklis, “On the control of discrete-event dynamical systems,”
+the supervisor synthesis problem under transition-based observation in        Math. Control, Signals and Syst., vol. 2, no. 2, pp. 95–107, 1989.
+                                                                               [17]  T. Ushio and S. Takai, “Nonblocking supervisory control of discretethe centralized setting. Moreover, an example was provided in [4] to
+                                                                                   event systems modeled by mealy automata with nondeterministic out-
+show that we cannot transform the FSA model for the purpose of control         put functions,” IEEE Trans. Autom. Control, vol. 61, no. 3, pp. 799–804,
+by simply renaming the same event that has different observation prop-        2016.
+erties at different transitions. The issue of this approach is that changing    [18] W. Wang, A. R. Girard, S. Lafortune, and F. Lin, “On codiagnosability and
+the label of an event may change its controllability. However, the result         coobservability with dynamic observations,” IEEE Trans. Autom. Control,
+                                                                                              vol. 56, no. 7, pp. 1551–1566, 2011.
+in this technical note suggests that transition-based observation can                                                                               [19]  S. Xu and R. Kumar, “Discrete event control under nondeterministic
+be reduced to projection-based observation for the centralized case by          partial observation,” in Proc. IEEE Conf. Aut. Sci. Eng., pp. 127–132,
+separating the issues of controllability and observability appropriately        2009.
+for each transition. We believe similar results can also be established    [20] X. Yin and S. Lafortune, “Codiagnosability and coobservability under dy-
+                                                                        namic observations: Transformation and veriﬁcation,” Automatica, vol. 61,for the decentralized case by using the proposed transformation.
+                                                                                     pp. 241–252, 2015.
+                                                                               [21] X. Yin and S. Lafortune, “Synthesis of maximally permissive supervi-
+                          V. CONCLUSION                                                                                        sors for partially observed discrete event systems,” IEEE Trans. Autom.
+  In this technical note, we investigated the supervisor synthesis prob-         Control, vol. 61, no. 5, pp. 1239–1254, 2016.
+lem in the Mealy automata framework. A model transformation al-

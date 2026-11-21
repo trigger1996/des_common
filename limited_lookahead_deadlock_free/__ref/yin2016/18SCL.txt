@@ -1,0 +1,510 @@
+                                                     Systems & Control Letters 119 (2018) 101–107
+
+
+                                            Contents lists available at ScienceDirect
+
+                        Systems & Control Letters
+
+
+                                          journal homepage: www.elsevier.com/locate/sysconle
+
+
+
+Trajectory detectability of discrete-event systems
+Xiang Yin a,b,*, Zhaojian Li c, Weilin Wang d
+a Department of Automation, Shanghai Jiao Tong University, Shanghai 200240, China
+b Key Laboratory of System Control and Information Processing, Ministry of Education of China, Shanghai 200240, China
+c Department of Mechanical Engineering, Michigan State University, East Lansing, MI 48824, USA
+d Faculty of Engineering, Monash University, Clayton, VIC 3800, Australia
+
+
+a r t i c l e    i n f o             a b s t r a c t
+
+
+Article history:                     We investigate the trajectory estimation problem for partially-observed discrete event systems. In some
+Received 19 June 2017                            applications, only knowing the current state of the system may be insufficient, and knowing which
+Received in revised form 14 July 2018              trajectory the system takes to reach the current state could be important. This requires more precise
+Accepted 16 July 2018                       knowledge about the system. In this paper, a language-based framework is proposed in order to tackle
+                                                   this problem. Two new notions of detectability, called trajectory detectability and periodic trajectory
+                                                   detectability, are proposed to capture different requirements in the aforementioned trajectory estimation
+Keywords:
+Discrete-event systems                        problem. Effective verification algorithms are also provided. Our results extend the theory on detectability
+Trajectory estimation                             of discrete event systems from state estimation problem to trajectory estimation problem.
+Detectability                                                       © 2018 Elsevier B.V. All rights reserved.
+
+
+
+
+
+1. Introduction                                                  estimation problem has also been investigated in the context of
+                                                                  colored graph [19].
+   System estimation is one of the central problems in systems and         All of the aforementioned works on detectability are state-
+control theory. In many applications, we do not have full access     based. Namely, one wants to estimate the current state of the
+to the system’s internal state and need to perform state estima-    system based on a given model. However, in some applications,
+tion. The state estimation problem becomes particularly important    knowing the current state of the system is not sufficient. For
+when one wants to make decisions based on the limited system    example, in the application of location-based services (LBS) [20], a
+information. In this paper, we investigate the state estimation    DES is usually used to represent the connective of a region and each
+problem for partially-observed Discrete-Event Systems (DES).         state in it corresponds to a location. Sometimes, however, simply
+   The problem of state estimation has drawn considerable atten-    knowing the current location may not be sufficient, for instance, if
+tions in the DES literature due to its importance; see, e.g., [1–6].   we want to know by which path this location is reached. Therefore,
+This problem was initiated in [1,2], where the notion of observabil-     instead of estimating the state of the system, one may also be
+ity was defined.1 Recently, the state estimation problem has been     interested in estimating the trajectory of the system.
+studied more systematically in the framework of detectability;        In this paper, we systematically study the trajectory estimation
+see, e.g., [4,5,8–14]. Particularly, in [4], the authors define four    problem in the context of partially-observed DES. Specifically, this
+types of detectability in order to capture different requirements in    paper has the following contributions. First, we define the notions
+practice. These notions of detectability have been further general-     of trajectory detectability and periodic trajectory detectability.
+ized by [5,8]. For example, [8] defines a generalized detectability    These two notions provide the conditions for determining a priori if
+based on the state disambiguation problem [3,6]. Detectability has    the trajectory of a given system can be determined after a bounded
+also been studied in the framework of stochastic DES by [9,11].    delay or be determined periodically. Second, for regular languages,
+When the original system is not detectable, several approaches       i.e., languages that can be marked by finite-state automata, we
+have been proposed in order to enforce detectability, e.g., by sen-    provide effective algorithms to verify these two conditions. In
+sor activations [15,16] and by supervisory control [17,18]. State     particular, the verification algorithm for trajectory detectability re-
+                                                                    quires polynomial-times using a twin-machine-like construction.
+                                                 On the other hand, the algorithm for verifying periodic trajectory
+ * Corresponding author at: Department of Automation, Shanghai Jiao Tong Uni-     detectability requires exponential complexity.
+versity, Shanghai 200240, China.
+                                                              Note that, although the study of trajectory detectability is moti-    E-mail address: yinxiang@sjtu.edu.cn (X. Yin).
+  1 The notion of observability was also used in [7] as a condition under which a    vated by state detectability [4], their verifications are quite differ-
+partial-observation supervisor can correctly make control decisions.                 ent. In general, we can always refine an automaton by expanding
+
+
+https://doi.org/10.1016/j.sysconle.2018.07.008
+0167-6911/© 2018 Elsevier B.V. All rights reserved.
+
+102                                                          X. Yin et al. / Systems & Control Letters 119 (2018) 101–107
+
+its state space such that each state carries more information. How-
+ever, the domain of language is infinite and one may not always be
+able to use finite states to precisely capture the (infinite) trajectory
+information. Our framework is fully language-based and it does
+not depend on the automaton realizing the language. Moreover,
+we show that infinite language information can still be effectively
+verified by using its underlying automaton. In particular, we only
+exploit the standard twin-machine construction [21,22], which is
+different from the detector construction proposed in [8]. We show                      Fig. 1. For both G1 and G2: Σo = {o} and Σuo = {a, b}.
+that the phenomenon of information merge plays an important role
+in the trajectory estimation problem. This issue also does not exist
+in the state-based framework for detectability.                        Let q ∈Q be a state in G. We denote by InG(q) the set of events
+  We also would like to remark that our paper is not the first one    entering q, i.e.,
+investigating the trajectory estimation problem in DES. In [23], the
+authors investigate a similar problem and the notion of invertibility     InG(q) = {σ ∈Σ : ∃q′ ∈Q s.t. δ(q′, σ) = q}.                    (3)
+is proposed. Our work is different from [23] due to the following
+                                                                              Finally, let s ∈P(L(G)), we denote by RG(s) the set of states that canreasons. First, we systematically investigate both trajectory de-
+                                                           be reached by observing s, i.e.,
+tectability and periodic trajectory detectability; both of these two
+notions are different from invertibility. Specially, invertibility only                                                                        RG(s) = {q ∈Q  : ∃t ∈Σ∗s.t. δ(q0, t) = q ∧P(t) = s}.          (4)
+requires to recover the last n events but detectability requires to
+recover the precise trajectory executed by the system. Second, we
+provide a language-based framework for studying this problem,     3. State-Based detectability and trajectory-based detectability
+while the result in [23] is state dependent. Finally, invertibility
+is defined only for prefix-closed languages, while trajectory de-      Due to measurement uncertainty, one may not always have a
+tectability is defined for non-prefix-closed languages.                 perfect knowledge about the current status of the system. In [4],
+                                                                 the notion of (strongly) detectability was introduced in order to
+                                                                 capture whether or not we can eventually have a perfect knowl-2. Preliminaries
+                                                           edge about the system after finite delay. In this paper, we refer to
+                                                                         detectability defined in [4] as state detectability. First, we recall its
+   Let Σ be a finite set of events. A string s = σ1 . . . σn is finite
+                                                                           definition.
+sequence of events and we denote by |s| the length of s. We use
+ϵ to denote the empty string with |ϵ| =  0. We denote by Σ∗
+                                                                  Definition 1. A DFA G = (Q, Σ, δ, q0, Qm) is said to be statethe set of all strings including ϵ. A language L ⊆Σ∗is a set of
+                                                                        detectable w.r.t. Σo if
+strings. The prefix-closure of language L is defined as L := {w ∈
+Σ∗: ∃v ∈Σ∗s.t. wv ∈L}. We say that L is prefix-closed if    (∃n ∈N)(∀s ∈L)[|P(s)| ≥n ⇒|RG(P(s))| = 1]                  (5)
+L =  L. We denote by L/s the post-language of L after string s,
+i.e., L/s := {t ∈Σ∗: st ∈L}. We denote by Card[L] the cardinality    Example 1. Let us consider system G1 shown in Fig. 1(a), where
+of L, which is the number of strings in L. For two strings s, t ∈Σ∗,   Σo = {o}. Clearly, this system is state detectable since RG(on) = {5}
+we write s ≤t if s ∈{t}.                                                 for any n ≥2. However, system G2 shown in Fig. 1(b) is not state
+  A deterministic finite-state automaton (DFA) is a 5-tuple G =     detectable. To see this, for any n ≥2, we can find on such that
+(Q, Σ, δ, q0, Qm), where Q is the finite set of states, Σ is the finite     RG(on) = {5, 6}, i.e., we can never determine the current state of
+set of events, q0 is the initial state, Qm is the set of marked states    the system precisely.
+and δ  : Q × Σ →Q is the partial transition function, where
+δ(q, σ) = q′ means that there exists a transition labeled with event         Intuitively, state detectability says that, after a finite delay, we
+σ from state q to state q′. The transition function is also extended to     will know exactly the current state of the system and maintain this
+Q × Σ∗in the usual manner; see, e.g., [24]. We denote by L(G) the     ability in the future. However, in some applications, this require-
+language generated by G, i.e., L(G) = {s ∈Σ∗: δ(q0, s)!}, where !    ment may be too strong. Therefore, in [4], the notion of periodic
+                                                                         state detectability was also proposed, which only requires that we
+means ‘‘is defined’’. We denoted by Lm(G) the language marked by
+G, i.e., L(G) = {s ∈Σ∗: δ(q0, s) ∈Qm}. We say that a language    can detect the state of the system periodically.
+L ⊆Σ∗is regular if there exists a DFA G such that Lm(G) = L.
+                                                                  Definition 2. A DFA G = (Q, Σ, δ, q0, Qm) is said to be periodically   In many cases, the event generated by the system cannot be
+                                                                            state detectable w.r.t. Σo ifobserved perfectly. Therefore, we assume that the event set Σ is
+partitioned into two disjoint sets Σ = Σo ˙∪Σuo, where Σo is the    (∃n ∈N)(∀s ∈L)(∀t ∈L/s : |P(t)| ≥n)
+set of observable events and Σuo denotes the set of unobservable     (∃t′ ≤t)[|RG(P(st′))| = 1]                                       (6)
+events. Then P  : Σ∗→Σ∗o denotes the natural projection that
+erases event in Σuo from a string; this can be defined by           Example 2.  Let us consider system G3 shown in Fig. 1(c) with
+              { P(s)σ       if σ ∈Σo                    Σo =  {o}. This system is not state detectable, since we cannotP(ϵ) = ϵ and P(sσ) =                                                                  (1)     distinguish states 4 and 5 after observing oo(ooo)n for any n ≥0.                         P(s)         if σ ∈Σuo
+                                                           However, it is periodically state detectable, since we always know
+The natural projection is also extended to 2Σ∗by P(L) = {s ∈Σ∗o  :     for sure that the current state is 0 after observing (ooo)n for any
+∃t ∈L s.t. P(t) = s}. We denote by P−1 the inverse projection.       n ≥0.
+   Given a DFA G and a set of states I ⊆Q , we denote by AccG(I)
+the set of states accessible from some state in I, i.e.,              Remark 1. Note that the system automaton G considered in [4]
+                                                              has multiple initial states; say Q0 ⊆Q . In the above definitions, we
+AccG(I) = {q ∈Q  : ∃q′ ∈I, ∃s ∈Σ∗s.t. δ(q′, s) = q}.           (2)    only consider the case where the initial state is unique. However,
+
+                                                               X. Yin et al. / Systems & Control Letters 119 (2018) 101–107                                          103
+
+this setting is just for the sake of simplicity and is without loss
+of generality, since we can add a new single initial state and add
+unobservable transitions from this new initial state to each state in
+Q0, which essentially simulates the case of multiple initial states.
+
+   In Example 1, we see that, although G1 is state detectable but
+G2 is not, they generate the same language, i.e., L(G1) = L(G2).
+In other words, a system, which is originally state detectable, may
+become non-detectable after refining its state-space and vice versa.      Fig. 2. Lm(G) is trajectory detectable but L(G) is not trajectory detectable, where
+                                                                Σo = {o} and Σuo = {a, b, c}.
+In fact, a state in an automaton only tells the system’s status about
+potential future behaviors. However, some information about the
+history is lost. In some cases, this history information is also very
+important. For example, in Fig. 1(a), even though we know for   Remark 2. Note that the opposite direction of the above statement
+sure that the system is at state 5 after observing oo, we still      is not true in general; an example has been provided in Fig. 1(a).
+                                                              Moreover, when the language under consideration is non-prefix-cannot determine how state 5 is reached, since both aoo and boo
+                                                                        closed, (periodic) trajectory detectability is no longer stronger thanare potential trajectories. Motivated by the above discussion, we
+                                                                        (periodic) state detectability in general; this issue has already been
+define the notion of trajectory detectability.
+                                                                  discussed in Example 3.
+
+Definition 3.  A language L is said to be trajectory detectable       Given a DFA G, we say that G is a tree if ∀s, t ∈L(G) :  s̸ = t ⇒
+w.r.t. Σo if                                                             δ(q0, s)̸ = δ(q0, t). The following result reveals that (periodic) state
+                                                                         detectability and prefix-closed (periodic) trajectory detectability
+(∃n ∈N)(∀s ∈L)[|P(s)| ≥n ⇒Card[P−1P(s) ∩L] = 1]          (7)    coincide when G is a tree.
+
+Definition 4. A language L is said to be periodically trajectory    Proposition 2.  Let G be a tree and Σo be a set of observable
+detectable w.r.t. Σo if                                                     events. Then G is (periodically) state detectable if and only if L(G) is
+                                                                             (periodically) trajectory detectable.
+(∃n ∈N)(∀s ∈L)(∀t ∈L/s : |P(t)| ≥n)
+(∃t′ ≤t)[Card[P−1P(st′) ∩L] = 1]                               (8)   Remark 3.  Intuitively, if G is a tree, then states and trajectories
+                                                                     carry the same information. Clearly, if a language is finite, or equiv-
+   Intuitively, trajectory detectability requires that, after a finite     alently, G is acyclic, then we can always refine G as a tree and make
+delay, we are able to precisely recover the trajectory that leads to    sure that each state in G uniquely carries the corresponding tra-
+the current state and maintain this ability in the future. Similarly,     jectory information. However, if we consider the general case, the
+periodic trajectory detectability requires that, we are able to pre-    following difficulties arise. First, we need to deal with non-prefix-
+cisely recover the trajectory of the system periodically.               closed languages. As we discuss earlier, trajectory detectability
+   Note that language L in the definition does not need to be prefix-     for the non-prefix-closed case is incomparable with either state
+                                                                         detectability or its prefix-closed case. More importantly, in general,closed. In fact, we consider non-prefix-closed language since it is
+                                                                 the language under consideration is infinite, i.e., G is not acyclic.more general than the prefix-closed case and using non-prefix-
+                                                                 Consequently, refining G as a tree or another structure requires
+closed languages provides us more flexibility to describe the sys-
+                                                                              infinite memory and it is not clear whether or not this trajectory
+tem’s behavior of interest. This point is illustrated by the following
+                                                                 information can be effectively verified. Therefore, we need new
+example.
+                                                        methods to handle these difficulties.
+
+Example 3.  Let us consider the DFA shown in Fig. 2(a) with                                                   Remark 4.  The definition of trajectory detectability is related
+Σo = {o}. Note that G4 is neither state detectable nor L(G4) is tra-     to several language-based properties in the literature, e.g., opac-
+jectory detectable. However, non-prefix-closed language Lm(G4)     ity [25], diagnosability [26] and normality [7]. In [25], a secu-
+is trajectory detectable. Clearly, by observing o2k+1, k ≤0, we     rity property called opacity was defined. Particularly, given two
+know that the only possible string in Lm(G) is ao2k+1. Similarly,    languages K, L ⊆  L(G), we say that (L, K) is weakly opaque if
+by observing o2k, k ≤1, we know that the only possible string in    ∃s ∈  L, ∃t ∈ K   :  P(s) =  P(t). This definition is similar to
+Lm(G4) is bo2k+1. This non-prefix-closed language can be used to    the negation of trajectory detectability. However, they have the
+model the case, where we are only interested in strings in Lm(G)    following main differences. First, weak opacity is a indistinguish-
+and do not care whether or not a wrong estimation is made for     able property that should hold for one specific string s. However,
+strings in L(G) \ Lm(G). For instance, here we are only interested     non-trajectory-detectability is a indistinguishable property that
+in distinguishing strings leading to state 2 and strings leading to    should hold eventually for all continuation strings starting from a
+state 3. Similarly, for G5 shown in Fig. 2(b), we know that Lm(G5) is     sufficiently long point. Moreover, for weak opacity, language K to
+periodically trajectory detectable but L(G5) is not. These examples    be distinguished from is static in the sense that it does not depend
+                                                       on the string considered in L. However, for trajectory detectability,justify our early assertion that using non-prefix-closed languages
+                                                                          for each string s ∈Lm(G), we need to distinguish it from stringsprovides us more flexibility to describe the system’s behavior of
+                                                                        in Lm(G) \ {s}. Therefore, the language to be distinguished from isinterest.
+                                                                         ‘‘dynamic’’ in the sense that it depends on the string considered
+   The following two results establish some relationships between     in Lm(G). Trajectory detectability is also related to diagnosabil-
+state detectability and trajectory detectability. Their proofs are     ity [26] since both of them require some information ambiguity
+                                                                           after a finite delay. Particular, diagnosability requires to distinguishomitted, since the results follow directly from the definitions.
+                                                                            fault strings from non-fault strings after some delays, where the
+                                                               language to be distinguished from is still ‘‘static’’. This situation is
+Proposition 1. Let G be a DFA and Σo be a set of observable events. If
+                                                                 the same for normality [7], where we still need to distinguish two
+G is not (periodically) state detectable, then L(G) is not (periodically)
+                                                                                               ‘‘static’’ languages.
+trajectory detectable.
+
+104                                                          X. Yin et al. / Systems & Control Letters 119 (2018) 101–107
+
+4. Verification of trajectory detectability for regular languages     Definition 5. A state x = (x1, x2) ∈XV is said to be a merging state
+                                                                                                       if
+   In this section, we investigate the verification of trajectory
+                                                                                                        [x1̸ = x2] ∧[∃σ ∈Σo : δ(x1, σ) = δ(x2, σ)]                  (12)detectability for the case where the language L under consideration
+is regular. Therefore, we denote by G =  (Q, Σ, δ, q0, Qm) the    or
+DFA accepting L, i.e., Lm(G) =  L. We also make the following
+                                                                          [InV (x) ∩(Σo × Σo)̸ = ∅∨x = x0,V ]                      (13)assumptions:
+                                             ∧[∃e1, e2 ∈Σ∗uo : [δ(x1, e1)=δ(x2, e1)] ∧[x1 =x2 ⇒e1̸ =e2]]
+ A-1 L(G) is live; and
+ A-2 G does not contain an unobservable cycle; and          We denote by Xmerge ⊆XV the set of merging states.
+ A-3 L(G) = Lm(G), i.e., G is non-blocking.                                                                                 Intuitively, a merging state (x1, x2) is either the initial state x0,V
+                                                                  or a state reached immediately after a pair of observable events
+   Assumptions A-1 and A-2 are standard assumptions in the anal-
+                                                             such that x1 and x2 can reach a same state unobservably or viaysis of partially-observed DES in order to avoid trivial result. We
+                                                               a single common observable event. Moreover, the strings from
+make assumption A-3 just to simplify the technical development
+                                                                        x1 and x2 to the same state should be different if x1̸ =  x2. Theand it is without of loss generality, since we can take the trim part
+                                                                   following result reveals that the information merge phenomenon
+of G, i.e., removing all states that cannot reach a mark state from G,
+                                                                          will not happen in G if and only if V does not contain a merging
+if L(G)̸ = Lm(G).
+                                                                               state.
+
+4.1. Twin-Machine and information merge                      Theorem 1. There exist two different strings s1, s2 ∈L(G) such that
+                                                                        P(s1) = P(s2) and δ(q0, s1) = δ(q0, s2) if and only if Xmerge̸ = ∅.
+   In order to verify trajectory detectability, we construct a new
+verification DFA V = (XV, ΣV, fV, x0,V, Xm,V ), where                  Proof. (⇐) Suppose that Xmerge̸ = ∅. This means that there exists a
+                                                                         state (x1, x2) ∈XV such that either Eq. (12) holds or Eq. (13) holds.
+   • XV ⊆Q × Q is the set of states;                                Let s = (s1, s2) be a string such that fV (x0,V, s) = (x1, x2), where
+   • Σv = (Σo × Σo) ∪(Σuo × {ϵ}) ∪({ϵ} × Σuo) is the set of   we know that P(s1) = P(s2) and s1, s2 ∈L(G). We define two new
+      events;                                                          strings s′1 and s′2 such that
+   •  x0,V = (q0, q0) is the initial state;
+                                                                                                                        if                                                                                    Eq.                                                                                      (12)                                                                                     holds                                                 {siσ0      =         ×                              set                                  of marked                                               states;          Qm              Qm is the   • Xm,V                                                                                                                                (14)                                                                                                        s′i =                                                                                                                        if                                                                                    Eq.                                                                                      (13)                                                                                     holds                                                                                                        siei   •       ×                                is the                                  partial                                        transition                                               function defined        fV  : XV          →XV            Σv
+      by: for any state (x1, x2) ∈XV and an event σ ∈Σ, we have    where i = 1,2, σ0 is an event satisfying Eq. (12) and e1, e2 ∈Σ∗uo
+         (a)  If σ ∈Σo, then the following transition is defined:        are strings satisfying Eq. (13). Clearly, if Eq. (12) holds, we know
+                                                                     that P(s′1) = P(s1)σ0 = P(s2)σ0 =  P(s′2). Similarly, if Eq. (13)
+                fV ((x1, x2), (σ, σ)) = (δ(x1, σ), δ(x2, σ))            (9)     holds, we also have that P(s′1) = P(s1) = P(s2) = P(s′2). Moreover,
+                                                                     since either x1̸ = x2 or e1̸ = e2, we know that s′1̸ =  s′2, i.e., they
+        (b)  If σ ∈Σuo, then the following transitions are defined:     are two different strings. Overall, we know that P(s′1) = P(s′2) and
+                                                                       δ(q0, s′1) = δ(q0, s′2).                fV ((x1, x2), (σ, ϵ)) = (δ(x1, σ), x2)                (10)
+                                                     (⇒) Suppose that there exist two different strings s1, s2 ∈L(G)
+                fV ((x1, x2), (ϵ, σ)) = (x1, δ(x2, σ))                (11)    such that P(s1) = P(s2) and δ(q0, s1) = δ(q0, s2). We denote by
+                                                                                                l1 ≤s1 the shortest prefix of s1 such that
+   Hereafter, we only consider the reachable part of V.
+                                                                                           ∃l′ ≤s2 : P(l1)=P(l′) ∧l1̸ =l′ ∧δ(q0, l1)=δ(q0, l′)            (15)
+Remark 5. The construction of DFA V essentially follows the idea
+of the well-known twin-machine (or verifier) construction used in    Note that l1 is well-defined, since Eq. (15) always holds by taking
+the literature for the verification of diagnosability; see, e.g., [21,22].      l1 = s1 and l′ = s2. We denote by l2 a string satisfying Eq. (15) for
+Roughly speaking, V tracks all pairs of observational equivalent       l1. Also, we know that l1̸ = ϵ; otherwise, it implies that there exists
+strings in G. Specifically, if s1, s2 ∈L(G) are two strings in G such    an unobservable cycle at q0 in G, which contradicts the assumption.
+that P(s1) = P(s2), then there exists a string s ∈L(V) in V such     Similarly, we know that  l2̸ =  ϵ. Therefore, we write l1 =  ˆl1σ1
+that its first and second components are s1 are s2, respectively,    and l2 =  ˆl2σ2, where σ1 and σ2 are the last events in l1 and
+i.e., fV (x0,V, s) = (δ(q0, s1), δ(q0, s2)). On the other hand, for any       l2, respectively. Then we consider the following four cases for σ1
+string s = (s1, s2) ∈L(V) in V, we have that P(s1) = P(s2).          and σ2:
+                                                                 Case 1: σ1, σ2 ∈Σo.
+   Before we show how to use DFA V to verify trajectory de-        In this case, first, we know that σ1 = σ2; otherwise, P(l1)̸ =
+tectability, let us consider the following scenario. Suppose that      P(l2). Second, we know that δ(q0,ˆl1)̸ = δ(q0,ˆl2); otherwise ˆl1 will
+there exist two different strings s1, s2 ∈L(G) such that P(s1) =    be the shortest prefix of s1 satisfying Eq. (15). Therefore, since
+P(s2) and δ(q0, s1) =  δ(q0, s2). Since these two strings lead to      P(ˆl1) =  P(ˆl2), we know that state x :=  (δ(q0,ˆl1), δ(q0,ˆl2)) is
+the same state, we know that they have the same continuations.    reachable in V. Hence, state x and event σ := σ1 = σ2 satisfy
+Moreover, since s1 and s2 are observational equivalent, we know     Eq. (12), i.e., x ∈Xmerge̸ = ∅.
+that we cannot distinguish any continuations of these two strings       Case 2: σ1 ∈Σo and σ2 ∈Σuo.
+from this state. We call such a phenomenon information merge.        In this case, we know that the last observable event in ˆl2 must
+Clearly, if the information merge phenomenon occurs, then Lm(G)    be σ1; otherwise, P(l1)̸ =  P(l2). Therefore, we can write l2 by
+becomes non-detectable. Therefore, we need to check whether or      l2 = w2σ1ξ2, where ξ2 ∈Σ∗uo. Also, we know that δ(q0,ˆl1σ1)̸ =
+not the information merge phenomenon occurs as the first step     δ(q0, w2σ1);  otherwise,  ξ2  yields an  unobservable  cycle  at
+towards the verification of trajectory detectability. To the end, we     δ(q0, w2σ1). Since P(ˆl1σ1) =  P(w2σ1), we know that x  :=
+first introduce the notion of merging state.                               (δ(q0,ˆl1σ1), δ(q0, w2σ1))  is reachable in V. Moreover, (σ1, σ1)
+
+                                                               X. Yin et al. / Systems & Control Letters 119 (2018) 101–107                                          105
+
+∈InV (x), i.e., InV (x)∩(Σo×Σo)̸ = ∅. Hence, state x satisfies Eq. (13)
+by taking e1 = ϵ and e2 = ξ2 and we know that x ∈Xmerge̸ = ∅.
+   Case 3: σ1 ∈Σuo and σ2 ∈Σo.
+   This case is analogous to Case 2 and we still can show that
+Xmerge = ∅.
+   Case 4: σ1 ∈Σuo and σ2 ∈Σuo.
+    First, suppose that P(l1) =  P(l2) =  ϵ. Then we can take
+(q0, q0) = x0,V and we know that δ(q0, l1) = δ(q0, l2) and l1̸ = l2,
+i.e., Eq. (13) is satisfied. Next, suppose that P(l1) =  P(l2)̸ =  ϵ.
+Let σ be the last observable event in l1 and l2 and we write l1 =
+w1σξ1 and l2 =  w2σξ2, where ξ1, ξ2 ∈Σ∗uo. First, we know
+that δ(q0, w1σ)̸ = δ(q0, w2σ); otherwise w1σ will be the shortest
+prefix of s1 satisfying Eq. (15). Since P(w1σ) = P(w2σ), we know
+that state x = (δ(q0, w1σ), δ(q0, w2σ)) is reachable in V. Moreover,
+(σ, σ) ∈InV (x), i.e., InV (x) ∩(Σo × Σo)̸ = ∅. Therefore, by taking
+x =  (δ(q0, w1σ), δ(q0, w2σ)), e1 =  ξ1 and e2 =  ξ2, we know                            Fig. 3. Examples of the verification DFA V.
+that Eq. (13) is satisfied, i.e., x ∈Xmerge̸ = ∅. □
+
+                                                                     that G is live and non-blocking and there is no unobservable cycle
+4.2. Verification of trajectory detectability                                                                        in G. For the above s1, s2 and w, we know that s1w, s2w ∈Lm(G)
+                                                         and P(s1w) = P(s2w), i.e., Card[P−1P(s1w) ∩Lm(G)] >  1. This
+   Let x ∈XV be a state in V. We say that x is in a cycle of V if there    implies that Lm(G) is not trajectory detectable.
+exists a non-empty string s ∈Σ∗V such that fV (x, s) = x. We denote      (⇐) Still by contraposition. Suppose that Lm(G) is not trajectory
+by CV ⊆XV the set of states in some cycle of V.                        detectable. This implies that there exist two different arbitrar-
+  Now, we are ready to show how to verify trajectory detectabil-                                                                                     ily long strings in Lm(G) having the same projection. Since the
+ity by using DFA V.                                                                    state-space of G is finite, any arbitrarily long string must be con-
+                                                                     tributed by some cycle. Therefore, we can find strings ti, wi, vi ∈
+Theorem 2. Let G = (Q, Σ, δ, q0, Qm) be a DFA and V be the DFA    Σ∗, i = 1, 2 such that P(t1) = P(t2), P(w1) = P(w2), P(v1) =
+constructed from G. Then Lm(G) is trajectory detectable w.r.t. Σo if and                                                                    P(v2) and δ(q0, t1wn1v1), δ(q0, t2wn2v2) ∈  Xm for any n ∈  N,
+only if Xmerge = ∅and                                                                          i.e., t1wn1v1, t2wn2v2 ∈Lm(G). Next, we consider two cases:
+AccV (CV ) ∩(Xm,V \ {(q, q) : q ∈Qm}) = ∅                     (16)    Case 1: δ(q0, t1w1v1)̸ = δ(q0, t2w2v2);
+                                                              Case 2: δ(q0, t1w1v1) = δ(q0, t2w2v2).
+That is, V does not contain a merging state and any cycle in V cannot
+reach a marked state in which the first and the second components are          First, assume that Case 1 holds. Let us consider the state reached
+not identical.                                               by sw := (s1, s2)(w1, w2) in V, say xw. Since swn ∈L(V) for any n ∈
+                                                                  N, we know that xw ∈CV . Since xv := (δ(q0, t1w1v1), δ(q0, t2w2v2))
+Proof. (⇒) By contraposition. First, suppose that Eq. (16) does not   ∈Xm,V and δ(q0, t1w1v1)̸ =  δ(q0, t2w2v2), we know that xv ∈
+hold. Let x = (x1, x2) be a state in AccV (CV ) ∩(Xm,V \ {(q, q) : q ∈    Xm \ {(q, q) : q ∈Qm}. Moreover, since state xw can reach state xv
+Qm}). Since x ∈AccV (CV ), we know that there exists a string           via string v = (v1, v2), we know that xv ∈AccV (CV )∩(Xm \{(q, q) :
+                                                            q ∈Qm})̸ = ∅. Second, we assume that Case 2 holds. Then, since
+σ0σ1 . . . σp σp+1 . . . σp+m σp+m+1 . . . σp+m+k ∈L(V)                                                                          t1w1v1̸ = t2w2v2, P(t1w1v1) = P(t2w2v2) and δ(q0, t1w1v1) =
+    =:s        =:w              =:t                                  δ(q0, t2w2v2), by Theorem 1, we know immediately that Xmerge̸ = ∅.
+                                                                    This completes the contraposition proof. □such that
+   1.  fV (x0,V, swnt) = x for any n ∈N; and                               Let us illustrate how to use Theorem 2 to verify trajectory
+   2. ∃i = 1, . . . , m : σp+i ∈Σ × Σ.                                   detectability by the following example.
+
+The first condition says that string w forms a cycle and the sec-    Example 4. First, let us consider language L(G1) generated by DFA
+ond condition says that w must contain an event in the form of    G1 shown in Fig. 1(a). Note that, since the definition of trajectory
+(σ, σ), σ ∈Σo. This comes from Assumption A-2, since we know     detectability considers marked languages, we need to mark all
+that a state in CV can never reach itself by a string in ((Σuo ×     states in G1 such that Lm(G1) = L(G1). Therefore, all states in V
+{ϵ}) ∪({ϵ} × Σuo))∗; otherwise, it implies that there exists an    are also marked states. Then part of the verification DFA V for G1 is
+unobservable cycle in G. For strings s, w and t, we denote by si,    shown in Fig. 3(a). Note that the self-loop at state (5, 5) ∈Xm,V does
+wi and ti, i = 1,2 their ith components, respectively, i.e., swt =    not violate Eq. (16), since the first and the second components in
+(s1, s2)(w1, w2)(t1, t2). We know that P(s1) = P(s2), P(w1) = P(w2)     (5, 5) are the same. However, state (3, 4) is a merging state, since (i)
+and P(t1) = P(t2). Moreover, we know that |P(w1)| = |P(w2)| ≥1.      it is entered by (o, o) ∈Σo × Σo, i.e., InV ((3, 4)) ∩(Σo × Σo)̸ = ∅;
+Since x ∈ Xm \ {(q, q)   :  q ∈  Qm}, we know that siwni ti ∈    and (ii) state 3 and 4 are different states; and (iii) event (o, o) ∈
+Lm(G), ∀i = 1, 2, ∀n ∈N and s1wn1t1̸ = s2wn2t2, ∀n ∈N. Therefore,   Σo × Σo is defined at (3, 4) and it leads to state (5, 5) whose two
+for any n ∈N, we can find a string s1wn1t1 ∈Lm(G) such that    components are the same state. Therefore, we know that L(G1) is
+|P(s1wn1t1)| ≥|P(wn1)| ≥1 and P−1P(s1wn1t1) ⊇{s1wn1t1, s2wn2t2},    not trajectory detectable. Note that, since trajectory detectability
+i.e., Card[P−1P(s1wn1t1)∩Lm(G)] > 1. This implies that Lm(G) is not    does not depend on the DFA generating the language, one can also
+trajectory detectable.                                               construct the verification DFA V based on G2 shown in Fig. 1(b),
+   Next, we suppose that Xmerge̸ = ∅. By Theorem 1, we know that    which will give the same result.
+there exist two different strings s1, s2 ∈L(G) such that P(s1) =       Next, let us consider language L(G4) marked by DFA G4 shown
+P(s2) and δ(q0, s1) = δ(q0, s2) =: q. Therefore, for any n ∈N, we     in Fig. 2(a). The complete verification DFA V for G4 is shown in
+can choose a string w defined at q, such that δ(q, w) ∈Xm, |w| ≥n     Fig. 3(b). First, we can easily check that there is no merging state
+and |P(w)| ≥n. Such a string w is well-defined since we assume     in V, i.e., Xmerge = ∅. Second, for states that can be reached from
+
+106                                                          X. Yin et al. / Systems & Control Letters 119 (2018) 101–107
+
+a cycle in V, i.e., states (1, 1), (3, 3), (1, 2), (3, 4), (2, 2) and (4, 4),         (i) Xmerge = ∅; and
+they are either unmarked states or marked states but in the form         (ii) for any cycle C ⊆Xobs in Obs(G), if C ∩X obsct = ∅, then any state
+of (q, q). Therefore, we know that Lm(G4) is trajectory detectable.           in C cannot reach a state in X obsuc through states in Xobs \ X obs.ct
+However, if we want to consider the language generated by G4,
+i.e., L(G4), then we need to mark all states in G4. In this case,    Proof. (⇒) By contraposition. Suppose that Xmerge̸ = ∅. We know
+states (1, 2) and (3, 4) become marked states and they are still in     that there exist two strings s1, s2 ∈L(G) such that P(s1) = P(s2)
+a cycle. Therefore, we know that the generated language L(G4) is    and δ(q0, s1) = δ(q0, s2) =: q. Let ˆs1 ≤s1 be the longest prefix
+not trajectory detectable. □                                          of s1 such that ˆs1 ∈Lm(G) and we write s1 =  ˆs1s′1. Let w be an
+                                                                             arbitrarily long string from q to a marked state. Then for any n ∈N,
+Remark 6. Let us explain the intuition behind Theorem 2. First, the    there exists a string ˆs1 ∈Lm(G) and a continuation s′1w ∈Lm(G)/ˆs1
+condition in Eq. (16) requires that, for any marked state that can be    such that |P(s′1w)| ≥n. Moreover, for any w′ ≤w : ˆss′1w ∈Lm(G),
+reached from a cycle in V, it must be in the form of {(q, q) : q ∈Qm}.   we have Card[P−1P(ˆs1s′1w′) ∩Lm] > 1, since s2w′̸ =  ˆs1s′1w′ and
+Otherwise, suppose that a state (q1, q2) ∈Qm × Qm, q1̸ = q2 is      P(ˆs1s′1w′) = P(s1w′) = P(s2w′). This implies that Lm(G) is not
+reached from a cycle. Then we know that there exist two arbitrarily     periodically trajectory detectable.
+long strings in Lm(G) leading to q1 and q2, respectively, such that      Now, let us suppose that there exists a cycle C such that C ∩
+they have the same observation. Moreover, s1̸ = s2 since q1̸ = q2.    X obsct = ∅and a state in it can reach a state in X obsuc through states
+However, only requiring this condition is not sufficient to recover     in Xobs \ Xobs.ct  Let x ∈C be such a state in the cycle. Let so ∈Σ∗o
+the trajectory, since it is possible that all states in some cycle are in                                                           be a string that reaches x from x0,obs. Let wo ∈Σ∗o be a string
+the form of {(q, q) : q ∈Qm} but two strings may merge to a same    such that fobs(x, wo) =  x and it only visits all states in C. Let
+state before they enter some cycle. If such a scenario occurs, then                                                                  uc                                                                                         to ∈Σ∗o be a string that reaches a state in Xobs from x through
+we can identify the current state of the system restricting to Qm,     states in Xobs \ X obs.ct  Formally, we have that fobs(x, to) ∈X obsuc and
+but   we          fail to               identify                     the                          precise                                   trajectory                                           leading                                                    to                                                            this state.                                                                            ∀t′o ≤to  : fobs(x, t′o)̸ ∈X obs.ct  By the property of the observer, we                                     □This      is why        we             need that                 = ∅in                                     addition                                               to Eq.                                                          (16).                                Xmerge̸                                                  know that, for any n ∈N, there exists a string swnt ∈P−1(sownoto)
+                                                             such that P(s) =  so, P(w) = wo, P(t) =  to and δ(q0, swnt) ∈
+Remark 7. We discuss the complexity for verifying trajectory                                                              Qm. Still, we denote by  ˆs ≤s the longest prefix of s such that
+detectability by using Theorem 2. Let G = (Q, Σ, δ, q0, Qm) be                                                                                                                                                               ˆs ∈Lm(G) and write s =  ˆss′. Then for any n ∈N, there exists a
+the DFA for which we want to verify whether or not Lm(G) is                                                                         string  ˆs ∈Lm(G) and a continuation s′wnt ∈Lm(G)/ˆs such that
+trajectory detectable. First, we need to construct the verification     |P(s′wnt)| ≥n. Moreover, for any w′ ≤wnt  : ˆss′w′ ∈Lm(G), weDFA V, which takes O(|Σ||Q|2), since there are at most |Q|2 states                                                           have Card[P−1P(ˆss′w′) ∩Lm(G)] > 1, since fobs(x0,obs, P(ˆs1s′w′)) isand 3|Σ||Q|2 transitions in V. Then for each state in V, it takes
+                                                             always not a certain state.
+|Σ||Q| to determine whether it is a merging state or not. Therefore,
+                                                     (⇐) Still by contraposition. Suppose that Lm(G) is not period-it takes O(|Σ|2|Q|3) to check whether or not Xmerge = ∅. Finally,
+                                                                                ically trajectory detectable. This implies that there exists a string
+we need to check whether or not there exists a state violating
+                                                                                s ∈Lm(G) and an arbitrarily long continuation u ∈Lm(G)/s suchEq. (16). To this end, we can first compute CV , which can be done in                                                                     that ∀u′ ≤u  :  su′ ∈Lm(G), we have that Card[P−1P(su′) ∩O(|Σ||Q|2) by using Kosaraju’s algorithm; see, e.g., [27]. Computing
+                                                              Lm(G)] > 1. Since the state-spaces of G and Obs(G) are both finite,the reachable set AccV (CV ) still requires O(|Σ||Q|2). Overall, the
+                                                          any arbitrarily long string and its projection must be contributedtotal complexity of the verification of trajectory detectability is
+O(|Σ|2|Q|3), which is polynomial w.r.t. the size of G. □            by some cycle in G and some cycle in Obs(G), respectively. There-
+                                                                              fore, we can find string swt such that ∀n ∈N, δ(q0, swnt) ∈
+                                                                 Lm(G), fobs(x0,obs, P(s)P(w)nP(t))! and (∀w′ ≤  wnt    :  sw′  ∈
+4.3. Verification of periodic trajectory detectability                    Lm(G))[Card[P−1P(sw′) ∩Lm(G)] > 1].
+                                                                      Next, we consider the following two cases. First, assume that
+  Now, let us investigate the verification of periodic trajectory de-
+tectability. In contrast to the verification of trajectory detectability,    (∃w′ ≤wt : sw′ ∈Lm(G))(∃s2 ∈Lm(G))                      (17)
+we cannot use the verification DFA V to verify periodic trajectory       [s2̸ = sw′ ∧P(sw′) = P(s2) ∧δ(q0, sw′) = δ(q0, s2)]
+detectability. Instead, we use the observer structure [24].
+   Let G = (Q, Σ, δ, q0, Qm) be a DFA. The observer of G w.r.t. Σo    Then, by Theorem 1, we know that Xmerge̸ = ∅. Therefore, hereafter,
+is a DFA Obs(G) = (Xobs, Σo, fobs, x0,obs), where Xobs ⊆2Q , x0,obs =   we assume that
+RG(ϵ) and fobs  : Xobs × Σo →Xobs such that, by extending it to    (∀w′ ≤wt : sw′ ∈Lm(G))(∀s2 ∈Lm(G)) s.t.                  (18)
+Xobs × Σ∗o , we have fobs(x0,obs, s) = RG(s) for any s ∈P(L(G)).                                                                                                             [s2̸ = sw′ ∧P(sw′) = P(s2)] ⇒[δ(q0, sw′)̸ = δ(q0, s2)]   Let x ∈Xobs be a state in the observer. We say that x is
+                                                                      Let xsw := fobs(x0,obs, P(sw)) and xswt := fobs(x0,obs, P(swt)). First, by   • a certain state if ∃q ∈x : q ∈Qm ∧x \ {q} ⊆Q \ Qm;                                                              Card[P−1P(swt) ∩Lm(G)] > 1 and Eq. (18), we know that xswt ∈   • an uncertain state if ∃q1, q2 ∈x : q1, q2 ∈Qm ∧q1̸ =q2.               uc                                                      X obs. Moreover, for any w′ ≤wt, we know that fobs(x0,obs, P(sw′))̸ ∈
+We denote by X obsct and X obsuc the set of certain states and the set    X obs,ct  since if it contains one state in Qm, then it must contain a dis-
+of uncertain states, respectively. Intuitively, a certain state only     tinct state in Qm. Therefore, we know that xsw is in a cycle that does
+contains one marked state and a uncertain state contains some    not contain a certain state and xsw can reach uncertain state xswt
+different marked states. Also, we say that a set of distinct states    without reaching certain states. This completes the contrapositive
+{x1, . . . , xn} ⊆Xobs is a cycle in Obs(G) if we can find a sequence of     proof. □
+events σ1, . . . , σn such that fobs(xi, σi) = xi+1, ∀i = 1, . . . , n, where
+xn+1 := x1.                                              Example 5. Let us consider Lm(G5) marked by DFA G5 shown in
+   The following result reveals how to use the observer to verify     Fig. 2(b) with Σo =  {o}. First, we can show that Xmerge =  ∅.
+periodic trajectory detectability.                               Then the observer Obs(G5) is shown in Fig. 4(a). We know that
+                                                                         state {4, 5, 6} is a certain state and state {1, 2, 3} is an uncertain
+Theorem 3.  Let G = (Q, Σ, δ, q0, Qm) be a DFA and Obs(G) be     state. However, these two states form the only cycle in Obs(G5) and
+the observer w.r.t. Σo. Then L(G) is periodically trajectory detectable    one of which is a certain state. Therefore, we know that Lm(G5) is
+w.r.t. Σo if and only if                                                   periodically trajectory detectable. Note that, if we consider L(G5),
+
+                                                               X. Yin et al. / Systems & Control Letters 119 (2018) 101–107                                          107
+
+                                                              References
+
+
+                                                                                               [1]  P. Ramadge, Observability of discrete event systems, in: 25th IEEE Conf. Deci-
+                                                                                          sion and Control, no. 25, 1986, pp. 1108–1112.
+                                                                                               [2] C. Özveren, A. Willsky, Observability of discrete event dynamic systems, IEEE
+                                                                                             Trans. Automat. Control 35 (7) (1990) 797–806.
+                                                                                               [3] W. Wang, S. Lafortune, F. Lin, An algorithm for calculating indistinguishable
+                                                                                                states and clusters in finite-state automata with partially observable transi-
+                                                                                                      tions, Syst. Control Lett. 56 (9) (2007) 656–661.
+                                                                                               [4]  S. Shu, F. Lin, H. Ying, Detectability of discrete event systems, IEEE Trans.
+                                                                                 Automat. Control 52 (12) (2007) 2356–2359.
+                                                                                               [5]  S. Shu, F. Lin, Detectability of discrete event systems with dynamic event
+                      Fig. 4. Examples of the verification DFA V.                              observation, Syst. Control Lett. 59 (1) (2010) 9–17.
+                                                                                               [6] D. Sears, K. Rudie, On computing indistinguishable states of nondeterministic
+                                                                                                          finite automata with partially observable transitions, in: 53rd IEEE Conf. Deci-
+                                                                                          sion and Control, 2014, pp. 6731–6736.
+i.e, we need to mark all states in G5, then both {1, 2, 3} and {4, 5, 6}       [7]  F. Lin, W. Wonham, On observability of discrete-event systems, Inform. Sci.
+                                                                          44 (3) (1988) 173–198.
+are uncertain states, which means that the generated language                                                                                               [8]  S. Shu, F. Lin, Generalized detectability for discrete event systems, Syst. Control
+L(G5) is not periodically trajectory detectable. □                                    Lett. 60 (5) (2011) 310–317.
+                                                                                               [9] C. Keroglou, C. Hadjicostis, Detectability in stochastic discrete event systems,
+Remark 8. Note that, in the worst case, the size of the observer            Syst. Control Lett. 84 (2015) 21–26.
+                                                                                      [10] C. Hadjicostis, C. Seatzu, K-detectability in discrete event systems, in: 55th
+is exponential in the size of G. To implement Theorem 3, first, we          IEEE Conf. Decision and Control, 2016, pp. 420–425.
+need to check whether or not Xmerge = ∅. This can still be done by      [11] X. Yin, Initial-state detectability of stochastic discrete-event systems with
+using the verification DFA V and it takes O(|Σ|2|Q|3). Determining           probabilistic sensor failures, Automatica 80 (2017) 127–134.
+whether or not there exists a cycle that does not contain a certain      [12] K. Zhang, The problem of determining the weak (periodic) detectability of
+                                                                                              discrete event systems is pspace-complete, Automatica 81 (2017) 217–220.
+state can be done in O(|Xobs||Σo|). Checking whether or not there      [13]  T. Masopust, Complexity of deciding detectability in discrete event systems,
+exists a state in such a cycle that can reach an uncertain state          Automatica 93 (2018) 257–261.
+without visiting certain states can still be done in O(|Xobs||Σo|)      [14] X. Yin, S. Lafortune, Verification complexity of a class of observational proper-
+by a depth-first search. Therefore, the complexity for verifying            ties for modular discrete events systems, Automatica 83 (2017) 199–205.
+periodic trajectory detectability is O(|Σ|2|Q| + |Σ|2|Q|3), which is      [15] eventS. Shu,systems,Z. Huang,IEEEF. Lin,Trans.OnlineAutom.sensorSci. Eng.activation10 (2) for(2013)detectability457–461. of discrete
+exponential in the size of G.                                                    [16] X. Yin, S. Lafortune, A general approach for solving dynamic sensor activation
+                                                                               problems for a class of properties, in: 54th IEEE Conf. Decision and Control,
+Remark 9.  Let us explain why DFA V cannot be used to check          2015, pp. 3610–3615.
+                                                                                      [17]  S. Shu, F. Lin, Enforcing detectability in controlled discrete event systems, IEEE
+periodic trajectory detectability. Let us consider again the system           Trans. Automat. Control 58 (8) (2013) 2125–2130.
+G5 studied in Example 5 and we construct part of the verification      [18] X. Yin, S. Lafortune, A uniform approach for synthesizing property-enforcing
+DFA V shown in Fig. 4(b). However, we cannot determine the ‘‘cer-           supervisors for partially-observed discrete-event systems, IEEE Trans. Au-
+tainty’’ of a trajectory based on V. For example, state (4, 5), where          tomat. Control 61 (8) (2016) 2140–2154.
+                                                                                      [19] R. Jungers, V. Blondel, Observable graphs, Discrete Appl. Math. 159 (10) (2011)
+5 is a marked state, corresponds to certain state {4, 5, 6} in Obs(G5).         981–989.
+However, state (1, 2), which also only contains a single marked      [20] Y.-C. Wu, K. Sankararaman, S. Lafortune, Ensuring privacy in locationbased ser-
+state, corresponds to uncertain state {1, 2, 3} in Obs(G5). This is            vices: An approach based on opacity enforcement, in: Proc. 14th Int. Workshop
+because, although state (1, 2) looks like ‘‘certain’’ in the leftmost           of Discrete Event Systems, 2014, pp. 33–38.
+                                                                                      [21]  S. Jiang, Z. Huang, V. Chandra, R. Kumar, A polynomial algorithm for testing
+cycle, the marked state in it can be confused with other marked           diagnosability of discrete-event systems, IEEE Trans. Automat. Control 46 (8)
+state in a different cycle, e.g., the rightmost cycle in Fig. 4(b).          (2001) 1318–1321.
+Therefore, exponential complexity arises when this combination      [22]  T.-S. Yoo, S. Lafortune, Polynomial-time verification of diagnosability of par-
+                                                                                                              tially observed discrete-event systems, IEEE Trans. Autom. Control 47 (9)
+is considered. One interesting future direction is to identify the
+                                                                                    (2002) 1491–1495.
+precise complexity class for the verification of periodic trajectory      [23] C. Özveren, A. Willsky, Invertibility of discrete-event dynamic systems, Math.
+detectability.                                                                        Control Signals Systems 5 (4) (1992) 365–390.
+                                                                                      [24] C. Cassandras, S. Lafortune, Introduction to Discrete Event Systems, second ed.,
+                                                                                             Springer, 2008.
+                                                                                      [25]  F. Lin, Opacity of discrete event systems and its applications, Automatica 47 (3)
+5. Conclusion                                                                    (2011) 496–503.
+                                                                                      [26]  J. Zaytoon, S. Lafortune, Overview of fault diagnosis methods for discrete event
+  We investigated the trajectory estimation problem for partially-          systems, Annu. Rev. Control 37 (2) (2013) 308–320.
+observed DES. A language-based framework was proposed to study      [27] R. Sedgewick, K. Wayne, Algorithms, fourth ed., Addison-Wesley Professional,
+                                                                                    2011.
+this problem. The notions of trajectory detectability and periodic      [28] X. Yin, S. Lafortune, On the decidability and complexity of diagnosability for
+trajectory detectability were proposed in order to capture differ-           labeled Petri nets, IEEE Trans. Automat. Control 62 (11) (2017) 5931–5938.
+ent requirements in practice. We provided effective algorithms to      [29] X. Yin, S. Lafortune, Codiagnosability and coobservability under dynamic ob-
+verify these notions when the system language is regular.                     servations: Transformation and verification, Automatica 61 (2015) 241–252.
+                                                                                      [30] D. Sears, K. Rudie, Minimal sensor activation and minimal communication in
+   There are several future directions for the proposed frame-                                                                                           discrete-event systems, Discrete Event Dyn. Sys.: Theory & Appl. 26 (2) (2016)
+work. First, in this paper, we only consider to verify a priori if         295–349.
+the trajectory of a system can be detected. Investigating effective      [31]  S. Takai, T. Ushio, Verification of codiagnosability for discrete event systems
+online detection mechanism is also an important future direction.         modeled by mealy automata with nondeterministic output functions, IEEE
+Second, it is important to investigate the decidability of trajectory           Trans. Automat. Control 57 (3) (2012) 798–804.
+                                                                                      [32]  T. Ushio, S. Takai, Nonblocking supervisory control of discrete event systems
+detectability for other classes of languages, e.g. Petri nets lan-         modeled by mealy automata with nondeterministic output functions, IEEE
+guages [28]. Finally, the observation mapping considered in this           Trans. Automat. Control 61 (3) (2016) 799–804.
+paper is static. Extending the proposed framework to the dynamic      [33] X. Yin, Supervisor synthesis for mealy automata with output functions: a
+observation setting [29,30] or the non-deterministic observation         model transformation approach, IEEE Trans. Automat. Control 62 (5) (2017)
+                                                                               2576–2581.
+setting [31–33] is also an interesting direction.

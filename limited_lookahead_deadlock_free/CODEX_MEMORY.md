@@ -2,6 +2,298 @@
 
 This file is project-local shared context for Codex sessions.
 
+## Latest: random experiment provenance and GitHub inspection
+
+- Random-results heading now explicitly gives seed20261121,1000 inputs,5 runs,
+  links to randomized_online_offline.py, certified_benchmark.random_plant,
+  online/offline solver sources, and exact reproduction command. Source links
+  are ../../ from expanded root, ../../../ from randomized_comparison/.
+- Read-only git ls-remote verified origin https://github.com/trigger1996/des_common.git:
+  default/only remote branch master, HEAD a80554581a373f9e73255626b44c9d24836912c6,
+  same as local master (2026-09-11 updated). No fetch/pull/reset/commit/push.
+- This does NOT mean working tree matches GitHub:6 tracked changes (including
+  deleted parent .gitignore) and many untracked files. The new benchmark scripts,
+  generator and certified/offline solver files are currently UNTRACKED, so the
+  GitHub commit alone does not contain the local experimental implementation.
+- Details saved in outputs/expanded_yin_benchmark/github_repository_check.json.
+
+## Latest addition: graph counts, numerical cost models, random average experiment
+
+- Project model/BTS inputs and existing timing measurements preserved. Main results
+  table remains first, now21 columns: adds constructed LL-BTS/BTS D/O, totals,
+  absolute node reduction and fraction. Counts validated against raw BTS JSON.
+  61-case totals: BTS3346 (D330/O3016), LL-BTS665 (D175/O490), saved2681=80.1255%.
+  Retained graph totals1238 vs393 are a separate metric, not construction counts.
+- graph_size_metrics.py provides separate constructed/retained metrics and ratio
+  of sums. compare_online_offline.py --refresh-report updates these without timing.
+- complexity_memory_report.py generates COMPLEXITY_AND_MEMORY_CALCULATION.md/json
+  with actual n,m,c,D,O,E,A,H,B,R,V. UR/NX checks B count expanded D times2^c;
+  A is only saved choices and cannot replace B in online time bounds. Preprocessing
+  longest-simple-path work can be factorial. Abstract work/reference-slot proxies
+  are NOT actual seconds/bytes; hypothetical packed graph encoding is separate
+  from tracemalloc new Python allocation peaks, which exclude common input/RSS.
+- randomized_online_offline.py:1000 seeded partial DFAs,5 alternating fresh runs;
+  predefined density0.70/0.45/0.30 strata, dense stratum fills outgoing edges.
+  Online starts pre.horizon, retries only inconclusive; no offline-oracle u choice.
+  All1000 timing+memory pairs completed, no timeouts. Primary target is existence
+  of deadlock-free supervisor (1000/1000 decisions agree); root maximal modes agree991.
+  Mean total times on0.07246172ms/off0.52386246ms:86.1678% saving,7.2295x.
+  Mean peaks on12369.088/off91473.492 bytes:86.4780% saving. Constructed nodes
+  on2547/off47006:94.5815% saving.709 models faster online; all others retained.
+  Bootstrap paired mean time-difference CI and all strata/raw inputs/samples are
+  under outputs/expanded_yin_benchmark/randomized_comparison. Distribution-specific,
+  not a universal complexity reduction or policy-equivalence claim.
+
+## Latest correction: 20CDC2_fig_2b and top results table
+
+- User corrected the previously deferred request: add 2-b->2 and 6-c->6;
+  retain 2-c->6. Both additions applied and deterministic. DEFERRED is now empty;
+  total explicitly amended models29. Recomputed case remains losing,
+  decisive/matching u0, draft/selected u2. Active counts remain36 winning/25 losing.
+- `运行结果.md` now starts with the online/offline summary table immediately after
+  the title, before methodology. Added state count, observable Sigma_o and
+  controllable Sigma_c columns. Generator preserves this ordering.
+- compare_online_offline.py --only NAME remeasures one model and preserves other
+  measurements while refreshing aggregate reports. DFA audit now records the
+  resolved request; no current conflict remains.
+
+## Latest: 2026-11-21 user review amendments (supersedes older benchmark counts)
+
+- Active corpus: 58 literature variants + 3 structural = 61; 36 winning / 25 losing.
+- `examples/review_amendments.py` applies table instructions to original builders;
+  `build_yin_literature_examples(amended=False)` retains all 61 original transcriptions.
+- Original per-model data/images saved as plant_original.json/png; user requests,
+  removals and deferred conflict in outputs/expanded_yin_benchmark/review_modifications.json.
+- Removed original duplicates: yin2016_fig_1b, 17TAC-Range_fig_2c, 24TACopa_fig_1b;
+  archived under tmp/user_review_revision_20261121/removed_examples.
+- Gprime correction: user explicitly changed requested loops at 6,6' from c1 to c2;
+  applied and recalculated (winning,u=3). Only deferred conflict: 20CDC2_fig_2b
+  requested 2-c->2 would clash with existing 2-c->6; user said leave conflicts unchanged.
+- Two separate Markdown files remain: 系统事件属性与修改意见.md and 运行结果.md.
+  Index includes request/disposition columns; results include numeric summary with
+  decisive/matching/selected u, online/offline total times, peaks, differences and ratios.
+- All closed_loop_system_offline.* are under example/offline/. Canonical online
+  files are closed_loop_system_online.*; generic closed_loop.* were removed.
+- Both literature products now under large_systems/. Use revised_large_products.py:
+  shared component LL-BTS/controller synthesis + exact asynchronous composition proof,
+  not an explicitly constructed global LL-BTS. Global minimal u is NOT measured.
+- Modified 18TACrange_fig_3a has deadlock 10; old all-Qe/all-enable product certificate
+  invalid. New verified policy avoids 10; 7-copy plant19,487,171 physical states,
+  controlled physical closed loop10,000,000. 21Automatica source unchanged.
+- Old 31-day/131-TiB figure remains a historical root-stage explicit per-pattern
+  forecast ONLY for the 21Automatica product; full offline not run. No global
+  offline solve was rerun for large systems. refresh_large_catalogue.py draws
+  sources/templates and labels the two large indexed chains as NOT products.
+- Full pre-revision review/root results and old large output folders are archived
+  under tmp/user_review_revision_20261121. Avoid reusing old all-enable results
+  for the revised 18TACrange model. Plant renderer now curves past unrelated nodes.
+
+## 2026-11-21 review document renamed and results integrated
+
+- User renamed `系统事件属性与修改意见.md` to
+  `系统事件属性与运行结果与修改意见.md` in expanded_yin_benchmark. Legacy file
+  no longer exists. Original full text backed up at
+  tmp/review_results_rename_20261121/original_review.md.
+- `benchmark_review_results.py` enriches the document with 64 per-model
+  analyses: Qd/Qf/Qe/u, online/offline counts, selected controller behavior,
+  exclusive root-pattern rejection categories, complete closed-loop results,
+  actual time/memory differences, ratios and formulas. Adds global scope/
+  complexity limits and two large-product actual synthesis/validation sections.
+- The 31-day offline number is explicitly a root-stage forecast for the FIRST
+  large product only, not full measured offline time; latest31.0/19.6us actual
+  runs are distinguished from historical25.1us forecast experiment.
+- Preserve all original user note blocks (64), plus two new large-product note
+  blocks (66 total), AND any handwritten text outside generated RUN-* regions.
+  Generation is atomic, checks for concurrent edits, and renames from legacy
+  only once. Idempotent generated-section replacement is unit-tested.
+- Active generator/README/gallery links use the new filename. Do not recreate
+  the old Markdown or overwrite user feedback during subsequent model work.
+
+## 2026-11-21 actual large-product online supervisors completed
+
+- User asked to actually run 1–2 examples and allowed up to half an hour.
+  `run_large_literature_supervisors.py` completed both selected products online:
+  21AutomaticaOptimal_fig_2 x6 (11390625 states,109350000 transitions),
+  18TACrange_fig_3a x7 (19487171 states,173612978 transitions).
+- Both retain all original event partitions. All component states are live and
+  reachable; exact compositional Qe covers the entire product. Exported one-state
+  C0 supervisors always enable every event, yield S/G=G and are maximally
+  permissive for deadlock-freeness. No fairness/payoff/nonblocking claim.
+- Actual fresh run total medians including compositional preprocessing:
+  31.0 us and19.6 us; peaks7192/6328 Python bytes, input/index/testing/export
+  excluded. Historical forecast25.1us remains separate from actual_online_run.
+- Per model:100000 actual closed-loop steps with EXPORTED Python supervisor,
+  exact factored observation-estimate membership checks, exhaustive1/2/3-copy
+  all-state/all-transition checks,1000 constructed target-tuple reaching words.
+  All-state guarantee is the compositional proof, NOT random testing. Full
+  million-state products remain exact factored descriptions, not unrolled graphs.
+- Results in dedicated literature_product_<source>_<k>copy folders;
+  large_literature_supervisors.html is the combined entry. Each has executable
+  supervisor_online.py,actual_online_run.json,raw timing/trajectory samples,
+  SYNTHESIS_AND_VALIDATION.md and SVG/PNG. Source hashes checked.
+- Fixed product-state JSON restoration: tuple product states decode from nested
+  lists; renamed decode_estimate to avoid local-variable shadowing.59 tests pass.
+
+## 2026-11-21 absolute savings and >10^7-state literature product forecast
+
+- Comparison rows now include absolute time/byte/node/edge savings, ms/KiB/MiB,
+  speedup and explicit formulas. Subtract same-unit values first; savings divide
+  by offline. Online total is median of per-run (pre+solve), not sum of medians.
+  Large indexed reports also include full raw values and worked arithmetic.
+- Selected actual source 21AutomaticaOptimal_fig_2 (15 reachable states, 24
+  transitions, 5 controllable/4 observable of 15 events, all states live).
+  Six asynchronous copies: 15^6=11390625 reachable states, 109350000 transitions,
+  30 controllable/24 observable/90 total events, partitions unchanged. All-enable
+  single-memory controller gives an exact factored safe closed loop equal to G.
+- `literature_product_forecast.py` verifies source offline controller and local
+  reachability/hidden-DAG depth. Compositional Qe=entire product, Qd=Qf=empty;
+  hidden depth sum supplies u=12. Generic online solver now checks an already
+  proved root Qe BEFORE building its local window. This is sound and avoids a
+  pointless huge Post scan. Separate tests cover partial Qe and budget=1.
+- Actual target-size root UR has 729 states and six NX successors (486 each).
+  No controllable event is enabled anywhere in that root UR, so all 2^30 root
+  patterns share UR/NX but still produce distinct explicit O(pattern) nodes.
+  Root samples (384 calls) measure current traditional per-pattern UR/NX+local
+  deadlock check; 101 online repetitions include compositional preprocessing.
+- Offline root time and retained-memory extrapolations are ESTIMATES ONLY.
+  Full offline was not run and likely exceeds RAM first. Not a universal lower
+  runtime bound: closure caching, bitsets, symbolic patterns or compositional
+  offline synthesis change the comparison. This all-live example showcases Qe
+  certificates, not mixed-risk-system performance. Avoid reporting huge forecast
+  speedup as an observed end-to-end speedup. Source descriptor, raw samples,
+  forecast, LL-BTS and symbolic closed-loop artifacts under the dedicated
+  literature_product_21AutomaticaOptimal_fig_2_6copy benchmark folder.
+
+## 2026-11-21 independent offline BTS and measured comparison
+
+- `des_core/offline_bts.py` independently builds the FULL known-system BTS by
+  every control pattern's complete UR/NX, including unsafe branches, THEN count
+  prunes it. No u/Qf/Qe shortcuts. solve_offline now delegates here. Same goal
+  and root maximal patterns as online; no claimed reproduction of other goals.
+- `compare_online_offline.py` covers all 64 models: conventional offline/bts.*,
+  supervisor_offline.*, closed_loop_system_offline.*, online aliases and fresh
+  alternating repeated timing + separate allocation peaks. Original ll_bts.*
+  in offline/ were noncompliant and 187 files were deleted after replacement;
+  removal hashes/path manifest recorded. Old baseline fields in result rows
+  are replaced with current protocol. User-editable review MD untouched.
+- Root report distinguishes measured savings from asymptotic complexity. Actual
+  count-pruning implementation operates on A choice records and H successor
+  incidences: O(D+A+H), not blindly logical merged-graph O(V+E). Python record
+  duplication is included in tracemalloc, with A/H/membership counts reported.
+- Two complete indexed large known systems: 279936-state finite chain and
+  1679616-state chain ending in a 3-cycle. All observable, one uncontrollable
+  event; exact integer singleton UR/NX, complete D/O arrays actually built and
+  pruned. Common input arrays excluded; online includes full preprocessing.
+  These are NEW synthetic systems, NOT case-1 product relabelings.
+- Original 7/8-copy case-1 products preserve inherited partitions, with
+  2^21/2^24 patterns. Actual traditional/online attempts have explicit budgets
+  and stop incomplete; no savings/unsolvability claim. A constant supervisor
+  disabling all o1_i was separately fully verified on all 3^k reachable states;
+  not claimed a completed maximal BTS synthesis. Product symbolic Qd/Qf/Qe/u
+  formulas match explicit 1/2/3-copy preprocessing. Lazy product state-space
+  membership added; online budget raises, never returns a fake conclusion.
+- Large reports/binary complete graph data under expanded_yin_benchmark/
+  large_systems/. See LARGE_SYSTEM_COMPARISON.md for explicit limitations.
+- 55 unit tests pass, including conventional-BTS unsafe branches, hidden
+  livelocks, budget truncation, indexed-vs-general equivalence and product
+  certificate formulas. Keep these correctness limits in any future reporting.
+
+## 2026-11-21 structural examples and editable model review
+
+- User requested an explicit Markdown review file. The benchmark directory's
+  `系统事件属性与修改意见.md` now catalogs all 64 original models with Sigma,
+  observable/hidden/controllable/uncontrollable events, graph links and per-model
+  editable USER-NOTES blocks. `write_benchmark_review.py` regenerates metadata
+  while preserving all text inside those blocks. Never overwrite user opinions.
+- Added `examples/structural.py` and `structural_benchmark.py`: a 16-state finite
+  chain (losing,u=2), a 15-state chain/cycle/two terminal tails (winning,u=8),
+  an 11-state chain with nested outer/inner cycles (winning,u=8). Inner and outer
+  cycles share q6; custom plant drawings lay out the inner cycle inside the outer.
+- Synthetic models remain separate from 61 literature models. paper_results.json
+  stays literature-only; structural_results.json holds the three new tests;
+  model_results.json/model_summary.json combine 64 cases (30 winning,34 losing).
+  Closed-loop exports now cover these 64 plus six project configurations.
+- No one-state original plants exist in either Yin benchmark directory; no
+  deletion was needed under user's conditional instruction. Do not delete
+  larger plants just because their certified LL-BTS or selected closed loop
+  contains one state. Audit in single_state_plant_audit.json.
+- 50 tests pass, including exact topology and synthesis checks for the three
+  structural additions. Reproduce: structural_benchmark.py, draw_closed_loops.py,
+  write_benchmark_review.py, in that order after the literature benchmark.
+
+## 2026-11-21 user corrections: BibTeX and closed-loop provenance
+
+- Supersedes the preboxed-citation fix below: user explicitly removed
+  yincitationbox, unusedmathbox/notusedmath, and the hand-written bibliography.
+  Citations are now ordinary cite commands outside CJKsout arguments, with
+  bibliographystyle{IEEEtran}/bibliography{ref_full}. Math content was unwrapped
+  without changing formulas; grey block annotations remain. Full BibTeX build
+  is 14 pages with no undefined commands/references/citations or overfull boxes.
+- Copied the deadlock-free/consistent LL-BTS definition and its original label
+  from the paper's main.tex into the draft, before Corollary 1, with a notation
+  paragraph. Restored the Definition reference with a normal nonbreaking space.
+- User requires each literature example's supervisor/closed-loop artifacts in
+  its existing outputs/expanded_yin_benchmark/<example>/ directory. The runner
+  now reads saved plant.json and retained ll_bts.json edges directly, restores
+  the certified policy without re-synthesis, and writes supervisor.json,
+  closed_loop.json, diagrams and source SHA256s there. A Qe terminal expands its
+  certified enable-all continuation. Existing separate gallery is a mirror.
+
+## 2026-11-21 Overleaf fix and physical closed-loop gallery
+
+- Fixed Response/technical_implementation_draft.tex: preboxed the deleted-text
+  citation before CJKsout processes it, added a self-contained bibliography,
+  replaced a dangling external definition reference with its explicit consistency
+  conditions, and changed algorithm float placement to !ht. Protected theorem
+  formulas and annotation styles were preserved. Clean XeLaTeX build: 13 pages,
+  no undefined commands/references/citations, overfull boxes or float warnings.
+  Backup and validation in tmp/overleaf_fix_20261121; portable Overleaf ZIP in
+  the Response directory; PDF beside the source was updated.
+- `des_core/closed_loop.py` extracts one deterministic observation-feedback
+  supervisor from a certified policy and expands the full reachable physical
+  product (q, controller memory). Hidden events retain memory. Qe certificate
+  terminals expand enable-all continuation. Every allowed event is included.
+- `python -X utf8 draw_closed_loops.py` exports 61 literature models and six
+  project configurations to outputs/closed_loop_systems/index.html and ZIP.
+  34 winning cases have genuine closed-loop graphs; 33 losing cases have status
+  cards and original graphs. JSON, PNG, SVG, DOT and controller-memory CSV provided.
+- CRITICAL: all_examples() partial-observation wrappers put an OBSERVER in dfa.
+  For physical closed-loop synthesis use original_dfa when present. Using the
+  observer as the plant drops hidden control actions and can falsely lose case 2.
+  Current six project cases are all winning. Two names can share a physical
+  configuration; keep legacy names rather than claiming all 67 are unique DFAs.
+- Total 46 tests passed, including hidden-memory preservation, ambiguous
+  observation outcomes, Qe expansion, disabling a deadlock branch and losing cases.
+
+## 2026-11-21 expanded Yin corpus
+
+- `examples/yin_literature.py` now returns 61 models (original 34 plus 27 in
+  `examples/yin_extended.py`), from 22 source papers. Do not describe these as
+  reproductions of the sources' opacity/attack/timing/marked-state objectives.
+- All 222 entries on the current author publication page were inventoried;
+  105 DES-topic PDF URLs were downloaded and text-screened. This is not a claim
+  of exhaustive full-text visual review. `__ref/yin2016/expanded_inventory.json`
+  records hashes, captions and provenance; 25LCSSepis's broken author link was
+  recovered from coauthor Yiding Ji's university site, with both URLs recorded.
+- `python -X utf8 expanded_yin_benchmark.py` exports to
+  `outputs/expanded_yin_benchmark/`; `--no-plots` skips only PNG rendering.
+  Scans every u=0..|Q|-1; selected_u must meet draft_u AND match complete offline
+  root maximal patterns. Distinguish minimal_decisive_u from minimal_matching_u.
+- 61 models: 28 winning, 33 losing; selected_u=0..5. All selected and full-window
+  root maximal patterns match the offline baseline; all 43 unit tests passed.
+- New useful nontrivial winning examples: 20CDC2 Fig.1a u=1 (D=3,O=6),
+  23IFAC-attack Fig.2b u=3 (D=7,O=34). These are constructed node counts before
+  pruning, not retained-policy counts. JSON includes retained flags/policy_edges.
+- Preserve terminal states without invented loops. 16SEI uses a centralized
+  pooled observation adaptation; four verification-source models introduce an
+  explicitly documented all-controllable test partition. Other event partitions
+  are inherited. eps in 17Mealy is an explicit hidden output-symbol event.
+- Certified Qe terminals may reduce a safe model's LL-BTS to one D node; each
+  model additionally exports complete offline BTS JSON/DOT without certificates.
+  Large offline BTSs have no raster image; smaller ones also have PNGs.
+- Prior 34-model/600-random-sample outputs were preserved. The existing
+  certified_benchmark runner now imports the expanded 61-model corpus too.
+
 ## 2026-09-11 cleanup and Example 2 revalidation
 
 - README primary commands are the Example 2 import command and

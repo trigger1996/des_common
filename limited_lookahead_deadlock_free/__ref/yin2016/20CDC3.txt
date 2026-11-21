@@ -1,0 +1,420 @@
+2020 59th IEEE Conference on Decision and Control (CDC)
+Jeju Island, Republic of Korea, December 14-18, 2020
+
+
+        Marking Diagnosis in Labeled Petri Nets Using Basis Diagnosers
+
+                                 Ziyue Ma1, Yin Xiang2, Zhiwu Li1,3
+
+
+
+  Abstract— This paper studies the marking diagnosis problem    for transition-based fault diagnosis are not applicable for
+in labeled Petri nets,  i.e., to determine whether a plant has   marking diagnosis. The fact that the ﬁring of a transition
+reached a given set of faulty markings or not in the past, from                                                                        at one marking yields a faulty marking does not necessary
+the observation history. We observe that the conventional basis
+                                                mean that the ﬁring of such a transition at any markingreachability graphs cannot be used for marking diagnosis due
+to the existence of partially faulty basis markings. To overcome   always leads to a faulty marking. Therefore, one cannot
+such a problem, we propose a notion called the diagnostic   simply convert the marking diagnosis problem to a transition
+basis partition such that the corresponding basis reachability   diagnosis problem based on the original net. Hence, for
+graphs does not contain any partially-faulty basis markings.                                                                     Petri nets, it is desirable to investigate the marking diagnosis
+By properly selecting a set of explicit transitions, a diagnostic
+                                                       problem in a more efﬁcient way using structural analysisagent is synthesized to perform the online diagnosis.
+                                                               techniques.
+                          I. INTRODUCTION                          In this paper, we investigate the marking diagnosis prob-
+                                                    lem in plants modeled by labelled Petri nets. To efﬁciently  Fault diagnosis [1] in discrete event systems (DESs) has
+                                                         perform marking diagnosis without constructing the entiredrawn considerable attention over the past decades. The aim
+                                                                  reachability graph, we develop a method based on the basisof fault diagnosis is to determine whether some particular
+                                                                 reachability graphs (BRGs), which have been proved to beevents called faults have occurred or not according to the
+                                                       an efﬁcient tool for abstracting the state space of a Petriobservation history. In recent years, abundant results on fault
+                                                                net [6], [8], [9], [10], [11], [12]. However, the conventionaldiagnosis in Petri nets have been achieved [2], [3], [4], [5].
+                                                  BRG-based methods designed for transition diagnosis cannotIn particular, in [6], an automaton-like structure called the
+                                                       be used  for marking diagnosis due  to  the existence ofbasis reachability graph was developed for diagnosis with
+                                                                     partially-faulty basis markings (which will be deﬁned inthe assumption that the unobservable subnet is acyclic.
+                                                             Section  III). To overcome such a problem, we propose a
+  The works in the literature consider faults as the occur-
+                                                             notion called the diagnostic basis partition such that the
+rence of certain events (in automata) and the ﬁrings of tran-
+                                                           corresponding BRG, called the diagnostic BRG, does not
+sitions (in Petri nets). On the other hand, in many practical
+                                                              contain any partially-faulty basis markings. We then develop
+situations, an operator of a plant may be not interested in
+                                                           a structure called the marking basis diagnoser for marking
+tracking the occurrence of events in the system but wants
+                                                                 diagnosis. Since the number of basis markings is generally
+to determine  if the plant has reached some certain states
+                                               much smaller than the number of reachable markings, the
+(i.e., markings) in the past. For example, in an automated
+                                                         proposed method for marking diagnosability veriﬁcation in
+production  line, when the content in a buffer exceeds a
+                                              LPNs is of efﬁciency.
+threshold, an alarm  is expected to be issued in a ﬁnite
+                                                    The  rest of  this paper  is organized as follows. Basicnumber of future steps such that some actions of maintenance
+                                                              notions of Petri nets and BRGs are recalled in Section II.are properly taken. This motivates the problem of marking
+                                                  The marking diagnosis problem is formulated in Section III.diagnosis. In plain words, the goal of marking diagnosis is
+                                                              In Section IV, some useful notions for marking diagnosisto determine if the plant has reached a given set of markings
+                                                                   in the BRGs are introduced. In Section V, diagnostic basisof physical importance, namely faulty markings, according
+                                                                     partition and diagnostic BRGs are deﬁned, and a methodto the observation history.
+                                                                   for marking diagnosis using basis diagnoser is developed.  Event-based and state-based diagnosis are equivalent in
+                                                             Section IV draws the conclusion.automaton models  [7]. However,  in  Petri  nets, methods
+
+  This work was supported  in  part by  the National Natural Science                            II. PRELIMINARIES
+Foundation of China under Grant Nos. 61472295, 61703321, 61873342,
+Shaanxi Provincial Natural Science Foundation under Grant No. 2019JQ-   A. Petri Nets
+022, the Fundamental Research Funds for the Central Universities under
+Grant JB190407, and the Science and Technology Development Fund,   A Petri net is a four-tuple N = (P, T, Pre, Post), where
+MSAR, under Grant No. 0012/2019/A1.                    P is a set of m places represented by circles; T is a set of
+  1School of Electro-Mechanical Engineering, Xidian University, Xi’an                                           n transitions represented by bars; Pre : P × T →N and
+710071,        China (e-mail:                      maziyue@xidian.edu.cn,                                          maziyue@gmail.com).
+  2Department                of Automation                           and the Key Laboratory                                                        of System Control   Post : P ×T →N are the pre- and post-incidence functions,
+and Information  Processing, Shanghai  Jiao Tong  University, Shanghai    respectively, specifying the arcs in the net and can also be
+201108, China (e-mail: yinxiang@sjtu.edu.cn).                         represented as matrices in Nm×n (here N = {0, 1, 2, . . .}).
+   3Institute of Systems Engineering, Macau University of Science and
+Technology,  Taipa, Macau  (e-mail:  zhwli@xidian.edu.cn,  systemscon-   The incidence matrix of a net is deﬁned by C = Post −
+trol@gmail.com).                                   Pre ∈Zm×n (here Z = {0, ±1, ±2, . . .}).
+
+
+978-1-7281-7446-4/20/$31.00 ©2020 IEEE                    4479
+
+ A marking is a function M  : P →N that assigns each      • Σ(M, t) = {σ ∈T I∗ | M[σ⟩M ′, M ′ ≥Pre(·, t)} as the
+place of a Petri net a non-negative integer number of tokens,         set of explanations of transition t at marking M;
+represented by black dots; a marking can also be represented      • Y (M, t) = {yσ ∈N|T |  | σ ∈Σ(M, t)} as the set of
+as an m-component vector. We denote by M(p) the number        explanation vectors of transition t at marking M;
+of tokens in place p at marking M. A marked net G =      • Ymin(M, t) denotes the set of all minimal elements of
+⟨N, M0⟩is a net N with an initial marking M0. Marking      Y (M, t), i.e., the minimal explanation vectors.
+[x1, . . . , xm]T  is also denoted as x1p1 + · · · + xmpm.                                   □
+ A transition t is enabled at a marking M if M ≥Pre(·, t).      Deﬁnition 3: Given a Petri net N = (P, T, Pre, Post)
+If t is enabled at M, then it may ﬁre and reach a new marking   with an  initial marking M0 and a basis  partition π =
+M ′ = M + C(·, t). We write M[t⟩and M[t⟩M ′ to denote,   (TE, TI), its set of basis markings M is deﬁned as follows:
+respectively, that transition t is enabled at M and its ﬁring      • M0 ∈M;
+yields M ′. We denote by T ∗the set                                   of all ﬁnite sequences of      •  If M ∈M, then ∀t ∈TE, ∀y ∈Ymin(M, t),                                                            ′transitions over T. Then, M[σ⟩M  analogously denotes that
+a sequence σ = t1t2 . . . tk ∈T ∗is enabled (sequentially) at        (M ′ = M + C · y + C(·, t)) ⇒(M ′ ∈M).
+M and its ﬁring ﬁnally yields M ′. In this case we say that
+     ′                                                  The basis reachability graph (BRG) is a non-deterministicM  is reachable from M. We denote by R(N, M0) the set                                                               ﬁnite state automaton B output by an algorithm presented in
+of all markings reachable from the initial marking M0. The                                                                         [8]. The BRG B is a quadruple (M, TrB, ∆B, M0), where:
+language of ⟨N, M0⟩is deﬁned as L(N, M0) = {σ ∈T ∗|
+                                                                  • the state set M is the set of basis markings;M0[σ⟩}. For any sequence σ ∈T ∗, yσ denotes its ﬁring
+                                                                  • the event set TrB is the set of pairs (t, y) ∈TE ×N|T |;vector, i.e., yσ(t) = k if transition t occurs k times in σ.
+                                                                  • the transition relation ∆B is:  Given a sequence σ ∈T ∗, the preﬁx-closure of σ  is
+deﬁned as Pr(σ) = {σ′ ∈T ∗| (∃σ′′ ∈T ∗)σ = σ′σ′′}.         ∆B = {(M, (t,y), M ′) | y ∈Ymin(M, t),
+                                                                                                                                                                           ′ = M + C · y + C(·, t)}  Given a  Petri net N =  (P, T, Pre, Post), net ˆN =                             t ∈TE, M
+(ˆP, ˆT, ˆPre, ˆPost) is a subnet of N  if ˆP ⊆P, ˆT ⊆T,
+                                                                  •  initial marking M0 ∈M is the initial state.and ˆPre, ˆPost are the restriction of Pre, Post to ˆP × ˆT,
+respectively (i.e., only rows and columns associated with ˆP                                 □
+and ˆT are kept). In particular, ˆN  is called the ˆT-induced     For the convenience of presentation,  in the sequel of
+subnet if ˆN = (P, ˆT, ˆPre, ˆPost).                                  this paper, we use φ = (ti1, yi1)(ti2, yi2) · · · (tin, yin) to
+                                                           denote a sequence of labels of arcs in a BRG, i.e., a path
+B. Labeled Petri Nets
+                                                     Mb,1 →Mb,2 →· · · →Mb,n, where the arcs on this path are
+ A labeled Petri net (LPN) is a 4-tuple G = (N, M0, E, ℓ),    sequentially labeled by  (ti1, yi1), (ti2, yi2), · · · , (tin, yin).
+where ⟨N, M0⟩is a marked net, E is the alphabet (a set of   Let ℓ(φ) = ℓ(ti1ti2 · · · tin) and φ↑TE = (ti1ti2 · · · tin)↑TE
+labels), and ℓ: T →E ∪{ε} is the labeling function that   (↑is the natural projection operator).
+assigns each transition t ∈T  either a symbol from E or      Deﬁnition 4: [8] Given a net G = ⟨N, M0⟩with π =
+the silent label ε. This naturally leads to a partition of the   (TE, TI), the implicit reach of a marking M  is a set of
+transition set as T = To ˙∪Tuo, where To = {t ∈T  | ℓ(t) ∈   markings: RI(M) = {M ′ | M[σ⟩M ′, σ ∈T I∗ }.      □
+E} is the set of observable transitions and Tuo = T \ To =      Proposition 1: [8]   Given   a   Petri   net  N   =
+{t ∈T  | ℓ(t) = ε} is the set of unobservable transitions.      (P, T, Pre, Post),   let B  =  (M, Tr, ∆, M0)  be  the
+  The labeling function can be extended to ℓ: T ∗→E∗  BRG with respect to π = (TE, TI). The following two
+recursively by: (i) ℓ(ε) = ε; and (ii) ℓ(σt) = ℓ(σ)ℓ(t) with   statements are equivalent:
+σ ∈T ∗and t ∈T. The inverse projection of an observation                                                                 1)  there exist a marking M and a ﬁring sequence in the
+w ∈E∗with respect to G = (N, M0, E, ℓ) is deﬁned as:                                                              ∗                                                           form of σ = σ1ti1 · · · σntinσn+1, where σj ∈T I ,
+ℓ−1(w) = {σ ∈L(N, M0) | ℓ(σ) = w}. The language of an                                                                                           tij ∈TE for all j ∈{1, . . . , n+1}, such that M0[σ⟩M;
+LPN G = (N, M0, E, ℓ) is deﬁned as L(G) = {ℓ(σ) | σ ∈                                                                 2)  there is a following path in the BRG B
+L(N, M0)}. The set of consistent markings of an observation
+w ∈L(G) is deﬁned as C(w) = {M ∈R(N, M0) | (∃σ :        M0 −−−−−→Mb,1(ti1,y1)     −−−−−→·(ti2,y2)    · · −−−−−→Mb,n(tin,yn)
+ℓ(σ) = w) M0[σ⟩M}.
+                                                              such that M ∈RI(Mb,n);
+C. Basis Reachability Graph
+                                                                                   III. MARKING DIAGNOSABILITY PROBLEM  Deﬁnition 1: [8]   Given   a    Petri   net  N   =
+                                               FORMULATION AND BASIS REACHABILITY GRAPHS(P, T, Pre, Post),  a  pair π =  (TE, TI)  is  called  a
+basis partition of T  if (1) TI ⊆T, TE = T \ TI; and (2)     The goal of marking diagnosis is to determine if the plant
+the TI-induced subnet is acyclic. The sets TE and TI are   has reached a given set of markings of physical importance,
+called the set of explicit transitions and the set of implicit   namely faulty markings F ⊆N|P |, according to the obser-
+transitions, respectively.                  □    vation history. As we have mentioned in the introductory
+  Deﬁnition 2: Given a Petri net N = (P, T, Pre, Post), a    section, the fact that the ﬁring of a transition at one marking
+basis partition π = (TE, TI), a marking M, and a transition    yields a faulty marking does not necessary mean that the
+t ∈TE, we deﬁne:                                          ﬁring of such a transition at any marking always leads to a
+
+
+                                                       4480
+
+faulty marking. Therefore, one cannot simply transform the   determine (1) if ℓ−1(w) ∩LM0,F = ∅, and (2) if ℓ−1(w) ⊆
+marking diagnosis problem to a transition diagnosis problem   LM0,F .                           □
+by manipulating the original net. Such a transformation is   Note the aim of marking diagnosis is not to determine if the
+only possible if the entire reachability graph of the system    plant is currently at a faulty marking but to determine if the
+is constructed (which is quite exhaustive) and being treated    plant was at a fault marking some time ago.
+as an automaton.                                            Before we proceed,  let us brieﬂy  recall the  result on
+  To simplify the presentation, in the sequel of this paper,   marking estimations using BRGs.
+we assume that a plant LPN G = (N, M0, E, ℓ) with N =      Deﬁnition 7: Given an LPN G = (N, M0, E, ℓ) with
+(P, T, Pre, Post) satisﬁes the following assumptions that are  N = (P, T, Pre, Post), let B = (M, Tr, ∆, M0) be the
+widely used in the literatures of fault diagnosis [6], [13], [10]:  BRG with respect to π = (TE, TI). The set of consistent
+  • A1: G is deadlock-free;                                   basis markings of an observation w ∈L(G), denoted as
+  • A2: G is bounded;                           M(w), is the set of basis markings Mi’s such that there
+  • A3: the Tuo-induced subnet is acyclic;                      exists a path φ from M0  to Mi  in the BRG such that
+                                                          ℓ(φ) = w.                         □
+A. Marking Diagnosability Problem Formulation                                                                Proposition 2: [15] Given an LPN G = (N, M0, E, ℓ)
+  In this paper, the set of faulty markings F we consider   with N = (P, T, Pre, Post), let the BRG with respect to
+are deﬁned by a generalized mutual exclusion constraint   π = (To, Tuo) be B = (M, Tr, ∆, M0). For an observation
+(GMEC).                               w ∈L(G), it holds:
+  Deﬁnition 5: [14] A generalized mutual exclusion con-
+straint is a pair (w, k), where w ∈Zm and k ∈Z, that         C(w) = [   Ruo(Mb)
+deﬁnes a set of markings:                                        Mb∈M(w)                                                                                                                               (1)
+                                         = [  {M | M = Mb + Cuo · y}           L(w,k) = {M ∈Nm | wT · M ≤k}.
+                                                            Mb∈M(w)
+The token count of GMEC (w, k) at a marking M is deﬁned
+                                                     where Cuo  is the incidence matrix of the unobservable
+as the quantity of wT · M.                □                                                                subnet.
+  Deﬁnition 6: Given an LPN G = (N, M0, E, ℓ) and a set
+of faulty markings F ⊆N|P |, we deﬁne the fault language      IV. ENCODING THE INFORMATION OF FAULTS INTO
+of a marking M with respect to F as LM,F :                            BRGS
+  LM,F = {σ ∈L(N, M) | ∃¯σ ∈Pr(σ), M[¯σ⟩M ′ ∈F}.        In this section we show that the conventional BRGs cannot
+                                                       be used for marking diagnosis. To see this, the following                               □
+                                                             deﬁnition is useful.
+  In plain words, fault language of LM,F consists of all such                                                             Deﬁnition 8: Given an LPN G = (N, M0, E, ℓ), a BRG
+sequences σ’s that have at least one preﬁx that reaches set F.
+                                        B = (M, Tr, ∆, M0) with respect to TE = To, and a set of
+Note that this deﬁnition does not mean that the ﬁnal marking
+                                                                   faulty markings F = L(w,k):
+reached by the ﬁring σ ∈LM,F  is in F.
+                                                                  • the set of faulty basis markings is deﬁned as: F =  Similar to the set-ups of transition-based diagnosis, in the
+                                              {Mb ∈M | Ruo(Mb) ⊆F};marking diagnosis, a diagnostic agent that runs in parallel
+                                                                  • the set of partially-faulty basis markings is deﬁned as:with the plant and reports if the plant has reached some mark-
+                                        P = {Mb ∈M | Ruo(Mb) ⊈F ∧Ruo(Mb) ∩F̸ = ∅};ing in F in the past. A diagnostic agent can be considered
+                                                                  • a basis marking Mb ∈M\(F∪P) is called a non-faultyas a function A : L(G) →{0, 1, 2}. Given an observation
+                                                                    basis marking.w ∈L(G), the corresponding diagnostic state A(w) is in
+                                                              In short words, a basis marking is faulty (Mb ∈F) if alleither of the following three cases:
+                                                        markings in its unobservable reach belong to F, and a basis
+  1) A(w) = 0: the plant must have not passed any faulty
+                                                       marking  is partially- faulty (Mb ∈P)  if not  all but  at
+      markings, i.e., ℓ−1(w) ∩LM0,F = ∅;                                                                       least one marking in its unobservable reach belongs to F.
+  2) A(w) = 1: the plant may have or have not passed
+                                                      Both sets F and P can be computed using the following
+     some faulty marking, i.e., ℓ−1(w) ∩LM0,F̸ = ∅and                                                                 proposition.
+     ℓ−1(w) ∩(L(G) \ LM0,F )̸ = ∅;
+                                                                Proposition 3: Given an LPN G = (N, M0, E, ℓ), a BRG
+  3) A(w) = 2: the plant must have passed some faulty
+                                        B = (M, Tr, ∆, M0) with respect to π = (To, Tuo), and a
+      markings, i.e., ℓ−1(w) ⊆LM0,F ;
+                                                                      set of faulty markings F = L(w,k),
+  Notice that given an observation w ∈L(G), to determine
+                                                                 1) a basis marking Mb ∈F  if and only if the followingthe value of A(w) it is sufﬁcient to determine if ℓ−1(w) ∩
+                                                                        integer linear constraint Eq. (2) is not feasible:
+LM0,F = ∅and if ℓ−1(w) ⊆LM0,F . Now we can introduce
+the problem of marking diagnosis in LPNs as the following.         Mb + Cuo · y ≥0
+  Problem 1 (Marking Diagnosis): Given a plant LPN G =                                                            wT · (Mb + Cuo · y) ≥k + 1          (2)
+(N, E, ℓ, M0) with N = (P, T, Pre, Post), a set of faulty
+                                    y ≥0.markings F =  L(w,k), and an observation w ∈L(G),
+
+
+                                                       4481
+
+       p1       t1(a)    p2      t2(ε)      p3      t3(b)      p4     t4(c)         observation w = ab is
+                 2                    2
+                                                                                                      (t1,0)        (t3,yt2t2)
+                                               M0 −−−→M1 −−−−−−→M2.
+
+                                                                                 (t4, 0)         One can readily verify that all trajectories coinciding with                               (t1, 0)                 (t3, yt2t2)
+          M0 = p1      M1 = 2p2        M3 = 2p4               ab necessarily pass set F: to generate event b, transition t3
+                                                      must ﬁre, which implies that place p3 necessarily holds two                                       (a)
+                                                            tokens before ﬁring t3.
+                 p1       t1(a)    p2      t2(b)      p3     t3(c)             As another example, consider the LPN G with a set of
+                                                                   faulty markings F = {M  | M(p4) ≥1} shown in Figure 1
+                                                                         (b). Its BRG with respect to TE = {t1, t2, t3, t5}, shown in
+                                    t4(ε)                                     the same ﬁgure, has four basis markings such that F = {M3}
+                                    p4    t5(c)
+                                                      and P = {M1} where M1 = p2. The consistent path of
+                                                              observation w = ab is
+
+                                                                                                        (t1,0)        (t2,0)
+                                      (t1, 0)                  (t2, 0)                        M0 −−−→M1 −−−→M2.
+             M0 = p1       M1 = p2       M2 = p3
+                                                       However, all trajectories coinciding with ab are t1t2tn3 and
+                                                       (t5, yt4)          (t3, 0)                                                        hence necessarily do not pass set F.           □
+                         M3 = p4      (t5, 0)                    Example 1 shows  that, given a path  in a BRG  that
+                                                             passes a partially-faulty basis marking, there may or may
+                                          (b)
+                                                             not exist a consistent trajectory that pass F, and there may
+           Fig. 1: The LPNs used in Example 1.              or may not exist a consistent trajectory that does not pass
+                                                  F. Hence a consistent path in a BRG passes P does not
+                                                            provide us any information on the passage of set F. The
+  2) a  basis marking Mb ∈P  if and only  if  integer    existence of trajectories passing or not passing F can only be
+      constraint Eq. (2) is feasible and the following integer   veriﬁed by exploring all unobservable trajectories from these
+      constraint Eq. (3) is also feasible:                          partially-faulty basis markings. However, to fully explore the
+                                                           unobservable reach of a basis marking is quite exhaustive.
+        Mb + Cuo · y′ ≥0                  As a result, in the next section we propose a notion of basis
+                                                        partition called the diagnostic basis partition, and we prove            wT · (Mb + Cuo · y′) ≤k            (3)
+                                                                     that a BRG with respect to a diagnosis basis partition does
+        y′ ≥0.                                                             not contain any partially-faulty basis markings.
+     Proof:  The acyclicity of the unobservable subnet en-
+sures that the state equation gives a sufﬁcient and necessary     V. MARKING DIAGNOSIS USING DIAGNOSTIC BRGS
+condition for reachability. On one hand, a basis marking              AND BASIS DIAGNOSERS
+Mb ∈F  if and only if Eq. (2) is not feasible,  i.e., there                                                            A. Diagnostic Basis Partition
+is no marking M ∈Ruo(Mb) such that M /∈F. On the
+                                                             Deﬁnition 9: Given an LPN in which the set of transitionsother hand, Mb ∈P if and only if Eqs. (2) and (3) are both
+feasible, i.e., there exists two markings M, M ′ ∈Ruo(Mb)    is T = To ∪Tuo and a set of faulty markings F = L(w,k),
+such that M ∈F and M ′ /∈F.              □    the basis partition πd = (TE,d, TI,d) is called a diagnostic
+                                                               basis partition if  One may intuitively conjecture that marking diagnosis can
+be done by inspecting if the consistent paths in the BRG            TE,d = To ∪{t ∈T  | wT · C(·, t)̸ = 0}.       (4)
+passes faulty and/or partially-faulty basis markings, which
+is proved to be an efﬁcient technique for transition-based   The BRG with respect to the diagnostic basis partition πd is
+diagnosis. Precisely speaking, given an observation w, one    called the diagnostic BRG and is denoted as Bd.     □
+may think that:                                                  In plain words, in the diagnostic basis partition, the set
+                                                              of explicit transitions consists of all observable transitions
+  1) “A(w) = 1 if there exists a consistent path of w in the
+                                                      and all transitions whose inﬂuence on (w, k) are non-zero.
+    BRG which passes F ∪P”;
+                                                  The following proposition shows that in the corresponding
+  2) “A(w) = 2 if and only if all consistent paths of w in
+                                                               diagnostic BRG there is no partially-faulty basis markings.
+      the BRG pass F”.
+                                                                Proposition 4: Given an LPN G = (N, M0, E, ℓ) and
+Unfortunately, the following example shows that both con-   a set of faulty markings F = L(w,k), the corresponding
+jectures are false.                                              diagnostic BRG Bd does not contain any partially-faulty
+  Example 1: Consider the LPN G with a set of faulty    basis markings, i.e., P = ∅.
+markings F = {M   | M(p3) ≥2} shown in Figure 1        Proof:  Let Mb be an arbitrary basis marking in the
+(a). Its BRG with respect to TE = {t1, t3, t4}, shown in    diagnostic BRG. Since by Eq. (4), for all transitions t ∈TI,
+the same ﬁgure, has three basis markings such that F = ∅  wT · C(·, t) = 0 holds, we have wT · M = wT · M ′ for all
+and P = {M1} where M1 = 2p2. The consistent path of  M, M ′ ∈RI(Mb). Hence Mb ∈F if and only if all marking
+
+
+                                                       4482
+
+M ∈RI(Mb) belongs to M ∈F holds, which concludes   presented as the following:
+the proof.                         □
+                                  0,   if all consistent paths of w do not pass F
+  Since TE,d is a (possibly proper) superset of To, the size                                                    A(w) =   2,   if all consistent paths of w pass Fof a diagnostic BRG is in general larger than the conven-
+tional BRG with respect to partition (To, Tuo). However,      1,  otherwise
+the following proposition shows that, the passage of faulty
+                                                    Such an agent can be presented as a closed-form structure
+markings can be identiﬁed by examining the consistent paths
+                                                                 called the basis diagnoser as follows. The construction of
+in the diagnostic BRG, since the interfere of partially-faulty
+                                                           a basis diagnoser can be done according to the design of
+basis markings is excluded.
+                                                                the conventional diagnoser automata in [1] which is omitted
+  Proposition 5: Given an LPN G = (N, M0, E, ℓ), a set
+                                                            here due to the limit of space.
+of faulty markings F, and the diagnostic BRG Bd,
+                                                             Deﬁnition 10: Given a plant LPN G = (N, M0, E, ℓ), a
+  •  (i) there exists a sequence σ ∈LM0,F  if and only if    set of faulty markings F = L(w,k), and the diagnostic BRG
+     there exists a path M0 φ−→in B such that ℓ(σ) = ℓ(φ)   Bd = (M, Tr, ∆, M0), let (Mb, γ) ∈M × {0, 2} be a pair.
+    and passes at least one faulty basis marking in F;      The next function Next : M × {0, 2} × E →2M×{0,2} is
+  •  (ii) there exists a sequence σ /∈LM0,F  if and only if   deﬁned as a set Next((Mb, γ), e) such that: for all arcs in
+     there exists a path M0 φ−→in B such that ℓ(σ) = ℓ(φ)    the BRG
+                                                                                                                 (t,y)        ′
+    and does not pass any faulty basis marking in F.                    Mb −−−→M b
+     Proof: By Proposition 1, the “⇐” for (i) and (ii) are                                        ′                                                           with ℓ(t) = e, (M b, γ′) ∈Next((Mb, γ), e), where γ′ = 0both trivial. Now we prove “⇒”.                                                                                    ′                                                                                     if Mb /∈F ∧M b /∈F, otherwise γ′ = 2. Speciﬁcally, we  For  (i),  let σ = σ1ti1 · · · σntinσn+1 be a sequence in                                                     deﬁne Next((Mb, γ), ε) = {(Mb, γ)}.          □
+LM0,F ,  i.e., M0[σ⟩M passes some faulty marking MF ∈
+                                                                                                            .
+F. By the argument of [6], there exists another sequence
+                                                           ∗      Deﬁnition 11: Given a plant LPN G = (N, M0, E, ℓ), aσ′ = σ′1ti1 · · · σ′ntinσ′n+1 that also yields M where σ′j ∈T I                                                                      set of faulty markings F = L(w,k), and the diagnostic BRGsuch that each σ′j is a minimal explanation of tij, i.e.,                                                Bd = (M, Tr, ∆, M0), the corresponding basis diagnoser
+        M0[σ′1ti1⟩Mb1 · · · [σ′ntin⟩Mbn[σ′n+1⟩M                 is a deterministic ﬁnite automaton D = (D, E, δ, d0) where
+                                                                   (1) D ⊆M × {0, 2} is a set of states, (2) E is the set of
+and all Mbj’s are basis markings. By Proposition 1, there                                                                  events, (3) d0 = Next((M0, 0), ε) is the initial state, and
+necessarily exists a basis marking Mbj such that MF ∈                                                                   (4) δ  : D × E →D is the transition function: δ(d, e) =
+RI(Mbj). Then, by Proposition 5 Mbj ∈F,  i.e., Mbj  is  S                                                               (Mb,γ)∈d Next((Mb, γ), e).               □a fully-faulty basis marking. Hence, there exists a path in                                            An algorithm  to compute the basis diagnoser from a
+the BRG that is consistent with σ and passes F.
+                                                      ∗        diagnostic BRG can be designed according to Deﬁnition 10.
+  For (ii), Let σ = σ1ti1 · · · σntinσn+1 where σj ∈T I and   In a basis diagnoser, we say state d ∈D is
+tij ∈TE. Thus we have the following trajectory:
+                                                                  • normal, if for all (M, γ) ∈d, γ = 0;
+         M0[σ1ti1⟩M1 · · · [σntin⟩Mn[σn+1⟩M                 •  faulty, if for all (M, γ) ∈d, γ = 2;
+                                                                  • ambiguous, if there exist (M, γ), (M ′, γ′) ∈d with γ =
+By the argument of [6], there exists another sequence σ′ =
+                                                      ∗           0 and γ′ = 2, respectively.σ′1ti1 · · · σ′ntinσ′n+1 that also yields M where σ′j ∈T I such                                                  The following theorem shows that a basis diagnoser can be
+that σ′j is a minimal explanation of tij, i.e.,
+                                                         used to solve the marking diagnosis problem.
+        M0[σ′1ti1⟩Mb1 · · · [σ′ntin⟩Mbn[σ′n+1⟩M             Theorem 1: Given a plant LPN G = (N, M0, E, ℓ), a set
+                                                              of faulty markings F = L(w,k), and the basis diagnoser D =
+where  all Mbj’s are basis markings. Since  all transitions                                                   (D, E, δ, d0), the following diagnostic function is correct:
+t ∈TI has zero-inﬂuence on (w, k), such a rearrangement of
+transitions does not modify the token count of the trajectories           0,  if d is normal;
+                                       after the ﬁring of each explicit transitions. Hence, all Mbj /∈           A(w) =                                                                                            1,  if d is ambiguous;
+F. As a  result, there  exists a path in the BRG  that  is
+                                       2,  if d is faulty.consistent with σ and does not pass F.          □
+  Proposition 5 shows that any faulty (resp., non-faulty)   where d = δ∗(d0, w)  is the consistent state in the basis
+trajectory of a plant can be associated to a path in the    diagnoser.
+diagnostic BRG that passes at least one faulty basis marking        Proof:  Straightforward from Proposition 5.     □
+(resp., does not pass any faulty basis marking). Therefore,
+                                                         C. Illustrative Example
+a diagnostic agent can keep track of the consistent basis
+markings to determine the passage of set F.                   Consider the LPN in Figure 2 (a) with a set of faulty
+                                                        markings F = {M  | M(p2) + 2M(p3) ≥2}. Although
+B. Diagnostic Agent Design                                              π = (To, Tuo) is a valid basis partition, the corresponding
+  Based on Proposition 5,  it is not difﬁcult to understand  BRG has 6 basis markings (not drawn), two of which are
+that a correct diagnostic agent A : L(G) →{0, 1, 2} can be    partially-faulty. As a result, such a BRG cannot be used for
+
+
+                                                       4483
+
+                                                            ﬁring sequences  that coincide with observation aac  are:
+                    t5(ε)          p5            t6(ε)
+                                                                   t1t1t2t3, t1t2t1t3, t1t2t1t2t3, and t1t1t2t2t3, all of whose
+                                                                      trajectories pass F.   p1
+                                                       t3(c)                     The structure complexity of a basis diagnoser  is 2|M|
+               t1(a)  p2         t2(ε)  p3                  p4      t7(b)       where M  is the set of basis markings in the diagnostic
+                                             BRG. Since the number of basis markings is generally much                                    2    2
+                                                              smaller than the number of reachable markings, the proposed
+                                                       t4(ε)                   method for marking diagnosability veriﬁcation in LPNs is of
+                                        (a)                                efﬁciency.
+
+                   (t7, yt5t6)                                                             VI. CONCLUSION
+                                                     (t7, 0)
+                                         We proposed a method for marking diagnosis in labeled
+         M0 = 2p1                                                                                          (t7, 0)                                                (t7, yt5t6)                                       Petri nets using basis reachability graphs. By properly se-
+                        (t1, 0)                                    (t7, 0) (t7, yt5t6)                                                                   lecting a set of explicit transitions, a particular BRG called                                                                (t3, 0)                            (t7, 0)
+        M1 = p1 + p2       M2 = p1 + p3        M3 = p1 + p4           M9 = 2p4                                 (t2, 0)                                             the diagnostic BRG is computed. Then we have develop an
+                        (t1, 0)                      (t1, 0)               (t1, 0)                       algorithm based on the basis diagnoser.
+                                                                 (t3, 0)                                 (t2, 0)
+         M4 = 2p2                       M5 = p2 + p3                                       M6 = p2 + p4          (t3, 0)                                                               REFERENCES
+                                                     (t2, 0)               (t2, 0)
+                                                                 (t3, 0)                                      (t4, 0)            [1]  S. Lafortune, F. Lin, and C. Hadjicostis, “On the history of diag-
+                        M7 = 2p3         M8 = p3 + p4                                nosability and opacity in discrete event systems,” Annual Reviews in
+                                                                                    Control, vol. 45, pp. 257–266, 2018.
+                                                                                     [2] D. Lefebvre, “Fault diagnosis and prognosis with partially observed
+                                       (b)
+                                                                                            Petri nets,” IEEE Transactions on Systems, Man, and Cybernetics:
+                                                                                  Systems, vol. 44, no. 10, pp. 1413–1424, 2014.
+                b                                                          [3] X. Yin and S. Lafortune, “Synthesis of maximally-permissive supervi-       b
+                                           (M4,0)                                         sors for the range control problem,” IEEE Transactions on Automatic
+             a   (M1,0)   a      (M5,2)    c     (M6,2)                         Control, vol. 62, no. 8, pp. 3914–3929, 2017.
+           (M0,0)                         (M2,0)            (M7,2)           (M8,2)                      [4]  F. Basile, M.  P. Cabasino, and C. Seatzu, “State estimation and
+                                           (M9,2)                                              fault diagnosis of labeled time Petri net systems with unobservable                    c                                 a                                                                          IEEE                                                                                              transitions,”                                                                                                   Transactions on Automatic Control, vol. 60, no. 4,           b                                              b                                              c                           b                                                                                    pp.                                                                             997–1009,                                                                                           2015.                                                    c                         (M3,0)   b
+                                 b                                 [5] N. Ran, A. Giua, and C. Seatzu, “Enforcement of diagnosability in                a                (M3,2)         (M9,2)
+                                                                                    labeled Petri nets via optimal sensor selection,” IEEE Transactions on
+           b     (M6,0)        b        b                            Automatic Control, vol. 64, no. 7, pp. 2997–3004, July 2019.
+                         (M8,0)                                  (M4,2)                 [6] M. Cabasino, A. Giua, and C. Seatzu, “Fault detection for discrete
+                    c                 (M0,2)   b         (M5,2)                    event systems using Petri nets with unobservable transitions,” Auto-
+                             c                          (M7,2)                    matica, vol. 46, no. 9, pp. 1531–1539, 2010.
+                         (M9,0)        a      a        (M9,2)                 [7] R. Kumar and S. Takai, “Decentralized prognosis of failures in discrete
+                                                                                  event systems,” IEEE Transactions on Automatic Control, vol. 55,
+                                           (M1,2)
+                       b     (M2,2)                                        no. 1, pp. 48–59, 2010.
+                                                                                     [8] Z. Y. Ma, Y. Tong, Z. W. Li, and A. Giua, “Basis marking rep-
+                                                                                       resentation of  Petri net reachability spaces and  its application to
+                                    (c)                                               the reachability problem,” IEEE Transactions on Automatic Control,
+                                                                                            vol. 62, no. 3, pp. 1078–1093, 2017.
+Fig. 2: (a) the LPN used in Section V-c, (b) its diagnostic      [9] Y. Tong, Z. W. Li, C. Seatzu, and A. Giua, “Veriﬁcation of state-based
+BRG, (c) its basis diagnoser.                                                opacity using Petri nets,” IEEE Transactions on Automatic Control,
+                                                                                            vol. 62, no. 6, pp. 2823–2837, 2017.
+                                                                              [10] N. Ran, H. Su, A. Giua, and C. Seatzu, “Codiagnosability analysis of
+                                                                       bounded Petri nets,” IEEE Transactions on Automatic Control, vol. 63,
+marking diagnosis in this case. On the other hand, since To =          no. 8, pp. 1192–1199, 2018.
+{t1, t3, t7} and the transitions with non-zero inﬂuence are t2    [11] Z. Ma, G. Zhu, and Z. Li, “Marking estimation in petri nets using hi-                                                                                        erarchical basis reachability graphs,” IEEE Transactions on Automatic
+and t4, the diagnostic basis partition is πd = (TE, TI) with          Control, p. Early Access. DOI: 10.1109/TAC.2020.2983088, 2021.
+TE = {t1, t2, t3, t4, t7}. The corresponding diagnostic BRG    [12] H. Lan, Y. Tong, J. Guo, and C. Seatzu, “Veriﬁcation of C-detectability
+                                                                                using Petri nets,” Information Sciences, vol. 528, pp. 294–310, 2020.and the basis diagnoser are depicted in Figure 2 (b) and (c),
+                                                                              [13] M. P. Cabasino, A. Giua, and C. Seatzu, “Diagnosability of discrete-
+respectively.                                                                   event systems using labeled Petri nets,” IEEE Transactions on Au-
+  Consider observation aa. Since in the basis diagnoser  it         tomation Science and Engineering, vol. 11, no. 1, pp. 144–153, Jan
+holds δ∗(d0, aa) = {(M4, 0), (M5, 2), (M7, 2), (M9, 2)}, the         2014.                                                                              [14] A. Giua, F. DiCesare, and M. Silva, “Generalized mutual exclusion
+output of the diagnostic agent is A(aa) = 1, which means          constraints for Petri nets with uncontrollable  transitions,” in Pro-
+that the plant may or may have not passed some faulty         ceedings of the IEEE Int. Conf. on Systems, Man, and Cybernetics,
+markings. In fact, two trajectories M0[t1t1⟩and M0[t1t1t2⟩         Chicago, USA, 1992, pp. 947–949.                                                                              [15] M. Cabasino, A. Giua, M. Pocci, and C. Seatzu, “Discrete event
+coincide with observation aa while the former does not pass          diagnosis using labeled Petri nets: an application to manufacturing
+F and the  latter passes F. On the other hand, consider          systems,” Control Engineering Practice, vol. 19, no. 9, pp. 989–1001,
+observation aac such that δ∗(d0, aac) = {(M3, 2)}, the         2011.
+diagnostic output is A(aac) = 2, which means that the plant
+must have passed some faulty markings. In fact, the possible
+
+
+                                                       4484

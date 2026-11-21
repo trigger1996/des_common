@@ -1,0 +1,386 @@
+2015 IEEE 54th Annual Conference on Decision and Control (CDC)
+December 15-18, 2015. Osaka, Japan
+
+
+A General Approach for Solving Dynamic Sensor Activation Problems
+                         for a Class of Properties
+
+
+                                Xiang Yin and St´ephane Lafortune
+
+
+  Abstract— We study the problem of dynamic sensor activa-   sensor activation policies, i.e., all policies that enforce the
+tion for centralized partially-observed discrete event systems.   property of K-diagnosability. Therefore, the MPO can serve
+The sensors can be turned on/off online dynamically according                                                              as a basis for ﬁnding one optimal solution w.r.t. some cost
+to a sensor activation policy in order to satisfy some observation
+                                                                        criterion. This approach was extended to timed systems inproperty. In this paper, we consider a general class of properties,
+called Information-State-based (or IS-based) properties, which   [12] and to the problem of opacity in  [6]. Recently, an
+include, but are not limited to, observability, K-diagnosability,    information-state-based characterization of the MPO struc-
+predictability, and opacity. We deﬁne a new Most Permissive    ture was proposed in [10]; this work showed that the size
+Observer (MPO) that generalizes previous versions of  this                                                          complexity of the MPO could be reduced, as compared with
+structure. The MPO that we deﬁne embeds all sensor activation
+                                                                the original MPO from [2], by appropriately deﬁning thepolicies for an IS-based property. An optimal sensor activation
+policy can then be synthesized based on the MPO. Our results   notion of information state in the context of enforcement of
+generalize the previous works on dynamic sensor activation for   K-diagnosability.
+enforcing the properties of observability, K-diagnosability, and      In this paper, we use the MPO approach to investigate the
+opacity. Moreover, our MPO is applicable to solving dynamic                                                             sensor activation problem for centralized partially-observed
+sensor activation problems for a wide class of user-deﬁned
+                                                 DES. However, instead of investigating the enforcement ofproperties that can be formulated as IS-based properties. As
+a special case, we show that the problem of minimal sensor   a particular property, e.g., observability, diagnosability, or
+activation  for enforcing  predictability, which has not been    opacity, as was done in previous works, we study a general
+considered in the literature, is solvable by our new approach.     class of properties called Information-State-based (IS-based)
+                                                                   properties, that captures all properties previously considered,                          I. INTRODUCTION
+                                                      and more. Speciﬁcally, as will be demonstrated in the paper,
+  The problem under consideration in  this paper  is that                                                           our contributions are as follows.
+of dynamic sensor activation in partially-observed Discrete                                                                   (1) We formulate the problem of dynamic sensor activation
+Event Systems (DES). The objective in this problem is to                                                                   for any property  that can be expressed as an IS-based
+synthesize a sensor activation policy that dynamically turns                                                                  property. We show that this problem formulation is more
+sensors on/off online in order to achieve a given objective,                                                              general than both the state disambiguation problem and the
+e.g., to control the system or to diagnose faults.                                                              opacity problem that have been studied previously in the
+  Dynamic sensor activation has been studied extensively                                                                          literature. To solve this problem, we deﬁne a generalized
+in the DES literature; see, e.g., [1]–[10] for a sample of                                                              version of the most permissive observer, which embeds all
+this work and the recent survey paper [11] for an extensive                                                                  valid solutions to the enforcement of an IS-based property
+bibliography. In [1], [2], the problem of dynamic sensor                                                                   in  its ﬁnite structure. Based on the MPO, we present an
+activation for the purpose of fault diagnosis was studied; the                                                            algorithm  for  the  synthesis of optimal sensor  activation
+optimal synthesis problems considered therein were solved                                                                   policies under a logical performance objective.
+according to numerical cost criteria. In [4], [5], both cen-                                                                   (2)  Compared with  prior works where  the MPO was
+tralized and decentralized sensor activation problems for the                                                     employed [2], [6], [10], our contributions are twofold. First,
+purposes of control and diagnosis, respectively, were studied.                                             we deﬁne the MPO directly from the new notion of bipartite
+The features of these works are: (i) the properties of interest                                                     dynamic observer without using the recursive deﬁnition used
+to be enforced are (co)observability or (co)diagnosability; (ii)                                                                   in [10]. Second, the MPO deﬁned in this paper is more gen-
+the optimality criterion is logical; and (iii) the solutions are                                                                     eral since we consider a general class of properties and we
+only sub-optimal in the sense that by enlarging the solution                                                  show that the most permissive observer for K-diagnosability
+space, better solutions could be obtained in principle.                                                               studied by [2], [10] and the most permissive dynamic mask
+  In [2], a structure called the Most Permissive Observer                                                                   for opacity studied by [6] are essentially special cases of
+(MPO) was proposed for solving the problem of dynamic                                                                the generalized MPO. Moreover, the problem of optimal
+sensor activation for the purpose of fault diagnosis. Roughly                                                             sensor activation for predictability, which to the best of our
+speaking, the MPO is a ﬁnite structure that embeds all valid                                                      knowledge has not been considered in the literature, can
+  This work was partially supported by NSF grants CCF-1138860 (Expedi-    also be solved by our approach. Similarly, our approach
+tions in Computing project ExCAPE: Expeditions in Computer Augmented   can be employed to solve sensor activation problems for the
+Program Engineering), CNS-1421122, and CNS-1446298.               enforcement of a wide class of user-deﬁned properties that
+  Xiang Yin and St´ephane Lafortune are with the Department of Electrical
+Engineering and Computer Science, University of Michigan, Ann Arbor,   can be expressed as IS-based properties; see, e.g., [13].
+MI 48109, USA. {xiangyin,stephane}@umich.edu.           (3) Compared with other solution approaches for dynamic
+
+
+978-1-4799-7885-4/15/$31.00 ©2015 IEEE                    3610
+
+                                                                  𝑒     𝑜
+sensor activation problems, our methodology has the follow-                  1      2      3     7                                                                      𝑓
+ing features. First, the optimal solution that we obtain is                𝜎1           𝑜     𝑒                                                                     𝜎2    𝑜
+language-based. Recall that the solutions obtained by [4],                  4      5      6   𝑒, 𝜎1
+[5] are optimal only w.r.t. ﬁnite (restricted) solution spaces,
+                                                                                   Fig. 1.  System G with Σo = {o}, Σs = {σ1, σ2}, and Σuo = {e, f}
+based on the state space of the system model. Moreover, the
+                                                                   activation policies ω, ω′ ∈Ω, we say that ω is smaller thangeneralized MPO that we deﬁne embeds all solutions in its
+                                                                  ω′, denoted by ω < ω′, if 1) ∀s ∈L(G) : ω(s) ⊆ω′(s); andsingle ﬁnite structure. Therefore, it can serve as a basis for
+                                                              2) ∃s ∈L(G) : ω(s) ⊂ω′(s).optimization w.r.t. a numerical cost criterion, which cannot
+be done by the online approaches described in [3], [8].                                                            B. Problem Formulation
+  Due to space constraints, all proofs have been omitted.
+                                                 As was explained in the introduction, in a given problem
+      II. PRELIMINARY AND PROBLEM FORMULATION       domain (control, diagnosis, and so forth), the sensor activa-
+A. System Model                                                 tion policy must satisfy some problem-dependent property
+                                                                    (observability, diagnosability, and so forth). For the sake  The system under consideration is modeled by a determin-
+                                                              of generality, we deﬁne a property ϕ as a function ϕ  :istic ﬁnite state automaton G = (Q, Σ, δ, q0), where Q is the
+                                 Ω→{0, 1} and for any sensor activation policy ω ∈Ω,ﬁnite set of states, Σ is the ﬁnite set of events, δ : Q×Σ →Q
+                                             we write ϕ(ω) = 1  to mean  that ω  satisﬁes propertyis the partial transition function and q0 is the initial state.
+                                                          ϕ. The  properties of  interest are  typically deﬁned  in aThe transition function δ is extended to Q × Σ∗in the usual
+                                                           language-based manner. Hereafter, we consider a specialmanner (see, e.g., [14]). The language generated by G from
+                                                                   class of properties called information-state-based (IS-based)state q is deﬁned by L(G, q) = {s ∈Σ∗: δ(q, s)!}, where !
+                                                                  properties. These are properties whose veriﬁcation can bemeans “is deﬁned”. We write L(G, q) as L(G) if q = q0. We
+                                                        performed over information states of the system state space.denote by L the preﬁx-closure of a language L. We denote
+                                         We deﬁne an information state to be a subset of statesby L/s the post-language of L after s. We say a language
+                                                                   in Q and denote by I = 2Q the set of information states.L is live if ∀s ∈L, ∃σ ∈Σ : sσ ∈L.
+                                                     Roughly speaking, an IS-based property is a property that  In dynamic sensor activation problems, the sensors are
+                                                           only depends on the current knowledge of the system, asturned on/off dynamically based on the observation history.
+                                                           provided by the state estimator function EGω under a givenWhen the sensor corresponding to an event σ ∈Σ is turned
+                                                             sensor activation policy ω. In particular, the property should“on”, we say that the event is being monitored. While an
+                                                             not depend on information about the future behavior of theevent is monitored, any occurrence of  it will be observed
+                                                            system. We will show later that most of the important prop-by the supervisor, diagnoser, predictor, or external observer,
+                                                                        erties in the DES literature can be formulated as IS-basedaccording to the problem under consideration (e.g., control,
+                                                                   properties, possibly after suitable state space reﬁnements ofdiagnosis, prediction, or opaciﬁcation). At any point in the
+                                                                the original model G. First, we present the formal deﬁnitionexecution of the system, the set of events θ ∈2Σ that we
+                                                              of the IS-based property.decide to monitor, is called a sensing decision.
+                                                             Deﬁnition 1: (IS-based Property). Let G = (Q, Σ, δ, q0)  We assume that Σ is partitioned into three disjoint sets,
+                                                       be the system automaton and ω  : L(G) →Θ be a sensorΣ = Σo ˙∪Σs ˙∪Σuo, where: (i) Σo is the set of events whose
+                                                                   activation policy. An IS-based property w.r.t. G is a functionoccurrences are always observed (ii) Σs is the set of events
+                                        ϕ : 2Q →{0, 1}. We say that ω satisﬁes ϕ w.r.t. G, denotedthat we can choose to monitor or not and (iii) Σuo is the set
+                                                    by ω |=G ϕ, if ∀s ∈L(G) : ϕ(EGω (s)) = 1.of events that are always unobservable We say that a sensing
+                                                      Example 1: Consider the system G in Fig. 1. Let ϕ  :decision θ ∈2Σ is admissible if Σo ⊆θ ⊆Σo ∪Σs and we
+                                              2Q →{0, 1} be an IS-based property deﬁned as follows:let Θ denote the set of all admissible sensing decisions.
+  Under dynamic sensing decisions, the observations of the                                                           ∀i ∈2Q : [ϕ(i) = 1] ⇔[̸ ∃q ∈{1, 4, 5, 6} : {3, q} ⊆i]  (1)
+system behavior are speciﬁed by an information mapping
+ω  : L(G) →Θ, where for any s ∈L(G), ω(s)  is the   This IS-based property ϕ requires  that we should never
+set of events that are monitored after the occurrence of s.   confuse state 3 with any state in {1, 4, 5, 6}.
+Given an information mapping ω, we deﬁne the projection      Let us consider the information mapping ω deﬁned by
+Pω : L(G) →Σ∗in the usual manner (see, e.g., [14]). We   ∀s ∈L(G) : ω(s) = {o}. By taking eo ∈L(G), we know
+also deﬁne the state estimator function (or simply “state    that EGω (eo) = {3, 6}. Therefore, ω̸ |=G ϕ.
+estimator”) EGω   : L(G) →2Q by: for any s ∈L(G),    As was mentioned earlier, the objective of this paper is to
+EGω (s):={q∈Q:∃t∈L(G) s.t. Pω(s)=Pω(t) ∧δ(q0, t)=q}.   synthesize a sensor activation policy such that some given
+  For the purpose of implementation, we require that the   property provably holds. Since turning sensors on/off can be
+information mapping ω satisfy ∀s, t ∈L(G)  : Pω(s) =    costly, we deﬁne the Minimal Sensor Activation Problem for
+Pω(t) ⇒ω(s) = ω(t). This condition is referred to as the   IS-Based Properties as follows.
+feasibility condition in [4], [5]. We say that ω is a sensor     Problem 1: (Minimal Sensor Activation Problem for IS-
+activation policy if it is feasible and for any s ∈L(G), ω(s)   Based Properties). Let G = (Q, Σ, δ, q0) be the system
+is admissible, i.e., ω(s) ∈Θ. We use notation Ωto denote   automaton and ϕ  : 2Q →{0, 1} be an IS-based property
+the set of all sensor activation policies. Given two sensor    w.r.t. G. Find a sensor activation policy ω∈Ωsuch that:
+
+
+                                                        3611
+
+  (i) ω |=G ϕ;                                                   • y = hZY (z, σ) if and only if
+  (ii)̸  ∃ω′ ∈Ωsuch that ω′ |=G ϕ and ω′ < ω.               σ∈Θ(z) and y={q∈Q : ∃q′ ∈I(z) s.t. δ(q′, σ)=q}
+In some contexts, we may be interested in the dual version of                                                         For simplicity hereafter, we write y θ−→z if z = hY Z(y, θ)
+the Minimal Sensor Activation Problem, the Maximal Sensor                                                      and z σ−→y if z = hZY (z, σ).
+Activation Problem for IS-Based Properties. Its deﬁnition is                                                   Now,  let  s  ∈  L(G)  be  a  string  and Rω(s) =
+analogous, with “<” replaced by ”>” in condition (ii).                                                        θ0σ1θ1 . . . θn−1σnθn be the corresponding run deﬁned earli-
+  Remark 1: In [15], the state disambiguation problem is                                                                                er. Let y0 = {q0} be the initial Y -state. Then occurrence
+deﬁned. Formally, Tspec ⊆Q × Q is the set of state pairs                                                              of the run θ0σ1θ1 . . . θn−1σnθn will reach an alternating
+that need to be distinguished and the goal is to ﬁnd a minimal                                                         sequence of Y - and Z-states
+ω ∈Ωsuch that (∀s ∈L(G))(∀q1, q2 ∈EGω (s))[(q1, q2) /∈
+Tspec]. Clearly, this problem is a special case of the minimal      y0 −→z0θ0   −→y1σ1   −→.θ1    . . −−−→zn−1θn−1     −−→ynσn   −→znθn       (2)
+sensor activation problem for IS-based properties, since given
+Tspec, we can always deﬁne an IS-based property ϕspec  :  We denote by IYω (s) and IZω (s), the last Y -state and Z-state
+2Q →{0, 1} by: ∀i ∈2Q : [ϕspec(i) = 0] ⇔[∃q1, q2 ∈i :    in y0z0y1z2 . . . zn−1ynzn, respectively, i.e., IYω (s) = yn and
+                                             IZω (s) = zn. By induction on the length of Pω(s), we have(q1, q2) ∈Tspec]. Therefore, the problem we consider here
+is more general than the state disambiguation problem.       I(IZω (s)) = EGω (s), which says that the information state
+  Remark 2: In many cases, the system is not only moni-   component of IZω (s) is the state estimator of s.
+tored by its internal controller, but it may also be monitored     Example 2: Let us return  to the system G  in Fig. 1.
+by an external observer that is potentially malicious. There-   Consider the sensor activation policy ω deﬁned by:
+fore, instead of disambiguating states, the objective  is to                                                                                     {o, σ1},   if s ∈{ϵ, e}
+confuse the external observer so that it may not infer a given              ω(s) =                                       (3)                                                                                 {o},      otherwise
+secret about the system. In such a scenario, the “disablement”
+of sensors can be  costly, since we need to spend some   Let us consider the string s = σ1σ2. The corresponding run
+additional effort, e.g., adding a dynamic mask, to hide the   of s is Rω(σ1σ2) = {o, σ1}σ1{o} and the corresponding
+                                                                                                        {o,σ1}                  σ1
+occurrences of the corresponding events. In this regard, the   sequence of Y - and Z-states is {1}−−−→({1, 2}, {o, σ1}) −→
+                                                                     {o}optimal dynamic mask synthesis problem investigated in the                                                    {4} −−→({4,                                                                           5}, {o}). So we have that IYω (σ1σ2) = {4},
+literature (see, e.g., [6]) is essentially the maximal sensor  IZω (σ1σ2) = ({4, 5}, {o}) and EGω (σ1σ2) = {4, 5}.
+activation problem deﬁned above.
+                                                            B. Bipartite Dynamic Observer
+      III. A GENERAL MOST PERMISSIVE OBSERVER
+                                                               Recall that the sensor activation policy ω is a function de-A. Information State Dynamics
+                                                    ﬁned over a language domain. For implementation purposes,
+ A sensor activation policy ω works dynamically as fol-                                             we need to build a ﬁnite representation of the function ω.
+lows. Initially, a sensing decision θ0 is issued. Then, upon                                                  To this end, we deﬁne the bipartite dynamic observer (BDO)
+the occurrence of (monitored) event σ1 ∈θ0, a new decision                                                                     that realizes a (set of) sensor activation policy(ies).
+θ1 is made and so forth. We call such a sequence in the form                                                             Deﬁnition 2: A bipartite dynamic observer O is a 7-tuple
+of θ0σ1θ1σ2 . . . , where θi ∈Θ, σi+1 ∈θi, ∀i ≥0, a run. For
+any s ∈L(G), suppose that s = ξ0σ1ξ1σ2 . . . ξn−1σnξn,        O = (QOY , QOZ , hOY Z, hOZY , Σ, Θ, y0)          (4)
+where ξi ∈(Σ \ w(ξ0σ1 . . . ξi−1σi))∗, ∀i ≥0 and σi ∈
+                                                          where, QOY ⊆I is a set of Y -states, QOZ ⊆I × Θ is a set ofw(ξ0σ1 . . . σi−1ξi−1), ∀i ≥1. Then the information available
+                                                                  Z-states, hOY Z : QOY × Θ →QOZ and hOZY  : QOZ × E →QOYto the sensor activation module upon the occurrence of s
+                                                                are partial transition functions such that for any z ∈QOZ , y ∈is, in fact, the run Rω(s) := θ0σ1θ1 . . . θn−1σnθn, where
+                                     QOY , θ ∈Θ and σ ∈Σ, the following conditions holdθi = ω(ξ0σ1 . . . ξi−1σiξi), ∀i ≥0.
+  To capture the alternating nature of sensing decisions and   C1. hOZY (z, σ) = y ⇔hZY (z, σ) = y;
+observations of monitored events, we deﬁne two kinds of   C2. hOY Z(y, θ) = z ⇒hY Z(y, θ) = z;
+states, termed Y -states and Z-states, respectively. A Y -state   C3. ∀y ∈QOY , ∃θ ∈Θ : hOY Z(y, θ)!.
+y is an information state from which a sensing decision is  Σ is the set of events of G, Θ is the set of admissible sensing
+made and Y ⊆I denotes the set of Y -states. A Z-state z is    decisions, and y0 = {q0} is the initial Y -state. For brevity,
+an information state augmented with a sensing decision from  we only consider the accessible part of a BDO.
+which observations of monitored events occur. Z ⊆I × Θ      Condition C1 says that the transition function hOZY  in O
+denotes the set of Z-states and we write z = (I(z), Θ(z))    is identical to hZY . Therefore, for any z ∈QOZ , hOZY (z, σ)
+for any z ∈Z. Next, we deﬁne the transition function from    is deﬁned for any possible observation σ ∈Θ(z) by the
+Y -states to Z-states, hY Z : Y × Θ →Z, and the transition   deﬁnition of hZY . This is due to the fact that we cannot
+function from Z-states to Y -states, hZY  : Z × Σ →Y . For   decide which monitored event will occur once we make a
+any y ∈I, z ∈I × Θ, σ ∈Σ and θ ∈Θ,                      sensing decision. Conditions C2 says that for the transition
+  • z = hY Z(y, θ) if and only if                             function hOY Z, we have either hOY Z(y, θ) = hY Z(y, θ) or it
+    I(z) = {q ∈Q : ∃q′ ∈y, ∃s ∈(Σ \ θ)∗s.t. δ(q′, s) = q}    is undeﬁned. Condition C3 requires that for any Y -state y ∈
+    and Θ(z)=θ                          QOY , there exists at least one θ ∈Θ such that hOY Z(y, θ) is
+
+
+                                                       3612
+
+                       {1}                 {1}      {𝑜, 𝜎2}               Data: G and ϕ                {𝑜, 𝜎1}                                        {𝑜}                𝑜                                          𝑜                                                               Result: MPOϕ                                             {3}                                                             {1,2,4}, {𝑜, 𝜎2}                          {3}   {1,2},{𝑜, 𝜎1}                                                   O                 O                   {𝑜}                                                     1   QMPY   ←y0 = {q0} and QMPZ   ←∅;
+     𝜎1       {3,7},{𝑜}   𝑜          {3,7},{𝑜}  𝑜          𝜎2              2    DoDFS(y0, MPOϕ, ϕ);
+                                                          {5}                                               {𝑜}                            {6}, {𝑜}               {6},       {4}                                                                           3    while ∃y                                                                         ∃θ ∈Θ s.t. hMPY Z O (y, θ)! do                                          ∈QMPY  O   :̸                                                         {𝑜}     {𝑜}                                           {𝑜}                         {𝑜}                                                     O                                                             O                                                                           4     QMPY  ←QMPY    \ {y};              𝑜                                            𝑜   {5},{𝑜}                           {6}                 {6}     {4,5}, {𝑜}                                                                      O                                                                           5       remove all Z-states z ∈QMPZ    such that
+           (a) Solution O1                      (b) Solution O2               hMPZY O (z, σ) = y for some σ ∈Θ(z);
+Fig. 2.   Examples of BDOs that represent two incomparable minimal     6         take the accessible part of MPOϕ;
+solutions;  [blue]  rectangular  states and  [yellow]  oval  states  represent,
+respectively, Y -states and Z-states.                                procedure DoDFS(y, MPOϕ, ϕ);
+                                                                           7     for θ ∈Θ do
+                                      {1}                                8        z ←hY Z(y, θ);
+       {𝑜}                   {𝑜, 𝜎1}                  {𝑜, 𝜎2}                  9            if ϕ(I(z)) = 1 then                             𝑜            𝑜
+                 {1,2},{𝑜, 𝜎1}                  {3}         {1,2,4}, {𝑜, 𝜎2}                               O                                     {𝑜}                                 10           add transition y θ−→z to hMPY Z   ;
+                𝜎1                   𝑜   𝑜               𝜎2                     O                               {3,7},{𝑜}                                     11                 if  z̸ ∈QMPZ    then
+               {4}                                              {5}                  O      O {1,2,4,5}, {𝑜}                       {6}, {𝑜}   {6}, {𝑜, 𝜎1}                   12         QMPZ  ←QMPZ   ∪{z};
+                         {𝑜}                                                             σ ∈Σ                                                                                                                                 s.t.                                                                          13                for                                                                                                         (z, σ)! do                                                                        hZY                                                         {𝑜}                                                {𝑜, 𝜎1}                                  {𝑜}                                                𝜎1      𝑜         {𝑜, 𝜎2}                                                                          14                                                                                            y′                                                                                                   (z,                                                                                               σ);                                                 ←hZY
+                        {4,5}, {𝑜}    𝑜         {6}    𝑜    {5},{𝑜}                                       O
+     {3,6}                                                                                                σ−→y′ to hMPZY    ;                                                 𝜎2                 15                 add transition z
+                                   {4}, {𝑜, 𝜎2}                               16                           if y′̸ ∈QMPY  O then
+                                                               O      O                         Fig. 3.  Example of MPO                          17              QMPY  ←QMPY    ∪{y′};
+                                                                          18                    DoDFS(y′, MPOϕ, ϕ);deﬁned. This is because a sensor activation policy is deﬁned
+for all strings in L(G).
+  Deﬁnition 3: Given a BDO O, we say  that a sensor         Algorithm 1: The construction of the MPO
+activation policy ω  is allowed by O  if ∀s ∈L(G)   :
+                                                                              is actually well deﬁned: if O1 and O2 are two BDOs thathOY Z(IYω (s), ω(s))!. With a slight abuse of notation, we write
+                                                           both satisfy the above requirement, then their union, in thethat ω ∈O whenever ω is allowed by O.
+                                                            sense of graph merger, is a BDO that satisﬁes the above
+  We say that a BDO O is deterministic if, for any y∈QOY ,                                                             requirement. This observation leads to the deﬁnition of the
+there exists only one θ ∈Θ such that hOY Z(y, θ)!. It is clear                                                      most permissive observer.
+that a deterministic BDO O allows a unique sensor activation
+                                                             Deﬁnition 4: (Most  Permissive  Observer).  Let G =
+policy; we denote it by ωO. In this case, the deterministic
+                                                      (Q, Σ, δ, q0) be the system and let ϕ : 2Q →{0, 1} be theBDO O is essentially a ﬁnite representation of ωO.
+                                                           IS-based property under consideration. The Most Permissive  Example 3: Consider  again  the  system G  in  Fig. 1.
+                                                         Observer for ϕ is the BDO
+Fig. 2(a) provides an example of a deterministic BDO. For
+the initial Y -state y0 = {1}, by making sensing decision                                 MPOϕ = (QMPY  O , QMPZ O , hMPY Z O , hMPZY O , Σ, Θ, y0)
+θ = {o, σ1}, we will reach Z-state z = ({1, 2}, {o, σ1}).
+From z, only monitored events o and σ1 can be observed.   deﬁned as the largest BDO such that ∀z∈QMPZ O :ϕ(I(z))=1.
+If σ1 is observed, then the next Y -state is y1 ={4}. We can     The following theorem reveals the correctness of the MPO
+verify that the sensor activation policy ω deﬁned in Eqn. (3)   deﬁned above, namely, the MPO embeds all sensor activation
+is allowed by O1; moreover, it is the only one allowed by    policies satisfying ϕ in its structure.
+O1 since this BDO is deterministic. Similarly, the BDO O2     Theorem 1: ω |=G ϕ if and only if ω ∈MPOϕ.
+shown in Fig. 2(b) is also deterministic. However, the BDO     Algorithm 1 provides a procedure for the construction of
+shown in Fig. 3 is not a deterministic BDO, since there are    the MPO. The steps of Algorithm 1 follow direction from
+two sensing decisions deﬁned at Y -state {1}.                  the deﬁnition of the MPO. First, we search through the state
+                                                           space of Y -states and Z-states until a Z-state that violates
+C. Generalized MPO and its Properties                                                                the IS-based property ϕ is encountered. Then we need to
+  We return to the sensor activation problem for IS-based   go back to prune such a Y -state and the corresponding Z-
+properties, Problem 1, formulation in Section II-B. By con-    states that lead to this state, until the structure converge. The
+dition (i) in Problem 1, we must ﬁnd an ω such that ∀s ∈   worst-case time complexity of the construction of the MPO
+L(G)  : ϕ(EGω (s)) = 1. However, for any BDO, we know    is exponential in both |Q| and |Σs|.
+that ∀s ∈L(G) : I(IZω (s)) = EGω (s) and IZω (s) is indeed     Example 4: We return to system G in Fig. 1 and IS-
+the Z-state reached by the run Rω(s) in the BDO. Therefore,   based property ϕ deﬁned by Equation (1). The corresponding
+if we construct a BDO O such that ∀z ∈QOZ  : ϕ(I(z)) = 1  MPO is shown in Fig. 3. At initial Y -state {1}, if we make
+and such that O is “as large as possible”, then the resulting   sensing decision {o}, then Y -state {3, 6} will be reached
+structure will contain all sensor activation policies that satisfy   upon the occurrence of monitored event o (see the dashed
+ϕ. The property of such a BDO being as large as possible    lines). However,  at  state {3, 6}, no matter what sensing
+
+
+                                                       3613
+
+decision we make, a Z-state that contains both state 3 and   pick decision {o, σ1}, which is greedy minimal, at the initial
+6 will be reached, which violates the IS-based property ϕ.  Y -state. Then, upon the occurrence of monitored event σ1,
+Therefore, we need to go back to prune Y -state {3, 6} and    the new Y -state {4} is reached. At that state, we pick the
+its predecessor Z-state ({1, 2, 4, 5}, {o}). This is why we   unique greedy minimal decision {o}, and so forth. These
+cannot make sensing decision {o} at the initial state.          choices result in deterministic BDO O1 shown in Fig. 2(a)
+  Remark 3: In Fig. 3, we can also make sensing decision    that allows the unique sensor activation policy ωO1, which
+{o, σ1, σ2} at the  initial Y -state. However, σ2 cannot be    is provably minimal. We see that ωO1 is, in fact, the sensor
+observed before the next sensing decision is issued, which    activation policy ω deﬁned by Equation (3).
+will occur when either o or σ1 is observed. Therefore, σ2     Remark 4: In the synthesis step in th previous example,
+is a “redundant” event in the sensing decision, since it has  we could have selected {o, σ2} at the initial Y -state, which
+no effect on future states in the MPO. In this paper, we    yields the minimal solution shown in Fig.2(b). Interestingly,
+adopt the following convention. We remove all redundant  we see that the intersection of the two valid decisions {o, σ1}
+events from sensing decisions in the MPO when solving the   and {o, σ2} is not a valid decision, since {o} is not deﬁned
+minimal sensor activation problem. Similarly, we include all    at Y -state {1} in the MPO. This illustrates that Problem 1
+redundant events to the sensing decisions in the MPO when   may not have an inﬁmal (respectively, supremal) solution in
+solving the maximal sensor activation problem. Clearly, these    general, but instead several incomparable minimal (respec-
+conventions will not affect the properties of the MPO.          tively maximal) solutions. (This phenomenon is similar to
+                                                                the supervisory control problem under partial observation,
+   IV. SYNTHESIS OF OPTIMAL SENSOR ACTIVATION
+                                                                   in which supremal solutions do not exist in general [16].)
+                     POLICIES
+  In this section, we show how to synthesize from the MPO        V. APPLICATIONS OF THE GENERALIZED MPO
+an optimal sensor activation policy ω that solves Problem 1.   A. Application to Control and Diagnosis
+Speciﬁcally, we require that ω satisfy the minimality criterion                                                                 Observability and diagnosability are two key properties of
+(ii) of Problem 1 (or the maximality criterion for the dual                                                                       interest in control and diagnosis of DES. It is shown in [15]
+version of Problem 1). Moreover, we shall also require that ω                                                                     that the problem of sensor activation for observability can be
+be deﬁned over a ﬁnite domain, so that it can be effectively                                                           formulated as a state-disambiguation problem. Similarly, it is
+implemented. To this end, we deﬁne a special class of sensor                                                  shown in [10] that the problem of sensor activation for K-
+activation policies that are represented by subgraphs of the                                                                diagnosability can be formulated as a state-disambiguation
+MPO and thus have ﬁnite realizations.                                                          problem. Therefore, as was discussed in Remark 1, both
+  Deﬁnition 5: (IS-based Sensor Activation Policy). A sen-                                                              of these sensor activation problems can be solved by the
+sor activation policy ω is said to be Information-State-based                                                              generalized MPO approach that we have presented. In fact,
+(or IS-based) if ∀s, t∈L(G) : IYω (s)=IYω (t)⇒ω(s)=ω(t).    the most permissive observer for K-diagnosability [2], [10]
+   Clearly, if ω is IS-based, then ω can always be represented                                                                              is a special case of the MPO deﬁned in this paper. Another
+by a deterministic BDO that is a subgraph of the MPO.                                                             property of interest in sensor activation is detectability [17].
+  Deﬁnition 6: (Greedy Optimal Sensor Activation Policy).                                             By using the same approach that is used for the reformulation
+Suppose that ω is a sensor activation policy such that ω |=G                                                              of K-diagnosability in [10], we can show that strong K-
+ϕ. We say that ω is greedy minimal if                                                                    detectability can also be formulated as an IS-based property.
+  ∀s ∈L(G), ∀θ ∈Θ : hMPY Z O (IYω (s), θ)! ⇒θ̸ ⊂ω(s)   (5)                                                            B. Application to Fault Prediction
+The notion of greedy maximality is deﬁned analogously.       As a speciﬁc example of how the methodology presented
+  The following theorem says that a greedy minimal (re-    in this paper can be used to solve problems that have not yet
+spectively, maximal) solution  is a minimal  (respectively,   been addressed in the literature, we consider the problem
+maximal) solution.                                            of sensor activation for the enforcement of predictability, a
+  Theorem 2: Let ω be a sensor activation policy such that   notion introduced in [18]. Let f ∈Σ be the fault event to be
+ω |=G ϕ. Then ω is minimal (respectively, maximal) if it is    predicted. We denote by Ψ(f) := {sf ∈L(G) : s ∈Σ∗} the
+greedy minimal (respectively, greedy maximal).                 set of strings that end with f. We write f ∈s if s∩Ψ(f)̸ = ∅.
+  By Theorem 2, it is clear that if we synthesize an IS-based  We recall the deﬁnition of predictability from [18].
+greedy optimal sensor activation policy, then we will have      Deﬁnition 7: (Predictability). A  live language L(G)  is
+obtained a solution to Problem 1, which was our objective.    said to be predictable w.r.t. f ∈Σ and ω if
+An IS-based greedy optimal sensor activation policy can be
+                                                   (∀s∈Ψ(f))(∃t∈{s}:f /∈t)(∀u∈L(G):f /∈u∧Pω(u)=Pω(t))obtained by a depth-ﬁrst search over the state space of the
+MPO that picks one greedy optimal sensing decision at each   (∃n ∈N)(∀v ∈L(G)/u)[|v| ≥n ⇒f ∈v]               (6)
+Y -state and then picks all observations for each Z-state. The   The above deﬁnition requires that the fault event f should
+resulting structure will be a deterministic BDO representing   be predicted unambiguously before its occurrence.
+the solution. We illustrate this procedure by an example.       To proceed further, we assume that state space of G is
+  Example 5: We return to the MPO shown in Fig. 3. To    partitioned into two disjoint sets Q = QY ˙∪QN, such that
+synthesize a minimal sensor activation policy for ϕ, we can   ∀s ∈L(G) : δ(q0, s) ∈QY ⇔f ∈s. This assumption is also
+
+
+                                                       3614
+
+w.l.o.g., since we can always reﬁne G by taking the parallel    prediction, or other types in the context of partially-observed
+composition of G with an automaton with two states that    discrete event systems. To  this end, we deﬁned a novel
+captures the occurrence of f. Next, similarly to the notions   information structure called the generalized Most Permissive
+of boundary strings and indicator strings in [19], we deﬁne   Observer that  is applicable to a wide class of properties
+the two following sets:                                          called information-state-based properties. We presented an
+  • Boundary states, ∂Q = {q ∈Q : δ(q, f)!}; and           algorithm for the construction of the MPO and a procedure
+  • Non-indicator states, NQ = {q ∈QN  : ∀n ∈N, ∃s ∈    for synthesizing an optimal sensor activation policy based on
+    L(G, q) s.t. |s| > n ∧f̸ ∈s}.                             the MPO. Our approach generalizes the previous works on
+                                                                the MPO, which pertain to speciﬁc properties such as opacity  With the above notions, we deﬁne the IS-based property
+                                                              or K-diagnosability. Our approach is applicable to a wideϕpre : 2Q →{0, 1} by:
+                                                                   class of user-deﬁned properties. In particular, we showed how
+ ∀i∈2Q : [ϕpre(i)=0] ⇔[∃q, q′ ∈i : q∈∂Q ∧q′ ∈NQ]  (7)    the problem of optimal sensor activation for the purpose of
+                                                                       fault prediction, not previously considered in the literature,  The following result says that predictability is equivalent
+                                                        can be solved by the generalized MPO.
+to the IS-based property ϕpre.
+  Theorem 3: Let ϕpre be the IS-based property deﬁned by                    REFERENCES
+Equation (7). For any sensor activation policy ω ∈Ω, L(G)
+                                                                                     [1] D. Thorsley and D. Teneketzis, “Active acquisition of information for
+is predictable w.r.t. f and ω if and only if ω |=G ϕpre.                diagnosis and supervisory control of discrete event systems,” Disc.
+  The above theorem implies that to synthesize a minimal         Event Dyn. Sys.: Theory & Appl., vol. 17, no. 4, pp. 531–583, 2007.
+sensor activation policy for the purpose of prediction,  it      [2]  F. Cassez and S. Tripakis, “Fault diagnosis with static and dynamic
+                                                                                      observers,” Fund. Informa., vol. 88, no. 4, pp. 497–540, 2008.
+sufﬁces to solve Problem 1 by taking ϕpre into account.          [3] W. Wang, S. Lafortune, F. Lin, and A. R. Girard, “An online algorithm
+  Example 6: Let us return  to the system G  in Fig. 1.           for minimal sensor activation in discrete event systems,” in 48th IEEE
+Suppose that f is the fault event that we want to predict. G         Conference on Decision and Control, 2009, pp. 2242–2247.
+                                                                                     [4] ——, “Minimization of dynamic sensor activation in discrete event
+already satisﬁes the state partition assumption Q=QY ˙∪QN,         systems for the purpose of control,” IEEE TAC, vol. 55, no. 11, pp.
+where QN = {1, 2, 3, 4, 5, 6} and QY = {7}. Also, we have         2447–2461, 2010.
+∂Q ={3} and NQ ={1, 4, 5, 6}. In fact, we see that the IS-      [5] W. Wang, S. Lafortune, A. R. Girard, and F. Lin, “Optimal sensor                                                                                         activation for diagnosing discrete event systems,” Automatica, vol. 46,
+based property deﬁned by Eqn. (1) is the IS-based property          no. 7, pp. 1165–1175, 2010.
+ϕpre for this example. Therefore, the solutions O1 and O2      [6]  F. Cassez, J. Dubreil, and H. Marchand, “Synthesis of opaque systems
+shown in Fig.2 that we obtained previously are two minimal         with static and dynamic masks,” Formal Methods in System Design,
+                                                                                            vol. 40, no. 1, pp. 88–115, 2012.
+sensor activation policies that guarantee predictability.              [7]  F. Cassez, “The complexity of codiagnosability for discrete event and
+                                                                            timed systems,” IEEE TAC, vol. 57, no. 7, pp. 1752–1764, 2012.
+C. Application to Cyber-Security                                         [8]  S. Shu, Z. Huang, and F. Lin, “Online sensor activation for detectabil-
+                                                                                                   ity of discrete event systems,” IEEE Trans. Automation Science and
+  As was discussed earlier in Remark 2, in some cases,                                                                                Engineering, vol. 10, no. 2, pp. 457–461, 2013.
+the system may also be monitored by an external observer      [9] D. Sears and K. Rudie, “Efﬁcient computation of sensor activation
+that is potentially malicious. Therefore, for security purposes,          decisions in discrete-event systems,” in 52nd IEEE Conference on
+                                                                              Decision and Control, 2013, pp. 6966–6971.
+one may want the information mapping not to release some                                                                              [10] E. Dallal and S. Lafortune, “On most permissive observers in dynamic
+crucial information to this external observer. We recall an          sensor activation problems,” IEEE TAC, vol. 59, no. 4, pp. 966–981,
+important security property called opacity.                             2014.
+                                                                        D. Sears and K.                                                                                                 Rudie, “Minimal                                                                                                                      sensor                                                                                                                                         activation                                                                                                                        and                                                                                                                              minimal  Deﬁnition 8: Secret QS ⊆Q is current-state opaque w.r.t.    [11]                                                                                                                              Discrete                                                                                                                            Event                                                                                                                           Dyn.                                                                                                                                                                Sys.:                                                                         communication                                                                                                          in discrete-event                                                                                                                   systems,”
+G and ω if ∀s ∈L(G) : EGω (s)̸ ⊆QS.                                Theory & Appl., 2015.
+Current-state opacity is clearly an IS-based property. There-    [12]  F. Cassez, “Dynamic observers for fault diagnosis of timed systems,”
+                                                                                         in 49th IEEE Conf. Decision and Control, 2010, pp. 4359–4364.
+fore, the most permissive dynamic mask studied in [6] is also                                                                              [13] X. Yin and  S. Lafortune, “Minimization of sensor  activation  in
+a special case of the generalized MPO and the problem of          decentralized fault diagnosis of discrete event systems,” in 54th IEEE
+synthesizing a maximal sensor activation policy can also be         Conference on Decision and Control, 2015.
+                                                                              [14] C. Cassandras and S. Lafortune, Introduction to Discrete Event Sys-
+solved by the approach presented in this paper.                                                                                    tems, 2nd ed.  Springer, 2008.
+  Moreover, the same approach can be applied to other    [15] W. Wang, S. Lafortune, and F. Lin, “An algorithm for calculating
+user-deﬁned properties. For example, consider the IS-based          indistinguishable  states and  clusters  in  ﬁnite-state automata with
+                                                                                              partially observable transitions,” Systems & Control Letters, vol. 56,property ϕ : 2Q →{0, 1} deﬁned by ∀i ∈2Q : ϕ(i) = 0 ⇔                                                                                    no. 9, pp. 656–661, 2007.
+|i| = 1. This property is related to 1-anonymity studied in the    [16] X. Yin and S. Lafortune, “Synthesis of maximally permissive non-
+computer security literature [20]. Intuitively, it requires that         blocking supervisors for partially observed discrete event systems,” in
+                                                                           53rd IEEE Conf. Decision and Control, 2014, pp. 5156–5162.
+the observer should never determine the current-state of the                                                                              [17]  S. Shu, F. Lin, and H. Ying, “Detectability of discrete event systems,”
+system precisely. We can also synthesize a sensor activation        IEEE TAC, vol. 52, no. 12, pp. 2356–2359, 2007.
+policy for it by applying the generalized MPO approach.        [18]  S. Genc and S. Lafortune, “Predictability of event occurrences in
+                                                                                              partially observed discrete-event systems,” Automatica, vol. 45, no. 2,
+                  VI. CONCLUSION                                   pp. 301–311, 2009.
+                                                                              [19] R. Kumar and S. Takai, “Decentralized prognosis of failures in discrete
+  We presented a new approach to the problem of synthe-          event systems,” IEEE TAC, vol. 55, no. 1, pp. 48–59, 2010.
+sizing an optimal sensor activation policy that guarantees    [20] L. Sweeney, “K-anonymity: A model for protecting privacy,” Int. J.
+                                                                                     Uncert., Fuzz. Knowl.-Based Sys., vol. 10, no. 05, pp. 557–570, 2002.
+some observation property in problems of control, diagnosis,
+
+
+                                                       3615

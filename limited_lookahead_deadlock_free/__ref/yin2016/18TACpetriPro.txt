@@ -1,0 +1,485 @@
+This article has been accepted for publication in a future issue of this journal, but has not been fully edited. Content may change prior to final publication. Citation information: DOI 10.1109/TAC.2017.2756096, IEEE
+                                                                                   Transactions on Automatic Control
+
+                                                                                                                                                          1
+
+
+            Veriﬁcation of Prognosability for Labeled Petri Nets
+
+                                               Xiang Yin, Member, IEEE
+
+
+         Abstract—This technical note  is concerned with the fault prognosis   language-based deﬁnition of prognosability in [15], [19] to determine
+      problem for partially-observed discrete-event systems modeled by un-   a priori whether or not a fault can be predicted with no missed
+      bounded labeled Petri  nets. The goal of  this problem  is to predict                                                                               detection and with no false alarm. The main contributions of this
+       the occurrence of each fault before  its occurrence. The condition of
+       prognosability provides the necessary and sufﬁcient condition under   technical note are as follows. First, we show that prognosability is
+      which any fault can be predicted with no missed detection and no false   decidable for labeled Petri nets by effectively reducing the prognos-
+       alarm. In this technical note, we investigate the veriﬁcation of prognos-    ability veriﬁcation to a model checking problem for Petri nets. In
+        ability for unbounded labeled Petri nets. First, we show that checking   the context of unbounded Petri nets, several (un)decidability results
+       prognosability  is decidable for Petri net languages. Our approach  is
+                                                                      have been established for related notions. For example, it has been       based on a reduction from this veriﬁcation problem to an existing Petri
+       nets model checking problem. Then we show that the complexity of this   shown that the veriﬁcation of diagnosability is decidable [35], while
+      problem is EXPSPACE-complete. Our results extend previous works on   the veriﬁcation of opacity is shown to be undecidable [30]. To the
+       the veriﬁcation of language-based prognosability from regular languages   best of our knowledge, the decidability status of prognosability is
+        to Petri net languages.
+                                                                                                           still open and our result provides positive answer to this question.
+         Index Terms—Discrete Event Systems, Petri Nets, Fault Prognosis,   Second, we establish the precise computational complexity for the
+       Computational Complexity                                              prognosability veriﬁcation problem. Speciﬁcally, we show that check-
+                                                                            ing prognosability for unbounded Petri nets is EXPSPACE-complete,
+                                         I. INTRODUCTION                                       i.e., exponential memory is required for this veriﬁcation problem.
+
+         Fault prognosis is an important task in many safety-critical cyber-
+                                                                                                                            II. PRELIMINARIES       physical systems. In this problem, we want to predict the occurrences
+       of faults and to generate corresponding fault alarms in order to protect   A. Petri Nets
+       the system. In this technical note, we are concerned with the problem   A place/transition net is deﬁned as a 4-tuple N = (P, T, A, w),
+       of fault prognosis of discrete-event systems (DES) [9].              where P =  {p1, p2, . . . , pn}  is  the  set  of n  places, T =
+         In the context of DES, model-based fault prognosis was initially   {t1, t2, . . . , tm} is the set of m transitions, A ⊆(P × T) ∪(T × P)
+       studied in [15], [16], where a language-based condition called prog-    is the set of arcs, and w  : A →N  is the weight function that
+       nosability (or predictability) was proposed. Speciﬁcally, prognosabil-   assigns to each arc a non-negative integer. For any place p ∈P,
+        ity is proposed to determine a priori whether or not a fault prognoser  we denote by •p  its preset,  i.e., •p = {t ∈T   :  (t, p) ∈A};
+      can be designed such that: (i) no false alarm, i.e., a fault is guaranteed  we denote by p•  its postset,  i.e., p• = {t ∈T  : (p, t) ∈A}.
+       to occur within a ﬁnite number of steps whenever a fault alarm is   For a transition t ∈T, its preset •t and its postset t• are deﬁned
+       generated; and (ii) no missed detection, i.e., any fault will be alarmed   analogously, which are sets of places. Given a net N, a marking
+       before its occurrence. Since then, fault prognosis of DES has drawn M  is a vector M = [M(p1) M(p2)  . . . M(pn)]⊤∈Nn, where
+       consideration attention in the DES literature; see, e.g., [6], [12], [18],  M(p) is the number of tokens in place p ∈P. A Petri net is a
+       [19], [24], [28], [29], [31], [32], [34], [36], [37]. For example, the   2-tuple ⟨N, M0⟩, where N  is a net and M0 ∈Nn  is the initial
+       notion of prognosability has been extended to decentralized systems,   marking. We say that transition t ∈T  is enabled at marking M  if
+      where the notion of co-prognosability was proposed [18], [19], [36],  ∀p ∈•t : M(p) ≥w(p, t). If t is enabled, then it may ﬁre and yield
+       [37]. The  fault prognosis problem has also been studied in the   a new marking determined by M ′ = M −w(·, t) + w(t, ·). We use
+       distributed setting [29], [31], [32]. In [34], the authors investigated                                M t−→N to denote that transition t ∈T  is enabled at M in net N
+       the enforcement of prognosability by sensor activation. The robust                                ′                                                  ′                                                                   and M t−→N M  means that ﬁring t yields M  in net N. Hereafter,
+        fault prognosis problem was studied in [28]. Finally, prognosability                                                       we will also omit the subscript N when it is clear from the context.
+       analysis has also been studied in timed systems [11] and stochastic                                                                           Let T ∗be the set of all ﬁnite sequences of transitions including
+      systems [6], [12], [24].                                                                               the empty transition λ, which means that no transition is ﬁred, and,
+        Most of the existing works on fault prognosis of DES are based on                                                                                   for any σ ∈T ∗, we have σλ = λσ = σ. We say that a sequence
+       ﬁnite-state automata models. In many concurrent systems, however,                                                                    ∗                                                                             of transitions (or, for simplicity, a sequence) σ = t1t2 . . . tk ∈T
+        Petri nets provide a more compact and natural way for modeling                                                              ti                                                                                                 is enabled at M  if ∀i ∈{1, . . . , k} : Mi −→, where M1 = M and
+     DES without explicitly enumerating the entire state-space. Moreover,           ti                                                           ∗                                                  Mi −→Mi+1, ∀i ≥1. Similarly, we denote by M σ−→that σ ∈T
+          it is well-known that Petri net languages are strictly more expressive                                                                 ′                                                                                                 is enabled at M and by M σ−→M  that ﬁring σ yields M ′. Given
+       than regular languages, languages generated by ﬁnite-state automata.
+                                                                         a Petri net ⟨N, M0⟩, L(N, M0) denotes the set of ﬁnite sequences
+       Therefore,  Petri nets can model some  inﬁnite-state systems  that                                                                                      that can be ﬁred from M0, i.e., L(N, M0) = {σ ∈T ∗: M0 σ−→}.
+      cannot be represented by ﬁnite-state automata, e.g, manufacturing
+                                                                      For any sequence σ ∈T ∗, we denote by σ the set of preﬁxes of σ,
+      systems with inﬁnite buffers. Due to these advantages, in the context
+                                                                                                             i.e., σ = {σ1 ∈T ∗: ∃σ2 ∈T ∗s.t. σ1σ2 = σ}. Finally, we denote
+       of Petri nets, many works have been done on the fault diagnosis
+                                                                by |σ| the length of sequence σ.
+      problem, a problem related to the fault prognosis problem; see, e.g.,
+                                                                           Let Σ be a ﬁnite set of alphabets (or events). A string is a ﬁnite
+       [3]–[5], [7], [8], [14], [17], [21], [23], [26], [27]. Recently, there have
+                                                                      sequence of events and we denote by Σ∗the set of all strings includ-
+      been works on fault prognosis based on Petri nets [1], [20], where
+                                                                            ing the empty string ϵ. A labeled Petri net is a triple ⟨N, M0, L⟩,
+       procedures for online prognosis were provided.
+                                                                  where ⟨N, M0⟩is a Petri net and L : T →Σ ∪{ϵ} is a labeling
+         In this technical note, we investigate the veriﬁcation of prognos-
+                                                                                 function. That is, for any t ∈T, L(t) speciﬁes the event that can be
+        ability in unbounded labeled Petri nets. Speciﬁcally, we follow the
+                                                                        observed when t ﬁres. For any transition t ∈T, if L(t) ∈Σ, then
+         X. Yin is with the Department of Automation, Shanghai Jiao Tong Univer-  we say that transition t is observable; otherwise, t is unobservable.
+          sity, Shanghai 200240, China. E-mail: xiangyin@umich.edu.          Therefore, T is partitioned as T = To ˙∪Tuo, where To and Tuo are the
+
+
+ 0018-9286 (c) 2017 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission. See http://www.ieee.org/publications_standards/publications/rights/index.html for more information.
+
+This article has been accepted for publication in a future issue of this journal, but has not been fully edited. Content may change prior to final publication. Citation information: DOI 10.1109/TAC.2017.2756096, IEEE
+                                                                                   Transactions on Automatic Control
+
+                                                                                                                                                          2
+
+
+
+        set of observable transitions and the set of unobservable transitions,         𝑏       𝑎            𝑎       𝑎
+       respectively. Function L is also extended from T to T ∗recursively                                   𝑓1                           𝑓1
+       by: (i) L(λ) = ϵ ; and (ii) ∀σ ∈T ∗, t ∈T  : L(σt) = L(σ)L(t).             𝑡1   𝑝1    𝑡2  𝑝2          𝑡1   𝑝1    𝑡2  𝑝2
+      Then the language generated by labeled Petri net ⟨N, M0, L⟩is a
+                                                                                                            (a) A prognosable system.   (b) A non-prognosable system.
+        set of strings L(L(N, M0)) := {L(σ) : σ ∈L(N, M0)}.
+
+                                                                                 Fig. 1: Examples of prognosability, where for each system, tf  is
+                                                                               the unique fault transition. Bold lines are used to denote observable
+       B. Yen’s Problem
+                                                                                     transitions and the event associated with each observable transition
+         In  this paper, we  will leverage an existing path logic model   denotes its observation label.
+      checking problem for unbounded Petri nets in the literature originally
+       studied by Yen [33]. For any sequence σ ∈T ∗and transition t ∈T,   Deﬁnition III.1. (Prognosability). Let ⟨N, M0, L⟩be a labeled Petri
+    We denote by #σ(t) the number of times t occurs in σ. Then Yen’s    net. We say that ⟨N, M0, L⟩is prognosable w.r.t. TF  if
+      problem is formulated as follows.
+                                                                  (∀α ∈L(N, M0) : TF ∈α)(∃β ∈α : TF /∈β)
+      Deﬁnition II.1. (Yen’s Problem). Given a Petri net ⟨N, M0⟩, decide
+                                                                          (∀θ ∈L(N, M0) : L(θ) = L(β) ∧TF /∈θ)      whether or not there exists a sequence
+                                                          (∃K ∈N)(∀θγ ∈L(N, M0))[|γ| ≥K ⇒TF ∈γ]
+                           σ1      σ2            σk
+              M0 −→M1 −→. . . Mk−1 −−→Mk              (1)
+                                                                                            Intuitively, prognosability can be used to determine a priori  if
+      such  that a  predicate F(M1, . . . , Mk, σ1, . . . , σk)  holds, where   any fault occurrence in the system can be correctly predicted. More
+     F(M1, . . . , Mk, σ1, . . . , σk) is a predicate obtained from the fol-   speciﬁcally,  it requires that, for any fault sequence,  it must has a
+      lowing syntax:                                                         non-fault preﬁx for which we know for sure that a fault is guaranteed
+            (i) The followings are predicates: Mi(p) ≥c, Mi(p) ≤Mj(p′),   to occur within a ﬁnite number of steps, i.e., a fault alarm can be
+          #σi(t) ≤c, #σi(t) ≥c and #σi(t) ≤#σj(t′), where c is an   correctly issued. In other words, if the system is not prognosable, then
+             arbitrary constant.                                                                       it implies that there must exist a fault sequence for which we cannot
+                                                                        claim that the fault will occur unambiguously along  its non-fault           (ii) For any predicates F1 and F2, F1 ∧F2 and F1 ∨F2 are also
+                                                                            preﬁxes. Therefore, any fault prognosis mechanism cannot correctly             predicates.
+                                                                                 predict this fault before it occurs.
+         In general, Yen’s problem is decidable and it is as hard as the reach-
+                                                              Remark III.1. Note that here we do not assume that TF ⊆Tuo,
+        ability problem1. Furthermore, it has been shown in [2] that, when the
+                                                                  which is the (non-trivial) case for the fault diagnosis problem. This
+       predicate satisﬁes the constraint that F(M1, . . . , Mk, σ1, . . . , σk) ⇒                                                                                                 is because  that,  in the  fault prognosis problem, we are mainly
+    M1 ≤Mk, this problem can be solved in EXPSPACE. Hereafter, we                                                                                   interested in the behavior of the system before the occurrences of
+       will only use the fact that this problem is decidable and the restricted
+                                                                                            faults. Therefore, even if a fault transition is observable and can be
+       case can be solved with exponential space in the size of N and the
+                                                                              distinguished from other non-fault transitions, it is still possible that
+       size of the predicate. Details on how to solve this problem can be
+                                                                         a fault alarm cannot be issued unambiguously before it occurs.
+      found in [2], [33].
+                                                   We  illustrate the notion of prognosability in Petri nets by the
+                                                                           following examples.
+                   III. PROGNOSABILITY OF LABELED PETRI NETS
+                                                            Example III.1. Let us consider labeled Petri net ⟨N, M0, L⟩shown
+         In the fault prognosis problem, we assume that the set of transitions   in Figure 1(a), where To = {t1, t2} and TF = {f1}. Also, let Σ =
+         is partitioned into two disjoint sets T = TF ˙∪TN, where TF denotes   {a, b}, L(t1) = b and L(t2) = a. This system is prognosable, since
+       the  set of  fault transitions and TN  denotes the  set of non-fault    transition t2 has to occur before the occurrence of fault transition f1,
+        transitions. For any sequence σ = t1t2 . . . tk ∈T ∗, with a slight   and once t2 occurs, the token in place p1 will be consumed, i.e., the
+      abuse of notation,we write that TF ∈σ if a fault transition occurs in   only transition can occur next is the fault transition f1. Therefore,
+       σ, i.e., ∃i ∈{1, . . . , k} : ti ∈TF .                                 once we observe event L(t2) = a, which can only be generated by
+       As we mentioned earlier, the main purpose of the fault prognosis    transition t2 in this example, we can claim unambiguously that the
+      problem is to predict any fault correctly before its occurrence, where    fault will occur within one step.
+       “correctly” means that
+                                                            Example III.2. Let us consider labeled Petri net ⟨N, M0, L⟩shown
+            (i) any fault should be alarmed before  it occurs,  i.e., no missed   in Figure 1(b), where we have To = {t1, t2}, TF = {f1} and Σ =
+             detection; and                                               {a}. We consider a labeling function deﬁned by L(t1) = L(t2) = a.
+           (ii) once a fault alarm is generated, a fault is guaranteed to occur   This system is not prognosable. To see this, let us consider fault
+            within a ﬁnite number of steps, i.e., no false alarm.             sequence t2f1 ∈L(N, M0). Then for t2 ∈t2f1 : TF /∈t2, we can
+         In [15], [19], the notion of prognosability (or predictability) was   ﬁnd t1 ∈L(N, M0) such that L(t1) = L(t2) = a and for any K ∈
+      proposed as the necessary and sufﬁcient condition under which there   N, a non-fault sequence t1(t1)K is deﬁned in ⟨N, M0⟩. Intuitively,
+        exists a prognosis mechanism such that the above two requirements   the non-prognosability here can also be explained as follows. To avoid
+      can be achieved. Although [15], [19] only study the veriﬁcation of   missed detection, we have to issue a fault alarm upon the occurrence
+       prognosability for regular languages, the deﬁnition of prognosability   of t2, i.e., by observing event a. However, sequences t1 and t2 are
+         itself is applicable to any class of languages. Here, we present the   indistinguishable and an arbitrarily long non-fault behavior can still
+       deﬁnition of prognosability for Petri net languages.                   occur after t1. Therefore, this fault alarm cannot guarantee a fault to
+                                                                        occur within a ﬁnite number of steps, i.e., it may be a false alarm.
+
+          1In the original paper  [33],  it  is claimed  that the general case  is in     Next, we will provide a characterization of prognosability for
+      EXPSPACE, which is not correct as pointed out by [2].                      labeled Petri nets. First, motivated by relevant notions in [19] for
+
+
+ 0018-9286 (c) 2017 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission. See http://www.ieee.org/publications_standards/publications/rights/index.html for more information.
+
+This article has been accepted for publication in a future issue of this journal, but has not been fully edited. Content may change prior to final publication. Citation information: DOI 10.1109/TAC.2017.2756096, IEEE
+                                                                                   Transactions on Automatic Control
+
+                                                                                                                                                          3
+
+
+       ﬁnite-state automata, we introduce the notions of boundary marking        𝑎       𝑎        𝑎       𝑎              𝑎
+      and non-indicator marking.
+      Deﬁnition III.2. A marking M ∈Nn is said to be                            𝑡1𝑁  𝑝1𝑁   𝑡2𝑁  𝑝2𝑁    𝑡1   𝑝1    𝑡2  𝑝2   𝑓1  𝑝𝑓𝑎𝑢𝑙𝑡 𝑡𝑎
+                                                              tf                                                                                                        (a)      Petri         net          (b) Petri net ⟨˜N, M0⟩˜                                                 and         • a Boundary Marking if (∃tf ∈TF )[M −→];
+                                                               ∗             ⟨NN, M0, L⟩         • a Non-Indicator Marking  if (∀K ∈N)(∃σ ∈TN)[M  σ−→
+          ∧|σ| ≥K].                                                                                 Fig. 2: Petr nets ⟨NN, M0⟩and ⟨˜N, M0,˜  ˜L⟩for the Petri net shown
+           Intuitively, a boundary marking is a marking from which a fault   in Figure 1(b).
+        transition can occur immediately and a non-indicator marking is a
+      marking from which an arbitrarily long non-fault sequence can occur.                IV. VERIFICATION OF PROGNOSABILITY
+      Note that, since vectors of integers form a well quasi-ordering [13],
+       for any M1, there does not exists an inﬁnite sequence of vectors      In this section, we ﬁrst provide a necessary and sufﬁcient condition
+     M1, M2, M3, . . . such that Mi̸ ≤Mj for any i < j. Therefore,   for prognosability in terms of a formula satisfying the syntax in the
+   M  is a non-indicator marking if and only if (∃σ, σ′ ∈TN)[M∗      σ−→   Yen’s problem. Then we show that the veriﬁcation of prognosability
+             σ′        ′′   M ′ −→M         ∧M ′ ≤M ′′].                                                      is decidable and it is in EXPSPACE.
+       The following result provides a characterization of prognosability    By Lemma III.1, to verify prognosability, it sufﬁces to verify the
+       in terms of boundary markings and non-indicator markings.            existence of two observationally equivalent sequences such that one
+                                                                      goes to a boundary marking and the other goes to a non-indicator
+    Lemma III.1. Labeled Petri net ⟨N, M0, L⟩is not prognosable w.r.t.
+                                                                       ∗   marking. Similarly result can also be found in the fault diagnosis
+     TF , if and only if, there exist two non-fault sequences σ1, σ2 ∈TN                                                                       problem; see, e.g., [7], [10]. The basic idea to verify this is to use a
+      such that
+                                                      σ1                     twin-plant-like approach in order to track all pairs of sequences that
+            (i) M1 is a non-indicator marking, where M0 −→M1; and                                                  σ2                      look the same. However, to implement this idea, the following dif-
+           (ii) M2 is a boundary marking, where M0 −→M2; and                                                                            ﬁculty arises. For boundary markings, it is straightforward to obtain
+          (iii) L(σ1) = L(σ2).                                                                         a closed-form representation; however, obtaining such a closed-form
+       Proof. (⇐)  Suppose  that  there  exist  two  non-fault  sequences   representation for non-indicator markings seems to be difﬁcult. To
+      σ1, σ2 ∈TN∗ such that the above conditions hold. Since M0 −→σ2    resolve this technique challenge, we ﬁrst deﬁne a new net ⟨˜N, M0, ˜L⟩
+    M2 and M2  is a boundary marking, we know that there exists   and then use this net together with the normal net for the twin-plant
+                                  σ2tf                                          construction.       tf ∈TF such that M0 −−−→. Then, for any non-fault preﬁx of
+       σ2tf, say β ∈σ2, since L(σ1) = L(σ2), we know that there     Let ⟨N, M0, L⟩be the labeled Petri net under consideration. We
+        exists a preﬁx of σ1, say θ ∈σ1 such  that L(θ) =  L(β).   deﬁne a new labeled Petri net ⟨˜N, M0,˜   ˜L⟩, where N˜ = ( ˜P, ˜T, ˜A, ˜w),
+                   θ(σ1/θ)                                                    as follows:
+      Since M0 −−−−−→M1 and M1 is a non-indicator marking, where
+      (σ1/θ)  is the sequence such that θ(σ1/θ) = σ1, we know that     •  ˜P = P ∪{pfault}, where pfault is a new place;
+                         ∗       θ(σ1/θ)σ                                     •  ˜T = T ∪{te : e ∈Σ}, where each te is a new transition;     (∀K ∈N)(∃σ ∈TN)[M0 −−−−−−→∧|σ| ≥K]. Overall, we have
+                                                                              •  ˜A and ˜w are deﬁned by:
+           (∃σ2tf ∈L(N, M0) : TF ∈σ2tf)(∀β ∈σ2 : TF /∈β)                                                                      – For any t ∈TN, •t and t• are the same in N and ∀p ∈P :
+          (∃θ ∈L(N, M0) : L(θ) = L(β) ∧TF /∈θ)                 (2)             ˜w(p, t) = w(p, t), ˜w(t, p) = w(t, p).
+        (∀K ∈N)(∃θ(σ1/θ)σ ∈L(N, M0))[|γ| ≥K ∧TF /∈γ]             – For any t ∈TF , •t is the same in N and ∀p ∈P : ˜w(p, t) =
+                                                                         w(p, t), while t• = {pfault} with ˜w(t, pfault) = 1.
+      where γ = (σ1/θ)σ. That is, the system is not prognosable.
+                                                                      – For any te, e ∈Σ, we have •te = t•e = {pfault} and       (⇒) Suppose that the system is not prognosable, i.e.,
+                                                                                               ˜w(te, pfault) = ˜w(pfault, te) = 1.
+            (∃α ∈L(N, M0) : TF ∈α)(∀β ∈α : TF /∈β)                                                              The initial marking is M0˜ = [M 0⊤ 0]⊤(we assume the last place is
+             (∃θ ∈L(N, M0) : L(θ) = L(β) ∧TF /∈θ)             (3)   pfault). The labeling function ˜L : ˜T →Σ ∪{ϵ} is deﬁned by
+           (∀K ∈N)(∃θγ ∈L(N, M0))[|γ| ≥K ∧TF /∈γ]
+                                                L(t)     if t ∈TN
+      Let α be a string satisfying Equation (3). We take β as the longest                        ˜L(t) =  ϵ          if t ∈Tf                   (4)
+      preﬁx of α such that TF /∈β, i.e., βtf ∈α for some tf ∈TF . We              e         if t = te
+     know that M2 is a boundary marking, where M0 β−→M2. Let θ be a
+       non-faulty sequence such that L(θ) = L(β) and (∀K ∈N)(∃θγ ∈      Intuitively,  for any non-fault  transition, the dynamic of N˜  is
+     L(N, M0))[|γ| ≥K ∧TF /∈γ]. By deﬁnition, we know that M1   consistent with N. However, for any fault transition, N˜  will send
+         is a non-indicator marking, where M0 θ−→M1. Therefore, by taking   a token to a new place pfault, which denotes the occurrence of fault.
+      σ1 = θ and σ2 = β, all conditions in the lemma hold.               For each event e ∈Σ, a self-loop transition te labeled with e is
+                                                                  deﬁned at pfault. For example, let us  still consider labeled Petri
+          Finally, we denote by ⟨NN, M0, L⟩the labeled Petri net obtained
+                                                                               net ⟨N, M0, L⟩shown in Figure 1(b). Then its corresponding net
+      by removing transitions in TF from ⟨N, M0, L⟩. Speciﬁcally, NN =  ⟨˜N, M0,˜  ˜L⟩is shown in Figure 2(b).
+     (PN, TN, AN, wN), where PN = P, AN is obtained by restricting A
+                                                                            Next, we deﬁne a new (unlabeled)  Petri net ⟨N∥, M0,∥⟩that       to domain (P ×TN)∪(TN ×P) and wN is obtained by restricting w
+                                                                          “synchronizes” ⟨NN, M0, L⟩and ⟨˜N, M0,˜  ˜L⟩based on their labeling
+       to domain AN. This net is also referred to as the normal net hereafter.
+                                                                                 functions. Speciﬁcally, ⟨N∥, M0,∥⟩, where N∥= (P∥, T∥, A∥, w∥),      For example, for labeled Petri net ⟨N, M0, L⟩shown in Figure 1(b),
+                                                                                                 is deﬁned as follows:
+         its normal net ⟨NN, M0, L⟩is shown in Figure 2(a). For the sake
+       of clarity, we add superscript N for each transition and each place     • P∥= PN ∪˜P;
+       in the normal net in order to distinguish them from transitions and     • T∥⊆(TN ∪{λ}) × (˜T ∪{λ}) \ {(λ, λ)};
+       places in the original net.                                               • A∥and w∥are deﬁned by
+
+
+ 0018-9286 (c) 2017 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission. See http://www.ieee.org/publications_standards/publications/rights/index.html for more information.
+
+This article has been accepted for publication in a future issue of this journal, but has not been fully edited. Content may change prior to final publication. Citation information: DOI 10.1109/TAC.2017.2756096, IEEE
+                                                                                   Transactions on Automatic Control
+
+                                                                                                                                                          4
+
+
+           – For any t1 ∈TN and t2 ∈˜T such that L(t1) = ˜L(t2) ∈Σ, M1,1′ = M1,1 is a non-indicator marking, we know that β1 can be
+            we have that (t1, t2) ∈T∥with •(t1, t2) =• t1 ∪• t2 and   extended from M1,1 to obtain a covering for places in PN. Moreover,
+                  (t1, t2)• = t•1 ∪t•2. Also,                             M1,2 contains a token in pfault. Therefore, the self-loops in the form
+                                                                             of te can “track” the sequence, which contributes to the covering in
+                                   wN(t1, p)     if p ∈PN                     w∥((t1, t2), p) =                                   (5)  NN, without changing markings in ˜P. This yields a covering for all                                               ˜w(t2, p)       if p ∈˜P                                                                             places in P∥that satisﬁes Equation (8). This is also the reason why
+                                 wN(p, t1)     if p ∈PN        we add such self-loop transitions at place pfault in N.˜                   w∥(p, (t1, t2)) =                                   (6)                                              ˜w(p, t2)       if p ∈˜P                                                                    With the above explained intuition, we are now ready to formally
+           – For any t1 ∈TN such that L(t1) = ϵ, we have (t1, λ) ∈T∥   prove Theorem IV.1.
+               with •(t1, λ) =•t1 and (t1, λ)• = t•1. Then for any p ∈PN,                                                                              Proof. (⇐) Let M0,∥ α−→N∥M1 β−→N∥M2 be a sequence satisfying               w∥((t1, λ), p)=wN(t1, p) and w∥(p, (t1, λ))=wN(p, t1).
+           – For any t2 ∈˜T such that ˜L(t2) = ϵ, we have (λ, t2)∈T∥   the conditions in Equation (8). We denote by α1 and α2 the ﬁrst and
+                                                                               the second components of α, respectively. The same for notations β1               with •(λ, t2) =•t2 and (λ, t2)• = t•2. Then for any p ∈˜P,
+                                                                   and β2.
+              w∥((λ, t2), p)= ˜w(t2, p) and w∥(p, (λ, t2))= ˜w(p, t2).
+                                                                           Let us consider the longest non-fault preﬁx of α2, say α′2 ∈α2,
+                                                                                         ∗ and α′2tf ∈L(N, M0) for some tf ∈TF . This         • M0,∥= M0⊤ M˜ 0⊤ ⊤.                                                           i.e., α′2 ∈TN
+                                                                                                                                             α′2
+                                                          M1,2.′      Remark IV.1. The construction of ⟨N∥, M0,∥⟩follows the idea of   means that M1,2′    is a boundary marking, where M0 −−→N
+       twin-plant (or veriﬁer net)  that  is used in the  literature for the  By the construction of ⟨N∥, M0,∥⟩, we know that L(α1) = ˜L(α2).
+       veriﬁcation of diagnosability; see,  e.g.,  [7], [23], [35]. However,   Moreover, since α′2 ∈TN,∗ we know that ˜L(α′2) = L(α′2). Therefore,
+       the difference here  is  that we need to modiﬁed one net before   L(α1) = L(α2). Then for α′2, there exists a non-fault sequence
+       the construction in order capture the feature of the fault prognosis   α′1 ∈α1 such that L(α′1) = L(α′2). Moreover, since M1 ≤M2,
+      problem. Intuitively, ⟨N∥, M0,∥⟩tracks and only tracks all pairs of                                                α′1              ′   (α/α′1)
+                                                                                                                                                        1,1 −−−−→NN      two sequences, one in NN and the other one in N,˜  that have the same  we know that M1,1 ≤M2,1, where M0 −−→NN M
+                                                                                   β1                                           ′
+       observation. For any transition (t1, t2) ∈T∥, if ti = λ for some i,   M1,1 −→NN M2,1. Therefore, M1,1 is a non-indicator marking. By
+       then it means that its corresponding net stays silently when the other  Lemma III.1, we know that the system is not prognosable.
+       net ﬁres an unobservable transition; if t1, t2̸ = λ, then it means that    (⇒) Suppose that system is not prognosable. By Lemma III.1, we
+      two nets are moved simultaneously by ﬁring observable transitions  know that there exist two non-fault sequences σ1, σ2 ∈TN such that
+                                                                                   σ1                                                σ2
+      with a same label. Then for any sequence σ ∈L(N∥, M0,∥), we    (i) M0 −→M1, M1 is a non-indicator marking; and (ii) M0 −→M2,
+      denote by σ1 and σ2 its ﬁrst and second components, respectively.  M2 is a boundary marking; and (iii) L(σ1) = L(σ2).
+      Then we know that L(σ1) = ˜L(σ2). Similarly, for any two sequences       First, since σ1 only contains non-fault transitions, by the deﬁnition
+      σ1 ∈L(NN, M0) and σ2 ∈L( N,˜ M0),˜   such that L(σ1) = ˜L(σ2),   of N,˜ we know that σ1 ∈L( N,˜ M0).˜    Moreover, by the deﬁnition
+       then there exists a sequence σ ∈L(N∥, M0,∥) such that its ﬁrst and   of ˜L, we know that L(σ1) = ˜L(σ2). Therefore, by the property of
+      second components are σ1 and σ2, respectively.                   ⟨N∥, M0,∥⟩, we know that there exists a sequence α ∈L(N∥, M0,∥)
+                                                                      such that its ﬁrst component is σ1 and its second component is σ2.
+        Based on net ⟨N∥, M0,∥⟩, we are now ready to present a necessary
+                                                                      Moreover, since M2 is a boundary marking, we know that σ2tf ∈
+      and sufﬁcient condition for prognosability.
+                                                      L(N, M0) for some tf ∈TF . By the deﬁnition of ˜L, we know
+     Theorem IV.1. Labeled Petri net ⟨N, M0, L⟩is not prognosable    that ˜L(tf) = ϵ. Therefore, by the deﬁnition of N∥, we know that
+         w.r.t. TF , if and only if, there exists a sequence                      α(ϵ, tf) ∈L(N∥, M0,∥).
+                                                                              Also, recall that M1 is a non-indicator marking. Therefore, there
+                                                                                                            ∗  where v = v1v2 . . . v|v|, and an                      M0,∥ α−→N∥M1 β−→N∥M2                   (7)    exists a non-fault sequence v ∈TN,
+                                                                                  integer k < |v|, such that
+       in ⟨N∥= (P∥, T∥, A∥, w∥), M0,∥⟩, such that
+                                                                                                         v1...vk             ′  vk+1...v|v|             ′′              ′           ′′
+                                                                                                        1 −−−−−−−→NN M1 and M1 ≤M1      (M2 ≥M1) ∧( _  #α(t) ≥1) ∧(  _    #β(t) ≥1) (8)     M1 −−−−→NN M
+                    t∈{λ}×TF           t∈TN ×(T˜ ∪{λ})               Then we deﬁne a sequence in N∥
+      Remark IV.2. Before we formally prove the above theorem, let us              β := (v1, v′1)(v2, v′2) . . . (v|v|, v′|v|)              (9)
+       ﬁrst explain intuitively how it works. For a sequence in Equation (7),
+       since W             t∈{λ}×TF #α(t) ≥1, we know that a boundary marking can   where for each 1 ≤i ≤|v|, we have
+      be reached by a preﬁx of the second component of α. Moreover, the                                te     if L(vi) = e ∈Σ
+                                                                                                                                             (10)                                                                                                     v′i =        last condition guarantees that β is non-λ for its ﬁrst component. This                                                                        λ      if L(vi) = ϵ
+       condition together with M2 ≥M1 ensure that any marking reached
+                                                                          Next, we show  that  α(ϵ, tf)β  is  a  well-deﬁned  sequence  in      by a preﬁx of the ﬁrst component of α is a non-indicator marking.
+       Therefore, the conditions in Equation (8) essentially guarantee that   ⟨N∥, M0,∥⟩. Note  that,  since we have shown  that  α(ϵ, tf) ∈
+       there are two observationally equivalent sequences that can reach a  L(N∥, M0,∥), it sufﬁces to show that Mαtf β−→N∥, where Mαtf =
+       non-indicator marking and a boundary marking, respectively, which                                                  [M1⊤ M˜ 2⊤ ]⊤, M0 −→˜σ2 N M2 −→˜tf N M2.˜  We proceed by induction on
+       disproves prognosability. On the other hand, suppose that the system
+                                                                                                                          ′     the length of β.
+         is not prognosable,  i.e., there                                          exist a non-indicator marking M1,1      Induction Basis: Since v1 ∈L(NN, M1), it sufﬁces to show that                                                            ′
+      and a boundary marking M1,2 that can be reached by α1 and α2,   v′1 ∈L( N,˜ M2)˜   and L(v1) = ˜L(v′1). We consider the following
+       respectively, such that α1 and α2 look the same. Then we know                                                                 two cases: (i) v1 ∈To; and (ii) v1 ∈Tuo. For Case (i), we have
+                                               ′        ′⊤     ′⊤        that M0,∥ α−→N∥M1 = M1,1 M1,2 ⊤for some α whose                                                                           ﬁrst   v′1 = te, where e = L(v1). Therefore, by the deﬁnition of ˜L, we                                                                                                                   ′
+      and second components are α1 and α2, respetively. Since M1,2 is a   have ˜L(te) = L(v′1) = σ. Moreover, since M2˜   is reached after
+      boundary marking and any fault transition is unobservable in ˜L, we                                                                          ﬁring a fault transition tf, we know that pfault contains a token,
+     know that M1′ −−−−→N∥(λ,tf )  M1,1⊤ M1,2⊤ ⊤for some tf ∈TF . Since   which implies that te ∈L( N,˜ M2).˜   For Case (ii), we have v′1 = λ.
+
+
+ 0018-9286 (c) 2017 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission. See http://www.ieee.org/publications_standards/publications/rights/index.html for more information.
+
+This article has been accepted for publication in a future issue of this journal, but has not been fully edited. Content may change prior to final publication. Citation information: DOI 10.1109/TAC.2017.2756096, IEEE
+                                                                                   Transactions on Automatic Control
+
+                                                                                                                                                          5
+
+
+                          𝑝1𝑁                     𝓝     𝑎                          𝜖1   𝑝𝑛𝑒𝑤,1  𝓝
+                                  (𝑡1𝑁, 𝑡2)     𝑁                                   𝑝2
+                                               𝑀         𝑎       𝑡𝑓
+                                                  𝑝𝑓𝑎𝑢𝑙𝑡                                 (𝑡2𝑁, 𝑡1)
+                                                                                                           𝑎
+                     (𝑡1𝑁, 𝑡1)  𝑝1    (𝑡2𝑁, 𝑡2)  𝑝2  (𝜆, 𝑓1)        (𝑡2𝑁, 𝑡𝑎)                      𝑎                         𝜖2   𝑝𝑛𝑒𝑤,2  𝑡𝑙𝑜𝑜𝑝
+                                                               (𝑡1𝑁, 𝑡𝑎)
+                                                                                 Fig. 4: Suppose that, in N, we are interested in whether or not a
+                           Fig. 3: Petri net ⟨N∥, M0,∥⟩.                                                                    marking M, in which each place in the red cycle contains the depicted
+                                                               number of tokens, can be covered. Then a conceptual illustration of
+       Therefore, ˜L(v1) = L(v′1) = ϵ and λ ∈L( N,˜ M2).˜    Overall, we                                                    ⟨ˆN, M0, ˆL⟩is shown in the ﬁgure.
+      have α(ϵ, tf)(v1, v′1) ∈L(N∥, M0,∥), i.e., the induction basis holds.
+                                                             (v1,v′1)...(vi,v′i)
+         Induction Step: We assume that Mαtf −−−−−−−−−−→N∥and     Note that the conditions in Equation (8) is a valid formula in Deﬁ-
+                                               (v1,v′1)...(vi,v′i)(vi+1,v′i+1)               nition II.1. Moreover, it satisﬁes the constraint that F ⇒M1 ≤Mk.
+     we want to show that Mαtf −−−−−−−−−−−−−−−−−−→N∥Since                                                                        Since the length of the formula in Equation (8) is a constant, by
+      v1 . . . vivi+1 ∈L(NN, M1), it sufﬁces to show that v′1 . . . v′iv′i+1 ∈
+                                                              Theorem IV.1 and [2] we have the following result immediately.
+     L( N,˜ M2)˜   and L(vi+1) = ˜L(v′i+1). Note that in marking Mαtf ,
+       place pfault contains a token and v′1 . . . v′i does not consume token  Theorem IV.2. Checking prognosability for labeled Petri nets  is
+       in pfault. Therefore, following the same reason in the induction basis,   decidable. Moreover, it is in EXPSPACE.
+     we have α(ϵ, tf)(v1, v′1) . . . (vi, v′i)(vi+1, v′i+1) ∈L(N∥, M0,∥).
+         Let Mβ′ = [M1′⊤ M˜ β′⊤ ]⊤and Mβ = [M1′′⊤ M˜ β⊤ ]⊤be markings        V. EXPSPACE-COMPLETENESS OF PROGNOSABILITY
+      such that                                                                In the preceding section, we have shown that the veriﬁcation of
+                    (v1,v′1)...(vk,v′k)            ′  (vk+1,v′k+1)...(v|v|,v′|v|)               prognosability for unbounded Petri nets can be done in EXPSPACE.
+       Mαtf −−−−−−−−−−→N∥Mβ −−−−−−−−−−−−−−−−→N∥Mβ      However, this is  still an extremely high complexity and one may
+      Since v′i  is either a self-loop transition in the form of te or a λ-   ask whether or not  this complexity can be further improved. In
+        transition, we know that M2˜ = M˜ β′ = Mβ.˜   This together with the    this section, we show that this complexity is actually tight, i.e., the
+        fact that M1′ ≤M1′′ imply that Mβ′ ≤Mβ. Also, we know that        veriﬁcation of prognosability is EXPSPACE-complete.
+                                                                        For unbounded Petri nets,  it is well-known that the coverability
+       _      #(vk+1,v′k+1)...(v|v|,v′|v|)(t) = |v| −k ≥1        problem, stated as follows, is EXPSPACE-complete [22], [25].
+           t∈TN ×(T˜ ∪{λ})                                                    • GIVEN: A Petri net ⟨N, M0⟩and a marking M.
+                                                                                                                                                                                                                                     ′                                                                              • TO DECIDE: Whether or not there exists M0 σ−→M  such that       Overall, we have the following sequence in ⟨N∥, M0,∥⟩
+                                  M ≤M ′.
+                               α(λ,tf )(v1,v′1)...(vk,v′k)            ′                   Next, we show that checking prognosability is EXPSPACE-hard by                  M0,∥ −−−−−−−−−−−−−−−→N∥Mβ
+                                                                          reducing the coverability problem to the prognosability veriﬁcation
+                               (vk+1,v′k+1)...(v|v|,v′|v|)
+                   −−−−−−−−−−−−−−−−→N∥Mβ            (11)   problem.
+                                                          Theorem V.1. Checking prognosability for unbounded labeled Petri       satisfying the condition in the theorem.
+                                                                                nets is EXPSPACE-complete.
+         Let us show how to use Theorem IV.1 to verify prognosability by
+                                                                              Proof. In Theorem IV.2, we have shown that this problem  is in
+       the following example.
+                                                         EXPSPACE. Therefore, it remains to show that it is also EXPSPACE-
+     Example IV.1. Again, let us consider labeled Petri net ⟨N, M0, L⟩   hard. To this end, we use the coverability problem for the purpose
+      shown in Figure 1(b), where To = {t1, t2} and TF = {f1}. Its   of reduction.
+       corresponding net ⟨N∥, M0,∥⟩is shown in Figure 3. As we discussed     Let ⟨N =  (P, T, A, w), M0⟩and M be the instance of the
+       in Example III.2, this system is not prognosable; hereafter we show   coverability problem. We construct a new labeled Petri net ⟨ˆN =
+        this using Theorem IV.1.                                                (ˆP, ˆT, ˆA, ˆw), M0,ˆ  ˆL⟩as follows. First, ˆP is obtained by adding two
+         Let us consider the following sequence in ⟨N∥, M0,∥⟩:           new places, pnew,1 and pnew,2, to P; ˆT is obtained by adding four
+                                                           new transitions, ϵ1, ϵ2, tf and tloop, to T. For any t ∈T and p ∈P,
+             1      =:α     1    =:β   1                                                                                  ˆA and ˆw are the same as A and w. However, for the newly added
+                 0  z(tN1 , t2)(λ,}|   f1){   0   z(tN1 }|, ta){   0                    transitions and places, we have the followings:
+                 1 −−−−−−−−−−→  0  −−−−−−→  0           (12)
+                                                                                                    - For each i = 1, 2, •ϵi = {p ∈P  : M(p)̸ = 0} with ∀p ∈P  :                 0                0           0                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      ˆw(p, ϵi) = M(p); and ϵ•i = {pnew,i} with ˆw(ϵi, pnew,i) = 1;                 0                                   1                                               1
+                                                                                                    -  •tf = {pnew,1} and t•f = {pnew,2} with ˆw(pnew,1, tf) =
+                                  =:M1|{z}        =:M2|{z}                       ˆw(tf, pnew,2) = 1;
+      where   the   places   in   each   marking   are   ordered   by       -  •tloop =   t•loop =  {pnew,2}  with  ˆw(pnew,2, tloop) =
+     {pN1 , pN2 , p1, p2, pfault}. Now, let us check that the above sequence         ˆw(tloop, pnew,2) = 1.
+       satisﬁes Equation (8). Clearly, we have M4 = M3. Also, we know   The initial marking M0ˆ = [M0⊤ 0 0]⊤(we assume newly added
+        that (λ, f1) ∈{λ} × TF and #α((λ, f1)) = 1. For β, we know that   places pnew,1 and pnew,2 are the last two places in the marking).
+      (tN1 , ta) ∈TN × (˜T ∪{λ}) and #β((tN1 , ta)) = 1. Therefore, we    Finally, the labeling function ˆL  is deﬁned by:  (i) the only two
+     know that the sequence in Equation (12) satisﬁes the conditions in   unobservable transitions are ϵ1 and ϵ;  (ii) all other transitions are
+      Equation (8), i.e., the system is not prognosable.                      observable with the same label a. A conceptual illustration showing
+
+
+ 0018-9286 (c) 2017 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission. See http://www.ieee.org/publications_standards/publications/rights/index.html for more information.
+
+This article has been accepted for publication in a future issue of this journal, but has not been fully edited. Content may change prior to final publication. Citation information: DOI 10.1109/TAC.2017.2756096, IEEE
+                                                                                   Transactions on Automatic Control
+
+                                                                                                                                                          6
+
+
+       the construction of Nˆ is provided in Figure 4. Intuitively, transitions     [7] M.P. Cabasino, A. Giua, S. Lafortune, and C. Seatzu. A new approach
+       ϵ1 and ϵ2 can be ﬁred iff marking M is covered in ⟨N, M0⟩.                 for diagnosability analysis of Petri nets using veriﬁer nets. IEEE Trans.
+        For the above constructed ⟨ˆN, M0,ˆ   ˆL⟩, now, let us assume that        Automatic Control, 57(12):3104–3117, 2012.
+                                                                                              [8] M.P. Cabasino, A. Giua, and C. Seatzu.  Fault detection for discrete
+       tf  is the only fault transition we want to predict. Next, we show         event systems using Petri nets with unobservable transitions. Automatica,
+        that M can be covered in ⟨N, M0⟩if and only if ⟨ˆN, M0,ˆ  ˆL⟩is not        46(9):1531–1539, 2010.
+      prognosable w.r.t. TF = {tf}.                                                  [9] C. G. Cassandras and S. Lafortune.  Introduction to Discrete Event
+       The “if” part is straightforward. Suppose that M cannot be covered         Systems. Springer, 2nd edition, 2008.
+       in ⟨N, M0⟩. Then by the construction of ⟨ˆN, M0,ˆ   ˆL⟩, we know that    [10]  F. Cassez. A note on fault diagnosis algorithms.  In 48th IEEE Conf.                                                                                       Decision and Control, pages 6941–6946, 2009.
+       the only fault transition tf can never ﬁre in ⟨ˆN, M0,ˆ   ˆL⟩. Therefore,    [11]  F. Cassez and A. Grastien. Predictability of event occurrences in timed
+     ⟨ˆN, M0,ˆ  ˆL⟩is prognosable immediately.                                       systems. In Formal Mod. Anal. Timed Syst., pages 62–76. 2013.
+       To see the “only if” part, we assume that M can be covered in    [12]  J. Chen and R. Kumar. Stochastic failure prognosability of discrete event
+                                                                                          systems. IEEE Trans. Autom. Contr., 60(6):1570–1581, 2015.     ⟨N, M0⟩. Let σ ∈L(N, M0) be a sequence such that M0 σ−→N M ′,                                                                                       [13] L.                                                                                         Dickson.                                                                                                              Finiteness                                                                                                                      of                                                                                                                            the                                                                                                         odd perfect                                                                                                                        and primitive                                                                                                                                             abundant
+      where M ′ ≥M. By the construction of ⟨ˆN, M0,ˆ   ˆL⟩, we know that                                                                                                                    American                                                                              numbers                                                                                                with                                                                                          n  distinct                                                                                                          prime                                                                                                                                              factors.                                                                                                                                                                                       J. Mathematics,
+    M0ˆ  σ−→ˆN [M ′⊤0 0]⊤. Therefore, we know that M0ˆ  −−→ˆσϵ1 N M1         35(4):413–422, 1913.
+      and M0ˆ −−→ˆσϵ2 N M2, where M1(pnew,1) = 1 and M2(pnew,2) = 1.    [14] M. Dotoli, M.P. Fanti, A.M. Mangini, and W. Ukovich.  On-line fault
+                      tf                                                                       detection in discrete event systems by Petri nets and integer linear
+      Since M1 −→ˆN , we know that M1 is a boundary marking. Since        programming. Automatica, 45(11):2665–2672, 2009.
+             (tloop)K                                                                 [15] S. Genc and S. Lafortune. Predictability of event occurrences in partially-
+    M2 −−−−−→ˆN for any K ∈N, we know that M2 is a non-indicator        observed discrete-event systems. Automatica, 45(2):301–311, 2009.
+      marking. Moreover, ˆL(σϵ1) = ˆL(σϵ2) = a|σ|. By Lemma III.1, we    [16] T. Jéron, H. Marchand, S. Genc, and S. Lafortune.  Predictability of
+     know that ⟨ˆN, M0,ˆ  ˆL⟩is not prognosable w.r.t. {tf}.                       sequence patterns in discrete event systems. In Proc. 17th IFAC World
+                                                                                       Congress, pages 537–543, 2008.
+                                                                                       [17] G. Jiroveanu and R.K. Boel.  The diagnosability of Petri net models
+                            VI. CONCLUSION                                   using minimal explanations. IEEE TAC, 55(7):1663–1668, 2010.
+         In this technical note, we presented new results for prognosabil-    [18] A. Khoumsi and H. Chakib. Conjunctive and disjunctive architectures
+                                                                                                   for decentralized prognosis of failures in discrete-event systems. IEEE
+        ity analysis of partially-observed DES. A necessary and sufﬁcient                                                                                            Trans. Autom. Sci. Engin., 9(2):412–417, 2012.
+       condition of prognosability for unbounded Petri nets was presented.    [19] R. Kumar and S. Takai. Decentralized prognosis of failures in discrete
+       In particular, this condition  is stated in terms of a special class         event systems. IEEE Trans. Autom. Contr., 55(1):48–59, 2010.
+       of formulas  that can be  effectively checked by  existing model    [20] D. Lefebvre. Fault diagnosis and prognosis with partially observed Petri
+                                                                                                       nets. IEEE Trans. S.M.C.: Syst., 44(10):1413–1424, 2014.
+      checking techniques. Moreover, we showed that the complexity of
+                                                                                       [21] D. Lefebvre. On-line fault diagnosis with partially observed Petri nets.
+       verifying prognosability for Petri nets is EXPSPACE-complete. This       IEEE Trans. Automatic Control, 59(7):1919–1924, 2014.
+        result reveals that extremely high computation complexity seems    [22] R. Lipton. The reachability problem requires exponential space.  Re-
+       to be unavoidable  in  this veriﬁcation problem. To  mitigate  the         search Report 62, Dep. Comput. Sci., Yale Univ., 1976.
+       computational challenges, one possible direction is to ﬁnd simple    [23] A. Madalinski, F. Nouioua, and P. Dague.  Diagnosability veriﬁcation
+                                                                                       with Petri net unfoldings.   Int.  J. Knowledge-Based and Intelligent
+       but sufﬁcient conditions for prognosability using structural analysis.                                                                                      Engineering Syst., 14(2):49–55, 2010.
+      Another potential direction is to identify sub-classes of Petri nets for    [24]  F. Nouioua, P. Dague, and L. Ye. Predictability in probabilistic discrete
+      which the necessary and sufﬁcient condition for prognosability can         event systems. In Soft Methods for Data Sci., pages 381–389. 2017.
+      be veriﬁed more efﬁciently.                                                 [25] C. Rackoff. The covering and boundedness problems for vector addition
+                                                                                          systems. Theoretical Computer Sci., 6(2):223–231, 1978.
+        Note that the main purpose of verifying prognosability is to deter-                                                                                       [26] A. Ramírez-Treviño, E. Ruiz-Beltrán, I. Rivera-Rangel, and E. López-
+      mine a priori if fault can be correctly predicted. When prognosability        Mellado. Online fault diagnosis of discrete event systems. a Petri net-
+       holds, how to design an efﬁcient online prognosis mechanism is also        based approach. IEEE Trans. Autom. Sci. Engin., 4(1):31–39, 2007.
+      an interesting and important problem. In fact, some works have been    [27] Y. Ru and C.N. Hadjicostis. Fault diagnosis in discrete event systems
+                                                                              modeled by partially observed Petri nets. Discrete Event Dynamic Syst.:      done on this direction; see, e.g., [1], [20]. Another future direction is
+                                                                                     Theo. & Appl., 19(4):551–575, 2009.
+       to extend our results to the decentralized setting by considering the    [28] S. Takai. Robust prognosability for a set of partially observed discrete
+       veriﬁcation of co-prognosability; see., e.g., [18], [19], [36] for the         event systems. Automatica, 51:123–130, 2015.
+       case of ﬁnite-state automata.                                                [29] S. Takai and R. Kumar. Distributed failure prognosis of discrete event
+                                                                                     systems with bounded-delay communications.  IEEE Trans. Autom.
+                    ACKNOWLEDGMENTS                                     Contr., 57(5):1259–1265, 2012.
+       The author would like to thank an anonymous reviewer for bringing    [30] Y. Tong, Z.  Li, C. Seatzu, and A. Giua.   Decidability of opacity
+                                                                                             veriﬁcation problems in labeled Petri net systems. Automatica, 80:48–       [2] to our attention.
+                                                                                            53, 2017.                         REFERENCES
+                                                                                       [31] L. Ye, P. Dague, and F. Nouioua. Predictability analysis of distributed
+          [1] R. Ammour, E. Leclercq, E.  Sanlaville, and D. Lefebvre.   Faults          discrete event systems. In 52nd CDC, pages 5009–5015, 2013.
+             prognosis using partially observed stochastic Petri nets.  In 13th Int.    [32] L. Ye,  P. Dague, and  F. Nouioua.  A  predictability algorithm  for
+           Workshop on Discrete Event Systems, pages 472–477, 2016.                     distributed discrete event systems.   In International Conference on
+          [2] M. Atig and  P. Habermehl.  On Yen’s path  logic  for  Petri  nets.        Formal Engineering Methods, pages 201–216. Springer, 2015.
+             Reachability Problems, pages 51–63, 2009.                               [33] H.-C. Yen. A uniﬁed approach for deciding the existence of certain Petri
+          [3]  F. Basile, M.P. Cabasino, and C. Seatzu.  State estimation and fault         net paths. Inform. Computation, 96(1):119–137, 1992.
+             diagnosis of labeled time Petri net systems with unobservable transitions.    [34] X. Yin and S. Lafortune. A general approach for solving dynamic sensor
+          IEEE Trans. Automatic Control, 60(4):997–1009, 2015.                          activation problems for a class of properties. In 54th IEEE Conference
+          [4]  F. Basile, P. Chiacchio, and G. De Tommasi. On K-diagnosability of       on Decision and Control, pages 3610–3615, 2015.
+              Petri nets via integer linear programming. Automatica, 48(9):2047–2058,    [35] X. Yin and S. Lafortune.  On the decidability and complexity of
+            2012.                                                                            diagnosability for labeled Petri nets. IEEE Trans. Autom. Contr., 2017.
+          [5] A. Benveniste, E. Fabre, S. Haar, and C. Jard. Diagnosis of asynchronous    [36] X. Yin and Z.-J. Li.  Decentralized fault prognosis of discrete event
+              discrete-event systems: a net unfolding approach. IEEE Trans. Automatic        systems with guaranteed performance bound. Automatica, 69:375–379,
+             Control, 48(5):714–727, 2003.                                              2016.
+          [6] N. Bertrand, S. Haddad, and E. Lefaucheux. Foundation of diagnosis    [37] X. Yin and Z.-J. Li. Reliable decentralized fault prognosis of discrete-
+           and predictability in probabilistic systems. In 34th IARCS Annual Conf.         event systems. IEEE Trans. S.M.C.: Syst., 49(10), 2016.
+          FSTTCS, pages 417–429, 2014.
+
+
+ 0018-9286 (c) 2017 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission. See http://www.ieee.org/publications_standards/publications/rights/index.html for more information.

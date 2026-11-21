@@ -1,0 +1,462 @@
+2015 American Control Conference
+Palmer House Hilton
+July 1-3, 2015. Chicago, IL, USA
+
+ A New Approach for Synthesizing Opacity-Enforcing Supervisors for
+              Partially-Observed Discrete-Event Systems
+
+
+                                Xiang Yin and St´ephane Lafortune
+
+
+  Abstract— Opacity is a conﬁdentiality property for partially-   of the system can take many forms, such as a subset of
+observed  discrete-event systems relevant  to the  analysis  of    states (initial or current), a subset of state pairs (initial-ﬁnal),
+security and privacy in cyber and cyber-physical systems. It                                                              or a subset of strings. Since most of these notions can be
+captures the plausible deniability of the system’s “secret” in the
+                                                 mapped to one another (see [13]), we consider in this paperpresence of an outside observer that is potentially malicious. In
+this paper, we consider the enforcement of opacity on systems    the property of current-state opacity, without essential loss
+modeled by ﬁnite-state automata. We assume that the given   of generality. In current-state opacity, the secret is revealed
+system is not opaque and the objective is to restrict its behavior     if the state estimate of the intruder is entirely contained in
+by supervisory control in order to enforce opacity of its secret.                                                                the set of secret states of the system.
+We consider the general setting of supervisory control under
+                                                                Several approaches have been proposed in the literaturepartial observations where the controllable events need not all
+be observable. Our approach for the synthesis of an opacity    for enforcing opacity of a given system that is not opaque
+enforcing supervisor  is based on the construction of a new    at the outset; see, e.g., [6]–[12], [14]–[16]. One of the most
+transition system that we call the “All Inclusive Controller   commonly-used opacity enforcement mechanism is to use
+for Opacity” (or AIC-O). The AIC-O  is a ﬁnite  bipartite                                                             supervisory control to restrict the system behavior; this is
+transition system that embeds in  its transition structure  all
+                                                                the approach investigated in [6]–[11], [16]. In this context,valid opacity enforcing supervisors. We present an algorithm
+for the construction of the AIC-O and discuss its properties.    the control problem  is to synthesize a partial-observation
+We then develop a synthesis algorithm, based on the AIC-   supervisor that prevents behaviors that reveal the secret from
+O, that constructs a “maximally permissive” opacity-enforcing   occurring in the controlled system. In [6], the system  is
+supervisor. Our approach generalizes previous approaches in                                                     assumed to be fully controlled and fully observed by the
+the literature for opacity enforcement by supervisory control.
+                                                              supervisor and the objective is to hide the system’s secret
+                          I. INTRODUCTION                         in the presence of multiple intruders. In [7]–[9], Ec and Eo
+                                                                are the sets of events that can be controlled and observed  Security and privacy are important issues for networked
+                                                    by the  supervisor,  respectively; the goal  is  to design acyber and cyber-physical systems. In  this paper, we  in-
+                                                                       least restrictive supervisor such that the controlled systemvestigate an important security property called opacity that
+                                                                              is opaque with respect to Ea, the set of events that canwas originally introduced in the computer science literature
+                                                       be observed by the intruder. In these works,  it is assumed[1] and since then has been  investigated  extensively  in
+                                                                     that Ec ⊆Eo. Besides the supervisory control approach,the framework of Discrete-Event Systems (DES), among
+                                                               other enforcement mechanisms have also been investigatedother approaches; see, e.g., [2]–[15]. An opacity problem is
+                                                                   in the literature. In [15], the authors propose an enforce-formulated as follows in the context of DES. The system is
+                                                    ment mechanism based on insertion of additional observablemodeled as a ﬁnite-state automaton; there is a secret that the
+                                                              events at the system’s output; these events are observationallysystem wants to hide from a potentially malicious external
+                                                               equivalent to genuine system’s observable events from theobserver, referred to as the intruder. The intruder is modeled
+                                                           viewpoint of the intruder, thereby creating confusion on itsas an observer that knows explicitly the system’s structure
+                                                                        part. Another opacity enforcement mechanism is based onbut can only observe part of the system’s behavior. Given a
+                                                                the use of a dynamic observer [12]. Finally, in [14], a runtimesecret, we say that the system is opaque if the intruder can
+                                                         enforcement mechanism by using delay to enforce the notionnever determine unambiguously that the secret has occurred
+                                                              of K-step opacity is proposed.based on its limited observation capabilities. Speciﬁcally, we
+                                                                 In this paper, we adopt the enforcement mechanism ofneed that for any behavior of the system that reveals its secret
+                                                             supervisory control and solve the following problem: Given(a “secret behavior”), there must exist another behavior that
+                                                           a system that is not current-state opaque for a given set ofis observationally equivalent to the secret behavior but does
+                                                                   secret states, design a supervisory controller that restrictsnot reveal the secret (a “non-secret behavior”). The secret
+                                                                the behavior of the system such that the controlled system
+  This work was partially supported by NSF grants CCF-1138860 (Expedi-    is opaque for the given set of secret states. The approach
+tions in Computing project ExCAPE: Expeditions in Computer Augmented  we develop to tackle this problem is signiﬁcantly different
+Program Engineering) and CNS-1421122, and by the TerraSwarm Research
+Center, one of six centers supported by the STARnet phase of the Focus   from that in [7]–[9], which are also concerned with opacity
+Center Research Program (FCRP) a Semiconductor Research Corporation   enforcement by supervisory control. Speciﬁcally, our ap-
+program sponsored by MARCO and DARPA.                        proach is based on the construction of a ﬁnite information
+  Xiang Yin and St´ephane Lafortune are with the Department of Electrical
+Engineering and Computer Science, University of Michigan, Ann Arbor,    structure called the  All Inclusive Controller  for Opacity
+MI 48109, USA. {xiangyin,stephane}@umich.edu.         and abbreviated as AIC-O. The AIC-O is a game structure
+
+
+978-1-4799-8686-6/$31.00 ©2015 AACC                      377
+
+between the supervisor and the environment (aka system).    into two disjoint subsets: E = Ec ˙∪Euc, where Ec is the set
+By  construction, the AIC-O embeds  in  its  structure  all   of controllable events and Euc is the set of uncontrollable
+supervisors  that enforce  opacity. Therefore,  it can serve    events. We say that a control decision γ ∈2E is admissible
+as the basis for the synthesis problem. The AIC-O was     if Euc ⊆γ, namely, uncontrollable events can never be
+inspired by our recent work in [17], [18], which aims to    disabled. We deﬁne Γ = {γ ∈2E : Euc ⊆γ} as the set of
+solve the standard supervisory control problem for safety and   admissible control decisions. When the system is partially-
+non-blockingness [19] by using the same type of transition   observed [22], [23], E is also partitioned into two disjoint
+system capturing the possible moves of the system and the    sets: E = Eo ˙∪Euo, where Eo  is the set of observable
+set of admissible supervisors. However, in contrast to [17],   events and Euo is the set of unobservable events. The natural
+[18], the property of interest here is opacity. Moreover, we    projection P : E∗→E∗o, is deﬁned by
+relax the assumption made in [7]–[9] that all controllable
+                                                                          P(s)σ       if σ ∈Eo
+events should be observable. In this more general setting,      P(ϵ) = ϵ and P(sσ) =                                (1)
+                                                                            P(s)         if σ ∈Euo
+uniqueness of a maximally permissive solution is lost. Hence,
+our focus is on the synthesis of solutions that are provably   Since a supervisor can only make decisions based on  its
+(locally) maximally permissive.                                observations, a partial-observation supervisor is a function
+  The contributions of this paper are as follows.           SP  : P(L(G)) →Γ. We use the notation SP /G to represent
+  • A novel ﬁnite information structure, the All Inclusive    the controlled system and the language generated by SP /G,
+     Controller for Opacity, that embeds all valid opacity-   denoted by L(SP /G), is deﬁned recursively as follows:
+     enforcing supervisors, is deﬁned.                                     i) ϵ ∈L(SP /G); and
+  • A construction algorithm for the AIC-O is given and its       ii)   [s∈L(SP /G) ∧sσ∈L(G) ∧σ∈SP (s)]
+     properties are characterized.                       ⇔[sσ∈L(SP /G)].
+  • The supervisory control problem for opacity is solved                                                        Given a preﬁx-closed language K, i.e, K = K, we say
+     using the AIC-O. The synthesis algorithm that is pre-                                                                     that K  is controllable (w.r.t. G and Ec) if (∀s ∈K, σ ∈
+     sented always returns a maximally permissive supervi-                                                     Euc)(sσ ∈L(G) ⇒sσ ∈K); we say that K is observable
+      sor, even when Ec̸ ⊆Eo.                                         (w.r.t. G, Ec, and Eo)  if (∀s, s′ ∈K, σ ∈Ec)(P(s) =
+  The remainder of this paper is organized as follows. In   P(s′)∧sσ ∈K ∧s′σ ∈L(G) ⇒s′σ ∈K). It is well-known
+Section II, we describe the model of the system. The problem    that there exists a supervisor SP such that L(SP /G) = K
+we solve in this paper is formally formulated in Section III.     if and only if K is controllable and observable [22], [23].
+In Section IV, we deﬁne a  class of  bipartite  transition    We deﬁne several operators that will be used in this paper.
+systems that  is used for solving the opacity enforcement   The set of all possible reachable states from a set of states
+problem. In Section V, we deﬁne the structure called AIC-  Q ⊆X under string s ∈L(G), is given by
+O, the key notion  for the approach investigated  in  this
+paper. We then present the synthesis algorithm that returns        RG(s, Q) := {x ∈X : ∃q ∈Q, ∃t ∈L(G)
+a maximally-permissive partial-observation supervisor based                             s.t. P(t) = P(s) ∧x = f(q, t)}         (2)
+on the AIC-O in Section VI. Finally, we conclude the paper
+                                        We denote RG(s, Q) by RG(s) if Q = X0.in Section VII. Due to space constraints, all proofs have been
+                                                    The unobservable reach of the subset of states S ⊆Xomitted and they are available in [20].
+                                                         under the subset of events γ ⊆E is given by
+                        II. PRELIMINARIES
+                                                     URγ(S) := {x∈X :(∃u∈S)
+  The DES of interest is modeled as a deterministic ﬁnite-
+state automaton G = (X, E, f, X0), where X  is the ﬁnite               (∃e∈(Euo ∩γ)∗) s.t. x=f(u, e)}.      (3)
+set of states, E is the ﬁnite set of events, f  : X × E →X                                                    The observable transition of the subset of states S ⊆X
+is the partial transition function, where f(x, σ) = y means                                                         under observable event e ∈Eo is given by
+that there is a transition labelled by event σ from state x to
+state y and X0 ⊆X is the set of initial states. The transition         Nexte(S) := {x∈X : ∃u ∈S s.t. x=f(u, e)}.    (4)
+function f is extended to X × E∗in the usual manner (see,
+                                                                                  III. OPACITY AND PROBLEM FORMULATIONe.g., [21]). Note that the initial state of the system G is not
+unique in general, since X0 is a set of states. Given a set      In this section, we formally state the Maximally Permis-
+of states S ⊆X, the language generated by G from S is    sive Opacity Enforcement Problem (MPOEP) that we solve
+deﬁned by L(G, S) := {s ∈E∗: ∃x ∈S s.t. f(x, s)!},    in this paper. First, we recall the deﬁnition of opacity.
+where ! means “is deﬁned”. When S = X0, the preﬁx-closed    As was  mentioned  in  the  introduction, we  consider
+language L(G, X0) describes the entire system’s behavior;    current-state opacity in our development. In this setting, the
+we denote it by L(G) for simplicity.                              state space of the system  is partitioned into two disjoint
+  In the framework of supervisory control [19], the plant    sets: X = XS ˙∪XUS, where XS  is the set of secret states
+G  is  controlled by  a  supervisor  that  dynamically  en-   and XUS  is the set of non-secret states. Hereafter, we set
+ables/disables events of the system such that some speci-  XUS = X \ XS, for the sake of simplicity. The notion
+ﬁcation is provably achieved. The event set E is partitioned   of current-state opacity says that for any string that leads
+
+
+                                                       378
+
+                      0                               0                0            0
+                   𝑏    𝑐                            𝑏    𝑐            𝑏    𝑐       𝑏    𝑐
+                         𝑎                               𝑎                            𝑎
+                 1     3    4                          3    4    1            1     3    4
+                𝑎     𝑜1     𝑜1                               𝑜1     𝑜1    𝑎           𝑎     𝑜1     𝑜1
+                       𝑜2                 2     5    6                          5    6                       5    6
+                  𝑜1     𝑜1     𝑜1                              𝑜1     𝑜1                           𝑜1     𝑜1
+Fig. 1.  System G with Ec = {a, b, c}, Eo = {o1, o2}, and XS = {5}            (a) Solution G1    (b) Solution G2   (c) G3:  the  union  of
+                                                                                        L(G1) and L(G2)
+                                                                                              Fig. 2.  An example of two incomparable solutions
+
+to a secret state, there must exist a string that leads to a
+non-secret state and such that the intruder cannot distinguish
+                                                        supremal solution to MPOEP. However, this is not true in
+between these two strings. The formal deﬁnition of current-
+                                                                 general, as we show in the following example.
+state opacity is as follows (cf. [5], [12], [13]).
+                                                      Example 3.2: Let us return to Example 3.1. To enforce
+  Deﬁnition 1: (Current-State  Opacity). A system G =
+                                                                   opacity, we need  to ﬁnd a  controllable, observable and
+(X, E, f, X0) is said to be current-state opaque w.r.t. XS ⊆                                                      opaque sublanguage of L(G). It easy to verify that solutions
+X and Eo ⊆E if                                                L(G1) and L(G2), shown in Figure 2(a) and Figure 2(b),
+                                                                    respectively, are two maximal controllable, observable and (∀u ∈X0)(∀s ∈L(G, u) : f(u, s) ∈XS)(∃v ∈X0)
+                                                      opaque solutions. However, the union of these two solutions,
+     (∃t ∈L(v, t))[P(s) = P(t) ∧f(v, t) ∈X \ XS]    (5)                                                     which is shown in Figure 2(c), is not a valid solution, since
+                                                                the system needs to enable event a at state 1 and disable
+                                                             event a at state 3; but states 1 and 3 are indistinguishable in  Remark 3.1:  It was shown in [13] that several other no-
+                                                     L(G3). This violates the property of observability.tions of opacity, speciﬁcally language-based opacity, initial-
+                                                    The lack of a supremal solution to MPOEP  is due tostate opacity, and initial-and-ﬁnal-state opacity, can be trans-
+                                                                the fact that the property of observability is not preservedformed to current-state opacity in polynomial time. There-
+                                                         under union. Therefore, in MPOEP, we are looking for afore, the enforcement algorithm described  in  this paper,
+                                                                   locally maximal solution, rather than a supremal solution.which is based on current-state opacity, can also be applied
+                                                           This explains condition (2) in the statement of MPOEP.to these different notions of opacity. This can be done by
+                                                    Remark 3.2: In general, the intruder may have a differentﬁrst transforming them to current-state opacity, as described
+                                                                      set of observable events than the supervisor. For example,in [13], and then calling our enforcement algorithm. Without
+                                                                   in [7], [8], the authors assume that Ea ⊆Eo, where Ea isfurther clariﬁcation, our usage of the word “opacity” here-
+                                                                the set of events that can be observed by the intruder. Inafter means “current-state opacity”.
+                                                                        this paper, we assume that the supervisor and the intruder  Example 3.1: Consider the system G in Figure 1, where
+                                                           observe the same events,  i.e., Ea = Eo. Our focus is onthe set of controllable events Ec = {a, b, c} and the set
+                                                           developing a new approach for the synthesis of opacity-of observable events is Eo = {o1, o2}; these two sets are
+                                                             enforcing supervisors that allows to relax the assumption thatincomparable. Clearly, G is not opaque w.r.t. the single secret
+                                               Ec ⊆Eo, which is made in prior works. We leave the casestate 5, since the intruder can unambiguously know that the
+                                                     where Ea̸ = Eo for future research.system is in state 5 once it observes event o2.
+  Now, we formulate the Maximally Permissive Opacity                                                                       IV. BIPARTITE TRANSITION SYSTEM
+Enforcement Problem (MPOEP) as follows.
+  Deﬁnition 2: (Maximally  Permissive  Opacity  Enforce-      In this section, we deﬁne the general notion of bipartite
+ment Problem) Given an automaton G = (X, E, f, X0) with    transition system (BTS), which was originally investigated
+controllable events set Ec, observable events set Eo, and    in [18] to solve the standard supervisor control problem for
+secret states set XS ⊆X, synthesize a partial observation    safety and non-blockingness.
+supervisor SP  : E∗o →Γ, such that                             Since we are dealing with partially-observed systems, we
+                                                     deﬁne the notion of an information state (abbreviated as IS)
+  1) L(SP /G) is opaque w.r.t. XS and Eo; and                                                              as a subset IS ⊆X of states and denote by I = 2X the
+  2) For any S′P  satisfying (1), we have that L(SP /G)̸ ⊂                                                                      set of all information states. We will use speciﬁc types of
+    L(S′P /G).                                           BTS to capture, in a single structure, the “game” between
+  Since controllability and observability together provide the                                                                the controller(s) and the system/environment.
+necessary and sufﬁcient conditions for the existence of a
+                                                             Deﬁnition 3:  ( [18]) A bipartite transition system T w.r.t.
+partial observation supervisor, to solve MPOEP,  it sufﬁces                                 G is a 7-tuple1
+to ﬁnd a maximal  controllable, observable and opaque
+sublanguage of L(G). The supremal controllable and opaque           T = (QTY , QTZ, hTY Z, hTZY , E, Γ, yT0 )          (6)
+sublanguage is studied in [11]. It was shown in [7]–[9] that
+under the assumption that Ec ⊆Eo, there exists a unique      1The superscript refers to T and does not mean transposed.
+
+
+                                                       379
+
+where                                                           recursively as follows:
+  • QTY ⊆I is the set of Y -states;                                                 ISYSP (y, ϵ) := y  • QTZ ⊆I × Γ  is the  set of Z-states and I(z) and
+                                       hZY (hY Z(ISYSP (y, s), SP (s)), σ),    Γ(z) denote, respectively, the information state and the
+                                                           if σ ∈Eo ∩SP (s)     control decision components of a Z-state z, so that    ISYSP (y, sσ) :=                                                               ISYSP (y, s),    if σ ∈Euo ∩SP (s)    z = (I(z), Γ(z));
+                                       undeﬁned,    otherwise  • hTY Z : QTY × Γ →QTZ is the partial transition function
+    from Y -states to Z-states, which satisﬁes the following
+                                                         For brevity, we write ISYSP (y0, s) as ISYSP (s).     constraint: hTY Z(y, γ) = z only if                                                               Also, ISZSP (z, s) is deﬁned analogously, with ISZSP (s) :=
+      – I(z) = URγ(y) and Γ(z) = γ                 ISZSP (z0, s), where z0 = hY Z(y0, SP (ϵ)).
+  • hTZY  : QTZ × Eo →QTY  is the partial transition function     Now, given a BTS T, it is possible to “decode” supervisors
+    from Z-states to Y -states, which satisﬁes the following   from it, as explained in the following deﬁnition.
+     constraint: hTZY (z, e) = y only if                          Deﬁnition 5: A supervisor SP  is said to be included in
+      – e ∈Γ(z) ∩Eo and y = Nexte(I(z))                  the BTS T  if
+  • E is the set of events of G;
+                                                               (∀s ∈L(SP /G))[SP (s) ∈CT (ISYSP (s))]       (7)  • Γ is the set of admissible control decisions of G;
+  • yT0 ∈QTY  is the initial Y -state where yT0 = X0.        S(T) denotes the set of all supervisors included in T.
+  The purpose of deﬁning the general notion of BTS  is    By the above deﬁnition, if a BTS T includes some super-
+to describe the “game” between the supervisor and the    visor, then it should satisfy the following two properties:
+environment (system G). To capture this game, we need
+                                                                1) For any y ∈QYT , we have CT (y)̸ = ∅; anda bipartite structure, with two types of nodes (states). A
+                                                                2) For any z ∈QZT , we have ∀e∈Γ(z)∩Eo : (∃x∈I(z) :Y -state is an information state, from which the supervisor
+                                                             f(x, e)!) ⇒hTZY (z, e)!.issues control decisions. A Z-state is an information state
+                                                  The ﬁrst property simply says  that for any Y -state, weaugmented with control decisions, from which the system
+                                                       need to be able to pick at least one control decision. The“selects” observable events to occur within the set of enabled
+                                                        second property says that for any Z-state, we cannot blockevents. A transition from a Z-state to a Y -state represents
+                                                       any enabled and feasible observable event. This is becausethe observable transition, i.e, y in the above deﬁnition is the
+                                             we cannot choose which event will occur once we haveset of states reachable from some state of the information
+                                                made a control decision; the system will decide. These twostate component of the preceding Z-state through the single
+                                                                 properties together are also referred to as the completenessobservable event. A transition from a Y -state to a Z-state
+                                                             property of the BTS.represents the unobservable reach and “remembers” the set of
+                                                      Example 4.2: The BTS shown in Figure 3(b) is a com-enabled events from the Y -state that leads to it. This means
+                                                                   plete BTS. By picking control decision {o1, o2} (shown as {}that I(z) is the set of states reachable from some state in the
+                                                                   in the ﬁgure) at the initial Y -state {0}, no future behavior canpreceding Y -state through some enabled unobservable event
+                                                                 occur. This leads to a BTS-included supervisor SP deﬁnedstrings, and that Γ(z) is the control decision made in the
+                                                    by SP (ϵ) = {o1, o2}.preceding Y -state.
+                                                    Remark 4.1:  If a BTS T is complete and for any Y -state  Example 4.1: Consider again the system G in Figure 1.
+                                                     y ∈QTY , we have that |CT (y)| = 1, then it is clear that theAs an example of a BTS, the reader is referred directly to
+                                                                      set of supervisors included in T is a singleton, since for eachFigure 3(b), which is a particular type of BTS that we will
+                                                             information state, the control decision is unique. In this case,discuss later in this paper. For the initial Y -state y0 = {0},
+                                             we denote the unique supervisor included in T as ST , i.e.,by making control decision γ = {a, c, o1, o2} (the uncon-
+                                                S(T) = {ST }.trollable events o1 and o2 are omitted in the ﬁgure), we will
+reach Z-state z = hTY Z(y0, γ) = ({0, 3, 4}, {a, c, o1, o2}).     The next result states that given a supervisor SP , the Z-
+                                                                       state deﬁned above is, in fact, equivalent to the set of allFrom z, only one observable event, o1, can happen, and it
+leads to the next Y -state y1 = hTZY (z, o1) = {5, 6}.           possible states the system can be in at that point.
+  In  general,  the  control  decision deﬁned  at a Y -state    Lemma 4.1: Given a system G and a supervisor SP , for
+may not be unique. Therefore, given a BTS T, we deﬁne   any string s ∈L(SP /G), we have I(ISZSP (s)) = RSP /G(s).
+CT (y) := {γ ∈Γ  : hTY Z(y, γ)!}, to be the set of control                                                               V. ALL INCLUSIVE CONTROLLER FOR OPACITY
+decisions deﬁned at y ∈QTY . Since for any two BTS T1
+and T2, hT1Y Z(y, γ) = hT2Y Z(y, γ) whenever they are deﬁned,      In this section, we deﬁne the All Inclusive Controller for
+we will drop the superscript in hTY Z(y, γ) and write  it as   Opacity, a speciﬁc type of BTS that embeds all supervisors
+hY Z(y, γ) if  it is deﬁned for some T; the same holds for    that enforce opacity in its transition structure.
+hZY .                                                To begin with, we deﬁne the “opacity binary function” that
+  Deﬁnition 4:  ( [18]) Given a supervisor SP , ISYSP (y, s) is    evaluates the opacity property for each information state. An
+deﬁned to be the Y -state that results from the occurrence of   information state i ∈I violates current-state opacity if it is
+string s, when starting in Y -state y. This can be computed   a subset of the set of secret states XS.
+
+
+                                                       380
+
+  Deﬁnition 6: (Opacity  binary  function  for  information     Remark 5.2: In Figure 3(b), we can also take control
+state). The opacity binary function for information states is   decision {a} at the initial Y -state y0 = {0}. However, this
+the function OP : I →{0, 1} where:                           control decision  is equivalent to decision {}, since event
+                                                 a will never be executed within the unobservable reach.
+                              1,    if  i̸ ⊆XS
+            OP(i) =                                  (8)   Formally, we say that a control decision γ ∈Γ is irredundant
+                              0,    if i ⊆XS
+                                                                        at information state i ∈I  if, for any σ ∈γ, there exists
+                                             x ∈URγ(i) such that f(x, σ) is deﬁned. From now on, we
+Thus, OP(i) = 1 if i does not violate current-state opacity.   only consider irredundant control decisions in the AIC-O,
+The following result says that the opacity binary function   which will clearly not affect its properties.
+can correctly evaluate the opacity of a system.                                                    The following theorem shows  that  the AIC-O  (only)
+  Lemma 5.1: A system G is current-state opaque  if and                                                              contains valid solutions to the opacity enforcement problem.
+only if (∀s ∈L(G))[OP(RG(s)) = 1].                      Theorem 1: A supervisor enforces opacity if and only if
+  Recall that in Lemma 4.1, we have shown that given a                                                                                              it is an AIC-O included supervisor:
+supervisor SP , for any string s ∈L(G), the Z-state ISZSP (s)
+encountered is set of all possible states the system could be          SP ∈S(AICO(G)) ⇔SP /G is opaque       (9)
+in after s. Consequently, if we construct a BTS that is “as
+                                                            A. Construction of the AIC-Olarge as possible” and in which all reachable Z-states satisfy
+the opacity binary function, the resulting structure should
+contain all valid opacity-enforcing supervisors. This leads to                                                      Algorithm 1: FIND-AIC-O
+the deﬁnition of the All Inclusive Controller for Opacity.
+                                                           input  : G and OP
+  Deﬁnition 7: (All      Inclusive      Controller      for
+                                                             output: AICO
+Opacity).  Given  a  system G  and  a  set  of  secret
+states  XS  ⊆   X,   the   All   Inclusive   Controller     1  AICO.Y ←{y0}, AICO.Z ←∅and AICO.h ←∅;
+for  Opacity  (AIC-O),  denoted  by  AICO(G)  =     2   DoDFS(G, y0, AICO);
+(QAICY    , QAICOZ      , hAICOY Z    , hAICOZY    , E, Γ, yAICO0      ),  is  deﬁned     3   Prune(AICO);
+as the largest BTS such that                                          4  AICO ←Accessible(AICO);
+1 For any y ∈QAICOY       , we have |CAICO(G)(y)| ≥1; and       procedure DoDFS(G, y, AICO, OP);
+2 For any z ∈QAICOY       , we have                                     5    for γ ∈Γ do
+  2.1 ∀e ∈Γ(z) ∩Eo   :  (∃x ∈I(z)   :  f(x, e)!) ⇒     6       z ←hY Z(y, γ);
+     hAICOZY   (z, e)!;                                                   7          if OP(I(z)) = 1 then
+  2.2 OP(I(z)) = 1.                                                 8       AICO.h ←AICO.h ∪{(y, γ, z)};
+Note that if T1 and T2 are two BTSs that satisfy the above     9               if  z̸ ∈AICO.Z then
+conditions, then it is easy to see that the union of them will    10          AICO.Z ←AICO.Z ∪{z};
+still satisfy these conditions. Therefore, the notion of “largest    11               for e ∈γ ∩Eo do
+BTS” in the deﬁnition is well deﬁned. This will also be seen    12                    y′ ←hZY (z, e);
+when we present the algorithm for the construction of the    13            AICO.h ←AICO.h ∪{(z, e, y′)};
+AIC-O later.                                                           14                         if y′̸ ∈AICO.Y then
+  Remark 5.1: In the deﬁnition of the AIC-O, opacity is    15               AICO.Y ←AICO.Y ∪{y′};
+only evaluated at Z-states. This follows from the deﬁnition    16                 DoDFS(G, y′, AICO, OP);
+of current-state opacity, Lemma 4.1, and 5.1. However, if the
+intruder can act much faster than the system’s behavior, then
+even though the system is opaque, the intruder may still be     procedure Prune(AICO);
+able to know that the secret has occurred immediately after    17   while exists Y -state in AICO that has no successor
+observing some observable events. In this case, instead of       do
+evaluating opacity on Z-states, we need to require that for    18       Delete all such Y -states in AICO and delete all
+any y ∈QAICOY       , we have OP(y) = 1. This will lead to a              their predecessor Z-states;
+stronger notion of opacity than that we consider in this paper;
+such an analysis is beyond our scope here, but  it can be
+performed in a straightforward manner using our approach.     The construction algorithm for the AIC-O follows directly
+  Example 5.1: We return to system G in Figure 1. The   from  its deﬁnition and proceeds in two  steps.  First, we
+BTS shown  in Figure  3(b)  is,  in  fact,  its AIC-O. For    construct the BTS that enumerates all possible behaviors by
+example,  at  initial Y -state  {0}, we  cannot make  con-   a depth-ﬁrst search and remove all Z-states that violate the
+trol  decision {a, b, c}, which would  lead us  to  Z-state   opacity binary function, i.e., condition 2.1 in Def. 7. Second,
+({0, 1, 2, 3, 4}, {a, b, c}). This  is because upon the occur-  we prune states that violate conditions 1 or 2.2 in Def. 7 from
+rence of event o2, Y -state {5} would be reached, from which    the remaining part of the BTS, until convergence is achieved.
+no matter what control decision we take, the secret will be   In practice, in the depth-ﬁrst search part, we do not need to
+revealed.                                                     search the whole state space and we can stop the search
+
+
+                                                       381
+
+                             {}                               {2,5,6}  𝑜𝑜1   {0,1,2,3,4}, {𝑎𝑎, 𝑏𝑏, 𝑐𝑐}  {𝑎𝑎, 𝑏𝑏, 𝑐𝑐}  {0}   {}    0  , {}               {0}   {}    0  , {}                {2,5,6}, {}                                                                                   {𝑏𝑏, 𝑐𝑐}                                                                                 {𝑐𝑐}                      {0,1}, {𝑏𝑏}                            {0,1}, {𝑏𝑏}                         𝑜𝑜2                𝑜𝑜2       {0,1,3}, {𝑏𝑏, 𝑐𝑐}                          {𝑏𝑏}                                       {𝑏𝑏}                                                𝑜𝑜1                                                {𝑎𝑎, 𝑐𝑐}                                          {𝑎𝑎, 𝑐𝑐}                            {}                  {5}, {}                             {5}       𝑜𝑜1     {0,3}, {𝑐𝑐}             {0,3,4}, {𝑎𝑎, 𝑐𝑐}                        {0,3,4}, {𝑎𝑎, 𝑐𝑐}                             𝑜𝑜2                 𝑜𝑜2                        {𝑎𝑎, 𝑏𝑏}                                                                                             𝑜𝑜1                                        𝑜𝑜1                                 𝑜𝑜1                                                                                                                                               𝑜𝑜1                                                                                                   𝑜𝑜1                  {2}, {}                             {2}           {0,1,2}, {𝑎𝑎, 𝑏𝑏}                                                                                                                                    {5,6}, {}                                                                                             {5,6}, {}              {5,6}                                                                        {5,6}                             {}   (a) The resulting𝑜𝑜1       structure after procedure DoDSF                             (b) The constructed AIC-O                                                                                       {}                                    {}
+Fig. 3.  Example of the construction of the AIC-O. In the diagrams, blue rectangular states correspond to Y -states and yellow oval states correspond to
+Z-states. For simplicity, in the diagrams, we omit all uncontrollable events in the control decisions, e.g., decision {} represents {o1, o2}, and so forth.
+
+
+of a branch once a Z-state that violates the opacity binary         VI. SYNTHESIS OF MAXIMALLY PERMISSIVE
+function is encountered.                                                SUPERVISORS
+
+                                                                 In  this  section, we present a synthesis algorithm  that
+  The above procedure is formally described in Algorithm    returns a solution to MPOEP.
+FIND-AIC-O whose parameters are as follows:  (i) AICO     Theorem 1 provides us with a straightforward procedure
+represents the AIC-O that we want to construct; (ii) AICO.Y    for synthesizing an opacity-enforcing supervisor. We can
+and AICO.Z are its sets of Y and Z-states, respectively; and   simply start from the initial Y -state and pick one control
+(iii) AICO.h is its transition function. Initially, AICO.Y is   decision deﬁned in the AIC-O; then we pick all observations
+set to be y0 = X0. The depth-ﬁrst search is then started; , it    for the successor Z-state, and so forth, until reaching a Z-
+is implemented by the procedure DoDFS. Line 7 is used to    state that has no successor state. However, this procedure
+determine whether the Z-state encountered satisﬁes opacity.   may result in a solution with inﬁnite domain, since we may
+If not, we terminate the search of this branch. Otherwise, we   take different control decisions for different times we visit
+compute all possible Y -state successors and make a recursive    the same information state. Therefore, we wish to consider a
+call. This recursive procedure allows us to traverse the whole    particular type of solution, called an information-state-based
+reachable space of Y and Z-states. The above procedure   (IS-based) solution, that can be realized with ﬁnite memory.
+may result in Y -states that have no successors. Therefore,   Formally, a supervisor SP  is IS-based if
+we need to iteratively prune: (i) all Y -states that have no                                                              (∀s, t ∈L(SP /G))[ISYSP (s)=ISYSP (t) ⇒SP (s)=SP (t)]
+successor states; and (ii) all Z-states for which one or more
+observation is not deﬁned. This step is captured by procedure    Clearly, if a supervisor is IS-based, then we can redeﬁne it
+Prune. Finally, states that are no longer accessible from the    in the form of SP  : I →Γ.
+initial state of the AIC-O need to be removed before the      Here, we present a synthesis algorithm, called Algorithm
+algorithm returns. Algorithm FIND-AIC-O will terminate in  MAX-SYNT, for constructing an IS-based supervisor S∗
+ﬁnite steps, since the number of Y and Z-states is ﬁnite.       that solves MPOEP. This algorithm starts from y0. For each
+                                                             reachable Y -state y, it picks one control that is locally maxi-
+                                                    mal and for each reachable Z-state, it picks all observations,
+  Example 5.2: We apply Algorithm FIND-AIC-O to con-
+                                                                          until: (i) a terminal Z-state is reached; or (ii) a Y -state that
+struct the AIC-O for the system G shown in Figure 1. The
+                                                           has already been visited is reached. In other words, we pick a
+resulting BTS after running the procedure DoDSF is shown
+                                                                   locally maximal control decision and ﬁx it for each Y -state.
+in Figure 3(a). The depth-ﬁrst search DoDSF terminates
+                                                           This will result in a BTS T that includes a unique supervisor
+at Y -state {5}, since no matter what control decision we
+                                                ST , which is our solution.
+take from {5}, a Z-state (marked by red in Figure 3(a))
+                                                    The follow theorem establishes the correctness of Algo-
+that reveals the secret will be encountered. After procedure
+                                                            rithm MAX-SYNT.
+DoDSF  is done, we need to run procedure Prune. This                                                      Theorem 3: Let S∗be a solution returned by Algorithm
+starts by removing Y -state {5}, since no successor state is                                           MAX-SYNT. Then S∗solves MPOEP.
+deﬁned from it. Since Y -state {5} has been removed, all its
+                                              By Theorem 1, we know that the AIC-O is non-empty if
+predecessor Z-states, i.e., ({0, 3}, {c}), ({0, 1, 2}, {a, b}), et
+                                       MPOEP has a solution. Moreover, when the AIC-O is non-
+al., should also be removed. Finally, we remove inaccessible
+                                                          empty, Algorithm MAX-SYNT always returns a solution to
+states {2, 5, 6} and {2} and obtain the AIC-O shown in
+                                             MPOEP. Therefore, we have the following result.
+Figure 3(b).
+                                                              Corollary 6.1: MPOEP is solvable if and only if the AIC-
+                                    O is non-empty.
+  Theorem 2: Algorithm FIND-AIC-O correctly constructs      Since supervisor S∗is IS-based by its construction, we
+the AIC-O.                                                     also have the following result.
+
+
+                                                       382
+
+ Algorithm 2: MAX-SYNT                              immediate interest. One  is relaxing the assumption made
+   input  : AICO(G)                                            in this paper that the supervisor and the intruder have the
+   output: S∗                                        same set of observable events. Another one is to consider
+                                                                the synthesis of a maximal solution that provably contains a
+ 1   T.Y ←{y0}, T.Z ←∅and T.h ←∅;                                                            given particular solution.
+ 2   Expand(T, AICO(G), y0);
+ 3  S∗←ST ;                                                    REFERENCES
+  procedure Expand(T, AICO(G), y);                                 [1] L. Mazar´e, “Using uniﬁcation for opacity properties,” in Proceedings
+                                                                                          of WITS, vol. 4, 2004, pp. 165–176.
+ 4   Find a locally maximal control decision                                                                                      [2] A. Saboori and C. N. Hadjicostis, “Notions of security and opacity
+    γ ∈CAICO(G)(y) such that                                              in discrete event systems,” in 46th IEEE Conference on Decision and
+     ∀γ′ ∈CAICO(G)(y) : γ̸ ⊂γ′;                                         Control, 2007, pp. 5056–5061.
+                                                                                      [3] ——, “Veriﬁcation of initial-state opacity in security applications of
+ 5   z ←hY Z(y, γ);                                                              des,” in 9th International Workshop on Discrete Event Systems, 2008,
+ 6   T.h ←T.h ∪{(y, γ, z)};                                               pp. 328–333.
+ 7     if  z̸ ∈T.Z then                                                         [4]  J. W. Bryans, M. Koutny, L. Mazar´e, and P. Y. Ryan, “Opacity gen-
+                                                                                          eralised to transition systems,” International Journal of Information
+ 8      T.Z ←T.Z ∪{z};                                                                                         Security, vol. 7, no. 6, pp. 421–435, 2008.
+ 9       for e ∈γ ∩Eo do                                                 [5]  F. Lin, “Opacity of  discrete event systems and  its  applications,”
+10            y′ ←hZY (z, e);                                              Automatica, vol. 47, no. 3, pp. 496–503, 2011.
+                                                                                      [6] E. Badouel, M. Bednarczyk, A. Borzyszkowski, B. Caillaud, and
+11         T.h ←T.h ∪{(z, e, y′)};                                                                                                     P. Darondeau, “Concurrent secrets,” Discrete Event Dynamic Systems:
+12               if y′̸ ∈T.Y then                                          Theory & Applications, vol. 17, no. 4, pp. 425–446, 2007.
+13            T.Y ←T.Y ∪{y′};                                     [7]  J. Dubreil, P. Darondeau, and H. Marchand, “Supervisory control for
+                                                                                          opacity,” IEEE Trans. Aut. Cont., vol. 55, no. 5, pp. 1089–1100, 2010.
+14             Expand(T, AICO(G), y′);                                                                                      [8] M. Ben-Kalefa and F. Lin, “Supervisory control for opacity of dis-
+                                                                                          crete event systems,” in 49th IEEE Annual Allerton Conference on
+                                                                          Communication, Control, and Computing, 2011, pp. 1113–1119.
+                                                                                      [9] A. Saboori and C. N. Hadjicostis, “Opacity-enforcing supervisory
+                                                                                             strategies via state estimator constructions,” IEEE Transactions on
+   Corollary 6.2:  If the AIC-O  is non-empty, then  there         Automatic Control, vol. 57, no. 5, pp. 1155–1165, 2012.
+                                                                               [10]  P. Darondeau, H. Marchand, and L. Ricker, “Enforcing opacity of reg-
+always exists an IS-based supervisor that solves MPOEP.              ular predicates on modal transition systems,” Discrete Event Dynamic
+  Example 6.1: We return to our running example. If we         Systems: Theory & Applications, 2014.
+pick locally maximal control decision {a, c} at the initial Y -    [11]  S. Takai and Y. Oka, “A formula for the supremal controllable and
+                                                                         opaque sublanguage arising in supervisory control,” SICE J. Control,
+ state {y0} and pick the unique control decision ∅at the reach-         Measurement, and System Integration, vol. 1, pp. 307–311, 2011.
+able Y -state, which means disable all controllable events, we    [12]  F. Cassez, J. Dubreil, and H. Marchand, “Synthesis of opaque systems
+ will obtain the maximal solution that was shown earlier in         with static and dynamic masks,” Formal Methods in System Design,
+                                                                                             vol. 40, no. 1, pp. 88–115, 2012.
+Figure 2(a). On the other hand, if we pick control decision    [13] Y.-C. Wu and S. Lafortune, “Comparative analysis of related notions
+{b} at {0}, which is another locally maximal decision, then          of opacity in centralized and coordinated architectures,” Discrete Event
+no behavior can occur hereafter;  this corresponds to the         Dyn. Sys.: Theory & Applications, vol. 23, no. 3, pp. 307–339, 2013.
+                                                                               [14] Y. Falcone, H. Marchand  et  al., “Enforcement and validation  (at
+maximal solution shown in Figure 2(b).                                 runtime) of various notions of  opacity,” Discrete Event Dynamic
+                                                                                Systems: Theory & Applications, 2014.
+                   VII. CONCLUSION                             [15] Y.-C. Wu and S. Lafortune, “Synthesis of insertion functions for
+  We presented a novel approach to the problem of syn-         enforcement of opacity security properties,” Automatica, vol. 50, no. 5,
+                                                                                    pp. 1336–1348, 2014.
+thesizing a maximally permissive supervisor that enforces    [16]  S. Takai and R. Kumar, “Veriﬁcation and synthesis for secrecy in
+opacity for a partially-observed discrete-event system that          discrete-event systems,” in American Control Conference, 2009, pp.
+ is not originally opaque. To this end, we deﬁned a novel         4741–4746.
+                                                                               [17] X. Yin and  S. Lafortune, “A general approach  for  synthesis of
+information structure called the All inclusive Controller for          supervisors  for partially-observed discrete-event systems,”  in 19th
+Opacity that embeds all valid supervisors to this problem.        IFAC World Congress, 2014, pp. 2422–2428.
+Based on the AIC-O, a synthesis algorithm was provided    [18] ——, “Synthesis of maximally permissive non-blocking supervisors
+                                                                                          for partially observed discrete event systems,” in 53rd IEEE Confer-
+ to ﬁnd a locally maximal solution to this problem, without         ence on Decision and Control, 2014, pp. 5156–5162.
+making any assumptions about the observability properties of    [19]  P. Ramadge and W. Wonham, “Supervisory control of a class of
+the controllable events. In this regard, our approach relaxes           discrete event processes,” SIAM J. Control Optim., vol. 25, no. 1, pp.
+                                                                           206–230, 1987.
+the assumption that all controllable events are observable in    [20] X. Yin and S. Lafortune, “A new approach for synthesizing opacity-
+the previous works on opacity enforcement by supervisory          enforcing supervisors for partially-observed discrete-event systems,”
+ control. In addition, we believe that the AIC-O can be used          University of Michigan, Tech. Rep., 2014.
+                                                                               [21] C. Cassandras and S. Lafortune, Introduction to Discrete Event Sys-
+ for solving optimal opacity enforcement control problems          tems, 2nd ed.  Springer, 2008.
+where a cost structure is imposed on this problem. Since    [22]  F. Lin and W. Wonham, “On observability of discrete-event systems,”
+the AIC-O embeds all valid opacity enforcing supervisors,          Inform. Sciences, vol. 44, no. 3, pp. 173–198, 1988.
+                                                                               [23] R. Cieslak, C. Desclaux, A. Fawaz, and  P. Varaiya, “Supervisory
+ it provides a suitable solution space over which to solve an          control of discrete-event processes with partial observations,” IEEE
+optimal control problem for opacity.                                       Trans. Autom. Control, vol. 33, no. 3, pp. 249–260, 1988.
+  Among the many possible directions for future work that
+would build on the AIC-O, we mention two problems of
+
+
+                                                        383

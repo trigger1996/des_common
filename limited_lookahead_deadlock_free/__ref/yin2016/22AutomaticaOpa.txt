@@ -1,0 +1,851 @@
+                                                            Automatica 140 (2022) 110238
+
+
+                                            Contents lists available at ScienceDirect
+
+                              Automatica
+
+
+                                         journal homepage: www.elsevier.com/locate/automatica
+
+
+
+A framework for current-state opacity under dynamic information
+release mechanism✩
+Junyao Hou, Xiang Yin ∗, Shaoyuan Li
+
+Department of Automation and Key Laboratory of System Control and Information Processing, Shanghai Jiao Tong
+University, Shanghai 200240, China
+
+
+a r t i c l e    i n f o             a b s t r a c t
+
+
+Article history:                                Opacity is an important information-flow security property that characterizes the plausible deniability
+Received 7 December 2020                        of a dynamic system for its ‘‘secret" against eavesdropping attacks. As an information-flow property,
+Received in revised form 23 August 2021          the underlying observation model is the key in the modeling and analysis of opacity. In this paper, we
+Accepted 20 January 2022                        investigate the verification of current-state opacity for discrete-event systems under Orwellian-type
+Available online xxxx
+                                              observations, i.e., the system is allowed to re-interpret the observation of an event based on its future
+Keywords:                                            suffix. First, we propose a new Orwellian-type observation model called the dynamic information
+Opacity                                        release mechanism (DIRM). In the DIRM, when to release previous ‘‘hold on" events is state-dependent.
+Discrete-event systems                     Then we propose a new definition of opacity based on the notion of history-equivalence rather
+Security                                   than the standard projection-equivalence. This definition is more suitable for observations that are
+Information release                           not prefix-closed. Finally, we show that by constructing a new structure called the DIRM-observer,
+                                               current-state opacity can be effectively verified under the DIRM. Computational complexity analysis
+                                             as well as illustrative examples for the proposed approach is also provided. Compared with the
+                                                existing Orwellian-type observation model, the proposed framework is more general in the sense
+                                               that the information-release-mechanism is state-dependent, information is partially released and the
+                                           corresponding definition of opacity is more suitable for non-prefix-closed observations.
+                                                              © 2022 Elsevier Ltd. All rights reserved.
+
+
+
+
+1. Introduction                                                          In this paper, we investigate opacity in the context of dis-
+                                                                      crete event systems (DES), which has drawn considerable at-
+   Security and privacy issues are becoming pervasive in safety-     tentions in the last decade; see, e.g., the recent surveys (Jacob,
+critical cyber–physical systems as computational devices nowa-     Lesage, & Faure, 2016; Lafortune, Lin, & Hadjicostis, 2018) and
+days are connected by networks which may lead to information    the textbook (Hadjicostis, 2020). The basic concept of opacity
+leakage. For dynamic systems, an important angle for understand-    was originally introduced by Bryans, Koutny, and Ryan (2005)
+ing the security-level of a system is to analyze what information    and Bryans, Koutny, Mazaré, and Ryan (2008) for dynamic sys-
+                                                         tems modeled as transition systems. Depending on different se-of importance can revealed via information-flow. Opacity is one
+                                                                         cret requirements, different notions of opacity were proposedof the most widely adopted information-flow security proper-
+                                                                        in the literature, including, e.g., initial-state opacity (Cong, Fanti,ties for dynamic systems whose information-flow is available to
+                                                                Mangini, & Li, 2019; Saboori & Hadjicostis, 2013), current-state
+eavesdroppers or passive observers that are potentially malicious.
+                                                                   opacity (Wu & Lafortune, 2013) and K/infinite-step opacity (Sa-
+Essentially, opacity captures the plausible deniability of the sys-
+                                                                   boori & Hadjicostis, 2011, 2012; Yin & Lafortune, 2017). For
+tem for its ‘‘secret’’ behavior by requiring that the secret behavior
+                                                              example, current-state opacity requires that the outsider/intruder
+can never be identified unambiguously by the intruder based on
+                                                             can never determine for sure that the system  is at a secret
+the online information-flow and the dynamic of the system.
+                                                                         state based on the information-flow. When the original system is
+                                                               not opaque, many different approaches have also been proposed
+ ✩This work was supported by the National Natural Science Foundation of     for the enforcement of opacity; see,  e.g., Barcelos and Basilio
+China (62061136004, 62173226, 61833012) and the National Key R&D Program,     (2018), Dubreil, Darondeau, and Marchand (2010), Falcone and
+China (2018AAA0101700). The material in this paper was not presented at any    Marchand (2015),  Ji, Yin, and Lafortune (2019), Liu, Mei, and
+conference. This paper was recommended for publication in revised form by    Lu (2020), Mohajerani,  Ji, and Lafortune (2020), Takai and Oka
+Associate Editor Christoforos Hadjicostis under the direction of Editor Christos
+G. Cassandras.                                                     (2008) and Zinck, Ricker, Marchand, and Hélouët (2020). More
+  ∗Corresponding author.                                                  recently, the concept of opacity has been further generalized to
+     E-mail addresses:  houjunyao@sjtu.edu.cn (J. Hou), yinxiang@sjtu.edu.cn       continuous dynamic systems with infinite state–spaces and time-
+(X. Yin), syli@sjtu.edu.cn (S. Li).                                         driven dynamics; see, e.g., An and Yang (2020), Liu and Zamani
+
+
+https://doi.org/10.1016/j.automatica.2022.110238
+0005-1098/© 2022 Elsevier Ltd. All rights reserved.
+
+J. Hou, X. Yin and S. Li                                                                                                         Automatica 140 (2022) 110238
+
+(2020), Ramasubramanian, Cleaveland, and Marcus (2020) and    processed. However, existing Orwellian-type observations as well
+Yin, Zamani, and Liu (2021). In this work, we will study the    as their associated definitions of opacity cannot fully capture this
+verification of current-state opacity for finite systems.                scenario. For example, in the definition of Orwellian projection
+   Since the essence of opacity is an information-flow security     in Mullins and Yeddes (2014), those ‘‘on hold’’ information are
+property, the underlying observation model of the system be-     released when a downgrading event occurs. However, in a more
+comes the key in its modeling and analysis. In the DES literature,    general setting, when to release those ‘‘on hold’’ information may
+there are three different types of observation models that have    be determined by a ‘‘controller’’ having its own logic rather than
+been investigated: static observation, dynamic observation and    simply depending on the event of the original system. Further-
+Orwellian observation. These three types were originally catego-    more, in Mullins and Yeddes (2014),  it is assumed that once
+rized in Bryans et al. (2008). Here we summarize and explain    a downgrading event occurs, the entire trajectory is revealed,
+them in detail as follows.                                                                   i.e., the outsider knows the current state precisely. In practice,
+                                                             however, it is possible that only partial history information is
+  • Static Observation: In this setting, it is assumed that the                                                                         declassified and the outsider may still have ambiguity after the
+     event set  is partitioned as observable and unobservable                                                                           declassification.
+     events, and the outsider can observe observable events                                                        More importantly, existing definitions of current-state opac-
+     immediately upon their occurrences. Such an observation                                                                                ity under Orwellian-type observations still follow the standard
+    model  is called static because whether or not an event                                                                   projection-based definition by requiring that for any secret string,
+     can be observed is fixed. Hence, the information-flow of a                                                                  there exists a non-secret string such that they have the same
+     generated internal string is essentially its natural projection.                                                                            projection, e.g., Bérard and Mullins (2014) and Mullins and Yed-
+     This is the most simple but probably also the most widely                                                              des (2014). However, this definition is not exactly suitable for
+     investigated observation model for the analysis of opacity;                                                                 Orwellian-type observation since the observation sequence may
+      see, e.g., Balun and Masopust (2019), Chen, Ibrahim, and                                                               not be prefix-closed. In particular, that two strings have the same
+    Kumar (2017), Keroglou and Hadjicostis (2017), Lin (2011),                                                                     projection does not necessarily imply that their prefixes also have
+     Mohajerani and Lafortune (2020), Saadaoui,  Li, and Wu    the same projection. If the prefixes of two projection-equivalent
+     (2020), Tong, Li, Seatzu, and Giua (2017) and Yin, Li, Wang,     strings are not projection-equivalent, then the intruder may still
+    and Li (2019).                                           be able to determine that the system is currently at a secret
+  • Dynamic Observation: In this setting,  it is assumed that     state even when the standard projection-based opacity condition
+    whether or not the occurrence of an event can be observed     holds. This scenario will be explained in more detail in Section 3.
+       is not fixed a priori and may depend on the prefix string up     Therefore, a new definition of opacity as well as the associated
+     to the current instant. This model can describe the scenario     verification algorithms is needed for Orwellian-type observation.
+    where the observability of each event is ‘‘controlled’’ by an       Motivated by the above discussions, in this paper, we propose
+     active information acquisition module. Such an information    a new Orwellian-type observation framework for information-
+     acquisition module is also referred to as the sensor acti-    flow security and investigate the underlying opacity verification
+     vation policy (Lin, Chen, Wang, & Wang, 2020; Thorsley &    problem. Compared with the existing works, the main contribu-
+     Teneketzis, 2007; Wang, Lafortune, Girard, & Lin, 2010; Yin     tions of this work are as follows.
+    & Lafortune, 2019), the dynamic mask (Cassez, Dubreil, &
+                                                            • First, we propose a new Orwellian-type observation model    Marchand, 2012; Yin & Li, 2020) or the information release
+    module (Behinaein, Lin, & Rudie, 2019; Zhang, Shu, & Lin,          called the Dynamic Information Release Mechanism (DIRM).
+     2015) in the literature depending on the context of the        The DIRM is motivated by Mullins and Yeddes (2014) but
+     underlying problem.                                            has the following main difference. Compared with Mullins
+  • Orwellian Observation: Compared with the dynamic obser-        and Yeddes (2014) where downgrading events are used to
+                                                                               trigger information release, in the DIRM, when to release     vation, in the setting of Orwellian observation, the observ-
+                                                                     those ‘‘hold on’’ information is state-dependent. This model      ability of an event not only depends on the prefix up to
+                                                                       captures the scenario where information declassification can     the current instant, but also depends on the future suffix. In
+                                                               be controlled by another agent that is not embedded in the     other words, the system is allowed to re-interpret the ob-
+                                                                               original plant model. Furthermore, we investigate the partial     servation of an internal string. In general, however, deciding
+                                                                      information release setting, which  is more general than     opacity under an arbitrary Orwellian observation is undecid-
+                                                                      the full information release setting in Mullins and Yeddes     able even for finite systems (Bryans et al., 2008). In Mullins
+                                                                          (2014), where the entire trajectory will be available when    and Yeddes (2014) and Yeddes (2016), the authors formu-
+                                                                      the information is released.     lated a simple Orwellian-type observation using the notion
+                                                            • Second, we propose a new definition of current-state opac-     of downgrading events, and showed that the corresponding
+                                                                                      ity that is more suitable for Orwellian-type observations.     opacity verification problem is decidable by relating it to the
+                                                                                   Specifically, we introduce the concept of observation history     notion of intransitive non-interference (Ben Hadj-Alouane,
+                                                                        as the set of all projections along the prefixes of a string.     Lafrance, Lin, Mullins, & Yeddes, 2005a, 2005b). In Bérard
+                                                             Then we say that a system is current-state opaque if for any    and Mullins (2014), the notion of rational observation is pro-
+                                                                            secret string, there exists a non-secret string such that they     posed, which further generalizes the Orwellian projection
+                                                                have the same observation history. The new history-based
+     proposed in Mullins and Yeddes (2014).
+                                                                             definition is more suitable than the standard projection-
+   In this paper, we are interested in the verification of current-         based definition, since the observation history may not be
+state opacity under Orwellian-type observation. As we discussed          prefix-closed for Orwellian-type observations.
+above, the main feature of Orwellian observation is that it allows      • Finally, we propose an effective algorithm for the verifi-
+to re-interpret the information of a previous event. Therefore, it          cation of the proposed notion of current-state opacity un-
+is extremely useful in the modeling and analysis of information-         der the DIRM. Our approach  is based on the notion of
+flow security related to information declassification. For example,        augmented system and a new information structure called
+the user can classify the occurrence of an event and declas-         the DIRM-observer. Specifically, the augmented system aug-
+sify/release it in the future when some particular conditions are        ments the original state–space by an additional binary infor-
+fulfilled. This is a very common way how secure information is        mation that tracks whether or not there is information to
+
+                                                                   2
+
+J. Hou, X. Yin and S. Li                                                                                                         Automatica 140 (2022) 110238
+
+    be released on hold. The DIRM-observer essentially tracks    Definition 1.  Given system G and secret states XS ⊂X, we say
+     both the current-state estimate and the information that    system G is current-state opaque (w.r.t. XS and Σo), if for any string
+       is held on. When an information-release-state is reached,     s ∈L(G) such that δ(s) ∈XS, there exists another string s′ ∈L(G)
+       it updates the current-state-estimate by effectively fusing    such that δ(s′) ∈X \ XS and PΣo(s) = PΣo(s′).
+     these two parts of information together. Then we show that
+     the opacity verification problem can be solved by a simple     3. Opacity under dynamic information release mechanism
+     reachability search within the DIRM-observer.
+                                                                                   3.1. Dynamic information release mechanism   The rest of this paper is organized as follows. In Section 2,
+some necessary preliminaries are introduced. In Section 3, we
+                                                                          In the standard analysis of opacity under natural projection,present the dynamic information release mechanism as the un-
+                                                                 the observation of each observable event is assumed to be instantderlying Orwellian-type observation model and define current-
+state opacity under the DIRM projection. To verify opacity, we     in the sense that the occurrence of each observable event can be
+first introduce the concept of augment system in Section 4 and    observed immediately and the occurrence of each unobservable
+show that the verification problem can be investigated equiva-    event can never be observed. In some applications, however,
+lently for the augmented system. In Section 5, we present the    the event set cannot be simply partitioned as observable and
+DIRM-observer structure and show how to use it to verify opacity.    unobservable. In practice, the occurrence of some event may
+A case study on security issues in federated cloud computing    be classified until the system decides to release (or declassify)
+systems is provided in Section 6. Finally, we conclude the paper       it. This is a very common scenario in information-flow security
+in Section 7.                                                    problem, e.g., some secure documents will be declassified only
+                                                  when certain conditions are satisfied. This leads to the dynamic
+2. Preliminaries                                                    information release mechanism (DIRM) defined as follows.
+                                                                       Formally, we assume that the event set is partitioned as
+2.1. System model
+                                     Σ = Σo ˙∪Σuo ˙∪Σr,
+   Let Σ be a finite set of events. A string is a finite sequence of    where
+events and we denote by Σ∗the set of all strings over Σ including
+the empty string ϵ. For any string s = σ1σ2 . . . σn, we denote by      • Σo is the standard set of observable events whose occur-
+|s| the length of string s, i.e., |s| = n and |ϵ| = 0; we also denote         rences can be observed instantly;
+by s[i, j] the sub-string of s from the ith event to the jth event,      • Σuo is the standard set of unobservable events whose occur-
+i.e., s[i, j] = σiσi+1 . . . σj. In particular, we define s[i, j] = ϵ if j < i         rences can never be observed;
+and define s[i, j] = s[i, |s|] if |s| < j. A language L ⊆Σ∗is a set of      • Σr  is the set of events whose occurrences may not be
+strings. For any language L ⊆Σ∗, we denote by L its prefix-closure,         observed instantly but can be released in the future.
+i.e., L = {t ∈Σ∗: ∃w ∈Σ∗s.t. tw ∈L}.
+                                                          To formally describe how the information is released, we consider
+  We consider a DES modeled as a deterministic finite-state
+                                                               a state-based dynamic information release mechanism specified
+automaton (DFA)
+                                                          by a function
+G = (X, Σ, δ, x0),                                                       R : X →{u, r},
+where X is a finite set of states, Σ is a finite set of events, δ  :
+X × Σ →X  is the partial transition function, and x0 ∈X  is    where  ‘‘r’’ and ‘‘u’’ stand for ‘‘release’’ and ‘‘unrelease’’, respec-
+the initial state. For any x, x′ ∈X, σ ∈Σ, δ(x, σ) =  x′ means     tively. One can image that the system has an ‘‘information release
+                                                                         button’’ for events in Σr and the release button is pressed whenthat there exists a transition from state x to state x′ labeled with
+                                                               a state x such that R(x) = r is encountered. In such a case, allevent σ. For the sake of simplicity, we write δ(x, s) as δ(s) when
+x = x0. The transition function is also extended to δ : X × Σ∗→    events in Σr along the trajectory that have not yet be observed
+X recursively by: δ(x, ϵ) = x and δ(x, sσ) = δ(δ(x, s), σ). The     will be released at state x in the sense that the observer knows
+language generated by G is L(G) = {s ∈Σ∗: δ(x0, s)!}, where   when they occurred.
+‘‘!’’ means ‘‘is defined’’.
+                                                   Remark 1. Here we use function R to emphasize the fact that the
+2.2. Current-state opacity under natural projection                   information release mechanism is state dependent. Equivalently,
+                                               we can also define Xr =  {x ∈X   :  R(x) =  r} as the set of
+   In the analysis of information-flow security,  it is often as-     states at which Σr can be released. Hereafter, we will only use
+sumed that the event set is partitioned as Σ = Σo ˙∪Σuo, where     Xr instead of function R and also refer to Xr as the DIRM, for the
+Σo is the set of observable events and Σuo is the set of unob-    sake of simplicity. Also, without loss of generality but for the sake
+servable events. Let ˆΣ ⊆Σ be a set of events. Then the natural     of simplicity, an event will not be released immediately after its
+projection from Σ to ˆΣ is a mapping P ˆΣ  : Σ∗→ˆΣ∗defined    occurrence, i.e., ∀s ∈L(G), σ ∈Σr: δ(sσ) /∈Xr.
+recursively by: for any s ∈Σ∗, σ ∈Σ, we have
+                                                   Remark 2. The dynamic information release mechanism defined
+                 { PˆΣ(s)σ    if σ ∈ˆΣ                                                                      .                    here is state-based. In general, it can be a language-based functionP ˆΣ(ϵ) = ϵ and P ˆΣ(sσ) =                        PˆΣ(s)      if σ /∈ˆΣ                        specified by a finite-state transducer. In this case, one can take the
+In the context of opacity, we assume the underlying system    product of the transducer with the plant to refine the state–space
+has some ‘‘secret’’ modeled as a set of secret states XS ⊂X.    such that the release mechanism becomes state-based.
+Furthermore, there is a passive intruder modeled as an observer
+that knows the system model and can eavesdrop the projected      3.2. The DIRM projection
+information flow, i.e., it can observe the occurrences of events in
+Σo. Then current-state opacity requires that the intruder should        Let s ∈L(G) be a string generated by the system. We denote
+never know for sure that the system is currently at a secret state,    by 0 ≤ıs ≤|s| the latest instant when events in Σr are released,
+which is defined as follows.                                                                i.e.,
+
+                                                                   3
+
+J. Hou, X. Yin and S. Li                                                                                                         Automatica 140 (2022) 110238
+
+                                                       where events are ‘‘held on’’ physically, e.g., in communication
+                                                                    channels, and the released events are observed following the ex-
+                                                                            isting observation. However, in our DIRM, the current observation
+                                                             can be overwritten after information release because we know
+                                                  when these previous events occurred.
+
+Fig. 1. System G with Σo = {a}, Σr =  {h}, Σuo =  {u}, Xr = {1, 4, 8} and      3.3. Opacity under DIRM projection
+XS = {4}.
+                                                                          In order to extend current-state opacity from the standard
+                                                                    natural projection to our DIRM projection, one may think it suf-
+  • δ(x0, s[1, ıs]) ∈Xr; and                                               fices to replace PΣo in Definition 1 by PR. However, the following
+  • ∀ıs < i ≤|s| : δ(x0, s[1, i]) /∈Xr.                            example shows that such a definition is not suitable for the case
+                                                                        of dynamic information release mechanism.
+   In the DIRM, the observation of a string s depends on its
+release status. We define the corresponding DIRM projection PR(s)    Example 2. Again, let us still consider system G shown in Fig. 1.
+of it as follows.                                                                  For string s = haha, there exists another string s′ = uhaha such
+                                                                     that PR(s) = PR(s′) = haha. If we simply replace PΣo in Definition 1
+Definition 2.  Given system G with partition Σ = Σo ˙∪Σuo ˙∪Σr    by PR, then we will assert that the system is current-state opaque
+and DIRM Xr ⊆X, the DIRM projection of string s, denote by PR(s),    because for string s = haha, which is the only string that leads to
+is defined by                                                         secret state 4, there exists another string s′ = uhaha that leads to
+PR(s) = PΣo∪Σr (s[1, ıs])PΣo(s[ıs + 1, |s|])                         (1)    a non-secret and they have the same projection.
+                                                             However, this definition is not suitable here as the intruder
+   The intuition of the above definition is as follows. Recall that    can still assert that the system is currently at secret state 4 when
+ıs is the latest information release instant when s is executed.     string s = haha is executed. To see this point more clearly, let
+Therefore, events in Σr that occur before instant ıs are released,    us consider what the intruder can observe when string s = haha
+which is captured by PΣo∪Σr (s[1, ıs]), while events in Σr that oc-      is generated. Initially, it observes h when string h, which reaches
+cur after ıs are still unobservable, which is captured by PΣo(s[ıs +    1 ∈Xr, is executed. Then it observes ha when a occurs. Finally,
+1, |s|]). Note that, when ıs = |s|, by definition we have s[1, ıs] = s    the intruder observes haha when state 4 ∈Xr is reached. On the
+and s[ıs + 1, |s|] = ϵ. Then in this case, we have PR(s) = PΣo∪Σr (s)    other hand, for string s′ = uhaha, the intruder will not observe h
+as all events in Σr are released. Also, when  ıs =  0, it means   when uh is executed since this string leads to 6 /∈Xr. Therefore,
+that there is no information released along the path. Therefore, by    the intruder will first observe a when string uha is executed.
+definition, we have s[1, ıs] = ϵ and s[ıs + 1, |s|] = s, which means   When the second h is executed, which leads to state 8 ∈Xr, the
+that PR(s) = PΣo(s). Also, the above definition implicitly assumes     intruder observes hah, i.e., the first occurrence of h was ‘‘held on’’
+the DIRM has infinite memory for those unreleased information.     until this point. Therefore, the information histories available to
+We illustrate the DIRM projection by the following example.        the intruder are different when strings s and s′ are executed. In
+                                                                 other words, once the intruder observes h directly, it knows for
+Example 1.   Let us consider system G shown in Fig. 1, where    sure that the system is currently at state 1. Therefore, if it further
+Xr = {1, 4, 8}, Σo = {a}, Σr = {h}, Σuo = {u} and XS = {4}. We    observes haha, it can still determine that the system is at secret
+use rectangles to denote states in Xr. For string s = uh, we have     state 4, which makes the system non-opaque. □
+ıs = 0 since ∀s′ ∈{s} : δ(x0, s′) /∈Xr, i.e., no state in Xr is visited                                                            The above example reveals an important feature in the DIRM
+along s from the initial state. Therefore, we have                                                                        projection. That  is, for any two strings s, s′ ∈  L(G), PR(s) =
+PR(uh) = PΣo∪Σr (s[1, ıs])PΣo(s[ıs + 1, |s|]) = PΣo(uh) = ϵ,               PR(s′) does not necessarily imply that s and s′ generate the same
+                                                                   information-flow. This is because they may have different inter-
+i.e., no event is observed upon the occurrence of uh.                mediate observations and hence, these two strings can  still be
+   Comparatively, for string s = h, we have ıs = 1 since string h     distinguished. Note that such an issue does not arise in the stan-
+reaches state 1 ∈Xr. Then we have                              dard natural projection as two strings having the same projection
+PR(h) = PΣo∪Σr (s[1, ıs])PΣo(s[ıs + 1, |s|]) = PΣo∪Σr (h) = h.          must have the same projection for their prefixes with the same
+                                                                       length. However, it is not the case for our DIRM projection, which
+This is because the occurrence of h is released when state 1 ∈Xr      is the key technical issue we need to handle.
+is reached. Note that events in Σr that occur after reaching Xr       To correctly capture the information-flow of a string s ∈L(G),
+will become unobservable again until a new state in Xr is reached   we define
+again. For example, for string s = hah, we have still have ıs = 1,                                                                      HR(s) = {PR(s′) : s′ ∈{s}}which gives
+                                                                   as the history of string s. For the case of natural projection, history
+PR(hah) =PΣo∪Σr (s[1, ıs])PΣo(s[ıs + 1, |s|])                                                                 equivalence and projection equivalence are the same. However,
+       =PΣo∪Σr (s[1, 1])PΣo(s[2, 3])                                   in our setting, history equivalence is stronger than projection
+       =PΣo∪Σr (h)PΣo(ah)                                        equivalence as  it requires that the projections of all prefixes,
+      =ha                                                                                       i.e., all intermediate observations, are also equivalent.
+
+That is, only the first occurrence of h is released, while the second   Remark 4. Here, a history is defined as an unordered set rather
+is not. □                                                     than an order sequence according to the ordering of each obser-
+                                                                        vation. This definition is without loss of generality as the length
+Remark 3.  According to the definition of the DIRM projection,     of PR(s′) is always non-decreasing when the length of the prefix s′
+once an event in Σr  is released, the outside observer not only     increases. Therefore, one can always recover the ordering of the
+knows the occurrence of this event, but also knows when  it     observation, if needed, based on the length of each element in the
+occurred. This is different from the case of delayed observations,     history set HR(s).
+
+                                                                   4
+
+J. Hou, X. Yin and S. Li                                                                                                         Automatica 140 (2022) 110238
+
+   Therefore, to define current-state opacity, one can replace
+PΣo(·) in Definition 1 by HR(·). Here, we provide an equivalent
+definition using the notion of current-state estimate (CSE) for the
+sake of future developments. Formally, for any string s ∈L(G),
+the current-state estimate upon history HR(s) is defined by
+ˆX(HR(s)) = {δ(s′)∈X : ∃s′ ∈L(G) s.t. HR(s)=HR(s′)}.
+
+   Then we introduce current-state opacity under DIRM using the
+CSE as follows.
+
+Definition 3.  Given system G with secret states XS ⊂X and
+DIRM Xr ⊆X, we say system G is current-state opaque (w.r.t. XS
+and DIRM Xr), if
+∀s ∈L(G) : ˆX(HR(s)) ⊈XS.
+
+   According to the definition of opacity, we implicitly assume
+that the intruder is aware of the DIRM of the underlying system.
+We illustrate this definition by the following example.
+
+
+Example 3.  Let us still consider system G in Fig. 1. Then for
+                                                                                                                                                                                                                                    ˜G, where Σo = {a, b},string s = haha leading to secret state 4, we have HR(s) =      Fig. 2. System G and corresponding augmented system
+                                                                      Σr = {h}, and Σuo = {u}.
+{ϵ, h, ha, haha}. Note that s  is the only string that generates
+history HR(s),  e.g., for string  s′ =  uhaha, we have HR(s′) =
+{ϵ, a, hah, haha}̸ = HR(s). Therefore, we have ˆX(HR(s)) = {4} ⊆
+                                                                             4. Augmenting the system with the trajectory information
+XS, which means that system G is not current-state opaque with
+respect to DIRM Xr and secret XS.
+   Comparatively, suppose that XS = {2}, then the system be-      4.1. Augmented systems
+comes opaque. This is because t = ha is the only string that
+                                           We note that, not every visit of an information-release-state inleads to secret state 2. However, we also have t′ = hah such that
+                                                                          Xr will release some previous information; it depends on whetherHR(t) = HR(t′) = {ϵ, h, ha} and δ(t′) = 3. Therefore, we have
+ˆX(HR(t)) = {2, 3} ⊈XS. □                                         or not the trajectory visiting Xr contains events in Σr since the                                                                               last visit of Xr, i.e., whether or not there are events in Σr that are
+                                                                               ‘‘on hold’’. To capture the ‘‘true’’ information-release-states, we
+Remark 5. Our DIRM projection is closely related to the so called                                                       augment the original plant by an additional binary information
+Orwellian projection proposed in Mullins and Yeddes (2014),    {N, Y} to obtain a new DFA
+where a downgrading event is used to trigger information release.
+Our DIRM projection is different from the Orwellian projection       ˜G = (˜X, Σ, ˜δ, ˜x0),
+in the following aspects. First, we consider partial information
+                                                       where
+release while the Orwellian projection considers full information
+release. Specifically, under the Orwellian projection, once the      •  ˜X ⊆X × {N, Y} is the set of augmented states;
+information release mechanism is triggered, the outsider knows      •  ˜x0 = (x0, N) is the initial augmented state;
+immediately the precise state of the system. This is not the case      •  ˜δ : ˜X ×Σ →˜X is the augmented transition function defined
+of our DIRM projection since we assume that events in Σuo are         by: for any ˜x = (x, l) ∈˜X and σ ∈Σ such that δ(x, σ)!, we
+always unobservable, i.e., even when information release is trig-        have
+gered, the intruder may still have information uncertainty. Also,                   {(δ(x, σ), Y)    if [σ ∈Σr] ∨[x /∈Xr ∧l=Y]
+we consider a state-based information release mechanism rather                ˜δ(˜x, σ)=
+                                                                                             (δ(x, σ), N)  otherwise
+than using a downgrading event to trigger the release as the case
+of Mullins and Yeddes (2014). We believe such a modeling is     Intuitively, a state is augmented with labeled Y  if  it is either
+more natural in practice since, e.g., when to release information     visited directly via an event in Σr or visited by a string that
+can be controlled by another transducer that does not need to be    contains event Σr since the last visit of information-release-states
+associated with events in the original plant model. Furthermore,     Xr. Therefore, a state augmented with Y is a state at which some
+the state-based mechanism also brings new technical challenges.     historical events can be released. When the current state x is in
+In particular, due to the use of downgrading event, two strings     Xr and the upcoming event σ is not in Σr, label Y will be reset to
+having the same projection necessarily have the same history.    N, which means that the previous information has been released
+However, for the general case of Orwellian-type observation, we     (at state x) and there is no new information to be released in
+need to consider histories rather than projections, which is the    the future added. We illustrate the augmented system ˜G by the
+most significant technical challenge in our setting.                  following example.
+
+   Note  that, in the standard natural projection  setting, the    Example 4.  Let us consider DFA G = (X, Σ, δ, x0) shown in
+current-state estimate can be computed easily by constructing     Fig. 2(a), where Σo = {a, b}, Σr = {h}, and Σuo = {u}. The DIRM
+the standard observer automaton that essentially recursively up-      is specified by information-release-states Xr = {6, 9}. Then the
+dates the belief of the observer on-the-fly; see, e.g., Cassandras    augmented system ˜G of G is depicted in Fig. 2(b). For the sake of
+and Lafortune (2008). However, the computation of ˆX(HR(s)),     simplicity, in the figure, we omit brackets and comma for each
+which is the key to the opacity verification problem, is much     state in ˜X, e.g., state (1, Y) is simplified as 1Y.
+more challenging as delayed information is involved. In the fol-         Specifically, the initial state is 0N and when event u occurs,
+lowing sections, we will elaborate on how to compute ˆX(HR(s)).    we reach state 1N. However, when r occurs, we reach state 2Y
+
+                                                                   5
+
+J. Hou, X. Yin and S. Li                                                                                                         Automatica 140 (2022) 110238
+
+since h ∈Σr. From state 6Y, when event u occurs, we reach state    and the current-state estimate of ˜G by observing ˜HR(s) is
+8N since 6 ∈Xr and u /∈Σr. Note that state 9 in G is split as 9N
+and 9Y in ˜G depending on how it is visited. □                                      ˆ˜X( ˜HR(s)) = {˜δ(s′)∈˜X : ∃s′ ∈L(˜G) s.t. ˜HR(s)= ˜HR(s′)}.
+   The augmented system ˜G contains at most 2 · |X| states which    By Lemma 1 and the construction of ˜G, we have
+is linear in the size of the original system. Furthermore, since for
+any state (x, l) ∈˜X, ˜δ((x, l), σ) is defined if and only if δ(x, σ) is        ˆ˜X( ˜HR(s)) ⊆ˆX(HR(s)) × {N, Y}.
+defined, we also have                                                                     Therefore, by the definition of ˜XS, we have that
+L(˜G) = L(G),
+                                                                                                                        ˆ˜X( ˜HR(s)) ⊆˜XS ⇔ˆX(HR(s)) ⊆XS.
+i.e., ˜G is essentially a state–space refinement of G. Hereafter, we
+will analyze opacity based on the augmented system ˜G instead of       Hence, ˜G is opaque if and only if G is opaque. □
+G. To this end, we define
+                                                               Based on the above discussion, hereafter, we will only perform
+˜XS = {(x, l) ∈˜X : x ∈XS}                                              analysis based on the augmented system  ˜G. For the sake of
+                                                                          simplicity, hereafter, we still use notations ˆX(·)to represent theas the set of secret states in ˜G. Also, we define
+                                                          CSE under DIRM ˜Xr for system ˜G.
+˜Xr = {(x, l) ∈˜X : x ∈Xr and l = Y}
+                                                                                   4.2. Observations in ˜Gas the set of information-release-states in ˜G.
+   To distinguish with notations for G, before the end of this
+                                                                          In order to investigate how to estimate states in ˜G, we firstsubsection, we first use ˜PR(·), ˜HR(·), ˆ˜X( ˜HR(s)) to represent, respec-                                                                             classify different types of observations. Under the DIRM, there are
+tively, as the DIRM projection, the history and the current-state
+                                                                       actually two different types of observations:
+estimate w.r.t. ˜G and ˜Xr. The following result shows that consid-
+ering the augmented system ˜G and the corresponding DIRM ˜Xr is      • the standard instant observation for an observable event:
+the same as the original system.                                              this observation is available when an observable event oc-
+                                                                            curs;
+Lemma 1.  For any string s ∈L(G) = L(˜G), we have HR(s) = ˜HR(s).      • the release of some previous events in Σr: this observation
+                                                                                              is available when a state in ˜Xr is reached.
+Proof.  By definition, we have HR(s) =  {PR(s′)   :   s′ ∈{s}}
+and ˜HR(s) =  {˜PR(s′)  :  s′ ∈{s}}, where for any  s′ ∈{s}, we    Note that the above two types of observations may occur si-
+                                                                                                                                                ˜Xr  is reached by an observable event σ ∈have PR(s′) = PΣo∪Σr (s′[1, ıs′])PΣo(s′[ıs′ + 1, |s′|]) and ˜PR(s′) =    multaneously when
+PΣo∪Σr (s′[1,˜ıs′])PΣo(s′[˜ıs′+1, |s′|]). Here we use ıs′ and ˜ıs′ to denote    Σo.
+the latest instant when s′ reaches Xr in G and the latest instant        Therefore, events in Σr is unobservable before reaching a state
+                                                     On the other hand, once events in Σr are released, we knowwhen s′ reaches ˜Xr in ˜G, respectively. Since ˜Xr ⊆Xr × {Y}, we     in ˜Xr.
+have ıs′ ≥˜ıs′.                                                          precisely when they occurred. To handle this issue, we introduce
+   To show that HR(s) = ˜HR(s), it suffices to show that PR(s′) =    two observation views: high-level view O(˜x) and low-level view
+˜PR(s′) for any s′ ∈{s}. Note that, if ˜ıs′ = ıs′, we have immediately      OL(˜x).
+that PR(s′) =  ˜PR(s′). Therefore, we consider the case of  ıs′ >  ˜ıs′       The high-level view assumes that events in Σo∪Σr are always
+hereafter. For this case, we can write PR(s′) and ˜PR(s′) in the forms     observable. From this view, an event σ ∈Σ such that ˜δ(˜x, σ)! is
+of                                                              considered as an ‘‘observable’’ event at augmented state ˜x ∈˜X if
+                                                                                              (i) σ ∈Σo ∪Σr; or (ii) ˜δ(˜x, σ) ∈˜Xr. Therefore, we define
+PR(s′) = PΣo∪Σr (s′1)PΣo∪Σr (s′2)PΣo(s′3)
+                                                                              O(˜x) := {σ ∈Σ : ˜δ(˜x, σ)! ∧[σ ∈Σo ∪Σr ∨˜δ(˜x, σ) ∈˜Xr]}˜PR(s′) = PΣo∪Σr (s′1)PΣo(s′2)PΣo(s′3),
+where s′1 = s′[1,˜ıs′], s′2 =  s′[˜ıs′ + 1, ıs′] and s′3 =  s′[ıs′ + 1, |s′|].    as the set of high-level ‘‘observable event’’ defined at state ˜x ∈˜X
+Therefore, it remains to show that PΣo(s′2) = PΣo∪Σr (s′2), i.e., s′2    assuming events in Σo ∪Σr are observable.
+does not contain events in Σr.                              On the other hand, the low-level view is from the observer/
+   Let s′2 = σ1 . . . σm and let xi =  ˜δ(s′1σ1 . . . σi) be the ith state     intruder’s actual observation considering that we cannot see all
+visited from ˜δ(s′1) ∈˜Xr in ˜G. Assume for the sake of contradiction    events in O(˜x) immediately since σ ∈Σr is not observable until
+that  s′2 contains an event in Σr and let k ∈  {1, . . . , m} be      it is released. Instead, we define
+the largest number such that σk ∈Σr. Furthermore, let p ∈     OL(˜x) := {σ ∈Σ : ˜δ(˜x, σ)! ∧[σ ∈Σo ∨˜δ(˜x, σ) ∈˜Xr]}
+{k, . . . , m} be the smallest instant such that xp ∈Xr. Note that
+xp is well-defined since xm = ˜δ(s′1s′2) ∈Xr. Then, by the definition    as the set of low-level ‘‘observable events’’ defined at state  ˜x ∈
+                                                              under the assumption that only event in Σo are instantlyof ˜G, we have xp ∈Xr × {Y} = ˜Xr. However, this violates the fact       ˜X
+                                                                    observable.that ˜ıs′ is the latest instant when s′ reaches ˜Xr in ˜G. Therefore, s′2                                                                    ∈2˜X be a set of augmented states. In order to capturedoes not contain any event in Σr, which completes the proof. □        Let q
+                                                                                       all observation-equivalent states of q, from the high-level view,
+   Then the following theorem shows that to check opacity for G,   we define UR(q) as the unobservable reach  w.r.t. O(˜x). Unlike
+it suffices to check opacity for ˜G.                                  the standard˜unobservation reachable in static observation, this
+                                                                unobservation reach cannot be written in a closed-form since
+Theorem 1.  G is current-state opaque w.r.t. secret states XS and    unobservable events are state-dependent, e.g., the transition is also
+DIRM Xr, if and only if, ˜G is current-state opaque w.r.t. secret states    observable when σ ∈Σuo and  ˜δ(˜x, σ) ∈˜Xr. Alternatively, we
+˜XS and DIRM ˜Xr.                                                    define UR(q) inductively as follows:
+                             ˜
+Proof. For any string s ∈L(G) = L(˜G), the current-state estimate      • q ⊆˜UR(q);
+of G by observing HR(s) is                                       • For any ˜x ∈q, σ ∈Σ such that ˜δ(˜x, σ)!, we have
+ˆX(HR(s)) = {δ(s′)∈X : ∃s′ ∈L(G) s.t. HR(s)=HR(s′)}                                        ˜δ(˜x, σ) ∈˜UR(q) ⇔σ /∈O(˜x).
+                                                                   6
+
+J. Hou, X. Yin and S. Li                                                                                                         Automatica 140 (2022) 110238
+
+   Also, from the observer’s actual observation, we define URL(q)    where                      ˜
+as the unobservable reach with respective to the low-level view
+                                                            • Xobs ⊆˜X × 2˜X × 2˜X is the set states;OL(˜x) by assuming one can only observe Σo instantly and events
+                                                            • xobs,0 = (x0, UR({x0}), URL({x0})) is the initial state;in Σr are subjected to the DIRM. Similarly, we define URL(q)        ˜   ˜
+                      ˜         •  f  : Xobs × Σ →Xobs is the partial transition function definedinductively as follows:
+                                                                       by: for any xobs = (˜x, ˆq, q) ∈Xobs and σ ∈Σ, we have
+  •     q         URL(q);   ⊆˜                                                                                                                                                       is defined;  •     For        any                          ˜x ∈q, σ ∈Σ such that ˜δ(˜x, σ)!, we have                   –  f (xobs, σ) is defined if and only if ˜δ(˜x, σ)
+                                                              –  if f (xobs, σ) is defined, then we have f ((˜x, ˆq, q), σ) =
+                                                                        where        ˜δ(˜x, σ) ∈˜URL(q) ⇔σ /∈OL(˜x).                                                                     (˜x′, ˆq′, q′),
+   Next, we define how a state estimate q ∈2˜X evolves according                              ˜x′ = ˜δ(˜x, σ)                                           (2)
+to different types of observations. As we discussed above, the                         {ˆq              if σ /∈O(˜x)
+observer may observe an new event occurrence or an information                            ˆq′ =                                                   (3)
+                                                                                                                                              if σ ∈O(˜x)                                                                                             UR(ˆqmid)release or both together. Therefore, if an observable event σ ∈                                ˜
+Σo ∪Σr from the high-level view (or σ ∈Σo from the low-level          ⎧q                    if σ /∈OL(˜x)
+                                                                                      ⎪⎨view) occurs without information release, then the set of states                   q′ =                                                                     NXσ (q))    if σ ∈OL(˜x) ∧˜x′ /∈˜Xr            (4)reached immediately is defined by                                   URL(˜˜
+                                                                                      ⎪⎩URL(ˆqmid)        if σ ∈OL(˜x) ∧˜x′ ∈˜Xr                                ˜NXσ (q) = {˜x ∈˜X : ∃˜x′ ∈q s.t. ˜x = ˜δ(˜x′, σ) /∈˜Xr}.
+˜                                                              where
+If an unobservable event triggers an information release, then the           ⎧NXσ (ˆq)      if σ ∈Σo∪Σr ∧˜x′ /∈˜Xr
+set of states reached immediately is defined by                                        ⎪⎨˜                                                                                                            ˆqmid =  NXr(ˆq)      if σ ∈Σuo ∧˜x′ ∈˜Xr               (5)
+NXr(q) = {˜x ∈˜X : ∃˜x′ ∈q, σ ∈Σuo s.t. ˜x= ˜δ(˜x′, σ)∈˜Xr}.             ˜
+˜                                                                                     ⎪⎩NXσ,r(ˆq)    if σ ∈Σo∪Σr ∧˜x′ ∈˜Xr                                 ˜
+If an observable event σ ∈Σo ∪Σr occurs and it also triggers an
+                                                                  For the sake of simplicity, we only consider the reachable part of
+information release, then the set of states reached immediately is     Obs(˜G). Also, we note that each state in Obs(˜G) is in the form of
+defined by
+                                                                                     xobs = (˜x, ˆq, q), where the first component is an augmented state
+NXσ,r(q) = {˜x ∈˜X : ∃˜x′ ∈q s.t. ˜x = ˜δ(˜x′, σ) ∈˜Xr}.                  while the second and the third components are sets of augmented˜
+                                                                         states representing state estimates. Then for each state xobs, we
+  We illustrate the above operators by the following example.
+                                                             denote by X1(xobs), X2(xobs) and X3(xobs) its first, second and third
+                                                            components, respectively.
+Example 5.   Let us  still consider  ˜G shown in  Fig. 2(b). For
+                                                            The intuition of each component of the DIRM-observer  is
+state set {0N}, from the high-level view, we have UR({0N}) =
+                    ˜             explained as follows. The first component essentially tracks in
+{0N, 1N} since only unobservable event u can be executed. How-                                                                        actual state of the augmented system. Furthermore, we note that,
+ever, from the low-level view, event h is ‘‘unobservable’’ un-                                                                         at each state xobs =  (˜x, ˆq, q), f (xobs, σ) is defined if and only if
+til reaching a state in  ˜Xr. Therefore, we have URL({0N})                                 =       ˜δ(˜x, σ) is defined. Therefore, we have L(Obs(˜G)) = L(˜G) = L(G),                   ˜
+{0N, 1N, 2Y, 3Y, 4Y, 5Y}. Note  that, within  this unobservable                                                                                                          i.e., Obs(˜G) exactly generates the same language of the original
+reach, observable event a can happen from states 3Y, 4Y and 5Y;                                                                          plant.
+each yields a different observation. For example, from state 5Y,                                                            The second and third components estimate the state of the
+one can just observe the occurrence of a without information                                                            system from the high-level view and the low-level view, re-
+release since the successor state reached,  i.e., 7Y, is not in  ˜Xr.                                                                         spectively. Specifically, the second component tracks all possible
+Therefore, the corresponding observable reach is
+                                                                         states the system could be in assuming the observer has the
+NXa({0N, 1N, 2Y, 3Y, 4Y, 5Y}) = {7Y}                          knowledge of the occurrences of events in Σr. Specifically,  if˜                                                      σ   /∈  O(˜x),  i.e., there  is no observation upon the occurrence
+However, from states 3Y or 4Y, the occurrence of a not only     of σ from the high-level view, then the state estimate should
+generates an instant observation but also releases some historical    remain the same. If σ ∈O(˜x), then we need to first update the
+information. This corresponds to the following observable reach     estimation upon the observation via observable reach and obtain
+NXa,r({0N, 1N, 2Y, 3Y, 4Y, 5Y}) = {6Y, 9Y}.                     an intermediate estimate denoted by ˆqmid. Then we compute the
+˜                                                            unobservable reach of ˆqmid to complete the information update.
+Note that, from the intruder’s point of view, it can still distinguish    As discussed earlier, there are three different types of observation
+between state 6Y and state 9Y  since by reaching 6Y  it will     for σ ∈O(˜x). Therefore, ˆqmid is computed accordingly for each case
+observe hha and by reaching 9Y  it will observe ha. Therefore,    as follows:
+only the unobservable and observable reach still cannot compute
+                                                            • If σ ∈Σo ∪Σr, but  ˜x′  /∈   ˜Xr,  i.e., from the high-levelthe precise state estimate of the system. We need additional
+                                                               view of the second component, one can observe an instantinformation that tracks those unreleased information to correct
+this state estimate. This will be discussed in the next section. □         observation in Σo∪Σr but there is no historical information
+                                                                             released, then the state estimate is updated by observable
+                                                                     reach NXσ (ˆq) since it can track instant observation σ with5. Verification of opacity using DIRM-observer            ˜
+                                                           no historical information released;
+                                                            • If σ ∈Σuo, but  ˜x′ ∈   ˜Xr,  i.e., from the high-level view
+   In this section, we discuss how to compute the current-state
+                                                                              of the second component, there is no instant observation
+estimate, which is the key to the verification of current-state
+                                                                             in Σo ∪Σr but some historical information released, then
+opacity, under the dynamic information release mechanism. To
+                                                                      the state estimate is updated first by NXr(ˆq) since it tracksthis end, we propose the DIRM-observer, which is a new DFA                   ˜
+                                                           no instant observation and there is historical information
+Obs(˜G) = (Xobs, Σ, f , xobs,0),                                               released;
+
+                                                                   7
+
+J. Hou, X. Yin and S. Li                                                                                                         Automatica 140 (2022) 110238
+
+                                                      Example 6. Let us still consider DFA G = (X, Σ, δ, x0) in Fig. 2(a)
+                                                         and its augmented system ˜G in Fig. 2(b). The DIRM-observer for
+                                                                                                   ˜G is shown in Fig. 3. The initial state is xobs,0 = (0N, {0N, 1N},
+                                                            {0N, 1N, 2Y, 3Y, 4Y, 5Y})  since UR({0N})  =   {0N, 1N} and
+                                       ˜
+                                                               URL({0N}) = {0N, 1N, 2Y, 3Y, 4Y, 5Y}. Therefore, by observing                          ˜                                                                    nothing, the state estimate of the intruder is ˆX({ϵ}) = X3(xobs,0) =
+                                                            {0N, 1N, 2Y, 3Y, 4Y, 5Y}.
+                                                                    For the  initial-state,  if event h occurs, we have  f (h) =
+                                                                (2Y, {2Y, 3Y}, {0N, 1N, 2Y, 3Y, 4Y, 5Y}). Note that the first com-
+                                                           ponent is updated to 2Y = ˜δ(0N, h) and the second component
+                                                                                       is updated to UR(˜˜ NXσ ({0N, 1N}) =  {2Y, 3Y}) since h ∈Σr.
+                                                           However, the third component remains unchanged since h  /∈
+                                                           OL(0N) = ∅. Similarly, when h occurs again, we have f (hh) =
+                                                                (4Y, {4Y, 5Y}, {0N, 1N, 2Y, 3Y, 4Y, 5Y}) since h /∈OL(2Y) = ∅,
+                                                                                                          i.e., the third component is still not updated.
+                                                         Now, let us consider string hha, the first component is updated
+                                                                     to 6Y =  ˜δ(4Y, a) and the second component  is updated to
+                         Fig. 3. DIRM-observer Obs(˜G) of G.              UR(˜˜ NXa,r({4Y, 5Y})) = {6Y, 8N, 9N}. Since a ∈Σo and 6Y ∈˜Xr,
+                                                                 the third component is updated to URL(ˆqmid) = {6Y, 8N, 9N},                                        ˜
+                                                       where ˆqmid = NXa,r({4Y, 5Y}) = {6Y}. This corresponds to the                                ˜
+  • If σ ∈Σo, but  ˜x′ ∈˜Xr,  i.e., from the high-level view of     last case of Eq. (4).
+                                                                    For state (5Y, {4Y, 5Y}, {0N, 1N, 2Y, 3Y, 4Y, 5Y}), when event
+     the second component, there are both instant observation
+                                                             a occurs, it reaches (7Y, {7Y}, {7Y}), where since a ∈Σo but     in Σo ∪Σr and some historical information released, then                                                         7Y /∈˜Xr, the third component is updated according to the second     the state estimate is updated by observable reach NXσ,r(ˆq).                     ˜          case of Eq. (4) by
+After the above update using observable reach, we take the un-
+                                                                 NXa({0N, 1N, 2Y, 3Y, 4Y, 5Y}))observable reach UR(ˆqmid) w.r.t. O(˜x) to capture all states that    URL(˜˜       ˜
+cannot be distinguished with ˆqmid. Note that, the estimated infor-  =˜URL({7Y}) = {7Y}
+mation in the second component cannot be used directly because                                                                                                     If event u occurs from (7Y, {7Y}, {7Y}), then we move  to
+the actual observer does not directly observe events in Σr. The                                                                (9Y, {9Y}, {9Y}). Since u ∈  Σuo but 9Y  ∈   ˜Xr, the second
+information in this component is used to construct the third
+                                                        component is updated according to the second case of Eq. (5) by
+component when information release is triggered. This is because,
+                                                                    NXr({7Y})) = {9Y}; the third component is updated accordingonly in this case, all previous σ ∈Σr are released and one can   UR(˜˜
+                                                                     to the third case of Eq. (4) by URL(ˆqmid) = URL({9Y}) = {9Y},then leverage the information in the high-level view to correct              ˜    ˜
+                                                  = {9Y}. □                                                       where ˆqmid = NXr({7Y})the information in the low-level view.                                ˜
+   The third component aims to represent the current-state es-       Next, we show the properties of the DIRM-observer and es-
+timate under the DIRM projection, which is of our main interest.     tablish its correctness. First, we show that, for a string s and any
+The information update of this component is based on the ac-     state in the component X2(f (s)), there exists a string having the
+tual low-level view of the intruder. Specifically,  if σ  /∈OL(˜x),    same history with string s. Its proof is provided in the appendix.
+i.e., there is no actual observation of the intruder, then the state
+estimate should remain the same. On the other hand, for σ ∈   Lemma 2.   Let Obs(˜G) be the DIRM-observer of ˜G. Then, for any
+OL(˜x), depending on whether or not there is historical information     s ∈L(˜G), we have
+released, we have the following two cases:
+                                                          ∀x ∈X2(f (s)), ∃t ∈L(˜G) : x = ˜δ(t) ∧HR(t) = HR(s)
+  • If  ˜x′ /∈˜Xr, then the intruder only has an instant observation
+    σ but there is no historical information released. Therefore,       Using the above result, we can obtain a precise characteriza-
+     the state estimate is updated by observable reach NXσ (q)     tion for the second component of the DIRM-observer.                      ˜
+    and the low-level view unobservable reach URL(q) w.r.t.
+                    ˜             Proposition 1.  Let Obs(˜G) be the DIRM-observer of ˜G. Then for any      OL(˜x);
+                                                                           such that ˜δ(sσ)∈˜Xr, we have  • If  ˜x′ ∈˜Xr, then there is historical information released. As    sσ ∈L(˜G)
+    we explained for the second component, the intermediate         ⎧         s′ = tσ ′ω∈L(˜G), ω ∈Σ∗uo∧ ⎫
+     estimate ˆqmid in the second component actually captures                 ⎪⎨                                  ⎪⎬                                                                           X2(f (sσ)) =   ˜δ(s′) : HR(t)=HR(s) ∧˜δ(tσ ′)∈˜Xr∧    what the intruder knows if it has the high-level view. Since
+     the information has been released, this information becomes                 ⎪⎩      PΣo∪Σr (tσ ′) = PΣo∪Σr (sσ) ⎪⎭
+     available to the low-level intruder. Therefore, instead of
+                                                                             Also, we characterize the third component of the DIRM-
+     taking the observable reach of the previous estimate in the
+                                                                 observer by showing that indeed tracks the current-state estimate
+     third component, this part is ‘‘switched’’ to ˆqmid to utilize                                                                        of system under DIRM projection.
+     the released information. Next, since the third component
+     captures the actual state estimate of the intruder, which                                                               Proposition 2.   Let Obs(˜G) be the DIRM-observer of ˜G. Then, we
+     cannot observe events in Σr before the next information                                                              have
+      release, we again take the low-level unobservable reach of
+       ˆqmid from the intruder’s actual point of view to complete the    ∀s ∈L(˜G) : X3(f (s)) = ˆX(HR(s))                                  (6)
+     information update.
+                                                           By putting the above results together, we finally provide a
+  We use the following example to illustrate the DIRM-observer.    theorem to show how to verify current-state opacity under DIRM
+                                                             based on the DIRM-observer.
+
+                                                                   8
+
+J. Hou, X. Yin and S. Li                                                                                                         Automatica 140 (2022) 110238
+
+
+
+
+
+                                                      Fig. 4. The operation flow in a cloud based medical service system.
+
+Theorem 2.   Let Obs(˜G) be the DIRM-observer for system G. Then    (2019) for details on how to model medical cloud computing
+system G is current-state opaque w.r.t. XS and Xr  if and only if        systems using DES models.
+                                                                                 Specifically, we consider a scenario, where a user wants to an-
+∀xobs ∈Xobs : X3(xobs) ⊈˜XS                                       (7)     alyze some medical data of patients by cloud computing services.
+                                                          The entire process involves a local network and two clouds X and
+Proof.  (if) Suppose that ∀xobs ∈  Xobs   :  X3(xobs) ⊈   ˜XS. By    Y as shown in Fig. 4; each of them works as follows:
+Proposition 2 and L(˜G) = L(Obs(˜G)), we have that ∀s ∈L(˜G)  :
+X3(f (s)) =  ˆX(HR(s)) ⊈˜XS. Then by Definition 3, we have that      • Initially, the user in the local network extracts different
+˜G is current-state opaque w.r.t. ˜XS and ˜Xr. Since L(G) =  L(˜G),         health data for later processing. Here, we consider three
+                                                                      data extraction operations: image representing the CT im-the definition of ˜XS and ˜Xr, and Theorem 1, we have that G is
+                                                                  age data of the patient, blood representing the blood textcurrent-state opaque w.r.t. XS and Xr.
+                                                                      data of the patient and heart representing the heart rate   (only if) By contradiction. Suppose that, for G that is current-
+                                                                 sequence data of the patient. Then the extracted data are
+state opaque w.r.t. secret states XS and DIRM Xr and the corre-
+                                                                 uploaded to Cloud X for further pre-processing representedsponding ˜G, ∃xobs ∈Xobs  : X3(xobs) ⊆˜XS. Based on Proposition 2
+                                                              by operation upload_X.and the fact that L(G) = L(˜G) = L(Obs(˜G)), we have ∃s ∈L(˜G) :
+                                                            • Cloud X aims to pre-process data received from the localX3(f (s)) = ˆX(HR(s)) ⊆˜XS. By Definition 3 and Theorem 1, it can
+                                                                    network. Depending on different types of patient data, dif-conclude that ∃s ∈L(G) : ˆX(HR(s)) ⊆XS, which contradicts with                                                                           ferent pre-processing services are provided, including data
+the assumption. □
+                                                                                     filtering operation filt and data anonymization operation
+   The theorem shows that current-state opacity can be checked         anoy. As shown in  Fig. 4, image data may need to be
+by a reachability search in the DIRM-observer. We illustrate The-           filtered for multiple times, while blood text data does not
+orem 2 by the following example.                                  need to be filtered. The pre-processed data will be packaged
+                                                                          to the sender nodes, where the data are sent to service
+Example 7. Let us still consider DFA G = (X, Σ, δ, x0) in Fig. 2(a)         providers SP1 or SP2 in Cloud Y  for final process under
+and its augmented system ˜G in Fig. 2(b). The DIRM-observer for         operation upload_Y. We assume that the image data can
+˜G has been shown in Fig. 3, where for x = (7Y, {7Y}, {7Y}),        be processed by either SP1 or SP2, while the blood data and
+we have X3(x) = {7Y} ⊆  ˜XS. This state is reached by uhha         the heart rate data can only be processed by SP1 and SP2,
+with HR(uhha) = {ϵ, a}, which is the unique string having this          respectively. Furthermore, before packaging the data, the CT
+                                                              image data and the blood text data also need to be backupedhistory. Therefore, the intruder knows for sure that the system is
+                                                                     represented by operation back.at secret state 7 and also, by Theorem 2, we know that G is not
+                                                            • Cloud Y further analyzes the data pre-processed by Cloud Xcurrent-state opaque with respect to Xr and XS. □
+                                                                            either by service providers SP1 or by SP2 in it. Then the final
+                                                                               results will be send back to the user in the local network byRemark 6.  Finally, we discuss the complexity of proposed ap-
+                                                                      operation return_user.proach for verifying current-state opacity under DIRM. First, the
+augmented system ˜G contains at most 2·|X| states which is linear       Although clouding computing provides a powerful way for
+in the size of the original system. The DIRM-observer contains at    processing big local data, one of its main concerns is the pri-
+most |˜X|·2|˜X|·2|˜X| states and |Σ|·|˜X|·2|˜X|·2|˜X| transitions. Therefore,    vacy issue. Here we consider the following information release
+the overall complexity for verifying current-state opacity is expo-     scenario. We assume that the communication between the local
+nential in the number of states in the original system. However,    network, Cloud X and Cloud Y are available to the outsider,
+this complexity seems to be unavoidable since verifying current-       i.e., we have
+state opacity under the standard natural projection, which is a
+                                                    Σo = {upload_X, upload_Y, return_user}special case of the DIRM, is already shown to be PSPACE-hard.
+                                         We assume that the operations in within each cloud and the
+6. Case study on medical cloud computing services                 local network are not available directly to the outsider. However,
+                                                             Cloud X is subject to the so called log attacks (Chu et al., 2013;
+   In this section, we apply the proposed framework to a cloud-    Sanamrad & Kossmann, 2013) at the backup locations BKi, i =
+computing-based medical data processing example. This example     1, 2. Specifically, the attacker is able to recover operations that
+is adopted from Zeng and Koutny (2019) with some modifications    has been executed in the cloud with the right order by checking
+and simplifications. The reader is referred to Zeng and Koutny      its logs. Therefore, pre-processing operations filt and anoy
+
+                                                                   9
+
+J. Hou, X. Yin and S. Li                                                                                                         Automatica 140 (2022) 110238
+
+are events that are initial unobservable but will be released at        Induction Step: Now, let us assume that, for string s ∈L(˜G)
+locations BKi, i = 1, 2. Formally, we have                         with |s| = k, we have ∀x ∈X2(f (s)), ∃t ∈L(˜G) : x = ˜δ(t)∧HR(t) =
+                                                                            HR(s). Then we consider sσ ∈L(˜G), σ ∈Σ.
+Σuo = {image, blood, heart, pack1, pack2}                         For any x ∈X2(f (sσ)), by the definition of X2(f (s)), we have
+and releasable events and the release states are                              ˜δ(t) ∈X2(f (s)), then there exist t′ = tσ ′ω ∈L(˜G) and ω ∈
+                                              Σ∗uo such that x =  ˜δ(t′). As the construction of X2, we know
+Σr = {filt, anoy, back} and Xr = {BK1, BK2}.                     the events in Σo ∪Σr are observable. Hence, by the definition
+                                                                        of the specified observable reach of X2(f (sσ)) and the induction
+Here we consider a privacy constraint requiring that the intruder
+                                                                 hypothesis HR(t) = HR(s), we have
+should never be able to discover that the user is utilizing service
+provider SP1 in Cloud Y. This is because SP1 can provide more    PΣo∪Σr (t′) = PΣo∪Σr (sσ)                                      (A.1)
+detailed analysis than SP2, and therefore, it is used when the pre-
+processing procedures in Cloud X find that the patients have high     PR(t) = PR(s)                                                  (A.2)
+risk of diseases. Here, we can convert this privacy requirement
+as a current-state opacity problem by considering XS = {SP1}.    Next, we consider different cases.
+To verify current-state opacity, one can construct the DIRM-    Case 1: σ ∈Σo ∧˜x′ ∈˜Xr
+observer, which is omitted here, and we can conclude easily       For                                                                                   this case, X2(f (sσ)) = UR(˜˜ NXσ,r(X2(f (s)))), then we have                                                                                                                                                                      ′that the entire system is current-state opacity under DIRM. For    σ = σ ∈Σo and ˜δ(tσ ′) ∈˜Xr. Furthermore, the above makes that
+example, for execution
+s = blood · upload_X · anoy · back · pack1 · upload_Y            PR(sσ) = PΣo∪Σr (sσ) ∧PR(t′) = PR(tσ ′) = PΣo∪Σr (tσ ′)        (A.3)
+that utilizes service provider SP1, there exists another execution    By the induction hypothesis, Eqs. (A.1) and (A.3), we have HR(s)∪
+                                                                   PR(sσ) =  HR(t) ∪PR(t′),  i.e., HR(sσ) =  HR(t′). Therefore, for
+t = image · upload_X · anoy · back · pack2 · upload_Y          σ ∈Σo ∧˜x′ ∈˜Xr, we have ∀x ∈X2(f (sσ)), ∃t′ ∈L(˜G)  : x =
+                                                                                                  ˜δ(t′) ∧HR(t′) = HR(sσ), i.e., the hypothesis holds in this case.that utilizes service provider SP2, which does not indicate sensi-
+tive information of patients.                                    Case 2: σ ∈Σo ∪Σr ∧˜x′ /∈˜Xr
+   Note that this example cannot be modeled using the standard       For                                                                                   this case, X2(f (sσ)) = UR(˜˜ NXσ (X2(f (s)))), then we have                                                                                                                                                                      ′natural projection. This is because whether or not the executions    σ = σ and ˜δ(tσ ′) /∈˜Xr. Furthermore, the above makes that,
+of operations filt and anoy will be discovered by the intruder      when σ ∈Σr,
+depends on whether the system will visit release state BKi in                                                                   PR(sσ) = PR(s) ∧PR(t′) = PR(t)                                (A.4)
+the future. Therefore, the proposed DIRM is used to capture the
+information-flow in this log-attack scenario.                  when σ ∈Σo,
+                                                                   PR(sσ) = PR(s)σ ∧PR(t′) = PR(tσ ′) = PR(t)σ ′                 (A.5)
+7. Conclusion
+                                                        By the induction hypothesis, Eqs. (A.2), (A.4) or (A.5), we have
+   In this paper, we proposed a new Orwellian-type observa-    HR(s)∪PR(sσ) = HR(t)∪PR(t′), i.e., HR(sσ) = HR(t′). Therefore, the
+                                                                 hypothesis holds in this case.tion model called the dynamic information release mechanism
+that allows to release history information generated dynami-    Case 3: σ ∈Σuo ∧˜x′ ∈˜Xr
+cally based on the current state. A new history-based definition       For                                                                                   this case, X2(f (sσ)) = UR(˜˜ NXr(X2(f (s)))), then we have                                                                                                                                                                  ′of current-state opacity was proposed that better captures the    σ, σ ∈Σuo and ˜δ(tσ ′) ∈˜Xr. Furthermore, the above makes that
+feature of non-prefix-closed observations, which is the main fea-
+                                                                   PR(sσ) = PΣo∪Σr (sσ) ∧PR(t′) = PR(tσ ′) = PΣo∪Σr (tσ ′)        (A.6)ture of Orwellian-type observations. Then we proposed a new
+information structure called the DIRM-observer that effectively    By the induction hypothesis, Eqs. (A.1) and (A.6), we have HR(s)∪
+fuses the released previous information to update the current-    PR(sσ) =  HR(t) ∪PR(t′),  i.e., HR(sσ) =  HR(t′). Therefore, the
+state estimate. Based on the DIRM-observer, we showed that    hypothesis holds in this case.
+the current-state opacity verification problem can be effectively                                                             Case 4: σ ∈Σuo ∧˜x′ /∈˜Xr
+solved. An illustrative example on medical cloud computing is                                                                    For this case, we have X2(f (sσ)) = X2(f (s)), t′ = tω ∈L(˜G) and
+provided to illustrate our framework.                                            ω ∈Σ∗uo. Further, we easily have that, HR(sσ) = HR(s) = HR(t) =
+   There are many interesting future directions under the pro-     HR(t′). Therefore, the hypothesis holds in this case.
+posed DIRM framework. First, it is interesting to investigate other                                                               Based the above cases, this proposition holds. □
+types of opacity, e.g., initial-state opacity or infinite/K-step opac-
+ity, under the DIRM. Furthermore, in this work, it is assumed                                                             Proof of Proposition 1. (⊆) According to Lemma 2 and ˜δ(sσ)∈˜Xr,
+that the information release policy is already given (encoded as                                               we have that ∀x ∈X2(f (sσ)), ∃tσ ′ ∈L(˜G) : x = ˜δ(tσ ′)∧HR(tσ ′) =
+a state-based function) and we want to verify opacity under a    HR(sσ) and PΣo∪Σr (tσ ′) =  PΣo∪Σr (sσ). Also, for tσ ′, we have
+given release policy. It is also very interesting to investigate how    t′ω = tσ ′, ω ∈Σ∗uo such that ˜δ(t′) ∈˜Xr. Therefore, the right
+to synthesize an information release policy that releases historical                                                                        set includes the left set.
+information as frequently as possible but still preserves opacity.       (⊇) By contradiction. Suppose that there exists string tσ ′ ∈
+                                                                             L(˜G) which satisfies the right conditions, but ˜δ(tσ ′) /∈X2(f (sσ)).
+Appendix A. Proofs not contained in main body                  Since the specified observable reach of the definition of com-
+                                                             ponents X2 in Obs(˜G) and the right conditions, for t, there only
+                                                             can be ˜δ(t) /∈X2(f (s)) and PΣo∪Σr (t) = PΣo∪Σr (s). Similarly, we
+Proof of Lemma 2. We prove it by induction on the length of s.     inductively deduce to that there must be t′ ∈Σ∗uo ∩{t} such that
+   Induction Basis: Suppose that |s| = 0, i.e., s = ϵ and HR(ϵ) =       ˜δ(t′) /∈X2(f (ϵ)). It contradicts with the initial states definition
+{ϵ}. Then we easily know that X2(f (ϵ)) =  UR({˜x0}) =  HR(ϵ).     of X2, since ˜δ(t′) must be in UR({x0}), but X2(f (ϵ)) = UR({x0}).                 ˜                   ˜         ˜
+Therefore, the induction basis holds.                                 Therefore, any state in the right also includes in the left. □
+
+                                                                   10
+
+J. Hou, X. Yin and S. Li                                                                                                         Automatica 140 (2022) 110238
+
+Proof of Proposition 2. We prove it by induction on the length    Then, by the induction hypothesis and the update function for the
+of s.                                                                   third component in Eq. (4), we have
+   Induction Basis: Suppose that |s| = 0, i.e., s = ϵ and HR(ϵ) =
+{ϵ}. Then we know that                                               ˆX(HR(sσ)) = X3(f (sσ))
+
+                                                                                                                holds for each  ˆX({ϵ})                                                       (A.7)     This completes the proof since X3(f (s)) = ˆX(HR(s))
+                                                                          case. □
+= {˜δ(s′) ∈˜X : s′ ∈L(˜G) ∧HR(s′) = {ϵ}}
+                                                              References
+= {˜δ(s′) ∈˜X : s′ ∈L(˜G) ∧(∀s′′ ∈{s′})[PR(s′′) = ϵ] }
+                                                                                 An, L., & Yang, G.-H. (2020). Opacity enforcement for confidential robust control
+ {                     s′ = σ1 . . . σn ∈L(˜G)∧   }                                  in linear cyber-physical systems. IEEE Transactions on Automatic Control,=  ˜δ(s′) ∈˜X :                                                                              65(3), 1234–1241.               (∀i ≤n)[σi /∈OL(˜δ(σ1 . . . σi−1))]
+                                                                                     Balun,   J., & Masopust,  T. (2019). On opacity  verification  for discrete-event
+   Since ˜x0 is included in both ˆX({ϵ}) and URL({˜x0}), by a simple         systems. arXiv:1912.07314.                ˜                               Barcelos, R.  J., & Basilio,  J. C. (2018). Enforcing current-state opacity through
+inductive argument according to Eq. (A.7) and the definition of          shuffle in event observations. IFAC-PapersOnLine, 51(7), 100–105.
+URL, one can easily conclude that ˆX({ϵ}) =  URL({˜x0}),  i.e., the      Behinaein, B., Lin, F., & Rudie, K. (2019). Optimal information release for mixed˜                 ˜
+induction basis holds.                                                             opacity in discrete-event systems. IEEE Transactions on Automation Science
+   Induction Step: Now, let us assume that, for string s ∈L(˜G)        and Engineering, 16(4), 1960–1970.
+with |s| =  k, we have X3(f (s)) =  ˆX(HR(s)). Then we consider     Ben CharacterizingHadj-Alouane, intransitiveN., Lafrance,noninterferenceS., Lin,  F., Mullins,for 3-domainJ., & Yeddes,securityM. (2005a).policies
+sσ ∈L(˜G), where σ ∈Σ, for the following two cases.                     with observability. IEEE Transactions on AAutomatic Control, 50(6), 920–925.
+                                                                      Ben Hadj-Alouane, N., Lafrance, S., Lin, F., Mullins,  J., & Yeddes, M. (2005b). On
+Case 1: ˜δ(sσ) /∈˜Xr.                                                               the verification of intransitive noninterference in mulitlevel security. IEEE
+   For this case, we have HR(sσ) = HR(s) ∪{PR(sσ)}. If σ ∈Σo,          Transactions on Systems, Man and Cybernetics, Part B (Cybernetics), 35(5),
+then                                                                          948–958.
+  ˆX(HR(sσ))                                                                        Bérard,rationalB., & observation.Mullins, J. (2014).arXiv:1409.0871.Verification of information flow properties under
+= {˜δ(s′) : s′ ∈L(˜G) ∧HR(s′)=HR(s)∪{PR(s)σ}}                              Bryans,transitionJ. W., systems.Koutny, M.,InternationalMazaré, L.,Journal& Ryan,of InformationP. (2008). Security,Opacity 7(6),generalised421–435.to
+                                                                                    Bryans, J. W., Koutny, M., & Ryan, P. (2005). Modelling opacity using Petri nets.
+ ⎧                s′ = tσσ1 . . . σn ∈L(˜G)∧   ⎫                                   Electronic Notes in Theoretical Computer Science, 121, 101–115.
+  ⎪⎨                                          ⎪⎬                           Cassandras, C. G., & Lafortune, S. (2008). Introduction to discrete event systems=   ˜δ(s′) :    HR(t)=HR(s) ∧˜δ(tσ) /∈˜Xr∧                                   (2nd ed.). Springer.
+  ⎪⎩      (∀i ≤n)[σi /∈OL(˜δ(tσσ1 . . . σi−1))] ⎪⎭                            Cassez,staticF., andDubreil,dynamicJ., & masks.Marchand,FormalH. (2012).MethodsSynthesisin SystemofDesign,opaque40(1),systems88–115.with
+ ⎧            w=σ1 . . . σn∧     ⎫                       Chen,  J., Ibrahim, M., & Kumar, R. (2017). Quantification of secrecy in partially
+  ⎪⎨                                            ⎪⎬                          observed stochastic discrete event systems. IEEE Transactions on Automation=   ˜δ(x, σw) :   x∈ˆX(HR(s)) ∧˜δ(x, σ) /∈˜Xr∧                                     Science and Engineering, 14(1), 185–195.
+  ⎪⎩       ∀i≤n : σi /∈OL(˜δ(x, σσ1 . . . σi−1)) ⎪⎭                        Chu,inC.,popularZhu, W.,cloudHan,storageJ., Liu, services.J. K., Xu, IEEEJ., & PervasiveZhou,  J. (2013).Computing,Security12(4),concerns50–57.
+ ⎧           w=σ1 . . . σn∧     ⎫                               http://dx.doi.org/10.1109/MPRV.2013.72.
+  ⎪⎨                                          ⎪⎬                          Cong, X., Fanti, M. P., Mangini, A. M., & Li, Z. (2019). On-line verification of initial-
+                                                                                               state                                                                                             opacity by Petri nets and integer linear programming. ISA Transactions,=   ˜δ(x′, w) :        x′ ∈˜NXσ (ˆX(HR(s)))∧                                                                                               93, 108–114.
+  ⎪⎩      ∀i≤n : σi /∈OL(˜δ(x′, σ1 . . . σi−1)) ⎪⎭                             Dubreil, J., Darondeau, P., & Marchand, H. (2010). Supervisory control for opacity.
+=˜URL(˜NXσ (ˆX(HR(s))))                                                            Falcone,IEEE TransactionsY., & Marchand,on AutomaticH. (2015).Control,Enforcement55(5), and1089–1100.validation (at runtime) of
+Still, by the induction hypothesis and the update function for the         various notions of opacity. Discrete Event Dynamic Systems, 25(4), 531–570.
+                                                                                            Hadjicostis,  C. N. (2020). Estimation and inference  in  discrete event systems.
+third component in Eq. (4), we have
+                                                                                            Springer.
+X3(f (sσ)) = URL(˜˜ NXσ (X3(f (s))))                               (A.8)      Jacob,opacity:R., Lesage,Models,J.-J.,validation,& Faure, J.-M.and quantification.(2016). OverviewAnnualof discreteReview eventof Control,systems41,
+                                                                               135–146.     = URL(˜˜ NXσ (ˆX(HR(s)))) = ˆX(HR(sσ))                                                    Ji, Y.,                                                                                                   Yin, X., & Lafortune, S. (2019). Enforcing opacity by insertion functions
+If σ /∈Σo, then we have HR(sσ) =  HR(s), which means that        under multiple energy constraints. Automatica, 108, Article 108476.
+ˆX(HR(sσ)) = ˆX(HR(s)). Therefore, we also have                            Keroglou, C., & Hadjicostis, C. N. (2017). Probabilistic system opacity in discrete
+                                                                                  event systems. Discrete Event Dynamic Systems, 1–26.
+X3(f (sσ))=X3(f (s))= ˆX(HR(s))= ˆX(HR(sσ))                    (A.9)      Lafortune, S., Lin, F., & Hadjicostis, C. N. (2018). On the history of diagnosabil-
+                                                                                                        ity and opacity in discrete event systems. Annual Reviews in Control, 45,
+                                                                               257–266.
+Case 2: ˜δ(sσ) ∈˜Xr.                                                                        Lin, F. (2011). Opacity of discrete event systems and its applications. Automatica,
+   For this case, we have HR(sσ) = HR(s)∪{PΣo∪Σr (sσ)}. Therefore,          47(3), 496–503.
+we have                                                                                       Lin, F., Chen, W., Wang, W., & Wang, F. (2020). Information control in networked
+  ˆX(HR(sσ))                                                                              discreteDiscrete Eventevent Dynamicsystems Systems,and its application1–26.     to battery management systems.
+= {˜δ(s′) : s′ ∈L(˜G) ∧HR(s′)=HR(s)∪{PΣo∪Σr (sσ)}}                             Liu, opacityR., Mei,enforcement.L., & Lu,  J. (2020).SystemsK-memory-embedded& Control Letters, 145,insertionArticle 104785.mechanism for
+                                                                                                   Liu,  S., & Zamani, M. (2020). Verification of approximate opacity via barrier
+ ⎧               s′ = tσ ′σ1 . . . σn ∈L(˜G)∧   ⎫                                      certificates. IEEE Control Systems Letters.
+     ⎪⎪⎪⎨        HR(t)=HR(s) ∧˜δ(tσ ′)∈˜Xr∧         ⎪⎪⎪⎬                           Mohajerani,based approachS.,  Ji,  Y.,for &synthesisLafortune,of editS. (2020).functionsCompositionalfor opacity enforcement.and abstraction-IEEE=   ˜δ(s′) :
+             PΣo∪Σr (tσ ′) = PΣo∪Σr (sσ)∧                                  Mohajerani,TransactionsS., on& Lafortune,Automatic Control,S. (2020).65(8),Transforming3349–3364. opacity  verification to
+     ⎪⎪⎪⎩      ∀i ≤n : σi /∈OL(˜δ(tσ ′σ1 . . . σi−1))   ⎪⎪⎪⎭                              nonblocking verification in modular systems. IEEE Transactions on Automatic
+                                                                                                 Control, 65(4), 1739–1746.
+Since UR(q)   URL(q), then by Proposition 1, we further have          Mullins,  J., & Yeddes, M. (2014). Opacity with orwellian observers and intran-  ˜ ⊆˜                                                                              sitive non-interference. In 12th int. workshop on discrete event systems (pp.
+ˆX(HR(sσ)) = URL(X2(f (sσ))) = URL(ˆqmid)                                     344–349).     ˜      ˜
+                                                                   11
+
+J. Hou, X. Yin and S. Li                                                                                                         Automatica 140 (2022) 110238
+
+
+Ramasubramanian, B., Cleaveland, W. R., & Marcus, S. (2020). Notions of cen-      Zinck, G., Ricker,  L., Marchand, H., & Hélouët, L. (2020). Enforcing opacity in
+    tralized and decentralized opacity in linear systems. IEEE Transactions on        modular systems. In IFAC world congress.
+    Automatic Control, 265(4), 1442–1455.
+Saadaoui,   I.,  Li,  Z., & Wu, N.  (2020).  Current-state opacity modelling and
+    verification in partially observed Petri nets. Automatica, 116, Article 108907.
+Saboori, A., & Hadjicostis, C. N. (2011). Verification of K-step opacity and analysis                          Junyao Hou was born in Hunan, China, in 1993. He
+    of its complexity. IEEE Transactions on Automation Science and Engineering,                              received the B.S. degree from Southwest University in
+    8(3), 549–559.                                                                                      2015, the M.S. degree from Xidian University in 2018,
+Saboori,  A., & Hadjicostis,  C. N. (2012). Verification of infinite-step opacity                                       all in automation. He is pursuing the Ph.D. degree at
+   and complexity considerations. IEEE Transactions on Automatic Control, 57(5),                            Shanghai Jiao Tong University in the Department of
+   1265–1269.                                                                                       Automation. His research interests focus on the secu-
+Saboori, A., & Hadjicostis, C. N. (2013). Verification of initial-state opacity in                                    rity of cyber–physical systems and abstraction-based
+    security applications of discrete event systems. Information Sciences, 246,                              synthesis in formal methods.
+   115–132.
+Sanamrad, T., & Kossmann, D. (2013). Query log attack on encrypted databases.
+    In Workshop on secure data management (pp. 95–107). Springer.
+Takai,  S., & Oka,  Y.  (2008). A formula  for the supremal  controllable and
+   opaque sublanguage arising in supervisory control. SICE Journal of the Control,
+                                                                                              Xiang Yin was born in Anhui, China, in 1991. He
+   Measurement & Systems Integration, 1(4), 307–311.
+                                                                                                           received the B.Eng. degree from Zhejiang University in
+Thorsley,  D., & Teneketzis, D. (2007). Active acquisition of information  for
+                                                                                                       2012, the M.S. degree from the University of Michigan,
+    diagnosis and supervisory control of discrete event systems. Discrete Event
+                                                                                    Ann Arbor, in 2013, and the Ph.D. degree from the
+   Dynamic Systems, 17(4), 531–583.
+                                                                                                              University  of Michigan, Ann Arbor,  in 2017,  all  in
+Tong, Y., Li, Z., Seatzu, C., & Giua, A. (2017). Verification of state-based opacity
+                                                                                                                             electrical engineering. Since 2017, he has been with
+    using Petri nets. IEEE Transactions on Automatic Control, 62(6), 2823–2837.
+                                                                                                        the Department  of Automation, Shanghai  Jiao Tong
+Wang, W., Lafortune, S., Girard, A. R., & Lin, F. (2010). Optimal sensor activation
+                                                                                                                   University, where he  is an Associate  Professor. His
+    for diagnosing discrete event systems. Automatica, 46(7), 1165–1175.
+                                                                                                           research interests include formal methods, discrete-
+Wu, Y.-C., & Lafortune, S. (2013). Comparative analysis of related notions of
+                                                                                                      event systems and cyber–physical systems.  Dr. Yin
+    opacity in centralized and coordinated architectures. Discrete Event Dynamic
+                                                                                                                                             is serving as the co-chair of the IEEE CSS Technical
+    Systems, 23(3), 307–339.
+                                                                            Committee on Discrete Event Systems, an Associate Editor for the Journal of Discrete
+Yeddes, M. (2016). Enforcing opacity with orwellian observation. In 2016 13th
+                                                                                  Event Dynamic Systems: Theory & Applications, and a member of the IEEE CSS
+    international workshop on discrete event systems (WODES) (pp. 306–312). IEEE.
+                                                                                    Conference Editorial Board. Dr. Yin received the IEEE Conference on Decision and
+Yin, X., & Lafortune, S. (2017). A new approach for the verification of infinite-step
+                                                                                   Control (CDC) Best Student Paper Award Finalist in 2016.
+   and K-step opacity using two-way observers. Automatica, 80, 162–171.
+Yin, X., & Lafortune, S. (2019). A general approach for optimizing dynamic sensor
+    activation for discrete event systems. Automatica, 105, 376–383.                                  Shaoyuan Li was born in Hebei, China, in 1965. He
+Yin, X., & Li, S. (2020). Synthesis of dynamic masks for infinite-step opacity. IEEE                              received the B.S. and M.S. degrees in automation from
+    Transactions on Automatic Control, 65(4), 1429–1441.                                                   the Hebei University of Technology, Tianjin, China, in
+Yin, X., Li, Z., Wang, W., & Li, S. (2019). Infinite-step opacity and K-step opacity                         1987 and 1992,  respectively, and the Ph.D. degree
+    of stochastic discrete-event systems. Automatica, 99, 266–274.                                      from Nankai University, Tianjin, in 1997. Since 1997,
+Yin, X., Zamani, M., & Liu, S. (2021). On approximate opacity of cyber-physical                          he has been with the Department  of Automation,
+    system. IEEE Transactions on Automatic Control, 66(4), 1630–1645.                                     Shanghai Jiao Tong University, Shanghai, China, where
+Zeng, W., & Koutny, M.  (2019).  Quantitative  analysis  of  opacity  in cloud                          he is currently a chair Professor. His current research
+   computing systems. IEEE Transactions on Cloud Computing.                                                    interests include model  predictive  control, dynamic
+Zhang, B., Shu, S., & Lin, F. (2015). Maximum information release while ensuring                           system optimization, and cyber–physical systems. He
+    opacity in discrete event systems. IEEE Transactions on Automation Science                                       is the vice-president  of the Chinese Association  of
+   and Engineering, 12(4), 1067–1079.                                           Automation.
+
+
+
+
+
+                                                                   12

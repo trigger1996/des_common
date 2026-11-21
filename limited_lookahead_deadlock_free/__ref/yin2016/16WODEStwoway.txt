@@ -1,0 +1,391 @@
+Proceedings of WODES 2016: 13th Int. Workshop on Discrete Event                                     We_1_A.1
+Systems, Xi'an, China, May 30 - June 1, 2016
+
+
+  On Two-Way Observer and Its Application to the Veriﬁcation of
+                   Inﬁnite-Step and K-Step Opacity
+
+
+                                Xiang Yin and St´ephane Lafortune
+
+
+  Abstract— We investigate the veriﬁcation of the properties of    other classes of system models, see, e.g., [2], [4], [9], [10],
+inﬁnite-step opacity and K-step opacity for partially-observed    [19].
+discrete event systems. A system  is said to be inﬁnite-step                                                                 In  this  paper, we  investigate  the veriﬁcation problem
+opaque (respectively, K-step opaque) if the intruder can never
+                                                              of inﬁnite-step opacity and K-step opacity. In contrast todetermine  for sure  that the system was  in a  secret  state
+for any instant within inﬁnite steps  (respectively, K  steps)    current-state opacity, which requires that the secret not be
+prior to that particular instant. We derive a new separation   revealed to the intruder based on the current state estimate,
+principle for state estimates which characterizes the informa-    inﬁnite-step opacity requires that the secret not be revealed
+tion dependence in this opacity veriﬁcation problem. A new                                                                   for any instant along the entire observation trajectory up
+information structure called the two-way observer is proposed.
+                                                                   to the present time, based on the observations up to theBased on the two-way observer, we provide new algorithms
+for the veriﬁcation of inﬁnite-step opacity and the veriﬁcation    current time. Similarly, K-step requires that the secret not
+of K-step opacity, respectively. We show that the proposed   be revealed within K  steps prior to the current  instant,
+veriﬁcation algorithms have lower computational complexity   based on the observations up to the current time. Although it
+than the known algorithms in the literature.                                                   was shown in [20] that language-based opacity, initial-state
+                                                                   opacity, and current-state opacity are equivalent in the sense                          I. INTRODUCTION
+                                                                     that they can be mapped to one another in polynomial-time,
+  Security and privacy are becoming increasingly important                                                                 inﬁnite-step and K-step opacity appear to be incomparable
+issues in the veriﬁcation and synthesis of networked and                                                           with the above notions. The difference between inﬁnite-
+cyber-physical systems. In this paper, we consider an impor-                                                                 step and K-step opacity as compared with  current-state
+tant information ﬂow security property called opacity in the                                                              opacity (or language-based opacity, initial-state opacity) can
+framework of Discrete Event Systems (DES). Speciﬁcally,                                                       be explained intuitively as follows. Current-state opacity only
+we consider a system modeled as a ﬁnite-state automaton,                                                        depends on the current state estimate of the system, while
+in which there is a secret the system wants to hide. We say                                                                 inﬁnite-step and K-step opacity allow to do smoothing, i.e.,
+that the system is opaque if the secret cannot be revealed                                                                   to improve state estimation for earlier time instants, using
+to an intruder that is potentially malicious. The intruder is                                                              observations up to the present time. Therefore, inﬁnite-step
+modeled as an observer that knows the entire structure of the                                                      and K-step opacity are fundamentally more difﬁcult than
+system but can only observe part of the system’s behavior.                                                                    current-state opacity, language-based opacity, or initial-state
+  The notion of opacity was  initially introduced  in the                                                                   opacity.
+analysis of cryptographic protocols in [12]. It was extend-                                                    The notions of inﬁnite-step opacity and K-step opacity
+ed to the framework of DES in  [3],  [4]. In the context                                                      were initially studied in [16] and [14], respectively. More
+of DES, various notions of opacity have been studied in                                                                  speciﬁcally, in [14], two different approaches for the veriﬁca-
+order to capture different types of privacy requirements,                                                                   tion of K-step opacity were proposed; both of them have the
+e.g., language-based opacity [11], current-state opacity [13],                                                   same complexity O((|Eo|+1)K ×|Eo|×2|X|), where X and
+initial-state opacity [17], initial-and-ﬁnal-state opacity [20],                                              Eo are the set of states and the set of observable events of the
+K-step opacity [8], [14] and inﬁnite-step opacity [16]. If the                                                            system, respectively. For inﬁnite-step opacity, a veriﬁcation
+original system is not opaque, then one is also interested in                                                            algorithm of complexity O(|Eo|×2|X|×2|X|2) was provided
+enforcing opacity. This problem is referred to as the opacity                                                                   in [16]. It is worth noting that, for both inﬁnite-step opacity
+enforcement problem and it has been studied extensively un-                                                      and K-step opacity,  it is required that the intruder cannot
+der various enforcement mechanisms, e.g., using supervisory                                                                     infer that the system was at a secret state for any speciﬁc
+control theory [1], [7], [15], [18], [24], [25], using dynamic                                                                   instant in the past. However, in some cases,  it is possible
+observers [6], [23], [26], using insertion functions [21] and                                                                     that the intruder knows that the system has visited a secret
+using run-time techniques [8]. Most of the above-mentioned                                                                       state in the past, although  it cannot  tell when the secret
+works assume that the system is modeled as a ﬁnite-state                                                                       state was visited. We call a system trajectory-based inﬁnite-
+automaton. Recently, the notion of opacity was extended to                                                                 step (respectively, K-step) opaque if this scenario does not
+  This work was partially supported by NSF grants CCF-1138860 (Expedi-   occur [14], [16]. Therefore, inﬁnite-step (K-step) opacity is
+tions in Computing project ExCAPE: Expeditions in Computer Augmented    also referred to as non-trajectory-based inﬁnite-step (K-step)
+Program Engineering) and CNS-1421122.                               opacity. Trajectory-based K-step opacity is also referred to as
+  Xiang Yin and St´ephane Lafortune are with the Department of Electrical
+Engineering and Computer Science, University of Michigan, Ann Arbor,   K-step strong opacity in [8], where a veriﬁcation algorithm
+MI 48109, USA. {xiangyin,stephane}@umich.edu.            is provided. Whether we need to use the trajectory-based
+
+
+                                                                                        361
+
+notions or the non-trajectory-based notions  is application   A DES is modeled as a deterministic ﬁnite-state automaton
+dependent. In this paper, we will focus on the non-trajectory-
+                                            G = (X, E, f, X0)                   (1)based notions but the approach proposed is also applicable
+to the trajectory-based notions.                           where X is the ﬁnite set of states, E is the ﬁnite set of events,
+  One of the motivations for studying inﬁnite-step opacity   f  : X × E →X  is the deterministic transition function
+and K-step opacity is that both of these two notions are very   where y = f(x, σ) means that there exists a transition labeled
+useful in some privacy applications. For example, privacy is   by event σ from state x to state y, and X0  is the set of
+an important issue in location-based services (LBS); see, e.g.,    initial states. The transition function f is extended to domain
+[22]. In the LBS application, the user may what to hide some  X ×E∗in the usual manner (see, e.g., [5]) and the extended
+of her crucial location information (e.g., visiting a bank or a   function still denoted by f. The language generated by G
+hospital). However, this information may be revealed to an   from state x ∈X  is deﬁned by L(G, x) = {s ∈E∗:
+intruder located at the LBS server that keeps tracking the   f(x, s)!}, where  ! means “is deﬁned”. For a set of states
+user’s queries. Therefore, a formal methodology is needed  Q ⊆X, we also deﬁne L(G, Q) = ∪x∈QL(G, x). Therefore,
+in order to verify this privacy issue in LBS. It was shown in    the language generated by G is L(G) := L(G, X0). We
+[22] that checking whether or not the user can always hide   assume that G is deterministic for the sake of simplicity, but
+her current crucial location can be formulated as a current-    the results developed hereafter can be easily extended to the
+state opacity veriﬁcation problem. However, in some cases,   case where G is nondeterministic.
+the user may also want that the intruder can never be able to     Given G =  (X, E, f, X0), we  denote by GR =
+infer that she was at a crucial place at some particular instant   (X, E, fR, X) the reversed automaton of G [20]. Speciﬁcal-
+in the past (e.g., visited bank two days ago). Clearly, current-     ly, the transition function fR : X×E →2X is deﬁned by: for
+state opacity is not sufﬁcient to capture this requirement,   any state x, y ∈X and event σ ∈E, we have y = f(x, σ) iff
+since the intruder may be able to use future observations   x ∈fR(y, σ). Note that GR is nondeterministic in general.
+to improve its knowledge about the user’s location at some   Then, for any string s = σ1σ2 . . . σ|s| ∈E∗, we denote by
+particular instant. However, this requirement can be captured   sR the reversed string of s, i.e., sR = σ|s|σ|s|−1 . . . σ1.
+using the notions of inﬁnite-step or K-step opacity.         We assume that the intruder, which  is modeled as an
+  In this paper, we propose new approaches for the veriﬁca-    observer, has the full knowledge of the system’s structure,
+tion of inﬁnite-step opacity and K-step opacity. Speciﬁcally,   but  it can only partially observe the system’s behavior. To
+the contributions of  this paper are as follows.  First, we    this end, we assume that the event set E is partitioned into
+provide a new characterization for the delayed state estimate,   two disjoint subsets, Eo the set of observable events and
+which is referred to as the separation principle. This result   Euo the set of unobservable events, where Eo ∪Euo = E
+reveals that the information needed in the inﬁnite-step (K-   and Eo ∩Euo = ∅. The natural projection P  : E∗→E∗o is
+step) opacity veriﬁcation problem can be decomposed into   deﬁned by
+two mutually independent parts and each of them can be
+                                                                           P(s)σ       if σ ∈Eo
+computed individually and effectively. We propose a novel     P(ϵ) = ϵ and P(sσ) =                               (2)
+                                                                            P(s)         if σ ∈Euoinformation structure called the Two-Way Observer (TW-
+observer) in order to capture the independent information   The natural projection is also extended to 2E∗, i.e., for any
+described by the separation principle. Then, based on the  L ⊆E∗, P(L) = {t ∈E∗o : ∃s ∈L s.t. P(s) = t}.
+TW-observer, we provide a new approach for the veriﬁca-     Given a set of states q ∈2X and an observable event
+tion of inﬁnite-step opacity. The new veriﬁcation algorith-   σ ∈Eo, we denote by UR(q) is the set of states that can be
+m has complexity O(|Eo| × 2|X| × 2|X|), compared with   reached unobservably from some state in q, i.e.,
+O(|Eo| × 2|X| × 2|X|2) for the previous approach  [16].
+                                               UR(q) := {x ∈X : ∃x′ ∈q, ∃s ∈E∗uo s.t. f(x′, s) = x}Finally, we show that the proposed approach can also be
+used to verify the notion of K-step opacity with complexity                                        We also denote by Next(q, σ) the set of states that can be
+O(min{2|X|, |Eo|K} × |Eo| × 2|X|). Note that the previous                                                           reached immediately upon the occurrence of σ, i.e.,
+algorithm for checking K-step has a complexity of O((|Eo|+
+1)K × |Eo| × 2|X|) [14]. Therefore, the new algorithm leads       Next(q, σ) := {x ∈X : ∃x′ ∈q s.t. f(x′, σ) = x}
+to considerable improvement in complexity of veriﬁcation
+                                                   Then the observer of G is deﬁned by
+when K is relatively large.
+  Due to space constraints, all proofs have been omitted.              Obs(G) = (Qobs, Eo, fobs, qobs,0)           (3)
+
+                                                     where Qobs ⊆2X, qobs,0 = UR(X0) and for any q ∈
+                    II. OPACITY DEFINITIONS
+                                                   2X, σ ∈Eo, fobs(q, σ) = UR(Next(q, σ)).
+  Let E be a ﬁnite set of events and E∗be the set of all    We denote by ˆX(s, G) the current-state estimate associ-
+ﬁnite strings over E including the empty string ϵ. A language   ated with observed string s ∈P(L(G)) w.r.t. G, i.e.,
+L ⊆E∗is a subset of E∗. We denote by L the preﬁx-closure                                                                    ˆX(s, G) = {x ∈X :∃x0 ∈X0, ∃t ∈L(G, x0) s.t.
+of L, i.e., L = {u ∈E∗: ∃v ∈E∗s.t. uv ∈L}. For any
+string s ∈E∗, |s| denotes the length of t. We deﬁne |ϵ| = 0.                          f(x0, t) = x ∧P(t) = s}
+
+
+                                                                                        362
+
+                                                A  0,1,2         A  0,1,2,3,4,5
+             𝑎                    𝑎                 𝑎              𝑎          𝑏          1      3              1      3        𝑢1          𝑎         𝑢1          𝑎                                𝑏
+                         𝑎                      𝑎     B {3,4}     B  0,1,2,3,5        {4} C
+      0               5     0               5          𝑎, 𝑏              𝑎     𝑏     𝑎
+        𝑢2             𝑎     𝑏         𝑢2    𝑎     𝑏       𝑎     {5}         𝑎     0,1,3,5   {0,2}          2      4              2      4
+                                                          C              D     E
+                          (a) G                                    (b) GR                         (c) Obs(R)                   (d) Obs(GR)
+                                                   Fig. 1.  System G with Eo = {a, b} and XS = {3}.
+
+In particular, for any string s ∈P(L(G)), we have that   opaque. However, this system is current-state opaque (or 0-
+fobs(qobs,0, s) = ˆX(s, G). Also, we denote by Obs(GR) =    step opaque), since the intruder can never determine whether
+(Qobs,R, Eo, fobs,R, X) the observer of the reversed automa-   or not the system is currently in a secret state.
+ton GR with initial state X.                                     In [14] and [16], different approaches for the veriﬁca-
+  Example 1: Consider the automaton G shown  in Fig-    tion of K-step opacity and inﬁnite-step opacity are pro-
+ure 1(a), where Eo = {a, b}. The reversed automaton GR    vided. Speciﬁcally, in [14], two approaches called the s-
+of G is shown in Figure 1(b), where all states are initial    tate mapping-based approach and the observation sequence-
+states. The observers Obs(G) and Obs(GR) for automata G   based approach are provided  for the veriﬁcation of K-
+and GR, are shown in Figures 1(c) and 1(d), respectively. For    step opacity; both of them have (worst-case) complexity
+example, for string u1a ∈L(G), we have that P(u1a) = a   O(|Eo| × (|Eo| + 1)K × 2|X|)  1. In [16], an algorithm
+and ˆX(a, G) = {3, 4} = fobs(qobs,0, a).                         for the veriﬁcation of inﬁnite-step opacity is proposed by
+  The system G has a set of secret states, denoted by XS ⊆   using a bank of initial-state estimators, which has complexity
+X. We assume for simplicity that X \ XS is the set of non-   O(|Eo| × 2|X| × 2|X|2). The reader is referred to [14], [16]
+secret states. We say that the system is K-step opaque if for    for more details. Hereafter, we will provide a uniform and
+any string that leads to a secret state, the intruder, which can   more efﬁcient approach for the veriﬁcation of K-step and
+observe the occurrences of events in Eo, can never determine    inﬁnite-step opacity.
+for sure that the system is in a secret state at that point
+                                                                                     III. DELAYED STATE ESTIMATE AND ITSusing up to K observations thereafter. We recall the formal
+                                                             CHARACTERIZATIONdeﬁnition from [14].
+  Deﬁnition 1: (K-Step Opacity). Given system G, set of      In this section, we ﬁrst show how inﬁnite-step opacity
+observable events Eo,  set of secret  states XS and non-   can be characterized by using the delayed state estimate
+negative integer K ∈N, system G is said to be K-step    that was originally proposed in order to characterize K-step
+opaque (w.r.t. Eo and XS) if                                  opacity [14]. Then we provide a separation principle for the
+                                                           delayed state estimate by dividing  it into two independent
+(∀x0 ∈X0, ∀st ∈L(G, x0) : f(x0, s) ∈XS ∧|P(t)| ≤K)   components.
+(∃x′0 ∈X0, ∃s′t′ ∈L(G, x′0))                                          First, we recall the deﬁnition of delayed state estimate
+[f(x′0, s′) /∈XS ∧P(s′) = P(s) ∧P(t′) = P(t)]        (4)   from [14].
+                                                             Deﬁnition 3: Let s =  σ1σ2 . . . σn ∈  P(L(G)). LetWhen K →∞, K-step opacity becomes inﬁnite-step opac-
+                               K ≤n be a non-negative integer. Then the K-delayed state
+ity. We recall the formal deﬁnition from [16].
+                                                              estimate associated with s, denoted by ˆX|s|−K(s), is deﬁned
+  Deﬁnition 2: (Inﬁnite-Step Opacity). Given system G, set
+                                                              as the set of states the system could have been in K steps
+of observable events Eo and set of secret states XS, system                                                                           earlier, after observing s where |s| ≥K. Mathematically, we
+G is said to be inﬁnite-step opaque (w.r.t. Eo and XS) if                                                        have
+
+   (∀x0 ∈X0, ∀st ∈L(G, x0) : f(x0, s) ∈XS)               ˆX|s|−K(s) :={x ∈X : ∃x0 ∈X0, ∃t1t2 ∈L(G, x0) s.t.
+    (∃x′0 ∈X0, ∃s′t′ ∈L(G, x′0))                                x = f(x0, t1) ∧P(t1) = σ1σ2 · · · σn−K
+    [f(x′0, s′) /∈XS ∧P(s′) = P(s) ∧P(t′) = P(t)]    (5)               ∧P(t2) = σn−K+1 · · · σn}
+  Example 2: Consider again the system G in Figure 1(a).    Clearly, the delayed estimate  is a generalization of both
+Let XS = {3} be the set of secret states.  It  is easy to    the initial-state estimate and the current-state estimate. For
+verify that Equation (4) does not hold for K =  1. By   any string s ∈P(L(G)), ˆX|s|−K(s) becomes the initial-
+taking s = u1a and t = a, we know that the only string    state estimate when K = |s| and becomes the current-state
+s′t′ ∈L(G) such that P(s′) = P(s) and P(t′) = P(t) is st
+itself. Intuitively, it says that by observing aa, the intruder      1This complexity was originally expressed as O((|Eo| + 1)K × 2|X|)
+will know for sure that the system was in secret state 3     in [14] because it only considers the number of states in the state estimator
+                                                                                       structure. In order to obtain the time complexity, the original complexity
+one step earlier. Therefore, G  is not 1-step opaque  w.r.t.    should be multiplied by |Eo|, namely, we also need to consider the number
+Eo and XS, which also implies that G is not inﬁnite-step    of transitions in the structure.
+
+
+                                                                                        363
+
+estimate when K = 0. Note that ˆX|s|−K(s) is always a non-   where the sufﬁx t comes from. It can be simply calculated
+empty set for any s ∈P(L(G)), K ≤|s|.                  by using the reversed automaton from initial state X, i.e.,
+   It was shown in [14] that the system G is K-step opaque,  we assume that there is no pre-knowledge about where t
+if and only if,                                        comes from, since this information will be “taken care of” by
+                                                          fobs(X0, s). However, P(L(G)) contains an inﬁnite number
+  ∀s ∈P(L(G)), ∀k ≤min{K, |s|} : ˆX|s|−k(s)̸ ⊆XS   (6)                                                              of strings in general, and for each string in P(L(G)), we
+Similarly, the next result says that inﬁnite-step opacity can   need to know at what point we should divide it into its pre-
+be characterized by the delayed state estimate, if we do not   information and its post-information. In other words, we need
+set the delay to a ﬁxed K. For this purpose, we deﬁne         to build a ﬁnite structure in order to capture all strings in
+                                                P(L(G)) and all possible breakpoints for each string. This
+   ˆX|s|(st) :={x ∈X : ∃x0 ∈X0, ∃t1t2 ∈L(G, x0) s.t.       idea is formalized by the structure of “two-way observer”,
+          x = f(x0, t1) ∧P(t1) = s ∧P(t2) = t}       which is deﬁned in the next section.
+
+  Proposition 1: The system G is inﬁnite-step opaque (w.r.t.                 IV. THE TWO-WAY OBSERVER
+XS and Eo) if and only if
+                                                                 In this section, we ﬁrst deﬁne the notion of “Two-Way
+            ∀st ∈P(L(G)) : ˆX|s|(st)̸ ⊆XS            (7)   Observer” (TW-Observer), which essentially asynchronously
+  Observe that for any st ∈P(L(G)), the delayed state   composes the observer of G and the observer of GR. Then
+estimate ˆX|s|(st) can never by empty. Computing ˆX|s|(st)  we discuss the properties of the TW-observer.
+for a string st ∈P(L(G))  is not a easy task, since  it       First, we provide the formal deﬁnition of the TW-observer.
+not only depends on the information available at the point      Deﬁnition 4: The Two-Way Observer of G is a determin-
+when s  is observed, but also depends on the additional    istic ﬁnite-state automaton
+information obtained thereafter from sufﬁx t. Moreover, the
+length of the sufﬁx t can be unbounded in general. This is          ObsT W (G) = (QT W , ET W , fT W , qT W,0)     (10)
+also the essential difference between inﬁnite-step opacity and
+                                                     wherecurrent/initial-state opacity.
+  Next, we present one of the key results in this paper, which      • QT W ⊆Qobs × Qobs,R is the set of states;
+is also referred to as the separation principle hereafter. It      • ET W = (Eo × {ϵ}) ∪({ϵ} × Eo) is the set of events;
+reveals that for any string st ∈P(L(G)), the delayed state      • qT W,0 = (qobs,0, X) is the single initial state;
+estimate ˆX|s|(st) consists of two parts that only depend on      • fT W  : QT W × ET W →QT W  is the (deterministic)
+string s and string t, respectively.                                      transition function deﬁned by: for any state (q1, q2) ∈
+  Theorem 1: For any string st ∈P(L(G)), we have         QT W and event σ ∈Eo, the following transitions are
+                                                         deﬁned
+            ˆX|s|(st) = ˆX(s, G) ∩ˆX(tR, GR)             (8)
+                                                              fT W ((q1, q2), (σ, ϵ)) = (fobs(q1, σ), q2)       (11)
+or equivalently,
+                                                              fT W ((q1, q2), (ϵ, σ)) = (q1, fobs,R(q2, σ))     (12)
+        ˆX|s|(st) = fobs(qobs,0, s) ∩fobs,R(X, tR)         (9)
+  We illustrate the above result by the following example.    For the sake of simplicity, hereafter, we only consider the
+  Example 3: Let us go back to Example 2. Consider strings   reachable part of ObsT W (G).
+s = a and t = a such that st ∈P(L(G)). We have tR =       Intuitively, the TW-observer tracks a string s in P(L(G))
+t = a. Then according to Theorem 1, we know that          from qobs,0 and a reversed string tR in Rev(P(L(G))) from
+                                             X, where Rev(L) = {sR  : s ∈L}. Let (q1, q2) be a
+         ˆX|s|(st) =   fobs(qobs,0, a) ∩fobs,R(X, a)             state reached in ObsT W (G). If q1 ∩q2̸ = ∅, then it means
+          =  {3, 4} ∩{0, 1, 2, 3, 5}                     that the above two strings s and tR “coincide” at some
+          =  {3} ⊆XS                                    state. In other words, this state could be a “breakpoint” for
+                                                 some string in L(G), since some strings  s′ and  t′ such
+Therefore, by Proposition 1, we know that G is not inﬁnite-    that P(s′) = s and P(t′) =  t can be “connected” at a
+step opaque w.r.t. Eo and XS.                                     state in q1 ∩q2, i.e., s′t′ ∈L(G). Before we formalize the
+  Theorem 1 has the following important implications.  It   above discussion, we introduce some necessary notions. For
+reveals that given a string s and its sufﬁx t, the delayed state   any string t ∈L(ObsT W (G)), we denote by τ1(t) ∈E∗o
+estimate ˆX|s|(st) essentially consists of two parts of infor-   and τ2(t) ∈E∗o the ﬁrst and second components of string
+mation: the pre-information obtained by observing s,  i.e.,     t, respectively. For example,  if t = (a, ϵ)(a, ϵ)(ϵ, b), then
+fobs(X0, s) and the post-information obtained thereafter by    τ1(t) = aa and τ2(t) = b.
+observing t, i.e., fobs,R(X, tR). More importantly, these two    Lemma 1: Let t ∈L(ObsT W (G)) be a string in the TW-
+information sets are mutually independent or separated, i.e.,   observer and fT W (qT W,0, t) = (q1, q2) be the state reached
+ˆX|s|(st) can be calculated by simply taking the intersection   by t. Then we have
+of the pre-information with the post-information. In other
+words, computing the post-information does not depend on      q1 ∩q2̸ = ∅⇒(∃s ∈L(G))[τ1(t)(τ2(t))R = P(s)]  (13)
+
+
+                                                                                        364
+
+                                      (𝜖, 𝑏)                   Theorem 2: Let G be the system automaton, Eo be the
+                                                                      set of observable events and XS be the set of secret states.
+   (𝜖, 𝑏)        (𝑎, 𝜖)        (𝜖, 𝑎)        (𝜖, 𝑏)            Let ObsT W (G) = (QT W , ET W , fT W , qT W,0) be the TW-       (𝐵, 𝐴)      (𝐴, 𝐴)      (𝐴, 𝐵)      (𝐴, 𝐶)
+                                                         Observer of G. Then G is inﬁnite-step opaque w.r.t. Eo and
+      𝑎, 𝜖,                 (𝑎, 𝜖)                    (𝜖, 𝑎)                                            (𝜖, 𝑏)         XS if and only if                                    (𝜖, 𝑎)      𝑏, 𝜖
+       (𝐶, 𝐴)      (𝐵, 𝐵)      (𝐴, 𝐷)                      ∀(q1, q2) ∈QT W  : q1 ∩q2̸ ⊆XS or q1 ∩q2 = ∅    (15)   (𝜖, 𝑏)                                                (𝜖, 𝑎)
+                𝑎, 𝜖,          (𝑎, 𝜖)                      The following example illustrates how to use the above                                       (𝜖, 𝑎)
+               𝑏, 𝜖  (𝜖, 𝑎)                                theorem for the veriﬁcation of inﬁnite-step opacity.
+       (𝜖, 𝑎)                        (𝜖, 𝑏)    (𝑎, 𝜖)           Example 5: We  still  consider  the  system G  in  Fig-                    (𝜖, 𝑎)
+   (𝜖, 𝑏)                       (𝜖, 𝑏)            (𝐴, 𝐸)     ure 1(a), where Eo = {a, b} and XS = {3}. The TW-
+       (𝐶, 𝐵)      (𝐵, 𝐷)      (𝐵, 𝐶)                  observer ObsT W (G)  is shown in Figure 2. We see that
+                                                                       state (B, B), which denotes state ({3, 4}, {0, 1, 2, 3, 5}), is
+       (𝜖, 𝑎)                                    (𝜖, 𝑎)   (𝑎, 𝜖)
+                  𝑎, 𝜖,       𝑎, 𝜖,                        reached by string (a, ϵ)(ϵ, a) or string  (ϵ, a)(a, ϵ). Since
+                   𝑏, 𝜖         𝑏, 𝜖                           {3, 4}∩{0, 1, 2, 3, 5} = {3} ⊆XS, by Theorem 2, we know
+   (𝜖, 𝑎)                                                            that G is not inﬁnite-step opaque.       (𝐶, 𝐷)      (𝐶, 𝐶)      (𝐶, 𝐸)     (𝐵, 𝐸)
+                (𝜖, 𝑏)         (𝜖, 𝑎)          𝑎, 𝜖,           Remark 1: We discuss the complexity of the above ap-
+                                              𝑏, 𝜖
+                                                         proach for the veriﬁcation of inﬁnite-step opacity. Clearly,
+Fig. 2.  The two-way observer ObsT W (G) for the system in Figure 1(a)    in the worst case, there are at most 2|X| × 2|X| states and
+or equivalently,                                        |Eo|×2|X| ×2|X| transitions in the TW-observer. Therefore,
+                                                                the worst-case complexity of  the proposed algorithm  is
+         q1 ∩q2̸ = ∅⇒τ1(t)(τ2(t))R ∈P(L(G))     (14)   O(|Eo| × 2|X| × 2|X|). Notice that the complexity of this
+   Similarly, for any string s1s2 ∈L(G), we can ﬁnd a   TW-observer-based veriﬁcation algorithm is smaller than the
+corresponding string t ∈L(ObsT W (G)) such that the ﬁrst    existing algorithm proposed in [16], which is O(|Eo|×2|X|×
+component of t is P(s1) and the second component of t    2|X|2). It was shown in [16] that the veriﬁcation of inﬁnite-
+is the reversed string of P(s2). This is formalized by the    step opacity  is PSPACE-hard. Therefore,  it seems highly
+following lemma.                                              unlikely that there exists a polynomial-time algorithm for
+  Lemma 2: For any string s = s1s2 ∈P(L(G)), there    the veriﬁcation of inﬁnite-step opacity.
+exists a string t ∈L(ObsT W (G)) such that τ1(t) = s1 and
+                                                               VI. VERIFICATION OF K-STEP OPACITY(τ2(t))R = s2.
+  The next example illustrates the TW-observer.                 In  this  section, we discuss the veriﬁcation of K-step
+  Example 4: Again, we consider the system G in Fig-    opacity. First, we show how the TW-observer can be used to
+ure 1(a), where Eo = {a, b} and XS = {3}. The TW-    verify K-step opacity.
+observer ObsT W (G) for this system is shown in Figure 2.     Theorem 3: Let G be the system automaton, Eo be the
+For the sake of  simplicity,  for each  state in QT W , the    set of observable events and XS be the set of secret states.
+ﬁrst and the second components of the state are depicted   Let ObsT W (G) = (QT W , ET W , fT W , qT W,0) be the TW-
+by using short-hand notation according to Figure 1(c) and   Observer of G. Then G is K-step opaque w.r.t. Eo and XS,
+Figure 1(d), respectively. For example, state (C, D) repre-     if and only if, for any string s ∈L(ObsT W (G)) such that
+sents state ({5}, {0, 1, 3, 5}), which can be reached by string   fT W (qT W,0, s) = (q1, q2), we have that
+(a, ϵ)(b, ϵ)(ϵ, a). Since {5} ∩{0, 1, 3, 5} = {5}̸ = ∅, by                                                                           [q1 ∩q2 ⊆XS ∧q1 ∩q2̸ = ∅] ⇒|τ2(s)| > K     (16)
+Lemma 1, we know that string ab(a)R = aba exists in                                                    Theorem 3 immediately suggests an approach to verify K-
+P(L(G)).                                                                 step opacity. First, we construct a weighted directed graph
+                                            G = (V, E, w), where each vertex in V corresponds to a state     V. VERIFICATION OF INFINITE-STEP OPACITY
+                                                                   in ObsT W (G), each edge in E ⊆V×V corresponds to a tran-
+  In this section, we use the results developed so far and    sition in ObsT W (G) and the weight function w : E →{0, 1}
+propose a new algorithm for the veriﬁcation of inﬁnite-step    assigns each edge a zero weight if its corresponding event
+opacity.                                                                     is of the form (σ, ϵ) and a unit weight if its corresponding
+  According to Theorem 1, we see that the states in the   event is of the form (ϵ, σ). Then we compute the minimum
+TW-observer essentially capture all possible combinations of   weight of paths from the initial vertex to a vertex which
+ˆX(s, G) and ˆX(tR, GR). Therefore, if the system is inﬁnite-   corresponds to state (q1, q2) such that q1 ∩q2̸ = ∅and
+step opaque, then there should not exist a state in ObsT W (G)   q1 ∩q2 ⊆XS. If the minimum weight computed is larger
+such that the intersection of its ﬁrst and second components   than K, then we know that G is K-step opaque. Note that
+is a subset of secret states. This idea is formalized by the   ﬁnding the minimum weight can be done in O(|V|+|E|) by a
+following theorem, which reveals that, in order to verify    breadth-ﬁrst search. Hence, the worst-time complexity of this
+inﬁnite-step opacity, it sufﬁces to check whether or not the   approach is O(|Eo|×2|X|×2|X|). Recall that the complexity
+TW-observer contains a state in which the intersection of the   of the algorithm in [14] is O(|Eo| × (|Eo| + 1)K × 2|X|).
+two components is a subset of the set of secret states.         Also,  it worth noting that, in the worst, the delay K can
+
+
+                                                                                        365
+
+be as large as 2|X|2 [14]. (If K is larger than 2|X|2 then it                    REFERENCES
+sufﬁces to verify inﬁnite-step opacity.) Therefore, the TW-      [1] E. Badouel, M. Bednarczyk, A. Borzyszkowski, B. Caillaud, and
+observer-based approach has considerable improvement for            P. Darondeau. Concurrent secrets. Discrete Event Dynamic Systems:
+the case where K is relatively large.                                  Theory & Apllications, 17(4):425–446, 2007.
+                                                                                     [2] B.  B´erard, K. Chatterjee, and N. Sznajder.   Probabilistic opacity
+  In fact, the complexity of the above proposed approach           for markov  decision  processes.   Information Processing  Letters,
+can be  further reduced from O(|Eo| × 2|X| × 2|X|)  to         115(1):52–59, 2015.
+O(min{2|X|, |Eo|K} × |Eo| × 2|X|) as follows. Since we      [3] J.W. Bryans, M. Koutny, L. Mazar´e, and P. Ryan. Opacity generalised                                                                                         to transition systems. Int. J. Information Security, 7(6):421–435, 2008.
+just to need check whether or not we can reach a “secret-      [4] J.W. Bryans, M. Koutny, and P. Ryan. Modelling opacity using petri
+revealing” state (i.e., a state (q1, q2) such that ∅̸ = q1 ∩q2 ⊆           nets. Electronic Notes in Theo. Comp. Sci., 121:101–115, 2005.
+XS) from the initial state within K edges with unit value,      [5] C.G. Cassandras and S. Lafortune.  Introduction to Discrete Event                                                                                  Systems. Springer, 2nd edition, 2008.
+there is no need to construct the entire TW-observer or the      [6]  F. Cassez, J. Dubreil, and H. Marchand. Synthesis of opaque systems
+corresponding graph. Instead, we just need to perform a         with static and dynamic masks. Formal Methods in System Design,
+K-weight breadth-ﬁrst search from the initial state, which         40(1):88–115, 2012.
+                                                                                     [7]  J. Dubreil, P. Darondeau, and H. Marchand. Supervisory control for
+yields a “reduced” version of the TW-observer. Namely          opacity. IEEE Trans. Automatic Control, 55(5):1089–1100, 2010.
+there is no need to consider states that cannot be reached      [8] Y. Falcone and H. Marchand. Enforcement and validation (at runtime)
+within K weights from the  initial state. By the property          of various notions of opacity. Discrete Event Dynamic Syst.: Theo. &
+                                                                                       Appl., pages 1–40, 2014.
+of breadth-ﬁrst search, we know that the number of states      [9] C. Keroglou and C.N. Hadjicostis.  Initial state opacity in stochastic
+of the second component of the reduced TW-observer  is          des. In 18th IEEE Conference on Emerging Technologies & Factory
+bounded by min{|Eo|K, 2|X|}, since state changes in the         Automation, pages 1–8. IEEE, 2013.                                                                              [10] K. Kobayashi and K. Hiraishi.  Veriﬁcation of opacity and diagnos-
+second component  will contribute a  unit weight. There-           ability for pushdown systems. J. Applied Mathematics, 2013, 2013.
+fore,  the  total complexity  of  this modiﬁed approach  is    [11]  F. Lin.   Opacity of  discrete event systems and  its  applications.
+O(min{2|X|, |Eo|K}×|Eo|×2|X|), which is always smaller         Automatica, 47(3):496–503, 2011.                                                                              [12] L. Mazar´e. Using uniﬁcation for opacity properties. Verimag Technical
+than the algorithm in [14].                                                  Report, 2004.
+  The next example illustrates how to verify K-step opacity.    [13] A. Saboori and C.N. Hadjicostis. Notions of security and opacity in
+                                                                                          discrete event systems.  In 46th IEEE Conference on Decision and
+  Example 6: We  still consider the system G shown in          Control, pages 5056–5061, 2007.
+Figure  1(a), where Eo =  {a, b} and XS =  {3}. The    [14] A. Saboori and C.N. Hadjicostis. Veriﬁcation of k-step opacity and
+                                      (a,ϵ)                                           analysis of its complexity. IEEE Transactions on Automation Science
+weight of transition (A, A) −−−→(B, A) is zero and the        and Engineering, 8(3):549–559, 2011.
+                                    (ϵ,a)                                      [15] A. Saboori and C.N.  Hadjicostis.   Opacity-enforcing supervisoryweight of transition (B, A) −−−→(B, B) is one. Moreover,
+                                                                                             strategies via state estimator constructions. IEEE Trans. Automatic
+for state (B, B), which denotes state ({3, 4}, {0, 1, 2, 3, 5}),          Control, 57(5):1155–1165, 2012.
+we  have  that  {3, 4} ∩{0, 1, 2, 3, 5} =  {3} ⊆  XS.    [16] A. Saboori and C.N. Hadjicostis. Veriﬁcation of inﬁnite-step opacity
+Therefore,  the minimum weight computed  is  1, which         and complexity  considerations.  IEEE Trans. Automatic Control,
+                                                                             57(5):1265–1269, 2012.
+means  that G  is  not  1-step  opaque.  Moreover,  states    [17] A. Saboori and C.N. Hadjicostis. Veriﬁcation of initial-state opacity in
+(A, D), (B, D), (C, D), (C, E), (B, E) and (A, E) will not          security applications of discrete event systems. Information Sciences,
+be considered by using the reduced approach discussed         246:115–132, 2013.
+                                                                              [18]  S. Takai and Y. Oka. A formula for the supremal controllable and
+above, since any string that leads to these states contains         opaque sublanguage arising in supervisory control. SICE Journal of
+at least two events of the form of (ϵ, σ).                                  Control, Measurement, and System Integration, 1(4):307–311, 2008.
+                                                                              [19] Y. Tong, Z. Li, C. Seatzu, and A. Giua. Veriﬁcation of current-state
+                                                                                   opacity using petri nets. In American Control Conference, pages 1935–
+                  VII. CONCLUSION                                1940, 2015.
+                                                                              [20] Y.-C. Wu and S. Lafortune. Comparative analysis of related notions
+                                                                                    of opacity in centralized and coordinated architectures. Discrete Event
+  In this paper, we considered the two information ﬂow        Dynamic Systems: Theory & Apllications, 23(3):307–339, 2013.
+properties of inﬁnite-step opacity and K-step opacity. We    [21] Y.-C. Wu and S. Lafortune.   Synthesis of insertion functions for
+derived a separated principle and proposed a new structure         enforcement of opacity security properties. Automatica, 50(5):1336–
+                                                                             1348, 2014.
+called two-way observer in order to capture the information    [22] Y.-C. Wu, K.A. Sankararaman, and S. Lafortune. Ensuring privacy in
+ﬂow when analyzing these properties. New algorithms for          location-based services: An approach based on opacity enforcement.
+the veriﬁcation of these two properties were provided. For          In WODES, pages 33–38, 2014.
+                                                                              [23] X. Yin and S. Lafortune. A general approach for solving dynamic
+inﬁnite-step opacity, we showed that the proposed algorithm          sensor activation problems for a class of properties.  In 54th IEEE
+is more efﬁcient and has lower complexity than the existing         Conference on Decision and Control, pages 3610–3615, 2015.
+algorithm in the literature. For K-step opacity, we showed    [24] X. Yin and S. Lafortune. A new approach for enforcing opacity via
+                                                                                  supervisory control for partially-observed discrete-event systems.  In
+that the proposed algorithm is also more efﬁcient and lead-        American Control Conference, pages 377–383, 2015.
+s to signiﬁcant improvement when K  is relatively large.    [25] X. Yin and  S.  Lafortune.  A uniform approach  for  synthesiz-
+Moreover, we believe that the separation principle that we          ing  property-enforcing  supervisors  for  partially-observed  discrete-
+                                                                                  event  systems.    IEEE  Trans.  Autom.  Contr.,  2016.    Doi
+established and the notion of TW-observer bring new insights         10.1109/TAC.2015.2484359.
+into estimation problems where inferencing about the past is    [26] B. Zhang, S. Shu, and F. Lin. Maximum information release while
+considered. In the future, we plan to extend the notion of          ensuring opacity in discrete event systems.  IEEE Transactions on
+                                                                           Automation Science and Engineering, 12(4):1067–1079, 2015.
+TW-observer to synthesize supervisors that enforce inﬁnite-
+step or K-step opacity.
+
+
+                                                                                        366

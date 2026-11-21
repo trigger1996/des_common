@@ -1,0 +1,838 @@
+ESTIMATION AND VERIFICATION OF                     that we study all these properties in a uniform manner
+PARTIALLY OBSERVED DISCRETE-EVENT                by deﬁning them in terms of state estimates introduced
+                                                                   in Section 3.
+SYSTEMS
+                                                •  In Section 5, we provide veriﬁcation procedures for all
+                                                                  properties introduced in Section 4. All veriﬁcation pro-
+                      XIANGYINW8400−aff −0001W8400−aff −0001                                                             cedures are summarized as detailed algorithms using
+1. INTRODUCTION                                               state estimation techniques provided in Section 3.
+                                                •  In Section 6, some related problems and further read-
+State estimation is one of the most fundamental problems         ings on estimation and veriﬁcation of partially observed
+in the systems and control theory. In many real-world sys-      DES are provided.
+tems, it is not always possible to access the full information
+                                                    The entire article is self-contained. Related references
+of the system due to measurement noises/uncertainties
+                                                           are provided in each section.
+and the existence of adversaries. Therefore, how to esti-
+mate the state of the system is crucial when one wants
+to make decisions based on the limited and incomplete
+information.                                                         2. PARTIALLY OBSERVED DISCRETE-EVENT SYSTEMS
+   Given a system, one of the most important questions
+is to prove/disprove the correctness of the system with     This section provides the basic model of partially observed
+respect to some desired requirement (or speciﬁcation). In    DES and some  related  terminologies. The reader  is
+particular, we would like to check the correctness of the      referred to the textbook (1) for more details on DES.
+system in a formal manner in the sense that the checking        Let Σ be a ﬁnite set of events. A string s = 𝜎1 … 𝜎n, 𝜎i ∈
+procedures are algorithmic, and results have provable    Σ is a ﬁnite sequence of events. We denote by Σ∗the set
+correctness guarantees. Such a formal satisfaction check-      of all strings over Σ including the empty string 𝜖. For any
+ing problem is referred to as the veriﬁcation problem.      string s ∈Σ∗, we denote by |s| its length with |𝜖| = 0. A
+Performing formal property veriﬁcation is very important     language L ⊆Σ∗is a set of strings. For any string s ∈L in
+for many complicated but safety-critical infrastructures.      language L, we denote by L∕s the postlanguage of s in L,
+   This article considers state estimation and veriﬁcation     that is, L∕s ∶= {w ∈Σ∗∶sw ∈L}. The preﬁx closure of lan-
+problems  for an important class  of man-made cyber-     guage L is deﬁned by L = {s ∈Σ∗∶∃w ∈Σ∗s.t. sw ∈L};
+physical systems called discrete-event systems (DESs).    L is said to be preﬁx closed if L = L.
+Roughly speaking, DESs are dynamic systems with dis-      A DES is modeled as a nondeterministic ﬁnite-state
+crete state spaces and event-triggered dynamics. DES     automaton (NFA)
+models are widely used in the study of complex automated
+systems where the behavior is inherently event driven,                G = (X, Σ, 𝛿, X0)                     (1)
+as well as in the study of discrete abstractions of con-
+                                                    where X is a ﬁnite set of states; Σ is a ﬁnite set of events;
+tinuous, hybrid, and/or cyber-physical systems. Over the
+                                       𝛿∶X × Σ →2X  is the (partial) nondeterministic transi-
+past decades, the theory of DES has been successfully
+                                                                 tion function, where for any  x, x′ ∈X, 𝜎∈Σ,  x′ ∈𝛿(x, 𝜎)
+applied to many real-world problems, for example, the
+                                                 means that there exists a transition from state x to
+control of automated systems, fault diagnosis/prognosis,
+                                                                state x′ with event label 𝜎; and X0 ⊆X is the set of ini-and information-ﬂow security analysis.
+                                                                           tial states. The transition function is also extended to
+  The main purpose of this article is to provide a tuto-
+                                       𝛿∶X × Σ∗→2X recursively by: (i) 𝛿(x, 𝜖) = {x} and (ii) for
+rial and an overview of state estimation techniques and
+                                                    any x ∈X, s ∈Σ∗, 𝜎∈Σ, we have 𝛿(x, s𝜎) = ∪x′∈𝛿(x,s)𝛿(x′, 𝜎).their related property veriﬁcation problems for partially
+                                                         For the sake of simplicity, we write 𝛿(s) = ∪x0∈X0𝛿(x0, s).observed DES. Speciﬁcally, we focus on the veriﬁcation of
+                                         We deﬁne (G, x) = {s ∈Σ∗∶𝛿(x, s)!} as the set of stringsobservational properties, that is, information-ﬂow proper-
+                                                             that can be generated by G from state x ∈X, where “!”ties whose satisfactions are based on the observation of the
+                                                 means  “is  deﬁned”. We  deﬁne  (G) ∶= ∪x0∈X0(G, x0)system. The outline of this article is as follows:
+                                                           the language generated by system G. System G  is
+•  In Section 2, we brieﬂy introduce some necessary ter-     a  deterministic  ﬁnite-state  automaton  (DFA)   if   (i)
+   minologies and the partially observed DES model con-      |X0| = 1 and (ii) ∀x ∈X, 𝜎∈Σ ∶|𝛿(x, 𝜎)| ≤1. We say that
+   sidered in this article.                                a sequence of state x0x1 … xn forms a cycle in G  if  (i)
+•  In  Section  3, we  introduce  three types  of  state-      ∀i = 0, … , n −1, ∃𝜎∈Σ ∶xi+1 ∈𝛿(xi, 𝜎) and (ii) x0 = xn.
+   estimation problems, namely, current-state estimation,        Let G1 = (X1, Σ1, 𝛿1, X0,1) and G2 = (X2, Σ2, 𝛿2, X0,2) be two
+    initial-state estimation, and delayed-state estimation.     automata. The product of G1 and G2, denoted by G1 × G2,
+   Then, we provide  state estimation techniques  for       is deﬁned as the accessible part of a new NFA
+    different state-estimation problems.
+•  In Section 4, we introduce several important observa-           G1 × G2 = (X1 × X2, Σ1 ∪Σ2, 𝛿1,2, X0,1 × X0,2)      (2)
+    tional properties that arise in the analysis of partially
+                                                    where the transition function  is deﬁned by:  for any
+   observed DES. In particular, we consider detectability,
+                                                                              (x1, x2) ∈X1 × X2, and for any 𝜎∈Σ1 ∩Σ2, we have    diagnosability, prognosability, distinguishability, and
+                                         {
+    opacity, which cover most of the important properties                             𝛿1(x1, 𝜎) × 𝛿2(x2, 𝜎)   if 𝜎∈Σ1 ∩Σ2
+   in partially observed DES. One feature of this section is         𝛿1,2((x1, x2), 𝜎) =   undeﬁned         otherwise       (3)
+
+
+J. Webster (ed.), Wiley Encyclopedia of Electrical and Electronics Engineering. Copyright © 2019 John Wiley & Sons, Inc.
+DOI: 10.1002/047134608X.W8400
+
+2       Estimation and Veriﬁcation of Partially Observed Discrete-Event Systems
+
+In the partial-observation setting, not all events generated     observed string. The initial-state estimate upon the occur-
+by the system can be observed. Formally, we assume that     rence of 𝛼, denoted bŷ X0,G(𝛼), is the set of initial states
+the event set is partitioned as follows:                        the system could start from initially based on observation
+                                                                      𝛼, that is,̂
+                 Σ = Σȯ∪Σuo                        (4)
+                                                                          X0,G(𝛼) = {x0 ∈X0 ∶∃s ∈(G, x0) s.t. P(s) = 𝛼}    (7)
+where Σo is the set of observable events; and Σuo is the set
+of unobservable events. The natural projection from Σ to
+Σo is a mapping P ∶Σ∗→Σ∗o deﬁned recursively as follows:       Note that, in the current-state estimate, we use the
+                         {P(s)𝜎    if 𝜎∈Σo               observation up to the current instant to estimate the         P(𝜖) = 𝜖and P(s𝜎) =                              (5)      set of all possible states the system can be in at this
+                                 P(s)     if 𝜎∉Σo                                                                 instant. If we keep observing more events in the future,
+That is, for any string s ∈Σ∗, P(s) is obtained by erasing     our knowledge of the system’s state at that instant may
+all unobservable events in it. We denote by P−1 ∶Σ∗o →2Σ∗     be further improved as some states in the current-state
+the inverse projection, that is, for any 𝛼∈Σ∗o, we have     estimate may not be consistent with the future observa-
+P−1(𝛼) = {s ∈Σ∗∶P(s) = 𝛼}. Note that the codomain of P−1       tion. In other words, we can use future information to
+is 2Σ∗as the inverse projection of a string is not unique      further improve our knowledge about the system’s state
+in general. We also extend the natural projection to      for some previous instant. This is also referred to as the
+P ∶2Σ∗→2Σ∗o by: for any L ⊆Σ∗, P(L) = {P(s) ∈Σ∗o ∶s ∈L}.     “smoothing” process; such a smoothed state estimate is
+The inverse mapping is also extended to P−1 ∶2Σ∗o →2Σ∗      also called the delayed-state estimate deﬁned as follows.
+analogously.
+   Hereafter, we make the following standard assumptions     Deﬁnition 3  (Delayed-State Estimate) Let G be a
+in the analysis of partially observed DES:              DES with observable events Σo ⊆Σ and 𝛼𝛽∈P((G)) be an
+                                                          observed string. The delayed-state estimate for the instant
+A1  System G is live, that is, ∀x ∈X, ∃𝜎∈Σ ∶𝛿(x, 𝜎)! and       of 𝛼upon the occurrence of 𝛼𝛽, denoted bŷ XG(𝛼∣𝛼𝛽), is
+A2  System G does not contain an unobservable cycle,     the set of states the system could be in |𝛽| steps ago when
+     that is, ∀x, x′ ∈X, s ∈Σ∗uo∖{𝜖} ∶x′ ∉𝛿(x, s).              𝛼𝛽is observed, that is,̂
+
+                                                       XG(𝛼∣𝛼𝛽)
+                                   {                      }
+3. STATE ESTIMATION UNDER PARTIAL OBSERVATION                             ∃x0 ∈X0, sw ∈(G, x0)s.t.                                             =  x ∈X ∶                                              (8)
+                                                                                   P(s) = 𝛼∧P(sw) = 𝛼𝛽∧x ∈𝛿(x0, s)
+3.1. State-Estimation Problems
+
+Since the system is partially observed, one important ques-                                             Example 1  Let us consider system G shown in Figure 1a,
+tion is what do we know about the system’s state when a
+                                                    where Σo = {a, b, c} and X0 = {0, 2}. Let us consider the
+(projected) string is observed? This is referred to as the                                                            observable string aa ∈P((G)). We have P−1(aa) ∩(G) =
+state-estimation problem in the system’s theory.                                                              {aa, uuaa}. Then we know that the system may start from
+  One of the most fundamental state-estimation problems
+                                                                state 0 or 2, that is,̂ X0,G(aa) = {0, 2}. Also, the system may
+is the current-state-estimation problem, that is, we want to
+                                                        be currently in states 4 or 6, that is,̂ XG(aa) = {4, 6}. Fromestimate all possible states the system can be in currently
+                                                                string aa, if we further observe event c in the next instant,
+based on the observation.
+                                                        then we know that̂ XG(aa ∣aac) = {6}, since event c cannot
+                                                            occur from state 4.
+Deﬁnition 1  (Current-State Estimate) Let G be a
+DES with observable events Σo ⊆Σ and 𝛼∈P((G)) be
+an observed string. The current-state estimate upon the
+occurrence of 𝛼, denoted bŷ XG(𝛼), is the set of states                                                              {0,1,2}
+the system could be in currently based on observation 𝛼,                                           a        b
+that is,̂
+                                                                    a       a                          {3,4,8}     {5}
+                                                                0        3       6     c
+         XG(𝛼) = {x ∈X ∶∃x0 ∈X0, s ∈(G, x0)                  u                              a             a
+                                                                    a       b                     {4,6}   b      {8}   c
+                              s.t. x ∈𝛿(x0, s) ∧P(s) = 𝛼}         (6)          1       4       7     c
+                                                                             a            c   b           a                                                              u                                                                                             b
+                                                             b       a                   {6}      {7}       {4}                                                                2        5       8     c
+   Instead of knowing the current state of the system, in
+some applications, one may also be interested in know-                   a                   c     c
+ing which initial states the system may start from. This is                                                                                  (a)                                      (b)
+referred to as the initial-state-estimation problem deﬁned
+as follows.                                                Figure 1. An arrow labeled with event 𝜎from state x to state x′
+                                                       means that x′ ∈𝛿(x, 𝜎). States with arrows having no predeces-
+Deﬁnition 2  (Initial-State Estimate) Let G be a DES      sor state denote initial states. (a) System G with Σo = {a, b, c}; (b)
+with observable events Σo ⊆Σ and 𝛼∈P((G)) be an      Obs(G).
+
+                                                             Estimation and Veriﬁcation of Partially Observed Discrete-Event Systems     3
+
+3.2. State Estimation Techniques                                  Formally, given a system G, its augmented automaton
+                                                                           is a new NFA
+In this section, we provide techniques for computing dif-
+ferent notions of state estimates.                                             Gaug = (Xaug, Σ, 𝛿aug, X0,aug)             (11)
+   Computation of Current-State Estimate. The general idea     where Xaug ⊆X0 × X is the set of states, 𝛿aug ∶Xaug × Σ →
+for computing the current-state estimate is to construct a       2Xaug is the transition function deﬁned by: for any (x0, x) ∈
+structure that tracks all possible states consistent with the      Xaug, 𝜎∈Σ, we have 𝛿aug((x0, x), 𝜎) = {(x0, x′) ∈X0 × X ∶x′ ∈
+current observation. This construction is well known as the       𝛿(x, 𝜎)}, and X0,aug = {(x0, x0) ∈Xaug ∶x0 ∈X0} is the initial
+subset construction technique that can be used to convert                                                                     state.
+an NFA to a DFA. In the DES literature, this structure is                                           We can see easily that (G) = (Gaug), and for each
+usually referred to as the observer automaton.                                                                state in Gaug, its ﬁrst component contains its initial-state
+                                                           information and its second component contains its current-
+Deﬁnition 4  (Observer) Given system G = (X, Σ, 𝛿, X0)                                                                state information. Let Obs(Gaug) = (Xaugobs , Σo, 𝛿augobs , xaugobs,0) be
+with observable events Σo ⊆Σ, the observer is a new DFA                                                           the observer of Gaug. We can easily show that̂
+             Obs(G) = (Xobs, Σo, 𝛿obs, xobs,0)              (9)
+                                                                                     X0,G(𝛼) = I0(𝛿augobs (xaugobs,0, 𝛼))
+where Xobs ⊆2X∖∅is the set of states, xobs,0 = {x ∈X ∶∃x0 ∈
+X0, w ∈Σ∗uos.t. x ∈𝛿(x0, w)} is the unique initial state, and
+𝛿obs is the deterministic transition function deﬁned by: for     Algorithm 2 Initial-State-Estimation-Aug
+any q ∈Xobs, 𝜎∈Σo, we have
+                                                         Inputs: G and 𝛼∈P((G))
+   𝛿obs(q, 𝜎) = {x′ ∈X ∶∃x ∈q, ∃w ∈Σ∗uos.t. x′ ∈𝛿(x, 𝜎w)}         Output:̂ X0,G(𝛼)
+                                                        (10)        1: Build Gaug
+For the sake of simplicity, we will only consider the acces-                                                                                2: Build Obs(Gaug) = (Xaugobs , Σo, 𝛿augobs, xaugobs,0)
+sible part of Obs(G).
+                                                                                                                         3:̂ X0,G(𝛼) ←I0(𝛿augobs(xaugobs,0, 𝛼))
+   Intuitively, the observer state tracks all possible states        4: return̂ X0,G(𝛼)
+the system can be in currently based on the observation.
+Formally, we have the following result.
+                                                    where  for any q ∈Xaugobs ,  I0(q) denotes the  projectionProposition 1  For any  system G  with  Σo ⊆Σ,  its
+                                                                  to  its ﬁrst component, that  is,  I0(q) = {x0 ∈X0 ∶∃x ∈observer Obs(G) has the following properties:
+                                          X s.t. (x0, x) ∈q}. This observation suggests Algorithm 2
+1.  (Obs(G)) = P((G)) and                                      for computing the initial-state estimate.
+2.  For any 𝛼∈P((G)), we havê XG(𝛼) = 𝛿obs(xobs,0, 𝛼).          The idea of the augmented-automaton-based approach
+                                                                           is also very useful for many other purposes, for example,
+                                                                control synthesis for initial-state estimation, as it only
+   Therefore,  given  an  observation  𝛼∈P((G)),  its
+                                                          uses the dynamic of the system up to the current point.
+current-state estimate can simply be computed by Algo-
+                                                       However, the complexity of Algorithm 2 is O(|Σ|2|X|2) as
+rithm 1. Note that the complexity of building Obs(G) is
+                                                           the size of Gaug is quadratic in the size of G. Here, we pro-O(|Σ|2|X|), which is exponential in the size of G. However,
+                                                             vide the second approach for computing the initial-statewe can update the current-state estimate recursively
+                                                           estimate with a lower complexity based on the reversedonline, and each update step only requires a polynomial
+                                                     automaton of G.complexity.
+                                                           For any NFA G = (X, Σ, 𝛿, X0), its reversed automaton is
+                                                     a new NFA
+Algorithm 1 Current-State Estimation                                GR = (X, Σ, 𝛿R, X)                 (12)
+
+ Inputs: G and 𝛼∈P((G))                             where the transition function 𝛿R ∶X × Σ →2X is deﬁned
+ Output:̂ XG(𝛼)                                                by:   ∀x, x′ ∈X, 𝜎∈Σ ∶x′ ∈𝛿R(x, 𝜎) ⇐⇒x ∈𝛿(x′, 𝜎).  Note
+ 1: Build Obs(G) = (Xobs, Σo, 𝛿obs, xobs,0)                         that the initial state of GR is the entire state space. For
+  2:̂ XG(𝛼) ←𝛿obs(xobs,0, 𝛼)                                 any string s = 𝜎1𝜎2 … 𝜎n ∈Σ∗, we denote by sR its reversed
+ 3: return̂ XG(𝛼)                                                  string, that is, sR = 𝜎n … 𝜎2𝜎1. Then, the following result
+                                                    shows that the initial-state estimate of a string in G can
+                                                        be computed based on the current-state estimate of its
+                                                           reversed string in the reversed automaton GR.
+   Computation of Initial-State Estimate. We provide two
+approaches for the computation of initial-state estimate.      Proposition 2  (2) For  any  𝛼∈P((G)),  we   havê
+  The ﬁrst approach is based on the augmented automa-      X0,G(𝛼) =̂ XGR(𝛼R) ∩X0.
+ton that augments the state space of the original system
+by tracking where each state starts from. This approach       Based on the above result, Algorithm 3 is proposed to
+sometimes is also referred to as the trellis-based approach     compute the initial-state estimate, and its complexity is
+in the literature.                                            only O(|Σ|2|X|).
+
+4       Estimation and Veriﬁcation of Partially Observed Discrete-Event Systems
+
+                                                            observer Obs(G)  is shown in Figure 1b. For example,
+Algorithm 3 Initial-State-Estimation-Rev
+                                                                string aa reaches state {4, 6} from the initial state in
+ Inputs: G and 𝛼∈P((G))                                Obs(G). Therefore, we havê XG(aa) = {4, 6}. To perform
+ Output:̂ X0,G(𝛼)                                                   initial-state  estimation and  delayed-state  estimation,
+ 1: Build GR                                     we need to build the reversed automaton GR and its
+ 2: Build Obs(GR) = (XRobs, Σo, 𝛿Robs, X)                          observer Obs(GR) shown in Figures 2a and b, respec-
+  3:̂ XGR(𝛼R) ←𝛿Robs(X, 𝛼R)                                               tively. For example, string cba reaches state  {0, 1, 8}
+                                                      from the initial state in Obs(GR). Therefore, we havê
+ 4: return̂ X0,G(𝛼) ←̂ XGR(𝛼R) ∩X0                                                                 X0,G(abc) =̂ XGR((abc)R) ∩X0 = {0, 1, 8} ∩{0, 2} = {0},  that
+                                                                                     is, we know  for sure that the system was  initially
+                                                      from state  0. To compute the delayed-state estimatê
+                                                      XG(a ∣aac),  we   havê  XG(a ∣aac) =̂ XG(a) ∩̂ XGR(ca) =
+   Computation of Delayed-State Estimate. For any 𝛼𝛽∈      {3, 4, 8} ∩{0, 1, 2, 3, 5} = {3}.
+P((G)), the delayed-state estimatê XG(𝛼∣𝛼𝛽) involves
+two parts of information: the current information 𝛼and
+the future information 𝛽. Recall that we are interested
+                                                                      4. PROPERTIES OF PARTIALLY OBSERVED DES
+in estimating states for the instant of 𝛼. The following
+result shows that the delayed-state estimate can simply
+                                                          In this section, we discuss several important properties inbe separated as two parts that do not depend on each
+                                                                  partially observed DES. As we mentioned before, we willother.
+                                                            only focus on observational properties.
+
+Proposition 3  (3) For any 𝛼𝛽∈P((G)), we havê
+
+                                                                      4.1. Detectability
+     XG(𝛼∣𝛼𝛽) =̂ XG(𝛼) ∩̂ X0,G(𝛽) =̂ XG(𝛼) ∩̂ XGR(𝛽R)
+                                                          In the previous section, we have provided algorithms for
+                                                      computing state estimates. Then, the natural question
+  Based on Proposition 3, Algorithm 4 can be used to com-
+                                                                arises as to can the state estimation algorithm (eventu-
+pute the delayed-state estimate, and its complexity is also
+                                                                       ally) provide precise state information? This is referred toO(|Σ|2|X|).
+                                                          as the detectability veriﬁcation problem. Here, we consider
+                                                            three most fundamental types of detectability:
+Algorithm 4 Delayed-State-Estimation
+                                                  Deﬁnition 5  (Detectability (4–6)) Let G be a DES
+ Inputs: G and 𝛼𝛽∈P((G))                                                        with Σo ⊆Σ. Then, G is said to be
+ Output:̂ XG(𝛼∣𝛼𝛽)
+ 1: Build Obs(G) = (Xobs, Σo, 𝛿obs, xobs,0)                    •  current-state detectable  if (∃n ∈ℕ)(∀𝛼∈P((G)) ∶|𝛼|
+  2:̂ XG(𝛼) ←𝛿obs(xobs,0, 𝛼)                                             ≥n)[|̂XG(𝛼)| = 1];
+ 3: Build GR                                       •  initial-state  detectable  if (∃n ∈ℕ)(∀𝛼∈P((G)) ∶|𝛼|
+ 4: Build Obs(GR) = (XRobs, Σo, 𝛿Robs, X)                                   ≥n)[|̂X0,G(𝛼)| = 1];
+  5:̂ XGR(𝛽R) ←𝛿Robs(X, 𝛽R)                              •  delayed detectable  (w.r.t. parameters  k1, k2 ∈ℕ)  if
+                                                  (∀𝛼𝛽∈P((G)) ∶|𝛼| ≥k1, |𝛽| ≥k2)[|̂XG(𝛼∣𝛼𝛽)| = 1]. 6: return̂ XG(𝛼∣𝛼𝛽) ←̂ XG(𝛼) ∩̂ XGR(𝛽R)
+
+
+                                                                        Intuitively, the current-state detectability (respectively,
+                                                                      initial-state detectability) requires that the current state
+Example 2 We  still  consider  system G shown  in       (initial state) of the system can always be detected unam-
+Figure  1a,  where  Σo = {a, b, c}  and  X0 = {0, 2}.  Its     biguously within a ﬁnite delay. Note that, for initial-state
+
+
+                                                                                      {0,1,2,3,4,5,6,7,8}
+                                                             a       b       c      c                          a       a
+                      0        3       6     c
+                                                                         {0,1,2,3,5,8}      {0,1,2,4}     {6,7,8}        {0}
+                    u
+                          a       b                  a       b       a      b      a    a
+                      1       4       7     c            b                  a
+                                                                  {0,1,2,5}      {0,1,2}    {0,1,8}      {4}   {0,1,2,3,5}                                   a
+                    u
+                                                                          c                        b                                  a                                      8     c           a                            b                              5                      2
+                                                   a
+                                                                                                   {8}   c
+                              a
+
+                           (a)                                   (b)
+
+
+Figure 2. Initial-state estimation using the reversed automaton. Note that all states in GR are initial. (a) GR with Σo = {a, b, c}; (b)
+Obs(GR).
+
+                                                             Estimation and Veriﬁcation of Partially Observed Discrete-Event Systems     5
+
+estimate, once the initial state is detected, we know it for     Deﬁnition 6  (Diagnosability) System G is said to be
+sure forever, which is not the case for current-state estima-     diagnosable w.r.t. Σo and ΣF  if (∀s ∈Ψ(ΣF))(∃n ∈ℕ)(∀t ∈
+tion. Delayed detectability requires that, for any speciﬁc     (G)∕s ∶|t| ≥n)[̂XG(P(st)) ⊆XF].
+instant after k1 steps, we can always unambiguously deter-
+mine the precise state of the system at that instant with at    Remark 1  For the sake of simplicity, our deﬁnition of
+most k2 steps of information delay. That is, one is allowed      diagnosability is based on the current-state estimate and
+to use future information to “smooth” the state estimate of     the prespeciﬁed fault states. Diagnosability was originally
+a previous instant.                                     deﬁned by Reference 17 purely based on languages as fol-
+  The concept of detectability was initially proposed by      lows:
+Shu and Lin in Reference 4, which generalizes the concept
+of observability studied in Reference 7. There are also              (∀s ∈Ψ(ΣF))(∃n ∈ℕ)(∀t ∈(G)∕s ∶|t| ≥n)
+other notions of detectability proposed in the literature.                                                           (∀w ∈P−1(P(st)) ∩(G))[ΣF ∈w]
+For example, weak detectability (4) requires that the state
+of the system can be detected for some path generated    One can easily check that the language-based deﬁni-
+by the system. Also, Reference 4 proposed the notion of      tion and the current-state-estimate-based deﬁnition are
+periodic detectability, which requires that the state of the      equivalent. Also, in general, the nonfault behavior can be
+system can be detected periodically. In Reference 8, the     described as a speciﬁcation language rather than fault
+authors proposed the notion of K-detectability by replac-      events; this formulation can also be transformed to our
+ing the detection condition  |̂XG(𝛼)| = 1 as  |̂XG(𝛼)| ≤K,     event-based fault setting by reﬁning the state space of the
+where K ∈ℕis a positive integer specifying the detection     system; see, for example, Reference 18.
+precision. A generalized version of detectability, in the
+sense of detection condition, was proposed in Reference       The concept of diagnosability of DES was ﬁrst intro-
+9. The reader is referred to References 10–16 for more     duced in Reference 19, where state-based  faults are
+references on detectability.                                    considered. In Reference 17, the authors introduced the
+                                                         language-based formulation of diagnosability. Since then,
+                                             many variations of diagnosability have been studied in
+4.2. Diagnosability and Prognosability of Fault                                                           the literature. For example, model reduction for diag-
+Another important application of partially observed DES      nosability was studied in Reference 20. Diagnosability of
+is the fault diagnosis/prognosis problem. In this setting,      repeated/intermittent faults was studied in References
+we assume that system G may have some fault modeled as     21–23. The reader is referred to the recent survey (24) for
+fault events ΣF ⊆Σ. For any string s ∈Σ∗, we write ΣF ∈s     more references on diagnosability analysis.
+if s contains a fault event in ΣF. We deﬁne Ψ(ΣF) ∶= {sef ∈        In some applications, we may want to predict the
+(G) ∶ef ∈ΣF} as the set of strings that end up with fault     occurrence of fault before it actually occurs. This problem
+events. In the fault diagnosis problem, we assume that all       is referred to as the fault prognosis problem. Still, we
+fault events are unobservable; otherwise, it can be diag-     assume that ΣF ⊆Σ is the set of fault events and XN ⊆X
+nosed trivially. Without loss of generality, we can further       is the set of nonfault states. However, in the fault prog-
+assume that the state space of G is partitioned as fault      nosis problem, a fault event need not be unobservable. To
+states and nonfault states                                  formulate the problem, we deﬁne the following two sets of
+                                                                    states:
+               X = XṄ∪XF                    (13)
+                                                •  boundary states, 𝜕(G) = {x ∈XN ∶∃ef ∈ΣF s.t. 𝛿(x, ef)!}
+such that                                              and
+                                                •  indicator states, ℑ(G) = {x ∈XN ∶∃n ∈ℕ, ∀s ∈(G, x)
+•  ∀x0 ∈X0, ∀s ∈(G, x0) ∶ΣF ∉s ⇒𝛿(x0, s) ⊆XN and                   s.t. |s| > n ⇒ΣF ∈s}.
+•  ∀x0 ∈X0, ∀s ∈(G, x0) ∶ΣF ∈s ⇒𝛿(x0, s) ⊆XF.
+                                                                         Intuitively, a boundary state is a nonfault state from
+   This assumption can be fulﬁlled by taking the product     which a fault event may occur in the next step, and an indi-
+between G and a new automaton with two states capturing      cator state is a state from which a fault event will occur
+the occurrence of fault; see, for example, Reference 1.           for sure within a ﬁnite number of steps. With the help of
+   To diagnose the occurrence of fault, the current-state-      indicator states, we can also use current-state-estimation
+estimation technique can be applied. Speciﬁcally, for any     algorithm to perform online fault prognosis. Speciﬁcally,
+observation 𝛼∈P((G)), we know that                           for any observation 𝛼∈P((G)), we know that
+
+•  the fault has occurred for sure if̂ XG(𝛼) ⊆XF;            •  the fault will occur for sure in a ﬁnite number of steps
+•  the fault has not occurred for sure if̂ XG(𝛼) ⊆XN; and                       if̂ XG(𝛼) ⊆ℑ(G) and
+•  the fault may have occurred, but  it is uncertain   if̂    •  the fault is not guaranteed to occur within any ﬁnite
+   XG(𝛼) ∩XN ≠∅and̂ XG(𝛼) ∩XF ≠∅.                      number of steps if̂ XG(𝛼) ⊈ℑ(G).
+
+   Then, the natural question arises as to can we always         Similarly, the natural question arises as to can we suc-
+determine the occurrence of fault within a ﬁnite number      cessfully predict the occurrence of fault in the sense that:
+of delays? This is captured by the notion of diagnosability        (i) there is no missed fault and (ii) there is no false alarm?
+as follows.                                                This is captured by the notion of prognosability as follows.
+
+6       Estimation and Veriﬁcation of Partially Observed Discrete-Event Systems
+
+Deﬁnition 7  (Prognosability) System G is said to be      secret states XS ⊆X. Then, we use the notion of opacity to
+prognosable w.r.t. Σo and ΣF if (∀s ∈(G) ∶𝛿(s) ∩𝜕(G) ≠∅)      characterize whether or not the secret can be revealed to
+(∃t ∈{s})[̂XG(P(t)) ⊆ℑ(G)].                                  the intruder.
+
+   Prognosability is also referred to as predictability in                                                  Deﬁnition 9  (Opacity (2, 3, 33, 35)) Let G be a DES
+the literature. Intuitively, prognosability requires that, for                                                        with Σo ⊆Σ and secret states XS ⊆X. Then, G is said to be
+any string that reaches a boundary state, it has a preﬁx for
+which we can claim unambiguously that fault will occur    •  current-state opaque if, for any 𝛼∈P((G)), we havê
+for sure in the future, that is, we can issue a fault alarm.        XG(𝛼) ⊈XS;
+Still, for the sake of simplicity, here we characterize prog-    •  initial-state opaque  if, for any 𝛼∈P((G)), we havê
+nosability using current-state estimate, boundary states,          X0,G(𝛼) ⊈XS; and
+and indicator states. Our deﬁnition is also equivalent to    •  inﬁnite-step opaque if, for any 𝛼𝛽∈P((G)), we havê
+the language-based deﬁnition in References 25 and 26,       XG(𝛼∣𝛼𝛽) ⊈XS.
+where predictability was originally introduced. Prognos-
+ability also has several variations in the literature. For
+example, in Reference 27, two performance bounds were         Essentially, opacity is a conﬁdentiality property cap-
+proposed to characterize how early a fault alarm can be      turing the plausible deniability of the system’s “secret”
+issued and when a fault is guaranteed to occur once an      in the presence of an outside observer that is potentially
+alarm is issued.                                               malicious. More speciﬁcally, current-state opacity (respec-
+                                                                           tively, initial-state opacity) requires that the intruder
+                                                         should never know for sure that the system is currently
+4.3. State Disambiguation and Observability                                                              at (respectively, initially from) a secret state. The system
+In some applications, the purpose of state estimation is       is said to be inﬁnite-step opaque if the intruder can never
+to distinguish some states. This problem is referred to as     determine for sure that the system was at a secret state for
+the state disambiguation problem (28–30). Formally, the     any speciﬁc instant even based on the future information.
+speciﬁcation of this problem is deﬁned as a set of state        Opacity was originally introduced in the computer sci-
+pairs Tspec ⊆X × X, and we want to make sure that we can     ence literature (36). Then, it was introduced to the frame-
+always distinguish between every pair of states in Tspec.      work of DES by References 37–39. There are also many
+                                                               variations of opacity studied in the literature. For example,
+Deﬁnition 8  (Distinguishability) System G  is said      in Reference 40, Lin formulated opacity using a language-
+to  be  distinguishable  w.r.t.  Σo  and  Tspec ⊆X × X   if     based framework, where the notions of strong opacity and
+                                                weak opacity are proposed. In Reference 2, a concept called
+(∀𝛼∈P((G)))[(̂XG(𝛼) ×̂ XG(𝛼)) ∩Tspec = ∅].
+                                                                 initial-and-ﬁnal-state opacity was provided; the authors
+                                                                also studied the transformations among several notions of
+   Distinguishability  is  very  useful  as many  impor-
+                                                                    opacity. When one is only allowed to use a bounded delayed
+tant properties in the literature can be formulated as
+                                                           information to improve the state estimate for a previous
+distinguishability. For example, one can check that prog-
+                                                              instant (or we do not care about the secret anymore after
+nosability can actually be rewritten as distinguishability
+                                                  some delays), inﬁnite-step opacity becomes to K-step opac-
+with speciﬁcation Tspec = 𝜕(G) × (XN∖ℑ(G)). Observability
+                                                                       ity (41), where K is a nonnegative integer capturing the
+is another important property in partially observed DES,
+                                                           delay bound. Opacity is also closely related to another two
+which together with controllability provide the necessary
+                                                         information-ﬂow security properties called anonymity (42)
+and sufﬁcient conditions for the existence of a supervisor
+                                                   and noninterference (43, 44). The reader is referred to theachieving a desired language. The reader is referred to
+                                                         survey (45) for more references on opacity.References 31 and 32 for formal deﬁnition of observability.
+This property is also a special case of distinguishability
+(possibly after state-space reﬁnement) as it essentially
+requires that we can distinguish two states at which
+                                                                      5. VERIFICATION TECHNIQUES
+different control actions are needed; see, for example,
+Reference 28.
+                                                          In  this  section, we  provide  techniques  for  verifying
+                                                             observational  properties  introduced  in  the  previous
+4.4. Opacity                                                      section. First, we show that most of the properties in
+                                                                  partially observed DES can be veriﬁed using the observer
+Finally, state estimation is also useful in information-ﬂow                                                                structure, and some important properties can be more
+security analysis, which is an important topic in cyber-                                                                efﬁciently veriﬁed using the twin-plant technique  in
+physical systems. In this setting, we assume that the sys-                                                         polynomial time.
+tem is also monitored by a passive intruder (eavesdrop-
+per) that can observe the occurrences of events in Σo. Fur-
+thermore, we assume that the system has a “secret” that
+                                                                      5.1. Observer-Based Veriﬁcation
+does not want to be revealed to the intruder. In general,
+what is a secret is problem dependent. Here, we consider         Veriﬁcation  of  Detectability. First,  we  study  the
+a simple scenario where the secret is modeled as a set of      veriﬁcation  of  current-state  detectability. Recall  that,
+
+                                                             Estimation and Veriﬁcation of Partially Observed Discrete-Event Systems     7
+
+current-state  detectability requires that (∃n ∈ℕ)(∀𝛼∈
+                                                  Algorithm 6 Delay-State-Dect-Ver-Obs
+P((G)) ∶|𝛼| ≥n)[|̂XG(𝛼)| = 1]. In other words, a system
+is not current-state detectable if there is an arbitrarily      Inputs: G
+long observation string such that the current-state esti-      Output: Delayed Detectable or Not
+mate is not always a singleton starting from any instant.        1: Build Obs(G) = (Xobs, Σo, 𝛿obs, xobs,0)
+Since P((G)) is a regular language, due to the Pumping        2: Build Obs(GR) = (XRobs, Σo, 𝛿Robs, X)
+lemma, the existence of such an arbitrarily long string is        3: for all q1 ∈Xobs that be can reached by a string longer
+equivalent to the existence of a cycle in Obs(G) in which a        than k1 in Obs(G) do
+state is not a singleton. This immediately suggests Algo-        4:    for all q2 ∈XRobs that be can reached by a string
+rithm 5 for the veriﬁcation of current-state detectability.         longer than k2 in Obs(GR) do
+Initial-state detectability can also be checked in the same        5:         if |q1 ∩q2| > 1 then
+manner using Gaug. The only differences from Algorithm 5        6:         return G is not delayed detectable
+are (i) we need to consider Obs(Gaug) rather than Obs(G)        7:     end if
+in line 1 and (ii) in line 2, we need to check the existence        8:   end for
+of a cycle q0q1 … qn in Obs(Gaug) such that |I0(qi)| > 1 for        9: end for
+some i = 1, … , n.                                                    10: return G is delayed detectable
+
+
+
+Algorithm 5 Cur-State-Dect-Ver-Obs
+                                                           are only interested in arbitrarily long uncertain strings
+ Inputs: G                                                       after the occurrence of fault; this is also referred to as an
+ Output: Current-State Detectable or Not                   indeterminate cycles in the literature (17). In other words,
+  1: Build Obs(G) = (Xobs, Σo, 𝛿obs, xobs,0)                         the existence of an arbitrarily long uncertain but nonfault
+  2: if there exists a cycle q0q1 … qn in Obs(G) such that      string does not necessarily violate diagnosability.
+     |qi| > 1 for some i = 1, … , n then                         To this end, we need to compose Obs(G) with the
+  3:    return G is not current-state detectable             dynamic of the original system G. Speciﬁcally, let Obs(G)
+  4: else                                                 be the observer of G. We deﬁnẽ
+  5:    return G is current-state detectable
+  6: end if                                                           Obs(G) = (Xobs, Σ,̃ 𝛿obs, xobs,0)            (14)
+
+                                                          as the DFA by adding self-loops of all unobservable events
+                                                              at each state in Xobs. One can easily check that (G) =
+   To check delayed detectability (for parameters k1, k2     (G ×̃ Obs(G)). Then, by looking at the ﬁrst component of
+∈ℕ), ﬁrst we recall that the delayed-state estimate can                                                        each state in G ×̃ Obs(G), we know whether a fault event
+be computed  bŷ XG(𝛼∣𝛼𝛽) =̂ XG(𝛼) ∩̂ XGR(𝛽R). Therefore,     has occurred or not. Therefore, we can check diagnosability
+delayed detectability can be checked by the following                                                        based on G ×̃ Obs(G) by Algorithm 7.
+steps:
+
+•  First, we compute all possible current-state estimatê
+   XG(𝛼) reachable via some string 𝛼whose length is     Algorithm 7 Diag-Ver-Obs
+   greater than or equal to k1;                              Inputs: G and ΣF
+•  Then, we compute all possible current-state estimate                                                     Output: Diagnosable or Not
+      of̂ XGR(𝛽R) in GR reachable via some string 𝛽R whose        1: Build Obs(G) = (Xobs, Σo, 𝛿obs, xobs,0)
+   length is greater than or equal to k2;
+                                                                                 2: Augment  Obs(G)  as̃  Obs(G) = (Xobs, Σ,̃ 𝛿obs, xobs,0)  by•  Finally, we test whether or not there exist sucĥ XG(𝛼)
+                                                           adding unobservable self-loops
+    and̂ XGR(𝛽R) such that |̂XG(𝛼) ∩̂ XGR(𝛽R)| > 1. If so, then                                                                                 3: Compute G ×̃ Obs(G)
+     it means that some instant after k1 steps cannot be
+                                                                                 4: if there exists a cycle (x0, q0)(x1, q1) … (xn, qn) in G ×̃   determined within k2 steps of delay, that is, the system
+    is not delayed detectable.                                   Obs(G) such that  xi ∈XF and qi ⊈XF  for some  i =
+                                                                             1, … , n then
+   This procedure is formalized by Algorithm 6, where        5:    return G is not diagnosable
+states in lines 3 and 4 can be computed by a simple        6: else
+depth-ﬁrst search or a breath-ﬁrst search.                            7:    return G is diagnosable
+                                                                                 8: end if
+   Veriﬁcation of Diagnosability. The veriﬁcation of diag-
+nosability  is very similar to the case of current-state
+detectability. Speciﬁcally, a system is not diagnosable if
+there is an arbitrarily long string after the occurrence of
+fault such that the current-state estimate is not a subset of         Veriﬁcation of Distinguishability and Opacity. The veri-
+XN starting from any instant. Therefore, the general idea     ﬁcation of distinguishability is straightforward using the
+is to replaced condition |qi| > 1 in Algorithm 5 by qi ⊈XF.      observer. Speciﬁcally, we just need to check whether or not
+However, we need to do a little bit more here since we     there exists a state q ∈Xobs in Obs(G) such that (q × q) ∩
+
+8       Estimation and Veriﬁcation of Partially Observed Discrete-Event Systems
+
+Tspec ≠∅. If so, the system is not distinguishable; other-    •  X0,V = X0 × X0 is the set of initial states; and
+wise, it is distinguishable. Since we have discussed that    •  𝛿V ∶XV × ΣV →2XV  is the partial transition function
+prognosability is a special case of distinguishability, it can       deﬁned by: for any state (x1, x2) ∈XV and event 𝜎∈Σ
+also be checked in the same manner.
+   Similarly, current-state opacity can be veriﬁed by check-       (a) If 𝜎∈Σo, then the following transition is deﬁned:
+ing whether or not there exists a state q ∈Xobs in Obs(G)
+                                                                                     𝛿V((x1, x2), (𝜎, 𝜎)) = 𝛿(x1, 𝜎) × 𝛿(x2, 𝜎)        (15)such that q ⊆XS. If so, the system is not opaque; otherwise,
+it is opaque. To check initial-state opacity, we need to con-
+                                                                         (a) If 𝜎∈Σuo, then the following transitions are deﬁned:struct Obs(GR), and to check whether or not there exists a
+state q ∈XRobs in Obs(GR) such that q ∩X0 ⊆XS.                                                                                      𝛿V((x1, x2), (𝜎, 𝜖)) = 𝛿(x1, 𝜎) × {x2}          (16)
+  The veriﬁcation of inﬁnite-step opacity is similar to the
+case of delayed detectability; both involve delayed-state                     𝛿V((x1, x2), (𝜖, 𝜎)) = {x1} × 𝛿(x2, 𝜎)          (17)
+estimate that can be computed according to Proposi-
+tion 3. The veriﬁcation procedure for inﬁnite-step opacity      Hereafter, we only consider the accessible part of V(G).
+is provided in Algorithm 8 with complexity O(|Σ|4|X|).
+
+                                                                         Intuitively, the twin plant V tracks all pairs of observa-
+                                                                 tion equivalent strings in G. Speciﬁcally, if s1, s2 ∈(G) are
+                                                     two strings in G such that P(s1) = P(s2), then there existsAlgorithm 8 Inf-Opa-Ver-Obs
+                                                     a string s ∈(V(G)) in V(G) such that its ﬁrst and second
+ Inputs: G                                           components are s1 and s2, respectively. On the other hand,
+ Output: Inﬁnite-Step Opaque or Not                           for any string s = (s1, s2) ∈(V(G)) in V(G), we have that
+  1: Build Obs(G) = (Xobs, Σo, 𝛿obs, xobs,0)                            P(s1) = P(s2).
+  2: Build Obs(GR) = (XRobs, Σo, 𝛿Robs, X)                        The twin plant can be applied directly for the veriﬁca-
+  3: for all q1 ∈Xobs do                                         tion of distinguishability. Speciﬁcally, we need to check if
+  4:    for all q2 ∈XRobs do                               V(G) contains a pair of states in the speciﬁcation. This pro-
+  5:         if ∅≠q1 ∩q2 ⊆XS then                           cedure is presented in Algorithm 9.
+  6:         return G is not inﬁnite-step opaque
+  7:     end if
+  8:   end for                                      Algorithm 9 Dist-Ver-TP
+  9: end for
+10: return G is inﬁnite-step opaque                         Inputs: G and Tspec
+                                                     Output: Distinguishable or Not
+                                                                                 1: Build V(G) = (XV, ΣV, 𝛿V, X0,V)
+                                                                                 2: if there exists a state (x1, x2) ∈XV in V(G) such that
+                                                                                   (x1, x2) ∈Tspec then
+                                                                                 3:    return G is not distinguishable
+5.2. Twin-Plant-Based Veriﬁcation
+                                                                                 4: else
+In the previous section, we have shown that the observer        5:    return G is distinguishable
+can be used for the veriﬁcation of all properties introduced.        6: end if
+However, the size of the observer is exponential in the
+size of the system. Then, the natural question arises as
+to can we ﬁnd polynomial-time algorithms for verifying
+these properties? Unfortunately,  it has been shown in        According to the deﬁnition of detectability, we know
+Reference 46 that deciding opacity is PSPACE complete;     that the system is not detectable  if and only  if there
+hence, no polynomial-time algorithm exists. However, it      exist two  arbitrarily  long  strings  having  the same
+is indeed possible to check diagnosability, detectability,      observation, such that these two strings lead to two
+and distinguishability in polynomial time using the twin-      different states. As we discussed above, all such string
+plant structure. This structure was originally proposed      pairs can be captured by the twin  plant. This sug-
+in Reference 47 for the veriﬁcation of observability; later      gests Algorithm 10 for the veriﬁcation of current-state
+on, it has been used for verifying diagnosability (under      detectability.
+the name of “veriﬁer”) by References 48 and 49 and for       The case of diagnosability is similar. Speciﬁcally, a
+verifying detectability (under the name of “detector”) by     system is not diagnosable  if there exist an arbitrarily
+Reference 50.                                               long fault string and a nonfault string such that they
+                                                      have the same observation. This condition can be checked
+Deﬁnition 10  (Twin-Plant)   Given   system  G =     by Algorithm 11. Note that, we have already assumed
+(X, Σ, 𝛿, X0) with observable events Σo ⊆Σ, the twin plant     that there is no unobservable cycle in G. Otherwise, we
+is a new NFA V(G) = (XV, ΣV, 𝛿V, X0,V), where                need to add the following condition to the “if condition” in
+                                                                    line 2 of Algorithm 11 to obtain an arbitrarily long fault
+•  XV ⊆X × X is the set of states;                                string:
+•  ΣV = (Σo × Σo) ∪(Σuo × {𝜖}) ∪({𝜖} × Σuo)  is  the  set  of
+   events;                                                  ∃j = 0, … , n −1, ∃𝜎V ∉Σuo × {𝜖}∶(x1j+1, x2j+1) ∈𝛿V((x1j , x2j ), 𝜎V)
+
+                                                             Estimation and Veriﬁcation of Partially Observed Discrete-Event Systems     9
+
+                                                                           is studied under the dynamic observation setting. In
+Algorithm 10 Cur-State-Dect-Ver-TP
+                                                          References 50 and 73, the authors investigated the ver-
+ Inputs: G and ΣF                                            iﬁcation and synthesis of detectability under dynamic
+ Output: Current-State Detectable or Not                    observations. Opacity under dynamic observations is also
+ 1: Build V(G) = (XV, ΣV, 𝛿V, X0,V)                             studied in References 46, 74, 75. A general approach for
+ 2: if there exists a cycle (x10, x20)(x11, x21) … (x1n, q2n) in V(G)     dynamic sensor activation for property enforcement is
+   such that ∃i=0, … , n ∶x1i ≠x2i then                      proposed by Reference 76. In References 77 and 78, it has
+ 3:    return G is not current-state detectable              been shown that (co)diagnosability and (co)observability
+ 4: else                                                can be mapped from one to the other in the general
+ 5:    return G is current-state detectable                 dynamic observation setting. The reader is referred to the
+ 6: end if                                                   recent survey (79) for more references on state-estimation
+                                                      problem under dynamic observations.
+
+
+                                                                      6.2. State Estimation in Coordinated, Distributed,
+Algorithm 11 Diag-Ver-TP
+                                                           and Modular Systems
+ Inputs: G and ΣF                                                          In the setting of this article, we only consider the sce-
+ Output: Diagnosable or Not
+                                                            nario where the system is monitored by a single observer,
+ 1: Build V(G) = (XV, ΣV, 𝛿V, X0,V)                                                     which is referred to as the centralized state estimation.
+ 2: if there exists a cycle (x10, x20)(x11, x21) … (x1n, q2n) in V(G)                                                          In many large-scale systems, sensors can be physically
+   such that
+                                                                 distributed, and the system can be monitored by multi-
+ 3: ∀i = 0, … , n ∶x1i ∈XN ∧x2i ∈XF then                       ple local observers that have incomparable information.
+ 4:    return G is not diagnosable
+                                                  Each local observer can perform local state estimation
+ 5: else
+                                                   and send it to a coordinator. Then, the coordinator will
+ 6:    return G is diagnosable
+                                                              fuse  all  local information according to some prespec-
+ 7: end if
+                                                           iﬁed  protocol in order  to obtain a global estimation
+                                                                  decision. This is referred to as the decentralized  esti-
+                                                      mation and decision-making problem under coordinated
+Since the size of the twin plant is only quadratic in the size      architecture.
+of G, distinguishability, detectability, and diagnosability        In the context of DES, the decentralized estimation and
+can all be checked in polynomial time, which is better than     decision-making problem was ﬁrst studied by References
+the observer-based approach.                                  32, 80, 81 in the context of decentralized supervisory
+                                                                   control, where the notion of coobservability is proposed.
+                                                          In References 82, 83, the problem of decentralized fault
+                                                             diagnosis problem was studied, and a corresponding prop-
+6. RELATED PROBLEMS AND FURTHER READINGS
+                                                               erty called codiagnosability was proposed; the veriﬁcation
+                                                               codiagnosability has also been studied in the literature
+6.1. State Estimation under General Observation Models
+                                                                    (84, 85). The decentralized fault prognosis has also been
+Throughout this article, we assume that the observation     studied in the literature; see, for example, References
+of the system is modeled as a natural projection. The      27, 86–88. Note that, in decentralized decision-making
+natural projection mapping is essentially static in the     problems, one important issue is the underlying coordi-
+sense that an event is always either observable or unob-     nated architecture. For example, References 80 and 85
+servable. One related topic is the sensor selection problem     only consider simple binary architectures for control and
+for static observations (51–55), that is, we want to decide      diagnosis, respectively; more complicated architectures
+which events should be observable by placing with sen-     can be found in References 27, 89–96.
+sors such that a given observational property is fulﬁlled.      When each  local observer  is allowed to communi-
+Another related topic in the static observation setting is      cate and exchange information with each  other, the
+the robust state estimation problem when the observation      state-estimation problem is referred to as the distributed-
+is unreliable. This problem has been investigated in the     estimation problem. Works on distributed state estimation
+context of detectability analysis (56), diagnosability anal-     and property veriﬁcation can be found in References
+ysis (57–60), and supervisory control (61–66) for partially     97–100. Finally, state estimation and veriﬁcation of par-
+observed DES.                                                        tially observed modular DES have also been considered
+   In many situations, due to information communica-      in the literature (12, 15, 101–104), where a modular sys-
+tions and acquisitions, the observation mapping may be    tem is composed of a set of local modules in the form of
+dynamic, that is, whether or not an event is observable   G = G1 × · · · × Gn.
+depends on the trajectory of the system. One example
+is the dynamic sensor activation problem, where we can
+                                                                      6.3. Estimation and Veriﬁcation of Petri Nets and Stochastic
+decide to turn sensors on/off dynamically online based on
+                                                     DES
+the observation history. In References 67–70, the fault
+diagnosis problem is studied under the dynamic obser-     In this article, we focus on DES modeled as ﬁnite-state
+vation setting. In References 71 and 72, observability     automata. Petri nets, another important class of DES
+
+10       Estimation and Veriﬁcation of Partially Observed Discrete-Event Systems
+
+models, are widely used to model many classes of con-    BIBLIOGRAPHY
+current systems. In  particular,  Petri  nets  provide a
+compact model without enumerating the entire state           1. C. G. Cassandras and S. Lafortune. Introduction to Discrete
+space, and  it is well known that Petri net languages           Event Systems, 2nd ed.; Springer, 2008.
+are more expressive than regular languages. The prob-           2. Y.-C. Wu and S. Lafortune. Discrete Event Dyn. S. 2013, 23
+lems of state estimation and property veriﬁcation have               (3), pp 307–339.
+also drawn many attentions in the context of Petri nets.           3. X. Yin and S. Lafortune. Automatica. 2017, 80, pp 162–171.
+For example, state (marking) estimation algorithms for           4. S. Shu, F. Lin, and H. Ying. IEEE T. Automat. Contr. 2007,
+Petri nets have been proposed in References 105–108.          52 (12), pp 2356–2359.
+Decidability and veriﬁcation procedures for diagnosability           5. S. Shu and F. Lin. IEEE T Autom. Sci. Eng. 2013, 10 (1), pp
+(109–113), detectability (114, 115), prognosability (116),           187–196.
+and opacity (117, 118) are also studied in the literature           6. S. Shu and F. Lin. IEEE T. Automat. Contr. 2013, 58 (4), pp
+for Petri nets.                                                       862–875.
+  Another important generalization of the ﬁnite-state           7. C. M. Ozveren and A. S. Willsky. IEEE T. Automat. Contr.
+automata model is the stochastic DES (or labeled Markov           1990, 35 (7), pp 797–806.
+chains). Stochastic DES can not only characterize whether           8. C. N. Hadjicostis and C. Seatzu. K-Detectability in Discrete
+or not a system can reach a state, it can also capture the          Event Systems, in 55th IEEE Conference on Decision and
+                                                                            Control, pp 420–425, 2016.possibility of reaching a state. Hence, it provides a model
+for the quantitative analysis and veriﬁcation of DES. State           9. S. Shu and F. Lin. Syst. Control Lett. 2011, 60 (5), pp
+                                                                     310–317.estimation and veriﬁcation of many important properties
+have also been extended to the stochastic DES setting;        10. Y. Sasi and F. Lin. Discrete Event Dyn. S. 2018, 28 (3), pp
+                                                                     449–470.this  includes,  for  example,  diagnosability  (119–121),
+detectability (11, 14, 56, 122), prognosability (123), and        11. C. Keroglou and C. N. Hadjicostis. Automatica. 2017, 86, pp
+                                                                     192–198.opacity (124–126).
+                                                                         12. T. Masopust and X. Yin. Automatica. 2019, 101, pp 290–295.
+                                                                         13. T. Masopust. Automatica. 2018, 93, pp 257–261.
+6.4. Control Synthesis of Partially Observed DES                     14. S. Shu, F. Lin, H. Ying, and X. Chen. Automatica. 2008, 44
+                                                                                       (12), pp 3054–3060.
+So far, we have only discussed property veriﬁcation prob-
+                                                                         15. X. Yin and S. Lafortune. Automatica. 2017, 83, pp 199–205.
+lems in partially observed DES. In many applications,
+                                                                         16. K. Zhang. Automatica. 2017, 81, pp 217–220.when the answer to the veriﬁcation problem is negative, it
+is important to synthesize a supervisor or controller that        17. M. Sampath, R. Sengupta, S. Lafortune, K. Sinnamohideen,
+                                                              and D. Teneketzis. IEEE T. Automat. Contr. 1995, 40 (9), ppprovably enforces the property by restricting the system
+                                                                    1555–1575.
+behavior but as permissive as possible. This control syn-
+                                                                         18. T.-S. Yoo and H. E. Garcia. Syst. Control Lett. 2008, 57 (12),thesis problem has been studied in the literature in the
+                                                              pp 1023–1029.
+framework of the supervisory control theory initiated by
+                                                                         19. F. Lin. Discrete Event Dyn. S. 1994, 4 (2), pp 197–212.Ramadge and Wonham (127). The reader is referred to the
+textbooks (1–128) for more details on supervisory control        20. S. H. Zad, R. H. Kwong, and W. M. Wonham. IEEE T.
+                                                                   Automat. Contr. 2003, 48 (7), pp 1199–1212.of DES. Supervisory control under partial observation
+was originally investigated by References 31 and 32.        21. S. Jiang, R. Kumar, and H. E. Garcia. IEEE T. Robotic.
+                                                                 Autom. 2003, 19 (2), pp 310–323.Since then, many control synthesis algorithms for partial-
+observation supervisors have been proposed (129–133).        22. O. Contant, S. Lafortune, and D. Teneketzis. Discrete Event
+                                                                  Dyn. S. 2004, 14 (2), pp 171–202.In particular, Reference 134 solves the synthesis problem
+for maximally permissive nonblocking supervisors in the        23. E. Fabre, L. Hélouët, E. Lefaucheux, and H. Marchand. Dis-
+                                                                                    crete Event Dyn. S. 2018, 28 (2), pp 183–213.partial-observation setting.
+   In the context of enforcement of observational prop-        24. J. Zaytoon and S. Lafortune. Annu. Rev. Control. 2013, 37
+                                                                                               (2), pp 308–320.
+erties, in Reference 135, an approach was proposed for
+designing a supervisor that enforces diagnosability. Con-        25. T. Jéron, H. Marchand, S. Genc, and S. Lafortune. IFAC P.
+                                                                                  Vol. 2008, 41 (2), pp 537–543.
+trol synthesis algorithms have also been proposed in the
+literature for enforcing opacity; see, for example, Ref-        26. S. Genc and S. Lafortune. Automatica. 2009, 45 (2), pp
+                                                                     301–311.
+erences 136–138. In Referene 139, the authors studied
+the problem  of synthesizing supervisors that enforce        27. X. Yin and Z. Li. Automatica. 2016, 69, pp 375–379.
+detectability. A uniform approach for control synthesis for        28. W. Wang, S. Lafortune, and F. Lin. Syst. Control Lett. 2007,
+enforcing a wide class of properties was recently proposed          56 (9–10), pp 656–661.
+by Yin and Lafortune in a series of papers (134, 140–142).        29. D. Sears and K. Rudie. On Computing Indistinguishable
+                                                                         States  of Nondeterministic Finite Automata with Par-
+                                                                                        tially Observable Transitions, in 53rd IEEE Conference on
+                                                                         Decision and Control, pp 6731–6736, 2014.
+RELATED ARTICLES                                                    30. X. Yin and S. Lafortune. IEEE T. Automat. Contr. 2018, 63
+                                                                                       (11), pp 3705–3718.
+Discrete  Event  Systems;  Discrete  Event  Dynamical        31. F. Lin and W. M. Wonham. Inform. Sci. 1988, 44 (3), pp
+Systems                                                            173–198.
+
+                                                          Estimation and Veriﬁcation of Partially Observed Discrete-Event Systems     11
+
+
+32. R. Cieslak, C. Desclaux, A. S. Fawaz, and P. Varaiya. IEEE        62. A. M. Sánchez and F. J. Montoya. Discrete Event Dyn. S.
+    T. Automat. Contr. 1988, 33 (3), pp 249–260.                         2006, 16 (4), pp 493–525.
+
+33. A. Saboori and C. N. Hadjicostis. IEEE T. Automat. Contr.        63. F. Lin. SIAM J. Control Optim. 2014, 52 (2), pp 1276–1298.
+    2012, 57 (5), pp 1265–1269.                                        64. M. V. S. Alves, J. C. Basilio, A. E. Carrilho da Cunha, L. K.
+34. A. Saboori and C. N. Hadjicostis. Inform. Sciences. 2013,           Carvalho, and M. V. Moreira. Robust Supervisory Control
+    246, pp 115–132.                                                 Against Intermittent Loss of Observations, in 12th Interna-
+35. K. Zhang, X. Yin, and M. Zamani. IEEE T. Automat. Contr.             tional Workshop on Discrete Event Systems, 12, pp 294–299,
+    2019. DOI: 10.1109/TAC.2019.2908726.                             2014.
+36. L. Mazaré. Using Unication for Opacity Properties, in Pro-        65. T. Ushio and S. Takai. IEEE T. Automat. Contr. 2016, 61 (3),
+    ceedings of WITS, 4, pp 165–176, 2004.                          pp 799–804.
+37. E. Badouel, M. Bednarczyk, A. Borzyszkowski, B. Caillaud,        66. X. Yin. IEEE T. Automat. Contr. 2017, 62 (5), pp 2576–2581.
+   and P. Darondeau. Discrete Event Dyn. S. 2007, 17 (4), pp        67. D. Thorsley and D. Teneketzis. Discrete Event Dyn. S. 2007,
+    425–446.                                                    17 (4), pp 531–583.
+38. J. W. Bryans, M. Koutny, L. Mazaré, and P. Y. A. Ryan. Int.        68. F. Cassez and S. Tripakis. Fundamental Informaticae. 2008,
+     J. Inf. Secur. 2008, 7 (6), pp 421–435.                             88 (4), 497–540.
+39. A. Saboori and C. N. Hadjicostis. Notions of Security and        69. W. Wang, S. Lafortune, A. R. Girard, and F. Lin. Automatica.
+    Opacity in Discrete Event Systems, in 46th IEEE Confer-           2010, 46 (7), pp 1165–1175.
+    ence on Decision and Control, IEEE, pp 5056–5061, 2007.          70. E. Dallal and S. Lafortune. IEEE T. Automat. Contr. 2014,
+40. F. Lin. Automatica. 2011, 47 (3), pp 496–503.                      59 (4) pp 966–981.
+41. A. Saboori and C. N. Hadjicostis. IEEE T Autom. Sci. Eng.        71. Y. Huang, K. Rudie, and F. Lin. IEEE T. Automat. Contr.
+    2011, 8 (3), pp 549–559.                                           2008, 53 (1), pp 384–388.
+42. L. Sweeney. Int. J. Uncertain. Fuzz. 2002, 10 (05), pp        72. W. Wang, S. Lafortune, F. Lin, and A. R. Girard. IEEE T.
+    557–570.                                                      Automat. Contr. 2010, 55 (11), pp 2447–2461.
+43. N. Ben Hadj-Alouane, S. Lafrance, F. Lin, J. Mullins, and M.        73. S. Shu, Z. Huang, and F. Lin. IEEE Trans. Autom. Sci. Eng.
+    Yeddes. IEEE T. Syst. Man Cy.B. 2005, 35 (5), pp 948–958.            2013, 10 (2), pp 457–461.
+44. N. Ben Hadj-Alouane, S. Lafrance, F. Lin, J. Mullins, and M.        74. Y. Ji, X. Yin, and S. Lafortune. IEEE T. Automat. Contr.
+    Yeddes. IEEE T. Automat. Contr. 2005, 50 (6), pp 920–925.            2019, 64 (10), pp 4369–4376.
+45. R. Jacob, J.-J. Lesage, and J.-M. Faure. Annu. Rev. Control.        75. B. Zhang, S. Shu, and F. Lin. IEEE T Autom. Sci. Eng. 2015,
+    2016, 41, pp 135–146.                                         12 (4), pp 1067–1079.
+46. F. Cassez, J. Dubreil, and H. Marchand. Form. Method. Syst.        76. X. Yin and S. Lafortune. Automatica. 2019, 105, pp 376–383.
+    Des. 2012, 40 (1), pp 88–115.                                       77. W. Wang, A. R. Girard, S. Lafortune, and F. Lin. IEEE T.
+47. J. N. Tsitsiklis, Math. Control Signal. 1989, 2 (2), pp 95–107.           Automat. Contr. 2011, 56 (7), pp 1551–1566.
+48. S. Jiang, Z. Huang, V. Chandra, and R. Kumar. IEEE T.        78. X. Yin and S. Lafortune. Automatica. 2015, 61, pp 241–252.
+    Automat. Contr. 2001, 46 (8), pp 1318–1321.                       79. D. Sears and K. Rudie. Discrete Event Dyn. S. 2016, 26 (2),
+49. T.-S. Yoo and S. Lafortune. IEEE T. Automat. Contr. 2002,          pp 295–349.
+   47 (9), pp 1491–1495.                                              80. K. Rudie and W. M. Wonham. IEEE T. Automat. Contr. 1992,
+50. S. Shu and F. Lin. Syst. Control Lett. 2010, 59 (1), pp 9–17.           37 (11), pp 1692–1708.
+51. A. Haji-Valizadeh and K. Loparo. IEEE T. Automat. Contr.        81. K. Rudie and J. C. Willems. IEEE T. Automat. Contr. 1995,
+    1996, 41 (11), pp 1579–1593.                                   40 (7), pp 1313–1319.
+52. T.-S. Yoo and S. Lafortune. IEEE T. Automat. Contr. 2002,        82. R. Debouk, S. Lafortune, and D. Teneketzis. Discrete Event
+   47 (9), pp 1495–1499.                                           Dyn. S. 2000, 10 (1–2), pp 33–86.
+53. S. Jiang, R. Kumar, and H. E. Garcia. IEEE T. Automat.        83. Y. Wang, T.-S. Yoo, and S. Lafortune. Discrete Event Dyn. S.
+    Contr. 2003, 48(3), pp 369–381.                                    2007, 17 (2), pp 233–263.
+54. Y. Ru and C. N. Hadjicostis. IEEE T. Automat. Contr. 2010,        84. M. V. Moreira, T. C. Jesus, and J. C. Basilio. IEEE T.
+   55 (8), pp 1751–1764.                                            Automat. Contr. 2011, 56 (7), pp 1679–1684.
+55. M. P. Cabasino, S. Lafortune, and C. Seatzu. Automatica.        85. W. Qiu and R. Kumar. IEEE T. Syst. Man Cy. A. 2006, 36
+    2013, 49 (8), pp 2373–2383.                                                      (2), pp 384–395.
+56. X. Yin. Automatica. 2017, 80, pp 127–134.                         86. R. Kumar and S. Takai. IEEE T. Automat. Contr. 2010, 55
+                                                                                             (1), pp 48–59.57. D. Thorsley, T.-S. Yoo, and H. E. Garcia. Diagnosability of
+    Stochastic Discrete-Event Systems under Unreliable Obser-        87. A. Khoumsi and H. Chakib. IEEE T Autom. Sci. Eng. 2012,
+    vations, in American Control Conference, pp 1158–1165,          9 (2), pp 412–417.
+    2008.                                                              88. X. Yin and Z. Li. IEEE T. Cy. 2019, 49 (4), pp 1302–1313.
+58. S. Takai and T. Ushio. IEEE T. Automat. Contr. 2012, 57 (3),        89. T.-S. Yoo and S. Lafortune. Discrete Event Dyn. S. 2002, 12
+   pp 798–804.                                                                         (3), pp 335–377.
+59. L. K. Carvalho, J. C. Basilio, and M. V. Moreira. Automatica.        90. T.-S. Yoo and S. Lafortune. IEEE T. Automat. Contr. 2004,
+    2012, 48 (9), pp 2068–2078.                                    49 (11), pp 1886–1904.
+
+60. L. K. Carvalho, M. V. Moreira, J. C. Basilio, and S. Lafor-        91. R. Kumar and S. Takai. IEEE T Autom. Sci. Eng. 2009, 6
+    tune. Automatica. 2013, 49 (1), pp 223–231.                                  (3), pp 479–491.
+
+61. K. Rohloff. Sensor Failure Tolerant Supervisory Control, in        92. R. Kumar and S. Takai. IEEE T. Automat. Contr. 2007, 52
+    44th IEEE Conf. Decision and Control, pp 3493–3498, 2005.              (10), pp 1783–1794.
+
+12       Estimation and Veriﬁcation of Partially Observed Discrete-Event Systems
+
+
+  93. S. Takai and R. Kumar. IEEE T. Automat. Contr. 2011, 56       120. F. Liu, D. Qiu, H. Xing, and Z. Fan. IEEE T. Automat. Contr.
+       (1), pp 165–171.                                                  2008, 53 (2), pp 535–546.
+  94. H. Chakib and A. Khoumsi. IEEE T. Automat. Contr. 2011,       121. D. Thorsley and D. Teneketzis. IEEE T. Automat. Contr.
+     56 (11), pp 2608–2622.                                            2005, 50 (4), pp 476–492.
+  95. S. L. Ricker and K. Rudie. IEEE T. Automat. Contr. 2007, 52       122. P. Zhao, S. Shu, F. Lin, and B. Zhang. IEEE T. Automat.
+       (3), pp 428–441.                                                       Contr. 2019, 64 (1), pp 433–439.
+  96. A. Khoumsi and H. Chakib. IEEE T. Automat. Contr. 2018,       123. J. Chen and R. Kumar. IEEE T. Automat. Contr. 2015, 60
+     63 (12), pp 4278–4285.                                                            (6), pp 1570–1581.
+
+  97. A. Benveniste, E. Fabre, S. Haar, and C. Jard. IEEE T.       124. A. Saboori and C. N. Hadjicostis. IEEE T. Automat. Contr.
+     Automat. Contr. 2003, 48 (5), pp 714–727.                           2014, 59 (1), pp 120–133.
+  98. R. Su and W. M. Wonham. IEEE T. Automat. Contr. 2005,       125. B. Bérard, K. Chatterjee, and N. Sznajder. Inform. Process.
+     50 (12), pp 1923–1935.                                                      Lett. 2015, 115 (1), pp 52–59.
+  99. S. Genc and S. Lafortune. IEEE T Autom. Sci. Eng. 2007, 4       126. X. Yin, Z. Li, W. Wang, and S. Li. Automatica. 2019, 99, pp
+       (2), pp 206–219.                                                 266–274.
+
+ 100. S. Takai and R. Kumar. IEEE T. Automat. Contr. 2012, 57       127. P. J. Ramadge and W. M. Wonham. SIAM J. Control Optim.
+       (5), pp 1259–1265.                                                1987, 25 (1), pp 206–230.
+ 101. K. Rohloff and S. Lafortune. Discrete Event Dyn. S. 2005, 15       128. W. M. Wonham and K. Cai. Supervisory Control of Discrete-
+       (2), pp 145–167.                                                Event Systems. Springer, 2019.
+ 102. O. Contant, S. Lafortune, and D. Teneketzis. Discrete Event       129. H. Cho and S. I. Marcus. Math. Syst. Theory. 1989, 22 (1),
+     Dyn. S. 2006, 16 (1), pp 9–37.                                  pp 177–211.
+
+ 103. A. Saboori and C. N. Hadjicostis. IFAC P. Vol. 2010, 43 (12),       130. R. Kumar, V. Garg, and S. I. Marcus. Syst. Control Lett.
+     pp 78–83.                                                       1991, 17 (3), pp 157–168.
+ 104. K. W. Schmidt. IEEE T. Syst. Man Cy.: Syst. 2013, 43 (5), pp       131. S. Takai and T. Ushio. Syst. Control Lett. 2003, 49 (3), pp
+     1130–1140.                                                     191–200.
+ 105. A. Giua, C. Seatzu, and D. Corona. IEEE T. Automat. Contr.       132. T.-S. Yoo and S. Lafortune. Discrete Event Dyn. S. 2006, 16
+     2007, 52 (9), pp 1695–1699.                                                      (4), pp 527–553.
+
+ 106. L. Li and C. N. Hadjicostis. IEEE T. Automat. Contr. 2013,       133. K. Cai, R. Zhang, and W. M. Wonham. IEEE T. Automat.
+     58 (1), pp 198–203.                                                    Contr. 2015, 60 (3), pp 659–670.
+ 107. P. Bonhomme. IEEE T. Syst. Man Cy.: Syst. 2015, 45 (3), pp       134. X. Yin and S. Lafortune. IEEE T. Automat. Contr. 2016, 61
+     508–518.                                                                             (5), pp 1239–1254.
+ 108. F. Basile, M. P. Cabasino, and C. Seatzu. IEEE T. Automat.       135. M. Sampath, S. Lafortune, and D. Teneketzis. IEEE T.
+      Contr. 2015, 60 (4), pp 997–1009.                                  Automat. Contr. 1998, 43 (7), pp 908–929.
+ 109. B. Bérard, S. Haar, S. Schmitz, and S. Schwoon. Fund.       136. J. Dubreil,  P. Darondeau, and H. Marchand. IEEE  T.
+      Inform. 2018, 161 (4), pp 317–349.                                Automat. Contr. 2010, 55 (5), pp 1089–1100.
+ 110. N. Ran, H. Su, A. Giua, and C. Seatzu. IEEE T. Automat.       137. Y. Tong, Z. Li, C. Seatzu, and A. Giua. Discrete Event Dyn.
+      Contr. 2018, 63 (4), pp 1192–1199.                                      S. 2018, 28 (2), pp 161–182.
+ 111. F. Basile, P. Chiacchio, and G. De Tommasi. Automatica.       138. A. Saboori and C. N. Hadjicostis. IEEE T. Automat. Contr.
+     2012, 48 (9), pp 2047–2058.                                       2012, 57 (5), pp 1155–1165.
+ 112. M. P. Cabasino, A. Giua, S. Lafortune, and C. Seatzu. IEEE       139. S. Shu and F. Lin. IEEE T. Automat. Contr. 2013, 58 (8), pp
+      T. Automat. Contr. 2012, 57 (12), pp 3104–3117.                     2125–2130.
+
+ 113. X. Yin and S. Lafortune. IEEE T. Automat. Contr. 2017, 62       140. X. Yin and S. Lafortune. IEEE T. Automat. Contr. 2018, 63
+       (11), pp 5931–5938.                                                          (12), pp 4435–4441.
+ 114. T. Masopust and X. Yin. Automatica. 2019, 104, pp 238–241.       141. X. Yin and S. Lafortune. IEEE T. Automat. Contr. 2017, 62
+ 115. A. Giua and C. Seatzu. IEEE T. Automat. Contr. 2002, 47               (8), pp 3914–3929.
+       (9), pp 1424–1437.                                             142. X. Yin and S. Lafortune. IEEE T. Automat. Contr. 2016, 61
+ 116. X. Yin. IEEE T. Automat. Contr. 2018, 63 (6), pp 1828–1834.               (8), pp 2140–2154.
+ 117. Y. Tong, Z. Li, C. Seatzu, and A. Giua. IEEE T. Automat.
+      Contr. 2017, 62 (6), pp 2823–2837.                                    XIANG YIN
+ 118. Y. Tong, Z. Li, C. Seatzu, and A. Giua. Automatica. 2017, 80,                    Shanghai Jiao Tong University, Shanghai,
+     pp 48–53.                                                               China
+ 119. X. Yin, J. Chen, Z. Li, and S. Li. IEEE T. Automat. Contr.
+     2019, 64 (10), pp 4237–4244.

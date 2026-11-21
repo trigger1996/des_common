@@ -1,0 +1,1051 @@
+2314                                                 IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 67, NO. 5, MAY 2022
+
+   Online Supervisory Control of Networked
+  Discrete Event Systems With Control Delays
+
+              Zhaocong Liu    , Student Member, IEEE, Xiang Yin    , Member, IEEE,
+                 Shaolong Shu    , Senior Member, IEEE, Feng Lin    , Fellow, IEEE,
+                         and Shaoyuan Li    , Senior Member, IEEE
+
+
+
+  Abstract—We investigate state estimation and safe con-   Supervisory control is a widely used approach for synthesizing
+troller synthesis  for networked discrete-event systems   controllers/supervisors with formal correctness guarantees of
+(DESs), where supervisors send control decisions to plants                                                                 the desired speciﬁcations [38]. In many modern applications,
+via communication channels subject to communication de-
+                                                                supervisors are connected to the plants via communicationlays. Previous works on state estimation of networked DES
+are based on the open-loop system without utilizing the   networks. Such networked information structures provide more
+knowledge of the control policy. In this article, we pro-   ﬂexible ways for controlling DES,  e.g., one  is allowed to
+pose a new approach for online estimation and control   implement the supervisor on the cloud such that more powerful
+of networked DES with control delays. We ﬁrst propose a                                                            computational resources can be utilized to handle complex
+new state estimation algorithm for the closed-loop system
+                                                                 speciﬁcations. On the other hand, the networked informationutilizing the information of control decision history. The
+proposed state estimation algorithm can be implemented   structure also brings many new research challenges, e.g., the
+recursively upon the occurrence of each new observable   effectiveness of communication delays/losses [7], [27], [35],
+event. Then we investigate how to predict the effect of con-   [47], [48] and the security issue [9], [12], [39]. Therefore,
+trol delays in order to calculate a control decision online at                                                         networked DESs have drawn considerable attention in the past
+each instant. We show that the proposed online supervisor
+                                                      few years in the DES literature; see, e.g., [1], [18], [19], [22],can be updated effectively and the resulting closed-loop
+behavior is safe. Furthermore, we compare the proposed   [29], [37], [39], [44]–[46].
+online supervisor with the predictive supervisor proposed
+in the literature and show that our proposed online super-
+visor is more permissive than predictive supervisor in the   B. Related Works
+sense of language inclusion.
+                                                     The study of supervisory control of networked DES dates
+  Index Terms—Control  delay,  discrete-event systems   back to the work of Balemi [4], where the robustness of su-
+(DES), networked control systems, supervisory control.                                                                 pervisors under communication delays was investigated. In [20]
+                                                       and [21], Park and Cho also studied the supervisory control
+                                                       problem of networked DES. In particular, it is assumed that                                I. INTRODUCTION
+                                                          each controllable event is disabled by default and it is enabled
+A. Motivation                                      when sufﬁcient information is obtained. In [24], the authors
+  N  THIS   article,  we   investigate   the  problem   of   investigate the supervisory control problem in the setting where
+   supervisory  control  of  discrete-event  systems  (DES).   the supervisor and the plant cannot be synchronized perfectlyI                                                    due to communication delays and losses. In [45] and [46],
+                                                              Zgorzelski and Lunze used extended I/O automata to investi-
+  Manuscript received May 5, 2020; revised October 31, 2020; ac-   gate the tracking control of networked DES and applied the
+cepted May 1, 2021. Date of publication May 14, 2021; date of cur-
+rent version April 26, 2022. This work was supported in part by the   solution to handling systems. Recently, Lin [16] proposed a
+National Key Research and Development Program of China under   general framework for supervisory control of networked DES.
+Grant 2018AAA0101700, and  in part by the National Natural Sci-   In particular, it considers communication delays and losses in
+ence Foundation of China under Grants 62061136004, 61803259,
+61833012, 61773287, and 62073242. Recommended by Associate Ed-   both control channels and observation channels. Necessary and
+itor J. Komenda. (Corresponding author: Xiang Yin.)                    sufﬁcient conditions, termed as networked controllability and
+  Zhaocong Liu, Xiang Yin, and Shaoyuan Li are with the Department of   networked observability, were provided for the existence of a
+Automation, Key Laboratory of System Control and Information Process-
+ing, Shanghai Jiao Tong University, Shanghai 200240, China (e-mail:   nonpredictive supervisor that exactly achieves a given speciﬁ-
+zhaocongl@sjtu.edu.cn; yinxiang@sjtu.edu.cn; syli@sjtu.edu.cn).        cation language.
+  Shaolong Shu and Feng  Lin are  with the School  of  Electron-     Following the framework of Lin, many works on control of
+ics and Information Engineering, Tongji University, Shanghai 201804,
+China, and also with the Department of Electrical and Computer En-   networked DES have been done in the literature in the past
+gineering, Wayne State University, Detroit MI 48202 USA (e-mail:  few years [13], [30], [31], [33], [50]. Particularly, in [33], the
+ﬂin@wayne.edu).                                                authors proposed a predictive supervisor and showed that the
+  Color versions of one or more ﬁgures in this article are available at
+https://doi.org/10.1109/TAC.2021.3080495.                           speciﬁcation language is achievable if and only if the predictive
+   Digital Object Identiﬁer 10.1109/TAC.2021.3080495                  supervisor can do so. The predictive supervisor has also been
+
+               0018-9286 © 2021 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                          See https://www.ieee.org/publications/rights/index.html for more information.
+
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 07,2023 at 02:29:15 UTC from IEEE Xplore. Restrictions apply.
+
+LIU et al.: ONLINE SUPERVISORY CONTROL OF NETWORKED DISCRETE EVENT SYSTEMS WITH CONTROL DELAYS                             2315
+
+
+extended to modular systems by [13], where the monolithic
+system consists of a set of local modules that run concurrently.
+In [32], deterministic control of networked DES is studied in
+order to eliminate language uncertainty by enforcing the large
+language and the small language to be equal. The decentralized
+supervisory control of networked DES is investigated in [30],
+where the plant is controlled by a set of local supervisors that
+send local information to a fusion center in order to obtain a
+global decision. In [3], [23],[25], and [49], supervisory control
+of networked DES has also been extended to the setting of
+timed DESs. An approach that transforms the networked control    Fig. 1.  Supervisory control of networked DES with control delays.
+problem to the nonnetworked setting under uncertain conditions
+was proposed in [50]. Networked supervisory control theory has
+also been applied to railway trafﬁc control systems [16] and    To solve this supervisor synthesis problem, we proposed a
+manufacturing systems [46].                                  novel online control algorithm for networked DES with control
+  In many applications, it is very difﬁcult to achieve a given   delays. The proposed online control algorithm essentially con-
+speciﬁcationlanguageexactly,i.e.,supervisorexistenceproblem    sists of three parts: the state estimation part, the state prediction
+is not solvable. Therefore, one is interested in synthesizing a   part, and the decision-making parting. The state estimation part
+supervisor such that the closed-loop language is a sublanguage   aims to estimate the current state of the system based on both the
+of the desired speciﬁcation. This problem is referred to as the   observation and the control decision histories. To this end, a new
+supervisor synthesis problem in the literature, which is one of the   concept called the extended state is proposed that augments the
+central problems in the supervisory control theory [6], [10], [11],   original plant state with the control channel conﬁguration. We
+[14], [15], [34], [41]–[43]. The goal of the supervisor synthesis  show that the extended state is the real “state” in the entire dy-
+problem is to restrict the behavior of the system within the safety  namic system as it also encodes the effect of previous control de-
+language but as permissive as possible. In the context of control   cision into the plant state. We propose an approach for estimating
+of networked DES, in [2],[26], [28], [36], and [40], supervisor   the extended state of the closed-loop system recursively online.
+synthesis under observation delays and losses were investigated.   Then, based on the estimated extended state, we discuss how to
+For example, in [36] and [40], Mealy automata were used to   choose a control decision online by predicting its effect in the
+model unreliable and nondeterministic observations. To our   future. Speciﬁcally, we require that the selected control decision
+knowledge, however, the supervisor synthesis problem with   should not only be locally safe but also safe in the future before
+control delays has not yet been fully investigated in the literature.    its effect expires. Finally, we integrate the state estimation, state
+For example, the work of [31] tackles the supervisor synthesis   prediction, and control selection techniques into an interactive
+problem for safety speciﬁcation under both control and obser-   online control algorithm and show its correctness. The general
+vation delays. However, the approach in [31] requires to restrict   idea of online supervisory control was originally studied for
+the solution space a priori, while the solution space is inﬁnite   standard DES without control delays; see, e.g., [5] and [11]. To
+in general. When the speciﬁcation language cannot be exactly   the best of our knowledge, online supervisory control has never
+achieved, the predictive supervisor proposed in [33] can also   been applied to networked DES with communication delays.
+be used to solve the synthesis problem for safety. However, the    Then we further compare the proposed online supervisor with
+control decision of the predictive supervisor is very conservative   the predictive supervisor proposed in [33]. It was shown in [33]
+making the closed-loop behavior unnecessarily restrictive.        that 1) the predictive supervisor can exactly achieve the speciﬁ-
+                                                                 cation language when the system is controllable and networked
+                                                               observable; and 2) it is still safe when the speciﬁcation cannot
+C. Our Results
+                                                        be achieved. In fact, the predictive supervisor also contains a
+  In this article, we investigate the supervisor synthesis problem   state estimation part and a state prediction part for the purpose
+for networked DESs with safety speciﬁcations. Speciﬁcally, we   of decision making. However, there is a signiﬁcant difference
+focus on the case of control delays and assume that the system   between the estimation/prediction techniques in our work and
+is only partially observed (see Fig. 1). It is worth noting that   those in [33]. Speciﬁcally, in the predictive supervisor, both
+the synthesis problem under control delays is quite different   the state estimation and the state prediction are based on the
+from the case of observation delays. Particularly, in the standard   open-loop system without control. Such strategies are easy to
+supervisory control problem, the effective control decision can   implement, but the information of the closed-loop control policy
+be updated immediately once a new event is observed. However,    is not used. Therefore, the state estimation and the state predic-
+due to control delays, in the networked setting, the control   tion used in the predictive supervisor coincide with our strategies
+decision issued currently may affect the closed-loop behavior in   only when the speciﬁcation can be exactly achieved. In general,
+the future as the plant may still use a previous control decision   the estimated and predicted states of the predictive supervisor are
+issued by the supervisor. This issue has to be taken into account   overly conservative. On the other hand, both our state estimation
+in the synthesis problem, which is also the main difﬁculty in the  and our state prediction techniques utilize the information of
+networked synthesis problem.                                    control decision history, which make the estimated/predicted
+
+
+
+        Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 07,2023 at 02:29:15 UTC from IEEE Xplore. Restrictions apply.
+
+2316                                                               IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 67, NO. 5, MAY 2022
+
+
+state more precise. Consequently, the online supervisor is more   events, respectively. Note that, in general, there is no relationship
+permissive than the predictive supervisor when the speciﬁcation   between controllable events and observable events.
+language cannot be exactly achieved.                   We deﬁne Γ = {γ ∈2Σ : Σuc ⊆γ} as the set of control deci-
+                                                                     sions. That is, a supervisor cannot disable uncontrollable events.
+D. Organization                                     The natural projection P  : Σ∗→Σ∗o is deﬁned recursively as
+                                                                 follows: For any s ∈Σ∗, σ ∈Σ, we have
+  The remainder of this article is organized as follows. In Sec-
+tion II, we introduce some necessary notations and formulate the                                                                             P(s)σ    if σ ∈Σo                                                            P(ϵ) = ϵ and P(sσ) =                                                                                                                                  (1)
+problem to be solved. Online state estimation and state predic-                             P(s)      if σ ∈Σuo.
+tion techniques are provided in Sections III and IV, respectively.
+                                                          That is, upon the occurrence of a string s ∈Σ∗, the supervisor
+Also, we formally present the online control algorithm and prove
+                                                         can only be observed as P(s) ∈Σ∗o.its correctness in Section IV. In Section V, we further present
+                                      A supervisor is a mechanism that enables/disables events
+a modiﬁed online control algorithm and show that it always
+                                                           dynamically based on its observation. Formally, a supervisor
+outperforms the predictive supervisor proposed in the literature.
+                                                                               is a mapping
+Finally, we conclude the article by Section VI. Preliminary and
+partial versions of some of the results in this article are presented                S : P(L(G)) →Γ.
+in [17]. Compared with [17], this article consists of proofs
+                                                          That is, the supervisor decides to enable events in S(P(s)) when
+omitted in [17] as well as detailed explanations and example.
+                                                                      string s is generated by the system.
+Also, we provide a comparison between the proposed online su-
+                                                                  In the networked setting, the supervisor needs to send its
+pervisor with the predictive supervisor and show that the online
+                                                                 control decisions to the plant via control channels, where com-
+supervisor can always outperform the predictive supervisor in
+                                                           munication delays may occur. In this setting, the plant may still
+terms of the permissiveness.
+                                                           use a previous control decision even when a new control decision
+                                                           has been issued. We assume that the communication delays are
+         II. PRELIMINARIES AND PROBLEM FORMULATION
+                                                      bounded by a nonnegative integer Nc. In practice, the delay
+  Let Σ be a ﬁnite set of events. A string is a ﬁnite sequence of  boundNc canbeidentiﬁedby,e.g.,communicationexperiments.
+events. We denote by Σ∗the set of all strings over Σ including  Then the language generated by the closed-loop system (subject
+the empty string ϵ. A language L ⊆Σ∗is a set of strings. The   to control delays), denoted by L(S/G), is deﬁned recursively as
+preﬁx-closure of a language L is deﬁned by L = {w ∈Σ∗:   follows [16].
+∃t s.t. wt ∈L}. The concatenation of two languages La, Lb ⊆      1) ϵ ∈L(S/G).
+Σ∗is deﬁned by LaLb = {sasb ∈Σ∗: sa ∈La, sb ∈Lb}.          2) For any s ∈Σ∗and σ ∈Σ, we have sσ ∈L(S/G) if and
+  For any string s = σ1σ2 . . . σn, σi ∈Σ, we denote by |s| its         only if
+length, i.e., |s| = n. Also, we denote by s−i the string obtained             1) sσ ∈L(G);
+by removing the last i events in s, i.e., s−i = σ1 . . . σ|s|−i; we             2) s ∈L(S/G);
+deﬁne s−i = ϵ, if |s| ≤i. For any natural number N ∈N, we             3) σ ∈S(P(s)) ∪S(P(s−1)) ∪· · · ∪S(P(s−Nc)).
+denote by [0, N] the set of natural numbers from 0 to N.         Remark 1: Intuitively, the deﬁnition of L(S/G) says that, at
+ A DES is modeled by a ﬁnite-state automaton               each instant, the plant may use any control decision issued by the
+            G = (Q, Σ, δ, q0)                         supervisor in the previous Nc steps due to control delays. This
+                                                           language is also referred to as the “large language” (or the upper
+where Q is a ﬁnite set of states, Σ is a ﬁnite set of events,  bound language) in the literature [32]. Note that this language
+δ : Q × Σ →Q  is a  partial  transition function, and q0  is    is essentially an overapproximation of the actual behavior of
+the initial state. For any states q, q′ ∈Q and event σ ∈Σ,   the networked system and may contain some strings that are
+δ(q, σ) = q′ implies that there exists a transition from q to q′   not feasible; see, e.g., [33] for detailed discussions. On the other
+labeled with event σ. The transition function is also extended   hand, this deﬁnition provides a relatively simple language-based
+to δ : Q × Σ∗→Q in the usual manner; see, e.g., [8]. For the   characteristic and is very suitable for the purpose of safety as it
+sake of simplicity, we write δ(q, s) as δ(s) if q = q0. Then the    is conservative in the sense that it captures all possible actions
+languagegeneratedbyGisdeﬁnedasL(G) = {s ∈Σ∗: δ(s)!},   the supervisor may take under control delays. Our article will
+where “!” means “is deﬁned.”                                    also focus on the synthesis of safe supervisor; this is why we
+  In many situations, the original system G may not satisfy   adopt this deﬁnition of the closed-loop language.
+some desired speciﬁcation. Therefore, the supervisory control    As we mentioned earlier, our goal is to design a supervisor
+theory was introduced in order to restrict the system’s behavior   such that the closed-loop system satisﬁes some requirement.
+such that the closed-loop system fulﬁlls the speciﬁcation. In the   Here, we consider a safety speciﬁcation. Speciﬁcally, we assume
+supervisory control framework, the event set Σ is partitioned as   that the speciﬁcation is given as a legal language K ⊆L(G)
+                                                       and we want to make sure that the behavior of the closed-loop
+          Σ = Σc ˙∪Σuc = Σo ˙∪Σuo
+                                                          systemiswithinthelegallanguage.Thenweformulatethesafety
+where Σc and Σuc denote the set of controllable events and the   control problem with control delays (SCPCD) that we solve
+set of uncontrollable events, respectively. Similarly, Σo and Σuo   in this article. As we have discussed earlier, we consider the
+denote the set of observable events and the set of unobservable   synthesis problem under the following assumptions.
+
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 07,2023 at 02:29:15 UTC from IEEE Xplore. Restrictions apply.
+
+LIU et al.: ONLINE SUPERVISORY CONTROL OF NETWORKED DISCRETE EVENT SYSTEMS WITH CONTROL DELAYS                             2317
+
+
+   1) The observation channel is perfect, i.e., each occurrence  L(S/G) [16]. However, this state estimation technique essen-
+      of observable event can be received by the supervisor    tially utilizes the entire functionality of the supervisor including
+       instantly.                                                 the future control actions, which are unknown in the synthesis
+   2) The control channel is subject to communication delays   problem. In order to synthesize control decisions effectively, we
+     and the number of delays (counted by event occurrences)   need to estimate the state of the system online only based on the
+        is upper bounded by a nonnegative integer Nc.            information available up to the current instant.
+   3) The initial control decisions is not subject to control     In order to state our online state estimation algorithm, ﬁrst,
+       delays, which can be, for example, embedded in actuators  we introduce the concept of channel conﬁguration.
+      of the plant initially.                                      Deﬁnition 1: Let G be a networked DES with control delays
+  Problem 1: (SCPCD) Let G be a networked DES with control  bounded by Nc. A channel conﬁguration is a set of pairs in the
+delays bounded by Nc. Let K ⊆L(G) be a safety speciﬁcation  form of
+language. Find a safe supervisor S such that L(S/G) ⊆K.
+                                                                   θ = {(γ1, n1), (γ2, n2), . . . , (γk, nk)}  Without loss of generality, we assume hereafter that K is
+recognized by a strict subautomaton of G, denoted by H =                                                      where each γi ∈Γ is a control decision and each ni ∈[0, Nc](QH, Σ, δH, q0). That is, QH ⊆Q, L(H) = K ⊆L(G), and                                                                               is a nonnegative integer smaller than or equal to Nc. We denotefor any string s ∈L(G), we have s ∈K if and only if δ(q0, s) ∈                                                     by Γ(θ) the union of all control decision components in θ, i.e.,
+QH. We deﬁne                                                        Γ(θ) = ∪i=1,...,kγi. Finally, we denote by Θ ⊆2Γ×[0,Nc] the set
+      Qgood = {q ∈QH : ∀s ∈Σ∗uc s.t. δ(q, s) ∈QH}          of all channel conﬁgurations.
+                                                                            Intuitively, each channel conﬁguration speciﬁes the control
+as the set of states that cannot reach a state in Q \ QH via un-   decisions that remained in the control channel and their timing
+controllable transitions. We assume that q0 ∈Qgood. Therefore,   information. That is, (γi, ni) means that decision γi is delayed
+to guarantee safety, we need to make sure that the system can   in the control channel and will still be effective for the next ni
+only reach states in Qgood.                                           steps. Essentially, the channel conﬁguration models the “state”
+  Remark 2: SCPCD can be solved by designing a supervisor   of the control channel. Therefore, in our setting, the true “state”
+that always disables all controllable events. However, this solu-   of the closed-loop control system consists of both the state of
+tion is not very interesting as the closed-loop behavior is very   the plant and the channel conﬁguration, and we call this the
+restrictive. Let S and S′ be two safe supervisors. We say that S′   extended state.
+is more permissive than S if L(S/G) ⊂L(S′/G). Therefore,     Deﬁnition 2: Let G be a networked DES with control delays
+we not only want to ﬁnd a solution to SCPCD but also want the  bounded by Nc. An extended state is a plant state augmented
+solution to be as permissive as possible.                        with a channel conﬁguration in the form of ˜q = (q, θ), where
+  Remark 3: In [33], the authors have investigated under what   q ∈Q and θ ∈Θ. We deﬁne ˜Q := Q × Θ as the set of all
+condition the speciﬁcation language K can be exactly achieved   extended states.
+subject to control delays. This problem is usually referred to as    To precisely estimate the state of the system, we should not
+the supervisor existence problem in the literature [8]. Speciﬁ-   only track all possible states of the plant but also track the chan-
+cally, it has been shown that K can be exactly achieved if and   nel conﬁguration of each possible state since delayed control
+only if the speciﬁcation is controllable and networked observ-   decisions may affect the behavior of the system in the future.
+able. Our problem setting implicitly assumes that the existence   That is, we want to estimate all possible extended states based on
+conditions are not satisﬁed and we need to consider the synthesis   the information available. Next, we describe how the extended
+problem rather than the existence problem.                         state estimate evolves when new information is obtained (either
+                                                 when a new event is observed or when a new control decision is
+  III. ONLINE STATE ESTIMATION UNDER CONTROL DELAYS     issued).
+                                                              Let θ ∈Θ be a channel conﬁguration. We deﬁne the “next”  In the partial observation setting, in order to make control
+                                                               operator NX : Θ →Θ as follows: for any θ ∈Θ,decision at each instant, the supervisor needs to estimate the
+set of all possible states the system can be in currently based      NX(θ) = {(γ, n −1) ∈Γ×N : (γ, n) ∈θ, n ≥1}.
+on all information available. Formally, let G be a system, S
+be a supervisor (with control delays bounded by Nc), and α ∈   That  is, NX(θ) decreases the timing index of each control
+P(L(S/G)) be an observable string. Then the state estimate   decision in θ by one unit and it only keeps control decisions
+upon the occurrence of α is deﬁned by                     whose timing indices are nonnegative (which means that the
+                                                             delay has not yet expired).
+ ES(α) = {q ∈Q : ∃s ∈L(S/G) s.t. P(s) = α ∧δ(s) = q}.
+                                           Now we are ready to present how the extended state estimate
+  Note that we use subscript “S” in ES(·) in order to emphasize   can be updated recursively online based on new information
+that we are considering the state estimate of the closed-loop   obtained. Suppose that our current estimation of the extended
+systemcontrolledbysupervisorS.WhensupervisorS isgivenor   state of the system is x ∈2Q.˜ Then we need to update this set
+we know a priori that the supervisor will exactly achieve a given   for the following two scenarios:
+language, the state estimate can be computed by constructing      1) a new control decision γ ∈Γ is issued;
+the (networked) observer based on the closed-loop behavior      2) a new observable event σ ∈Σo is observed.
+
+
+
+        Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 07,2023 at 02:29:15 UTC from IEEE Xplore. Restrictions apply.
+
+2318                                                               IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 67, NO. 5, MAY 2022
+
+
+  We  formalize  the  estimation  updating  procedures  for
+the above two scenarios by operators networked unobserv-
+able reach (NUR) : 2Q˜ × Γ →2Q˜ and networked observable
+reach (NOR) : 2Q˜ × Σo →2Q,˜  respectively, as follows.
+  Deﬁnition 3: Let x ∈2Q˜ be a set of extended states and γ ∈Γ
+be a control decision. Then the NUR of x under γ, denoted by
+NURγ(x), is deﬁned recursively as follows.
+   1) For any extended state (q, θ) ∈x, we have
+
+                    (q, θ ∪{(γ, Nc)}) ∈NURγ(x).          (2)
+
+   2) For any extended state (q, θ) ∈NURγ(x) and any unob-
+      servable event σ ∈Σuo, we have
+
+
+        σ ∈Γ(θ) and δ(q, σ)!
+      ⇒(δ(q, σ), NX(θ) ∪{(γ, Nc)}) ∈NURγ(x).     (3)
+
+   Intuitively, NURγ(x) is the updated extended state estimate    Fig. 2.  System with Σo = {a, b}, Σc = Σ and Nc = 1.
+immediately after a new control decision γ (but before the
+occurrence of the next observable event) based on the latest state
+                                                         haveestimate x. The update is implemented by searching all extended
+states that can be reached unobservably from x. More speciﬁ-    ˆx2 =NORa(x1)={(δ(1, a), NX({(γ0, 1)}))}={(2, {(γ0, 0)})}.
+cally, ﬁrst, we add the latest control decision γ and its timing
+                                                 From  ˆx2,  if we make  control  decision γ1 = Σ \ {u2} =index Nc to each extended state in x. Then, for each extended
+                                                             {a, b, u1, u3}, then we have the following.state (q, θ) ∈NURγ(x), we need to consider all unobservable
+and feasible events from x. By feasible, we mean that the event      1) (2, {(γ0, 0)} ∪{(γ1, 1)}) ∈NURγ1(ˆx2).
+is deﬁned at q and is enabled by some control decision in the      2) Since  u3 ∈Γ({(γ0, 0), (γ1, 1)})  and   δ(2, u3)=3,
+control channel, i.e., σ ∈Γ(θ). For such (q, θ) and σ, we then       we   have    (3, NX({(γ0, 0), (γ1, 1)}) ∪{(γ1, 1)}) ∈
+                                                                NURγ1(ˆx2).add its successor extended state (δ(q, σ), NX(θ) ∪{(γ, Nc)})
+                                                                   3) Since  u1 ∈Γ({(γ0, 0), (γ1, 1)})  and   δ(2, u1) = 4,to NURγ(x). The second component of the successor state is
+NX(θ) ∪{(γ, Nc)} since 1) the execution of σ will decrease       we   have    (4, NX({(γ0, 0), (γ1, 1)}) ∪{(γ1, 1)}) ∈
+the timing index of each previous control decision in θ by one        NURγ1(ˆx2).
+                                                                 Therefore, we haveunit; and 2) we also need to add the current control decision with
+its   timing index             Nc.                                                        NURγ1(ˆx2) = {(2, {(γ0, 0), (γ1, 1)}), (3, {(γ1, 0), (γ1, 1)}),
+  Deﬁnition             4:               Let x ∈2Q˜ be a set of extended states and
+                                                                                      (4, {(γ1, 0), (γ1, 1)})}.σ ∈Σo be an observable event. Then the NOR of x upon the
+occurrence of σ, denoted by NORσ(x), is deﬁned by          We are now ready to present our online state estimation
+                                                                algorithm. The main idea is to employ NURγ(·) and NORσ(·)
+ NORσ(x) = {(δ(q, σ), NX(θ)) ∈˜Q : (q, θ) ∈x, σ ∈Γ(θ)}.                                                                     alternatively so that the extended state estimate can be updated
+                                                              (4)                                                                  recursively online. Formally, let G be a DES and S be a supervi-
+   Intuitively, NORσ(x) is the set of extended state estimate that                                                                 sor with control delays bounded by Nc. Let α ∈P(L(S/G)) be
+can be reached immediately after observing σ but before the                                                        an observable string generated by the closed-loop system. We
+next control decision is issued, based on the latest state estimate                                                      deﬁne two sets ˆES(α) and ES(α) recursively as follows: for any
+                                                       σ ∈Σo, we havex. Therefore, for each state (q, θ) ∈x considered, event σ must  α ∈Σ∗o andbe feasible in G and be enabled by some control decision in
+the control channel, i.e., σ ∈Γ(θ). Upon the occurrence of σ,                       ˆES(ϵ) = {(q0, ∅)}                        (5)
+the plant state will be updated and we also need to decrease the
+                                                                   ES(α) = NURS(α)( ˆES(α))              (6)timing index of each control decision in θ by one unit.
+  We use the following example to illustrate how NUR and                  ˆES(ασ) = NORσ(ES(α)).                 (7)
+NOR are computed.
+  Example 1: Let us consider system G shown in Fig. 2   Intuitively, ˆES(α) is the extended state estimate immediately
+with Σo = {a, b}, Σc = Σ = {a, b, u1, u2, u3}, and Nc = 1.   after observing α and ES(α) is the extended state estimate
+Suppose  that the current extended  state estimate  is x1 =   after making control decision S(α) with unobservable reach
+{(1, {(Σ, 1)})}, which means that the system is at state 1 and   included. Hereafter, we will formally show that ES(α) is indeed
+there exists a control decision γ0 = Σ that will still be effective   the extended state estimate of the closed-loop system upon the
+in one step. From this instant, if we observe event a, then we   observation of α. A very important feature of ES(α) is that its
+
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 07,2023 at 02:29:15 UTC from IEEE Xplore. Restrictions apply.
+
+LIU et al.: ONLINE SUPERVISORY CONTROL OF NETWORKED DISCRETE EVENT SYSTEMS WITH CONTROL DELAYS                             2319
+
+
+computation only utilizes the information available up to the  Then for the case of |s| = k + 1, i.e., s = σ1 . . . σk+1, we know
+instant of α = σ1 . . . σn, σi ∈Σo, i.e., the following alternating   that
+sequence of control decisions and observations:                     1) σk+1 ∈∪i=0,...,NcS(P((σ1 . . . σk)−i)) =
+                                                             Γ(θ(σ1 . . . σk));           S(ϵ)σ1S(σ1)σ2 . . . σnS(σ1 . . . σn).                                                                   2) δ(δ(σ1 . . . σk), σk+1)!
+This makes online control synthesis possible as all information     Therefore, by Deﬁnition 3, we have
+needed are available up to the current instant.
+                                                                        (δ(s), NX(θ(σ1 . . . σk)) ∪{(S(ϵ), Nc)}) ∈NURS(ϵ)({(q0, ∅)}).  To state our result, for any s ∈L(S/G), we deﬁne
+                                                              Also, since θ(s) = NX(θ(σ1 . . . σk)) ∪{(S(ϵ), Nc)}), we have θ(s)={(γ, Nc −n) : 0≤n≤min{Nc, |s|}, γ =S(P(s−n))}                                                                  (δ(s), θ(s)) ∈NURS(ϵ)({(q0, ∅)}) for |s| = k + 1.                                                              (8)
+                                                            InductionStep:Now,letusassumethat(10)holdsfor|α| = mas the channel conﬁguration upon the execution of s. Using this
+                                                       and we want to show thatnotation, for any s ∈L(S/G), we have
+                                                    ES(ασ) = {(δ(s), θ(s))∈˜Q : ∃s∈L(S/G) s.t. P(s)=ασ}  Γ(θ(s)) = S(P(s)) ∪S(P(s−1)) ∪· · · ∪S(P(s−Nc)).  (9)
+                                                                                                                       (12)
+  The following result shows that our proposed state estimate  where σ ∈Σo  is a new observable event such that ασ ∈
+ES(α) indeed correctly estimates the plant state together with  P(L(S/G)). Similar to the induction basis, we still show this
+its channel conﬁguration.                                 by two parts.
+  Theorem 1: Let G be a DES and S be an arbitrary supervisor    (LHS ⊆RHS)  First,  let (q, θ) ∈NURS(ασ)( ˆES(ασ)) be
+with control delays bounded by Nc. For any α ∈P(L(S/G)),   an  element  of  the LHS  of  (12).  Note  that ES(ασ) =
+we have                                             NURS(ασ)(NORσ(ES(α))). By Deﬁnitions 3 and 4, we know
+                                                                      that there exist an extended state (q,′ θ′) ∈ES(α) and a sequence  ES(α) = {(δ(s), θ(s))∈˜Q : ∃s∈L(S/G) s.t. P(s)=α}.
+                                                               of events σσ1 . . . σn, where σ1 . . . σn ∈Σ∗uo, inducing the fol-                                                        (10)
+                                                          lowing extended states.  Proof: We prove by induction on the length of α.
+                                                                   1) (q1, θ1) = (δ(q,′ σ), NX(θ′)∪{(S(ασ), Nc)}).  Induction Basis: We consider the case of |α| = 0, i.e., α =
+                                                                   2) For any k = 1, . . . , n, we have
+ϵ. Then we know that ES(ϵ) = NURS(ϵ)({(q0, ∅)}). Next, we                                                                   (qk+1, θk+1)=(δ(qk, σk), NX(θk)∪{(S(ασ), Nc)})
+show that
+                                                            such that
+ NURS(ϵ)({(q0, ∅)})={(δ(s), θ(s))∈˜Q : s∈L(S/G)∩Σ∗uo}.       a) σ ∈Γ(θ′), σk ∈Γ(θk);
+                                                         (11)      b) (qn+1, θn+1) = (q, θ).
+                                                              Let t ∈L(S/G) be a string that P(t) = α and (δ(t), θ(t)) =
+(LHS ⊆RHS) First, let (q, θ) ∈NURS(ϵ)({(q0, ∅)}) be an                                                                               (q,′ θ′). Next, we show the following by induction:
+element of the LHS of (11). By Deﬁnition 3, we know that                                                                                                                 .                                                                                                                  . .                                                                   1)                                                            tσσ1                                                                 σk ∈L(S/G);there exists a sequence of unobservable events σ1 . . . σn ∈Σ∗uo                                        =                                                                   2)                                                                     θ(tσσ1                                                            θk+1                                                                                                                                . . . σk).
+inducing the following extended states.
+                                                            For  k = 0, we  have  θk = θ′ = θ(t).  Since  q′ = δ(t),   1) (q0, θ0) = (q0, ∅∪{(S(ϵ), Nc)}).                                                                        δ(q,′ σ) = q1, and Γ(θ′) = Γ(θ(t)) = ∪i=0,...,NcS(P(t−i)), we   2) For any k = 1, . . . , n, we have                                                         have tσ ∈L(S/G). Also, we have
+       (qk, θk)=(δ(qk−1, σk), NX(θk−1) ∪{(S(ϵ), Nc)})
+  such that σk ∈Γ(θk−1) and (qn, θn) = (q, θ).                 θ1 = NX(θ′)∪{(S(ασ), Nc)} = NX(θ(t))∪{(S(ασ), Nc)}
+  Since σi ∈S(ϵ) ∩Σuo and δ(q0, σ1 . . . σn) = q, we know                                    = θ(tσ).                                            (13)
+that σ1 . . . σn ∈L(S/G) ∩Σ∗uo. Therefore, to show that (q, θ)
+is also an element of the RHS of (11), it remains to show that θ =  Now we assume that the above two conditions hold for k and we
+θ(s). Again, we show this by induction on the length of s. For   consider the case of k + 1. Still, since qk+1 = δ(tσσ1 . . . σk),
+|s| = 0, we know immediately that θ0 = {(S(ϵ), Nc)} = θ(ϵ).   δ(qk+1, σk+1)!, and σk+1 ∈Γ(θk+1) = Γ(θ(tσσ1 . . . σk)) =
+Now, we assume that θk = θ(σ1 . . . σk). Then we have          ∪i=0,...,NcS(P((tσσ1 . . . σk)−i)), we have sσσ1 . . . σk+1 ∈
+                                                   L(S/G). Also, we have
+        θk+1 = NX(θk) ∪{(S(ϵ), Nc)}
+                                                              θk+2 = NX(θk+1)∪{(S(ασ), Nc)}        = NX(θ(σ1 . . . σk)) ∪{(S(ϵ), Nc)}
+                                         = NX(θ(tσσ1 . . . σk))∪{(S(ασ), Nc)}        = θ(σ1 . . . σkσk+1).
+                                         = θ(tσσ1 . . . σkσk+1).                     (14)
+Therefore, we have LHS ⊆RHS.
+  (RHS ⊆LHS) Let (q, θ) be an element of the RHS of (11), i.e.,   Therefore, by taking tσσ1 . . . σn as string s in the RHS of (12),
+there exists a sequence of unobservable events s = σ1 . . . σn ∈  we have that (q, θ) = (qn, θn) is also an element in the RHS of
+L(S/G) ∩Σ∗uo such that (δ(s), θ(s)) = (q, θ). Hereafter, we   (12).
+show that (q, θ) ∈NURS(ϵ)({(q0, ∅)}). Still, we show this by    (RHS ⊆LHS) Let (q, θ) be an element of the RHS of (12),
+induction on the length of s. When |s| = 0, we know that    i.e., there exists a string s ∈L(S/G) such that P(s) = ασ
+(δ(s), θ(s)) = (q0, {(S(ϵ), Nc)}) ∈NURS(ϵ)({(q0, ∅)}).Now,   and (δ(s), θ(s)) = (q, θ). We write string s in the form of
+we assume that (δ(s), θ(s)) ∈NURS(ϵ)({(q0, ∅)}) for |s| = k.   s = tσσ1 . . . σn,whereσ1 . . . σn ∈Σ∗uo istheunobservabletail.
+
+
+
+        Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 07,2023 at 02:29:15 UTC from IEEE Xplore. Restrictions apply.
+
+2320                                                               IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 67, NO. 5, MAY 2022
+
+
+We deﬁne the following sequence of extended states recursively  a} = {2, 3, 4}.  This   is  consistent  with  our  result  that
+by the following.                                     ES(a) = Q(ES(a)).
+   1) (q1, θ1) = (δ(tσ), NX(θ(t))∪{(S(ασ), Nc)}).
+   2) For any k = 1, . . . , n, we have                                              IV. ONLINE CONTROL ALGORITHM
+      (qk+1, θk+1)=(δ(qk, σk), NX(θk)∪{(S(ασ), Nc)}).                                                                  In the previous section, we have shown how to compute the
+   First, we note that θi+1 = θ(tσσ1 . . . σi)∀i = 0, . . . , n. Next,                                                                        state estimate of the system online in the presence of control
+we show by induction that (qi, θi) ∈ES(ασ)∀i = 1, . . . , n + 1.                                                                  delays. In this section, we will discuss how to choose a safe
+   Initially, since P(t) = α, by the induction hypothesis (on
+                                                                 control decision at each instant based on the state estimate.
+|α|), we know that (δ(t), θ(t)) ∈ES(α). Since tσ ∈L(S/G),
+we know that σ ∈Γ(θ(t)). Therefore, by Deﬁnition 4, we know
+                                                        A. Uncontrollable State Prediction
+that
+                                                        Note that in the standard supervisory control framework
+             (δ(tσ), NX(θ(t))) ∈NORσ(ES(α)).                                                            without control delays, the choice of control decision at each
+Then by Deﬁnition 3, we know that                                instant will only affect reachable states until the occurrence
+                                                               of the next observable event since the control decision can be
+         (q1, θ1) = (δ(tσ), NX(θ(t)) ∪{(S(ασ), Nc)})
+                                                            updatedimmediately.However,inoursetting,thecurrentcontrol
+     ∈NURS(ασ)(NORσ(ES(α))) = ES(ασ).          (15)   decision may affect reachable states in the next Nc steps due to
+                                                                 control delays. Therefore, to precisely evaluate the effect of a
+Now we assume that (qk, θk) ∈ES(ασ) and we consider the
+                                                                     control, we need to predict all possible states that can be reached
+case of k + 1. Since tσσ1 . . . σk−1σk ∈L(S/G), we have
+                                                                    in the presence of control delays. To this end, we introduce the
+        σk ∈∪i=0,...,Nc S(P((tσσ1 . . . σk−1)−i))            concept of uncontrollable state prediction (USP).
+                                                              Let θ = {(γ1, n1), (γ2, n2), . . . , (γk, nk)} be a channel con-         = Γ(θ(tσσ1 . . . σk−1)) = Γ(θk).         (16)                                                             ﬁguration and m ∈[0, Nc] be a nonnegative integer. We denote
+Again,       since      (qk+1, θk+1) = (δ(qk, σk), NX(θk) ∪  by Γ≥m(θ) the union of all control decisions that will still be
+{(S(ασ), Nc)}, by Deﬁnition  3, we have (qk+1, θk+1) ∈   effective after m steps, i.e.,
+ES(ασ).
+  Overall, we prove the equality in (10).          ■               Γ≥m(θ) =                 γi.            (17)
+  For any set of extended states x = {(q1, θ1), . . . , (qn, θn)},                                   i∈{1,...,k}:ni≥m
+we denote by Q(x) the set of all states in its ﬁrst component, i.e.,   Clearly, we have Γ≥0(θ) = Γ(θ) and Γ≥m(θ) ⊆Γ(θ). Then we
+Q(x) = {q1, q2, . . . , qn}. Then we have the following corollary  deﬁne the uncontrollable language from θ by
+of Theorem 1 by restricting our attention to the ﬁrst component
+of x.                                                              Luc(θ) := Γ≥0(θ)Γ≥1(θ) · · · Γ≥Nc(θ)
+  Corollary 1: Let G be a DES and S be an arbitrary supervisor                                                      where the second part is the preﬁx-closure of the concatenation
+with control delays bounded by Nc. For any α ∈P(L(S/G)),   of event sets Γ≥i(θ) from                                                                                                             i = 0 to i = Nc. Intuitively, if the
+we have Q(ES(α)) = ES(α).                                    current channel conﬁguration is θ, then we cannot prevent any
+  We illustrate our online state estimation procedure by the                                                                      string in Luc(θ) from happening due to existing delayed control
+following example.                                                                decisions in the channel.
+  Example 2: Let us still consider the system G shown in Fig. 2                                                              Deﬁnition 5: Let ˜q = (q, θ) ∈˜Q be an extended state, then
+with Σc = Σ, Σo = {a, b} and Nc = 1. Suppose that the system   the USP of ˜q, denoted by USP(˜q), is deﬁned by
+is controlled by supervisor S deﬁned by the following:
+   1) S(ϵ) = γ0 := Σ;                                                 USP(˜q) = {δ(q, s) ∈Q: s ∈Luc(θ)} .       (18)
+   2) S(a) = γ1 := Σ \ {u2}.                                                   The USP is also extended to a set of extended states x ∈2Q˜ by
+  We now compute the proposed extended state estimation
+                                                  USP(x) = ∪˜q∈xUSP(˜q).ES(a) and ES(a), respectively.
+                                                     The intuition of the USP is similar to that of the uncontrollable   Initially,  we   have   ˆES(ϵ) = {(1, ∅)}.   After   mak-
+ing   the   ﬁrst   control   decision  S(ϵ) = γ0,  we  have   language. It essentially captures the set of states we cannot
+                                                               prevent from reaching from x no matter what control decisionsES(ϵ) = NURγ0( ˆES(ϵ)) = {(1, {(γ0, 1)})}.   Then   upon
+                                             we take in the future. We illustrate this concept by the following
+observing    a,   we    have    ˆES(a) = NORa(ES(ϵ)) =                                                          example.
+{(2, {(γ0, 0)})}. After making the second control decision                                                       Example 3: Let us  still consider the system G shown in
+S(a) = γ1,  we   further  have  ES(a) = NURγ1( ˆES(a)) =                                                                   Fig. 2 with Σc = Σ, Σo = {a, b} and Nc = 1. Note that there{(2, {(γ0, 0), (γ1, 1)}), (3, {(γ1, 0), (γ1, 1)}), (4, {(γ1, 0),
+                                                                 are three illegal states that should be avoided which are in the
+(γ1, 1)})}. Note that state 5 is not contained in ES(a) since                                                          shape of solid red circles, i.e., Q\QH = {15, 16, 17}. Supposeu2 /∈Γ({(γ1, 0), (γ1, 1)}) = {a, b, u1, u3}.                                             we are now at extended state ˜q = (11, {(γ, 0), (γ, 1)}), where
+  On the other hand, by deﬁnition of ES(·) and L(S/G), we  γ = Σo = {a, b}, and we want to compute its uncontrollablehave {ϵ, a, au1, au3} ⊆L(S/G). However, au3u2 /∈L(S/G)                                                                        state prediction USP(˜q). First, we have
+since  u2 /∈S(P(au3)) ∪S(P((au3)−1)) = γ1.   Therefore,
+we    have   ES(a) = {δ(s) ∈Q : s ∈L(S/G) s.t. P(s) =            Luc(θ) = Γ≥0(θ)Γ≥1(θ) = {a, b}{a, b}
+
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 07,2023 at 02:29:15 UTC from IEEE Xplore. Restrictions apply.
+
+LIU et al.: ONLINE SUPERVISORY CONTROL OF NETWORKED DISCRETE EVENT SYSTEMS WITH CONTROL DELAYS                             2321
+
+
+          = {aa, ab, ba, bb}.
+
+Therefore, we have
+
+    USP(˜q)={δ(11, s) ∈Q: s ∈Luc(θ)}={11, 13, 17}.
+
+Therefore, we know that we will unavoidably reach illegal state
+17 starting from such extended state ˜q = (11, θ).
+
+
+B. Choice of Control Decision
+  Suppose that string α ∈Σ∗o is observed and the extended state
+estimate of the system (before the latest unobservable reach) is
+computed as ˆES(α) ∈2Q.˜ Now, let us discuss how to choose
+a control decision at each instant for the purpose of safety. As
+we discussed above, once we choose control decision γ ∈Γ at
+ˆES(α), the extended state estimate will be updated as ES(α) =
+NURγ( ˆES(α)). Moreover, the system will possibly reach any
+state in USP(ES(α)) no matter what control decisions we take
+in the future. Therefore, we say that a control decision γ ∈Γ is
+safe at ˆES(α) if
+                                                                           illegal states (shown in red solid circles) from G. For this
+           USP(NURγ( ˆES(α))) ⊆Qgood.           (19)                                                          example, we have QH = Qgood as all events are controllable.
+                                                               Next, we apply the proposed online control algorithm to com-Therefore, to guarantee safety, we need to make sure that the
+                                                             pute control decision for the ﬁrst three instants, i.e., S(ϵ), S(a),control decision at each instant is safe; otherwise, the system
+may unavoidably reach an illegal state in Q \ QH.             and S(aa).
+                                                                                  Initially, the algorithm starts from ˆE(ϵ) = {(q0, ∅)} and we  So far, we have discussed how to estimate the state of the
+                                                       want to choose a maximal control decision S(ϵ) = γ0 suchsystem recursively online and how to predict the effect of a
+                                                                      that USP(NURγ0( ˆES(ϵ))) ⊆Qgood. One can check that γ0 =control decision based on the current state estimate. Now, we
+                                     Σ is such a maximal control decision. Then the state esti-combine the estimation and prediction techniques together to
+                                                      mate is updated to ES(ϵ) = NURγ0( ˆES(ϵ)) = {(1, {(γ0, 1)})}.ﬁnally present our online control algorithm.
+                                                                               If event a is observed, then we ﬁrst update the state esti-  The online control procedure is formally provided in Algo-
+                                                      mate to ˆES(a) = NORa(ES(ϵ)) = {(2, {(γ0, 0)})}. Then werithm ONLINE-CONTROL, which computes a control decision at
+                                                             again want to ﬁnd a maximal control decision S(a) = γ1 sucheach instant upon the occurrence of a new observable event.
+                                                                      that USP(NURγ1({(2, {(γ0, 0)})})) ⊆Qgood. For this, we canMore speciﬁcally, the procedure starts from the initial state
+estimate ˆES(ϵ) = {(q0, ∅)}. Then it wants to ﬁnd a safe control   choose γ1 = {a, b, u1, u3}. Note that we cannot add event u2
+decision γ at ˆES(ϵ) in the sense of (19). Moreover, to achieve   to γ1 since illegal state 15 will be reached in the unobservable
+                                                                  reach. Then the immediate state estimate upon the occurrencepermissiveness, we want this control decision to be maximal,
+i.e., there does not exist another safe control decision γ′ at ˆES(ϵ)   of the next observable event a is ˆE(aa) = {(6, {(γ1, 0)})}. By
+such that γ ⊂γ′. Once the control decision is chosen, we update   applying the online algorithm recursively again, we can obtain
+                                                                 control decision S(aa) = γ2 = Σ.our state estimate to ES(ϵ) using the NURγ(·) operator and then
+wait for the occurrence of the next observable event. Once a new
+observable event σ is observed, ﬁrst, we update the state estimate
+                                                      C. Correctness of Online Control Algorithmto ˆES(σ) using the NORσ(·) operator. Then, we go to line 7 to
+choose a safe control decision and repeat the above procedure     In this subsection, we formally prove the correctness of the
+indeﬁnitely.                                               proposed online control algorithm. Speciﬁcally, we show that
+  Remark 4: The maximal safety control decision in lines 2 and   Algorithm 1 is what follows:
+7 of Algorithm 1 can be found by an “add-and-test” manner.      1) recursively feasible, i.e., we can always ﬁnd a control
+Speciﬁcally, we can start from the set of uncontrollable events         decision satisfying the condition in lines 2 and 7 in the
+and then add a controllable event to it and test whether or not         while-loop at each instant, no matter what events and
+the resulting set is still safe. If so, we keep this event and repeat         control decisions are executed in the past;
+this procedure until no event can be added anymore. Similar      2) safe, i.e., the resulting online supervisor will never reach
+procedure has been described in more detail in the literature;        an illegal state.
+see, e.g., [5].                                                                First, we show the recursive feasibility of Algorithm 1 by the
+  Let us use the following example to illustrate Algorithm 1.     following theorem.
+  Example 4: Let us return to the system G shown in Fig. 2 with    Theorem 2: Algorithm 1 is recursively feasible. That is, at
+Σc = Σ, Σo = {a, b} and Nc = 1. The speciﬁcation language   each instant, we can always ﬁnd a control decision γ ∈Γ such
+K  is generated by the subautomaton obtained by removing   that USP(NURγ( ˆES(α))) ⊆Qgood.
+
+
+
+        Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 07,2023 at 02:29:15 UTC from IEEE Xplore. Restrictions apply.
+
+2322                                                               IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 67, NO. 5, MAY 2022
+
+
+  Proof: To  show    this,    it   sufﬁces   to  show   that  we have USP(ES(α)) ⊆Qgood, which implies that {δ(ˆq, t) ∈
+USP(NURΣuc( ˆES(α))) ⊆Qgood. That is, at least disabling all  Q : t ∈Luc(ˆθ)} ⊆Qgood. This is a contradiction. Therefore,
+controllable events is a valid choice at lines 2 and 7. We proceed  we know that USP(NURΣuc(NORσ(ES(α))) ⊆Qgood, which
+by induction on the length of the observation string.             completes the induction step.                ■
+  Induction   Basis:    Initially,  we   have  α = ϵ   and     Next, we show that the proposed online supervisor is safe.
+ˆES(ϵ) = {(q0, ∅)}.   Therefore,   for  any  extended   state   This result follows directly from the choice of control decision
+(q, θ) ∈NURΣuc( ˆES(ϵ)), we know  that q  is reached  via   at each instant, which guarantees that no state in Q \ Qgood can
+some string in Σ∗uc from q0 and ∀0 ≤i ≤Nc : Γ≥i(θ) = Σuc,   be reached.
+which implies that Luc(θ) ⊆Σ∗uc. Since q0 ∈Qgood, we have     Theorem 3: Let G be a DES and we denote by Sonline
+     USP((q, θ)) ⊆{δ(q0, s) ∈Q : s ∈Σ∗uc} ⊆Qgood.         the online supervisor deﬁned in Algorithm 1. Then we have
+                                                             L(Sonline/G) ⊆K.
+Since (q, θ)  is arbitrary, we have USP(NURΣuc( ˆES(ϵ))) ⊆     Proof: We assume,  for  the  sake  of  contradiction,  that
+Qgood, which proves the induction basis.                         L(Sonline/G)̸ ⊆K. Let s ∈L(Sonline/G) \ K be a string vi-
+  Induction Step: Now, let ασ ∈Σ∗o be an observable sequence   olating the speciﬁcation. Let P(s) = α. We assume without
+that can happen under the control of online supervisor, where   loss of generality that α̸ = ϵ; the case of α = ϵ can be shown
+σ ∈Σo and |α| = k. We assume that the condition in (19) can   analogously.Sinceδ(q0, s) ∈ES(α)andδ(q0, s)̸ ∈Qgood,there
+always be fulﬁlled at each instant along α and we need to   exists a longest preﬁx of α, denoted by α′, such that ES(α′) ⊆
+show that control decision Σuc can still fulﬁll this condition   Qgood. Note that ES(ϵ) ⊆Qgood is guaranteed by the initial
+for the instant of ασ. To this end, we assume, for the sake of   choice of S(ϵ) when line 2 was executed for the ﬁrst time. We de-
+contradiction, that                                            note by σ the following event of α′ in α, i.e., ES(α′σ)̸ ⊆Qgood.
+                                             By Corollary 1, we know that Q(ES(α′σ)) = ES(α′σ). Further-
+         USP(NURΣuc(NORσ(ES(α)))̸ ⊆Qgood.       (20)                                                         more, by the deﬁnition of USP, we know that Q(ES(α′σ)) ⊆
+This implies that there exists an extended state                USP(ES(α′σ)). By the choice of control decision S(α′σ) at
+                                                                      line 7, we then have
+                (q, θ) ∈NURΣuc(NORσ(ES(α))
+                                                        ES(α′σ) = Q(ES(α′σ)) ⊆USP(ES(α′σ)) ⊆Ggood.such that USP((q, θ))̸ ⊆Qgood. That is, there exists a string
+         s ∈Luc(θ) = Γ≥0(θ)Γ≥1(θ) · · · Γ≥Nc(θ)            However,   this   is  a  contradiction,  which  means   that
+                                                             L(Sonline/G) ⊆K.                      ■
+such that δ(q, s) /∈Qgood.
+  Since (q, θ) ∈NURΣuc(NORσ(ES(α))), by the deﬁnitions                                                                      V. COMPARISON WITH PREDICTIVE SUPERVISOR
+of NUR and NOR, there exists a state (ˆq, ˆθ) ∈ES(α) and a
+string σ1σ2 . . . σm ∈Σ∗uo that induce the following sequence of     In the previous section, we have provided an online approach
+extended states:                                                    for solving SCPCD. In [33], a supervisor called predictive
+                           σ1    σm                           supervisor was proposed in order to solve the supervisor ex-
+             (ˆq, ˆθ) σ−→(q1, θ1) −→· · · −−→(qm+1, θm+1)            istence problem that aims to achieve K exactly. Moreover, the
+                                                              author also shows that when K is not exactly achievable, thewhere
+   1) σ∈Γ(ˆθ) and (q1, θ1)=(δ(ˆq, σ), NX(ˆθ) ∪{(Σuc, Nc)});   synthesized supervisor is still safe, i.e., the predictive supervisor
+   2) for any 1 ≤i ≤m, we have σi ∈Γ(θi) and             can also provide a solution to SCPCD.
+      (qi+1, θi+1) = (δ(qi, σi), NX(θi) ∪{(Σuc, Nc)});           In this section, we formally compare our solution with the
+   3) (qm+1, θm+1) = (q, θ).                                    predictive supervisor in the literature when it is used for the
+                                                                 synthesis problem. Speciﬁcally, we show the following.  Then, for the above sequence, we have
+                                                                   1) In general, the proposed online supervisor in Algorithm 1
+                                                                                       is incomparable with the predictive supervisor.                           Γ≥i(ˆθ)    if i ≤Nc  .           (21)              Γ(θi) =
+                     Σuc        if i > Nc                       2) With an additional criterion on the choice of control
+                                                                      decision at each instant, which can always be fulﬁlled, theThis implies that, starting from extended state (qm+1, θm+1) =
+(q, θ), we also have                                              proposed online supervisor can outperform the predictive
+                                                                      supervisor in terms of the permissiveness.
+                         Γ≥i(ˆθ)    if m + 1 + i ≤Nc       Γ≥i(θm+1)=                                  (22)
+                   Σuc        if m + 1 + i > Nc.          A. Review of Predictive Supervisor
+Recall that δ(qm+1, s)̸ ∈Qgood and s ∈Luc(θm+1). Therefore,      First, we review the predictive supervisor proposed in [33] for
+we have                                                         the case of control delays.
+   σσ1 . . . σms ∈Γ≥0(ˆθ) · · · Γ≥Nc(ˆθ)Σ∗uc = Luc(ˆθ)Σ∗uc.         Recall that the speciﬁcation language K is recognized by a                                                                               strict subautomaton H = (QH, Σ, δH, q0), with Qgood ⊆QH.
+Let s′ ∈Luc(ˆθ) be the longest preﬁx of σσ1 . . . σms such that  We further assume, without loss of generality, that K is control-
+the last event is controllable. By the deﬁnition of Qgood, we know   lable, which implies Qgood = QH; otherwise, we can compute
+that δ(ˆq, s′)̸ ∈Qgood. However, by the induction hypothesis,   the supremal controllable sublanguage of K. Then we deﬁne the
+
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 07,2023 at 02:29:15 UTC from IEEE Xplore. Restrictions apply.
+
+LIU et al.: ONLINE SUPERVISORY CONTROL OF NETWORKED DISCRETE EVENT SYSTEMS WITH CONTROL DELAYS                             2323
+
+
+observer of H by
+                   Hobs = (Y, Σo, ξ, y0)
+where Y ⊆2QH is the set of states, y0 = {δH(q0, w) ∈QH :
+w ∈Σ∗uo} is the initial state. The transition function ξ : Y ×
+Σo →Y is deﬁned by the following: for any y ∈Y and σ ∈Σo,
+we have
+          ξ(y, σ) = UR({δH(q, σ) ∈QH : q ∈y})
+
+where UR(·) is the standard unobservable reach operator deﬁned    Fig. 3.  System with Σ = Σc = Σo and Nc = 1.
+by the following: for any y ∈2QH, we have
+      UR(y) := {δH(q, w) ∈QH : q ∈y, w ∈Σ∗uo}.           However, compared with our state estimation and predic-
+For the sake of simplicity, we only consider the reachable part   tion techniques, the state estimation and prediction techniques
+of Hobs. Essentially, the observer computes the current state-   utilized in Spnc are based on the open-loop systems. That is,
+estimate based on H, i.e., for any string α ∈P(L(H)), we have   both the estimation and the prediction are based on the origi-
+ξ(y0, α) = E(α), where                                         nal speciﬁcation automaton H, which is independent from the
+                                                                 control policy. This strategy is sufﬁcient when considering the
+  E(α) := {δH(q0, s) ∈QH : ∃s ∈L(H) s.t. P(s) = α}      supervisor existence problem since we know a priori that the
+is the current state estimate of α in H.                          closed-loop language should be K = L(H). However, this is
+                                                              not the case for the synthesis problem since the closed-loop  To deal with effect of control delay, ReachN(·) operator is
+                                                           language is just a sublanguage of K in general. Therefore, usingintroduced to compute the set of all states that can be reached
+within N steps, i.e., for any y ∈2QH, we have                   the original H to perform state estimation and state prediction
+                                              may be overly conservative by taking some states that are not
+ ReachN(y) = {δH(q, s)∈QH : ∃q∈y, s∈Σ∗s.t. |s| ≤N}.    reachable in the closed-loop system into account.
+                                                     The above observation suggests that the state estimation and  The predictive supervisor, denoted by Spnc : Σ∗o →Γ, is de-
+ﬁned as follows. For any observable string α ∈P(L(H)), the   state prediction techniques proposed in our article are more pre-
+                                                                    cise than those used in the predictive supervisor. Consequently,control decision of Spnc is deﬁned by
+                                                                 the proposed online supervisor should be strictly more per-
+            Spnc(α) = Σ \ D(ReachNc(E(α)))         (23)   missive than the predictive supervisor. However, the following
+                                                           simple example shows that it is not the case if we choose controlwhere D(·) represents the set of events that should be disabled
+as their occurrences may lead to illegal region, i.e., for any y ∈   decision in lines 2 and 7 of Algorithm 1 arbitrarily and the
+                                                          proposed online supervisor and the predictive supervisor may2QH, we have
+                                                        be incomparable.
+      D(y) = {σ ∈Σc : ∃q ∈y s.t. δ(q, σ) /∈Qgood}.          Example 5: Let us consider system G shown in Fig. 3 with
+                                     Σ = Σc = Σo and Nc = 1. The speciﬁcation language K is
+It is shown in [33] that the predictive supervisor is safe, i.e.,
+                                                             generated by the subautomaton obtained by removing the singleL(Spnc/G) ⊆K. This result is rather straightforward as it op-                                                                           illegal state 5 from G. Let us discuss the initial control decision
+erates in a conservative manner by disabling all possible events
+                                                               of the system.
+that may cause illegal behavior.
+                                                                               First, using the predictive supervisor, we have E(ϵ) = {1},  Finally,foranyobservablestringα ∈P(L(H)),similartothe
+                                                    ReachNc({1}) = {1, 2, 3, 4} and D({1, 2, 3, 4}) = {b, c, d}.current-state estimate E(α), we also deﬁne ˆE(α) as the set of
+                                                               Therefore, the initial control decision is Spnc(ϵ) = {a}.states that can be reached immediately after observing α without
+                                                    Now, let us use Algorithm 1 to compute the initial con-
+the unobservable tail, i.e.,
+                                                                            trol decision of Sonline. Initially, the algorithm starts from
+  ˆE(α) = {δH(s) ∈QH : ∃s ∈Σ∗Σo ∪{ϵ} s.t. P(s) = α}.      ˆE(ϵ) = {(q0, ∅)}. Then consider the following two candidates
+                                                               of maximal control decision satisfying the condition in (19):
+Clearly, we have ˆE(ϵ) = {q0} and E(α) = UR( ˆE(α)).                                                                   1) Sonline(ϵ) = {a, b} or
+                                                                   2) Sonline(ϵ) = {c, d}.
+B. Improving the Predictive Supervisor
+                                                                  In Algorithm 1, there is no speciﬁc criterion for which control
+  As we can see, similar to the proposed online supervisor, the   decision we need to choose. However, if we choose Sonline(ϵ) =
+predictive supervisor Spnc proposed in [33] also consists of the   {c, d}, then the closed-loop language of the online supervisor
+following two parts:                                               will be incomparable with that of Spnc.
+   1) state estimation part: ξ(y0, α) = E(α), which estimates    The above example reveals the following issue. In general,
+      the current state of the system upon the occurrence of α   there may have multiple maximal control decisions satisfying
+      using the observer of H;                                 (19) in lines 2 and 7 of Algorithm 1. Speciﬁcally, some control
+   2) state prediction part: ReachNc(·), which predicts states   decisions may not contain the control decision of Spnc even
+       that can be reached in the next Nc steps.                 though they are locally maximal. In order to guarantee that
+
+
+
+        Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 07,2023 at 02:29:15 UTC from IEEE Xplore. Restrictions apply.
+
+2324                                                               IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 67, NO. 5, MAY 2022
+
+
+the online supervisor can outperform the predictive supervisor,
+one straightforward way is to strengthen the condition in (19)
+by choosing control decision γ such that Spnc(α) ⊆γ. Clearly,
+if the control decision γ chosen at each instant contains the
+control decision of the predictive supervisor, then Sonline must
+outperform (at least equal to) Spnc. Then the question arises as
+to whether or not we can always ﬁnd such a “matching” control
+decision at each instant. The existence of such a control decision
+γ is not straightforward. In particular, in the partial observation
+setting, once a control decision of a supervisor is enlarged at
+some instant, the state estimate will become more uncertain in
+thefutureasmorebehaviorsareallowed,whichmay,ontheother
+hand, make the future control decision more conservative in
+order to maintain safety. Examples of such a phenomenon can be
+found in [5] and [43]. Therefore, the state prediction procedure
+should also take the future decisions of the given supervisor that
+we want to match into account in order to preserve the ability of
+“decision matching” at each instant. To this end, we generalize
+the USP to the uncontrollable matched state prediction, which
+not only takes all uncontrollable behaviors into account but also
+considers all possible behaviors we need to execute in order to
+match the given supervisor.
+  Deﬁnition 6: Let θ ∈Θ be a channel conﬁguration, S be
+a supervisor, and α ∈P(L(S/G)) be an observable string.
+Then the uncontrollable matched language from θ and α under
+supervisor S, denoted by LSuc(θ, α), is deﬁned recursively as   condition in (19) in Algorithm 1 is replaced by two conditions
+follows.                                                            in Algorithm 2: (25) guarantees that the control decision choice
+   1) ϵ ∈LSuc(θ, α).                                                  at each instant contains the decision of the predictive supervisor
+   2) For any s ∈Σ∗, σ ∈Σ, we have sσ ∈LSuc(θ, α) if       and (26) guarantees that we should maintain the ability of
+          1) |s| ≤Nc;                                         “decision matching” in the future by looking ahead.
+          2) s ∈LSuc(θ, α);                                     Next, we discuss the correctness of Algorithm 2. First, we
+          3) σ ∈Γ≥|s|(θ) ∪(   i=0,1,...,|s| S(αP(s−i))).        show that Algorithm 2 is still recursively feasible, i.e., the mod-
+  The intuition of the uncontrollable matched language is as   iﬁed conditions (25) and (26) can still be fulﬁlled recursively.
+follows. Suppose that S  is a given supervisor, the channel    Theorem 4: Algorithm 2 is still recursively feasible. That is,
+conﬁguration of the system is θ, and the current observation   at each instant of α ∈P(L(G)), we can always recursively ﬁnd
+is α. Then all behaviors in LSuc(θ, α) are unavoidable if we want   a control decision γ ∈Γ such that both
+to match the behavior under the control of S. Clearly, if we      1) Spnc(α) ⊆γ and
+consider the most restrictive supervisor Sres that always disables      2) USPSpncM  (NURγ( ˆES(α)), α) ⊆Qgood.
+all controllable events, then LSresuc (θ, α) coincides with Luc(θ)     Proof: See the Appendix.
+for any α. Similar to the USP, we also deﬁne the uncontrollable     Let us denote by S∗online the modiﬁed online supervisor deﬁned
+matched state prediction as follows.                               in Algorithm 2. According to the deﬁnitions of USP(·) and
+  Deﬁnition 7: Let ˜q = (q, θ) ∈˜Q be an extended state, S be a  USPSM(·, ·), we have USP(˜q) ⊆USPSM(˜q, α) for any S and α.
+supervisor, and α ∈P(L(S/G)) be an observable string. Then   This means that the choice of control decision in Algorithm 2 is
+the uncontrollable matched state prediction of ˜q w.r.t. S and α,  more conservative than that of Algorithm 1. Hence, by the same
+denoted by USPSM(˜q, α), is deﬁned by                        argument in Theorem 3, we also know that S∗online is safe, i.e.,
+                                                  L(S∗online/G) ⊆K. Furthermore, at each instant, S∗online(α) is
+    USPSM(˜q, α) = {δ(q, s) ∈Q : s ∈LSuc(θ, α)}.      (24)   chosen such that Spnc(α) ⊆S∗online(α). Therefore, we also have
+                                                      L(Spnc/G) ⊆L(S∗online/G). The above discussion is summa-
+The  uncontrollable matched  state  prediction  is  also  ex-   rized by the following theorem.
+tended to a set of extended states x ∈2Q˜ by USPSM(x, α) =    Theorem 5: Let G be a DES and Spnc be the predictive super-
+∪˜q∈xUSPSM(˜q, α).                                                visor and S∗online be the modiﬁed online supervisor deﬁned in
+  Based on the above discussion, we propose a modiﬁed online   Algorithm 2. Then we have L(Spnc/G) ⊆L(S∗online/G) ⊆K.
+control algorithm speciﬁed by Algorithm 2. The structures of     In [33], it was shown that controllability together with net-
+Algorithms 1 and 2 are exactly the same. That is, upon each  worked observability (the reader is referred to [33] for the def-
+occurrence of new observable event, the supervisor chooses   initions) provide the necessary and sufﬁcient conditions under
+a new control decision by checking the USP assuming this  which K can be exactly achieved by the predictive supervisor.
+decision is taken. The only difference is line 7, where the   Then, we also have the following corollary.
+
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 07,2023 at 02:29:15 UTC from IEEE Xplore. Restrictions apply.
+
+LIU et al.: ONLINE SUPERVISORY CONTROL OF NETWORKED DISCRETE EVENT SYSTEMS WITH CONTROL DELAYS                             2325
+
+
+
+
+
+Fig. 4.  Observer Hobs for system G in Fig. 2.
+
+  Corollary 2: Let G be a DES and S∗online be the modiﬁed on-
+line supervisor. If K is controllable and networked observable,
+then we have L(S∗online/G) = L(Spnc/G) = K.
+  We now use the following example to demonstrate our online                                                                               Fig. 5.  Closed extended state estimate ﬂow of G in Fig. 2.
+supervisor indeed works better than predictive supervisor.
+  Example 6: Again, we consider system G shown in Fig. 2
+with Σc = Σ, Σo = {a, b}, and Nc = 1. We synthesize the pre-   such  that Spnc(a) ⊂γ1 and USPSpncM  (NURγ1( ˆES(a)), a) ⊆
+dictive supervisor and the modiﬁed online supervisor to control   Qgood. To see the latter more clearly, we have
+the system, respectively, and compare their performances. First,
+we compute the predictive supervisor Spnc. To this end, we need          NURγ1( ˆES(a)) = {(2, θ), (3, θ′), (4, θ′)}
+to compute the observer Hobs, which is shown in Fig. 4 . Then
+                                                      where θ = {(γ0, 0), (γ1, 1)} and θ′ = {(γ1, 0), (γ1, 1)}. More-we use (23) to compute the control decision at each instant. For
+                                                                   over, we can obtain the following:
+example, at the initial instant, we have
+           E(ϵ) = {1}, ReachNc(E(ϵ)) = {1, 2}             LSpncuc  (θ, a) = {ϵ} ∪(γ0 ∪γ1 ∪Spnc(a))
+       and Spnc(ϵ) = Σ \ D(ReachNc(E(ϵ))) = Σ.                       ∪(γ0 ∪γ1 ∪Spnc(a)) (γ1 ∪Spnc(a))
+When event a is observed, we then have                       LSpncuc   (θ′, a) = {ϵ} ∪(γ1 ∪Spnc(a))
+    E(a) = {2, 3, 4, 5}, ReachNc(E(a)) = {2, 3, 4, 5, 6, 8}                 ∪(γ1 ∪Spnc(a)) (γ1 ∪Spnc(a) ∪Spnc(aa))
+
+ and Spnc(a) = Σ \ D(ReachNc(E(a))) = Σ \ {u2, b}.                                                      which gives USPSpncM  (NURγ1( ˆES(a)), a)={2, 3, 4, 6, 7, 9}⊆
+Similarly, we can obtain Spnc(aa) = Σ \ {b} and Spnc(aaa) =   Qgood. Similarly, we can ﬁnd S∗online(aa) = Σ =: γ2 as a con-
+Σ \ {a, b}. The closed-loop language L(Spnc/G) under control   trol decision when string aa is observed. Note that at the instants
+is generated by the automaton shown in Fig. 6(a).                of a and aa, S∗online is strictly more permissive than Spnc.
+  Next, we synthesize the modiﬁed online supervisor S∗online.   Speciﬁcally, Spnc needs to disable b to prevent the system from
+                                                             reaching illegal state 16 from state 8 via event b. However,Initially, we have ˆES(ϵ) = {(1, ∅)}. Since Spnc(ϵ) is already Σ,
+                                                     by utilizing the control information, S∗online knows that stateby Theorem 4, we immediately get
+                                                     8 is not reachable as we have already disabled u2. Therefore,
+                S∗online(ϵ) = Σ =: γ0                       the transition from state 6 to state 7, which does not exist in
+                                                      L(Spnc/G), can be allowed by S∗online. Finally, when stringand update the extended state estimate to
+                                                  aaa is observed, S∗online can choose either
+         ES(ϵ) = NURγ0( ˆES(ϵ)) = {(1, {(γ0, 1)})}                1) S∗online(aaa) = Σ \ {a} := γ3
+                                                                   2) S∗online(aaa) = Σ \ {b} := γ′3.which is the initial state of the structure shown in Fig. 5. When
+the ﬁrst observable event a occurs, ﬁrst, we update the extended     Both of them strictly contain the corresponding control deci-
+                                                               sion Spnc(aaa) = Σ \ {a, b} issued by the predictive supervi-state estimate to
+                                                                           sor. Suppose that we choose S∗online(aaa) = γ3. Then the entire
+          ˆES(a) = NORa(ES(ϵ)) = {(2, {(γ0, 0)})}.            information ﬂow of the extended state estimate under S∗online
+                                                       and the associated control decisions are depicted in Fig. 5. The
+Then we ﬁnd a maximal control decision
+                                                              closed-loop language L(S∗online/G) under control is generated
+             S∗online(a) = Σ \ {u2} =: γ1                by the automaton shown in Fig. 6(b). Clearly, we see that the
+
+
+
+        Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 07,2023 at 02:29:15 UTC from IEEE Xplore. Restrictions apply.
+
+2326                                                               IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 67, NO. 5, MAY 2022
+
+
+                                                                                       VI. CONCLUSION
+
+                                          We investigated the supervisor synthesis problem in the con-
+                                                                       text of networked DESs. First, a novel structure called channel
+                                                           conﬁguration was proposed to dynamically capture past control
+                                                                     history; hence, closed-loop state estimate was realized and it
+                                                   was more accurate compared with that computed according
+                                                                    to the observer built beforehand. Then, based on the channel
+                                                             conﬁguration, we proposed an operator called USP to guarantee
+                                                                      that the system always retains in the safe region under our online
+                                                              supervisory control and put forward a safe and recursive feasible
+                                                                algorithm. Finally, we formally prove that our proposed online
+                                                               supervisor always works better than the predictive supervisor
+                                                                    in the sense that it can always obtain a larger (at least equal to)
+                                                              event set than the latter along the system trajectory. Note that the
+                                                                 control speciﬁcation considered in this work is safety; liveness
+                                                               speciﬁcations such as nonblockingness and deadlock-freeness
+                                                                 are not considered. The main reason is that liveness is a global re-
+Fig. 6.  Closed-loop languages induced by Spnc and Sonline, respec-
+tively. (a) L(Spnc/G). (b) L(S∗online/G).                           quirementthatcannotbeenforcedusingonlinecontrolalgorithm
+                                                                on-the-ﬂy. To guarantee liveness, one may need to ﬁrst construct
+                                                                 the entire reachable information space ofﬂine and then compute
+modiﬁed online supervisor S∗online is strictly more permissive   the supervisor, which loses the main computational advantage
+than the predictive supervisor Spnc.                             of the online control approach. Also, this work only considers
+  Remark 5: We conclude by discussing the complexity of   communication delays in control channel. In the future, we also
+the proposed online control algorithms. First, operator NX(θ)   plan to extend our results to DES with both observation and
+is just a one-step reachability operation, which is linear in   control delays.
+the size of θ (|θ| ≤Nc). Also, the complexities of comput-
+ing NORσ(x) and NURγ(x), x ∈2Q˜  are O(|Q| · |Θ|) and                      APPENDIX
+O(|Σ| · |Q| · |Θ|), respectively. Furthermore, the complexity for                                                       Proof of Theorem 4
+computing USP(x), x ∈2Q˜ is also O(|Σ| · |Q| · |Θ|), which is
+                                                                Proof: To show this, it sufﬁces to show thatessentially an Nc-step reachability search. Therefore, in Al-
+gorithm 1, it takes O(|Σ| · |Q| · |Θ|) to compute ˆES(·), ES(·)                                                                      USPSpncM (NURSpnc(α)( ˆES(α)), α) ⊆Qgood.(lines 1, 4, 5, and 9) and takes O(|Γ| · |Σ| · |Q| · |Θ|), |Γ| = 2|Σc|
+to ﬁnd some maximal control decision γ (lines 2 and 7) because   That is, at least choosing the decision of Spnc satisﬁes (25)
+we need to test all possible control decisions in Γ and for each  and (26). We proceed by induction on the length of the observa-
+control decision to compute its USP and test the set inclusion   tion string.
+(which can be done simultaneously).                              Induction Basis:  Initially, we have α = ϵ and  ˆES(ϵ) =
+  The case of Algorithm 2 is similar, the only difference is   {(q0, ∅)}.  Let  (q, θ)  be  an  arbitrary  extended  state  in
+the computation of uncontrollable matched state prediction   NURSpnc(ϵ)( ˆES(ϵ)) and s ∈(Spnc(ϵ) ∩Σuo)∗be an arbitrary
+USPSpncM  (NURγ( ˆES(α)), α). Here, we also need to use addi-   string such that (δ(s), θ(s)) = (q, θ). First, we know that q ∈
+tionally computed control decisions of the predictive supervisor.   Qgood as Spnc is a safe supervisor. Then we consider an arbitrary
+Note that the predictive supervisor can be implemented by a   string w ∈LSpncuc (θ, ϵ). By matching the deﬁnition of L(S/G)
+networked observer that is exponential in the size of G. However,   and LSpncuc (θ, ϵ), we have sw ∈L(Spnc/G). This implies that
+this part can be done ofﬂine and be stored. Therefore, the online   δ(q0, sw) ∈Qgood. Since all strings and states considered are
+computation of USPSpncM   (·) is still O(|Σ| · |Q| · |Θ|) and the   arbitrary, we have
+overall complexity of Algorithm 2 for each online instant (each
+execution of the while-loop) is also O(|Γ| · |Σ| · |Q| · |Θ|).                 USPSpncM (NURSpnc(ϵ)( ˆES(ϵ)), ϵ) ⊆Qgood.
+   Finally, we note that the set Θ contains no more than |Γ|Nc =                                                           This proves the induction basis.
+2|Σc|·Nc channel conﬁgurations. Therefore, the complexity of                                                                Induction Step: Now, let ασ ∈Σ∗o be an observable sequence
+the online algorithm for each execution is polynomial in the                                                                      that can happen under the control of the modiﬁed online supervi-
+number of states but exponential in the number of controllable   sor,whereσ ∈Σo and|α| = k.Weassumethat(25)and(26)can
+events and the delay bound. In practice, the number of events                                                         always be fulﬁlled at each instant along α and we need to show
+is much smaller than the number of states in G. Furthermore,                                                                      that control decision Spnc(ασ) can still fulﬁll these conditions
+in most real-world applications, Nc is usually relatively small.                                                                    for the instant of ασ.
+Otherwise, it is more natural for engineers to ﬁrst improve the                                                              Let us consider an arbitrary extended state
+hardware to reduce delays and then to use networked control
+algorithms to compensate the effect of delays.                                  (q, θ) ∈NURSpnc(ασ)(NORσ(ES(α))).
+
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 07,2023 at 02:29:15 UTC from IEEE Xplore. Restrictions apply.
+
+LIU et al.: ONLINE SUPERVISORY CONTROL OF NETWORKED DISCRETE EVENT SYSTEMS WITH CONTROL DELAYS                             2327
+
+
+By the deﬁnitions of NUR and NOR, there exists a state (ˆq, ˆθ) ∈ m ≥Nc. Then consider the ﬁrst state q1 = δ(qm+1, σ1w). If
+ES(α) and a string σ1σ2 . . . σm ∈Σ∗uo that induce the following  σ1w ∈Σuo, then this reduces to the ﬁrst part. Therefore, we as-
+sequence of extended states:                             sume σ1w ∈Σo and a new control decision S(ασP(σ1w)) will be
+                                                                   issued. Since q1 is reached from state qm+1 ∈ReachNc(E(ασ))                           σ1    σm
+             (ˆq, ˆθ) σ−→(q1, θ1) −→· · · −−→(qm+1, θm+1)            via event σ1w ∈Spnc(ασ), we know from the same argument
+                                                                    in the ﬁrst part that q1 ∈Qgood. Then consider the secondwhere we have the following:
+                                                                              w ∈Spnc(ασ) ∪   1) σ ∈Γ(ˆθ)      and       (q1, θ1) = (δ(ˆq, σ), NX(ˆθ) ∪   state q2 = δ(qm+1, σ1wσ2w), where we have σ2
+                                                       Spnc(ασσ1w). On the one hand,  if σ2w ∈Spnc(ασ), then we      {(Spnc(ασ), Nc)});
+                                                               obtain immediately that q2 ∈Qgood as q1 ∈ReachNc(E(ασ)).   2) for any 1 ≤i ≤m, we have σi ∈Γ(θi) and
+                                                               w ∈Spnc(ασσ1w), then based on the      (qi+1, θi+1) = (δ(qi, σi), NX(θi) ∪{(Spnc(ασ), Nc)});  On the other hand, if σ2
+   3) (qm+1, θm+1) = (q, θ).                                   construction of Spnc(ασσ1w), i.e., Σ \ D(ReachNc(E(ασσ1w))),
+                                             we also have q2 ∈Qgood since we know for sure that q1 ∈  Since  (ˆq, ˆθ) ∈ES(α), we know that there exists a string
+                                                  ReachNc(E(ασσ1w)). This means that for any feasible event,s ∈L(S/G) such that P(s) = α and (δ(s), θ(s)) = (ˆq, ˆθ). Note
+                                                     no matter it is enabled by past control decisions in the channel
+that, although supervisor S has only made control decisions up
+                                                               or by the latest effective control decision, the transition from
+to the instant of α, L(S/G) and θ(s) are still well deﬁned as                                                                        state q1 to q2 is always safe as it is also allowed in the pre-
+they only depend on the information in the history. Moreover,
+                                                                     dictive supervisor. Therefore, by applying the above argument
+by the induction hypothesis, we have                                                                        iteratively and the fact that |w| ≤Nc + 1, we have q|w| ∈Qgood,
+             USPSpncM ((δ(s), θ(s)), α) ⊆Qgood.          (27)  where q|w| = δ(qm+1, σ1w · · · σ|w|w  ).
+                                                          Because w is an arbitrary string in LSpncuc (θ, ασ), we know that
+Now, let us consider an arbitrary string w ∈LSpncuc (θ, ασ) such                                                             USPSpncM (q, θ) ⊆Qgood. Since (q, θ) is also chosen arbitrarily, wethat δ(q, w)! To be more speciﬁc, we write w in the form of w =
+                                                                    further have
+σ1wσ2w . . . σ|w|w ∈Σ∗.ByDeﬁnition6,wehave|w| ≤Nc + 1and
+           ⎛               ⎞          USPSpncM (NURSpnc(ασ)(NORσ(ES(α))), ασ) ⊆Qgood
+ σi+1  w  ∈Γ≥i(θm+1) ∪ ⎝      S(ασP((σ1w . . . σiw)−k)) ⎠.
+                               k=0,...,i                           which completes the induction step.
+
+Then we consider the following two cases.
+  Case 1: 1 + m + |w| ≤Nc + 1.                                        REFERENCES
+  In such case, by considering LSpncuc  (ˆθ, α) and the above     [1] M. V. S. Alves and J. C. Basilio, “State estimation and detectability
+speciﬁed sequence  of  extended  states and  string w, we         of networked discrete event systems with multi-channel communication
+                                                                                  networks,” in Proc. IEEE Amer. Control Conf., 2019, pp. 5602–5607.
+have σσ1 · · · σmw ∈LSpncuc  (ˆθ, α).  Therefore, we know  that     [2] M. V. S. Alves, J. C. Basilio, A. E. Carrilho da Cunha, L. K. Carvalho,
+δ(ˆq, σσ1 · · · σmw) = δ(q, w) ∈Qgood by (27).                         and M. V. Moreira, “Robust supervisory control against intermittent loss
+  Case 2: 1 + m + |w| > Nc + 1.                                           of observations,” in Proc. 12th Int. Workshop Discrete Event Syst., vol. 12,                                                                              2014, 12, pp. 294–299.
+  In such case, we proceed our proof by two parts. Without loss     [3] M. V. S. Alves, L. K. Carvalho, and J. C. Basilio, “Supervisory control of
+of generality, we assume that m ≥Nc. If m < Nc holds, we        timed networked discrete event systems,” in Proc. 56th IEEE Conf. Decis.
+will see that, on the basis of Case 1, the proof is degenerated to         Control, 2017, pp. 4859–4865.
+                                                                                      [4]  S. Balemi, “Input/output discrete event processes and communication
+only the second part.                                                               delays,” Discrete Event Dyn. Syst., vol. 4, no. 1, pp. 41–85, 1994.
+   First, we prove that the state reached via unobservable string     [5] N. Ben Hadj-Alouane, S. Lafortune, and F. Lin, “Centralized and dis-
+is in Qgood. By Corollary 1 and the deﬁnitions of E(α) and          tributed algorithms for on-line synthesis of maximal control policies under                                                                                                 partial observation,” Discrete Event Dyn. Syst.: Theory Appl., vol. 6, no. 4,
+ˆE(α), we know that  ˆq ∈Q(ES(α)) ⊆E(α), which implies         pp. 379–427, 1996.
+q1 ∈Q( ˆES(ασ)) ⊆ˆE(ασ). Note that Spnc in (23) can also be     [6] K. Cai, R. Zhang, and W. M. Wonham, “Relative observability of discrete-
+                                                                                   event systems and its supremal sublanguages,” IEEE Trans. Autom. Con-
+rewritten as                                                                                                           trol, vol. 60, no. 3, pp. 659–670, Mar. 2015.
+        Spnc(ασ) = Σ \ D(ReachNc(E(ασ)))                        [7] L.creteK. eventCarvalho,systemsJ. C.againstBasilio,intermittentand M. V. Moreira,loss of observations,”“Robust diagnosisAutomatica,of dis-
+                                                                                              vol. 48, no. 9, pp. 2068–2078, 2012.
+          = Σ \ D(ReachNc(UR( ˆE(ασ))))                 [8] C. G. Cassandras and S. Lafortune, Introduction to Discrete Event Systems,
+                                                                       2nd ed. Berlin, Germany: Springer, 2008.
+which means no  event  in Spnc(ασ) can  lead a  state  in     [9]  J. Dubreil, P. Darondeau, and H. Marchand, “Supervisory control for
+ReachNc(UR( ˆE(ασ))) out of Qgood. Furthermore, since qm+1          opacity,”May 2010.IEEE Trans. Autom. Control, vol. 55, no. 5, pp. 1089–1100,
+is reached under NURSpnc(ασ)(·) operator, and σ1 · · · σm ∈Σ∗uo    [10] C. Gu, X. Wang, and Z. Li, “Synthesis of supervisory control with partial
+with σi ∈Γ(θi), following the same argument in Case 1, i.e., no         observation on normal state-tree structures,” IEEE Trans. Autom. Sci. Eng.,
+event in Γ(ˆθ) can lead a state in ReachNc(UR( ˆE(ασ))) out of    [11] M.vol.Heymann16, no. 2, andpp. 984–997,F. Lin, “On-lineApr. 2019.control of partially observed discrete
+Qgood, we know that q1, q2, . . . , qm+1 ∈Qgood.                            event systems,” Discrete Event Dyn. Syst.: Theory Appl., vol. 4,no. 3,
+  Second,  we  prove  that  the  state  reached  via w ∈         pp. 221–236, 1994.
+LSpncuc (θm+1, ασ) is also in Qgood. For this, let us consider states    [12] R.temsJacob,opacity:J.-J.Models,Lesage, validation,and J.-M. Faure,and quantiﬁcation,”“Overview ofAnnu.discreteRev.eventControl,sys-
+reached along string w. Note that Γ(θm+1) = Spnc(ασ) since          vol. 41, pp. 135–146, 2016.
+
+
+
+        Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 07,2023 at 02:29:15 UTC from IEEE Xplore. Restrictions apply.
+
+2328                                                               IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 67, NO. 5, MAY 2022
+
+
+
+[13]  J. Komenda and F. Lin, “Modular supervisory control of networked    [38] W. M. Wonham and K. Cai, Supervisory Control of Discrete-Event Sys-
+      discrete-event systems,” in Proc. 13th Int. Workshop Discrete Event Syst.,         tems. Berlin, Germany: Springer, 2018.
+     2016, pp. 85–90.                                                          [39]  S. Yang, J. Hou, X. Yin, and S. Li, “Opacity of networked supervisory
+[14]  J. Komenda, T. Masopust, and J. H. Van Schuppen, “Synthesis of con-         control systems over insecure communication channels,” IEEE Control
+      trollable and normal sublanguages for discrete-event systems using a        Netw. Syst., to be published, 2021, doi: 10.1109/TCNS.2021.3050131.
+      coordinator,” Syst. Control Lett., vol. 60, no. 7, pp. 492–502, 2011.          [40] X. Yin, “Supervisor synthesis for mealy automata with output functions:
+[15]  J. Komenda, T. Masopust, and J. H. van Schuppen, “Supervisory control     A model transformation approach,” IEEE Trans. Autom. Control, vol. 62,
+      synthesis of discrete-event systems using a coordination scheme,” Auto-         no. 5, pp. 2576–2581, May 2017.
+     matica, vol. 48, no. 2, pp. 247–254, 2012.                                  [41] X. Yin and S. Lafortune, “Synthesis of maximally permissive supervi-
+[16]  F. Lin, “Control of networked discrete event systems: Dealing with com-         sors for partially observed discrete event systems,” IEEE Trans. Autom.
+     munication delays and losses,” SIAM J. Control Optim., vol. 52, no. 2,         Control, vol. 61, no. 5, pp. 1239–1254, May 2016.
+     pp. 1276–1298, 2014.                                                     [42] X. Yin and S. Lafortune, “A uniform approach for synthesizing property-
+[17] Z. Liu, X. Yin, S. Shu, and S. Li, “Online supervisory control of networked         enforcingsupervisorsforpartially-observeddiscrete-eventsystems,”IEEE
+      discrete-event systems with control delays,” in Proc. 58th IEEE Conf.         Trans. Autom. Control, vol. 61, no. 8, pp. 2140–2154, Aug. 2016.
+     Decis. Control, 2019, pp. 6706–6711.                                     [43] X. Yin and S. Lafortune, “Synthesis of maximally-permissive supervisors
+[18]  J. Lunze, Control Theory of Digitally Networked Dynamic Systems. Berlin,          for the range control problem,” IEEE Trans. Autom. Control vol. 62, no. 8,
+     Germany: Springer, 2014.                                                      pp. 3914–3929, Aug. 2017.
+[19] C. E. V. Nunes, M. V. Moreira, M. V. S. Alves, L. K. Carvalho, and J.    [44] M. Zgorzelski and J. Lunze, “A method for the synchronisation of net-
+     C. Basilio, “Codiagnosability of networked discrete event systems subject        worked discrete-event systems,” in Proc. 13th Int. Workshop Discrete
+      to communication delays and intermittent loss of observation,” Discrete        Event Syst., 2016, pp. 444–451.
+     Event Dyn. Syst., vol. 28, no. 2, pp. 215–246, Jun. 2018.                    [45] M. Zgorzelski and J. Lunze, “A. new approach to tracking control of
+[20]  S.-J. Park and K.-H. Cho, “Delay-robust supervisory control of discrete-        networked discrete-event systems,” in Proc. 14th Int. Workshop Discrete
+     event systems with bounded communication delays,” IEEE Trans. Autom.        Event Syst., 2018, pp. 448–455.
+      Control, vol. 51, no. 5, pp. 911–915, May 2006.                            [46] M. Zgorzelski, P. Ostendarp, and J. Lunze, “Experimental application of
+[21]  S.-J. Park and K.-H. Cho, “Supervisory control of discrete event systems         a networked tracking control method to the discrete-event demonstrator
+     with communication delays and partial observations,” Syst. Control Lett.,       HANS,” in Proc. IEEE Conf. Control Tech. Appl., 2018, pp. 450–457.
+      vol. 56, no. 2, pp. 106–112, 2007.                                         [47] R. Zhang, K. Cai, Y. Gan, and W. M. Wonham, “Delay-robustness in
+[22]  S.-J. Park and K.-H. Cho, “Achieving a global objective with competing          distributed control of timed discrete-event systems based on supervisor
+     networked agents in the framework of discrete event systems,” Int. J.          localisation,” Int. J. Control, vol. 89, no. 10, pp. 2055–2072, 2016.
+      Control, vol. 93, no. 4, pp. 889–897, Apr. 2020.                            [48] R. Zhang, K. Cai, Y. Gan, and W. M. Wonham, “Distributed supervisory
+[23]  S. Pruekprasert and T. Ushio, “Supervisory control of communicating         control of discrete-event systems with communication delay,” Discrete
+     timed discrete event systems for state avoidance problem,” IEEE Contr.        Event Dyn. Syst., vol. 26, no. 2, pp. 263–293, 2016.
+      Syst. Lett., vol. 4, no. 1, pp. 259–264, Jan. 2020.                           [49] B. Zhao, F. Lin, C. Wang, X. Zhang, M. P. Polis, and L. Y. Wang,
+[24] A. Rashidinejad, M. Reniers, and M. Fabian, “Supervisory control of         “Supervisory control of networked timed discrete event systems and its
+      discrete-event systems in an asynchronous setting,” in Proc. 15th Int. Conf.         applications to power distribution networks,” IEEE Control Netw. Syst.,
+     Autom. Sci. Eng., 2019, pp. 494–501.                                                vol. 4, no. 2, pp. 146–158, Jun. 2017.
+[25] A. Rashidinejad, M. Reniers, and L. Feng, “Supervisory control of timed    [50] Y. Zhu, L. Lin, S. Ware, and R. Su, “Supervisor synthesis for networked
+      discrete-event systems subject to communication delays and non-ﬁfo          discrete event systems with communication delays and lossy channels,” in
+      observations,” in Proc. 14th Int. Workshop Discrete Event Syst., 2018,         Proc. 58th IEEE Conf. Decis. Control, 2019, pp. 6730–6735.
+     pp. 456–463.
+[26] K. Rohloff, “Sensor failure tolerant supervisory control,” in Proc. 44th
+    IEEE Conf. Decis. Control, 2005, pp. 3493–3498.
+[27] W. H. Sadid, L. Ricker, and S. Hashtrudi-Zad, “Robustness of synchronous                    Zhaocong Liu (Student Member, IEEE)  re-
+     communication protocols with delay for decentralized discrete-event con-                         ceived the B.Eng degree in mechanical engi-
+       trol,” Discrete Event Dyn. Syst., vol. 25, no. 1-2, pp. 159–176, 2015.                             neering from Zhejiang University in 2018, the
+[28] A. M. Sánchez and F. J. Montoya, “Safe supervisory control under observ-                        M.S. degree in control engineering from the
+      ability failure,” Discrete Event Dyn. Syst.: Theory Appl., vol. 16, no. 4,                       Shanghai Jiaotong University, in 2021. He is
+     pp. 493–525, 2006.                                                                               currently working toward the Ph.D. degree at the
+[29] Y. Sasi and F. Lin, “Detectability of networked discrete event systems,”                       Chinese University of Hong Kong.
+     Discrete Event Dyn. Syst., vol. 28, no. 3, pp. 449–470, 2018.                                     His research interests includes the supervi-
+[30]  S. Shu and F. Lin, “Decentralized control of networked discrete event                         sory control of discrete event systems, multi-
+     systems with communication  delays,” Automatica,  vol.  50,  no.  8,                        agent systems andnonlinear control systems.
+     pp. 2108–2112, 2014.                                                                        Mr. Liu was a recipient of the National Schol-
+[31]  S. Shu and F. Lin, “Supervisor synthesis for networked discrete event   arship from China.
+     systemswithcommunicationdelays,”IEEETrans.Autom.Control,vol.60,
+     no. 8, pp. 2183–2188, Aug. 2015.
+[32]  S. Shu and F. Lin, “Deterministic networked control of discrete event sys-
+     tems with nondeterministic communication delays,” IEEE Trans. Autom.
+      Control, vol. 62, no. 1, pp. 190–205, Jan. 2017.                                         Xiang Yin (Member, IEEE) was born in Anhui,
+[33]  S. Shu and F. Lin, “Predictive networked control of discrete event systems,”                         China, in 1991. He received the B.Eng. degree
+    IEEE Trans. Autom. Control, vol. 62, no. 9, pp. 4698–4705, Sep. 2017.                          from Zhejiang University, Hangzhou, China, in
+[34]  S. Takai and T. Ushio, “Effective computation of an Lm(G)-closed,                        2012, and the M.S. and Ph.D. degrees from
+      controllable, and observable sublanguage arising in supervisory control,”                          the University of Michigan, Ann Arbor, MI, USA,
+      Syst. Control Lett., vol. 49, no. 3, pp. 191–200, 2003.                                                   in 2013 and 2017, respectively, all in electrical
+[35]  S. Takai and T. Ushio, “Veriﬁcation of codiagnosability for discrete event                          engineering.
+     systems modeled by mealy automata with nondeterministic output func-                          Since 2017, he has been with the Department
+      tions,” IEEE Trans. Autom. Control, vol. 57, no. 3, pp. 798–804, Mar.                             of Automation, Shanghai Jiao Tong University,
+     2012.                                                                              Shanghai, China, where he is currently an As-
+[36]  T. Ushio and S. Takai, “Nonblocking supervisory control of discrete                           sociate Professor. His research interests include
+     event systems modeled by mealy automata with nondeterministic output   formal methods, discrete-event systems, and cyber–physical systems.
+      functions,” IEEE Trans. Autom. Control, vol. 61, no. 3, pp. 799–804, Mar.      Dr. Yin is serving as the Co-Chair of the IEEE CSS Technical Com-
+     2016.                                                               mittee on Discrete Event Systems, an Associate Editor for the Journal of
+[37] G. S. Viana, M. S. Alves, and J. C. Basilio, “Codiagnosability of timed   Discrete Event Dynamic Systems: Theory & Applications, and a member
+     networked discrete-event systems subject to event communication delays    of the IEEE CSS Conference Editorial Board. He was the recipient of the
+     and intermittent loss of observation,” in Proc. 56th IEEE Conf. Decis.   Best Student Paper Award Finalist in IEEE Conference on Decision and
+      Control, 2017, pp. 4211–4216.                                        Control (CDC) 2016.
+
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 07,2023 at 02:29:15 UTC from IEEE Xplore. Restrictions apply.
+
+LIU et al.: ONLINE SUPERVISORY CONTROL OF NETWORKED DISCRETE EVENT SYSTEMS WITH CONTROL DELAYS                             2329
+
+
+
+                  Shaolong Shu (Senior Member, IEEE) received                    Shaoyuan Li (Senior Member, IEEE) was born
+                       the B.Eng. degree in automatic control and the                               in Hebei, China, in 1965. He received the B.S.
+                      Ph.D. degree in control theory and control engi-                      and M.S. degrees in automation from the Hebei
+                      neering from Tongji University, Shanghai, China,                            University of Technology, Tianjin, China, in 1987
+                           in 2003 and 2008, respectively.                                   and 1992, respectively, and the Ph.D. degree
+                       Since 2008, he has been with the School of                        from Nankai University, Tianjin, China, in 1997.
+                        Electronics and Information Engineering, Tongji                          Since 1997, he has been with the Department
+                         University, where he is currently a Full Profes-                             of Automation, Shanghai Jiao Tong University,
+                          sor. From 2007 to 2008 and from 2014 to 2015,                        Shanghai, China, where he is currently a Pro-
+                   he was a Visiting Scholar with Wayne State                             fessor. His current research interests include
+                         University, Detroit, MI, USA. His main research                      model predictive control, dynamic system opti-
+interests include state estimation and control of discrete event systems   mization, and cyber–physical systems.
+and cyber–physical systems.                                                  Dr. Li is the Vice-President of the Chinese Association of Automation.
+
+
+
+
+
+                  Feng Lin (Fellow, IEEE) received the B.Eng.
+                    degree in electrical engineering from Shanghai
+                       Jiao Tong University, Shanghai, China, in 1982,
+                   and the M.A.Sc. and Ph.D. degrees in electri-
+                         cal engineering from the University of Toronto,
+                        Toronto, ON, Canada, in 1984 and 1988, re-
+                         spectively.
+                  He was a Postdoctoral Fellow with Harvard
+                         University, Cambridge, MA, USA, from 1987 to
+                     1988. Since 1988, he has been with the Depart-
+                   ment of Electrical and Computer Engineering,
+Wayne State University, Detroit, MI, USA, where he is currently a Profes-
+sor. His current research interests include discrete event systems, hybrid
+systems, robust control, and their applications in alternative energy,
+biomedical systems, and automotive control. He has authored a book
+entitled Robust Control Design: An Optimal Control Approach.
+  Dr. Lin coauthored a paper that received a George Axelby Outstand-
+ing Paper Award from the IEEE Control Systems Society. He was an
+Associate Editor for IEEE TRANSACTIONS ON AUTOMATIC CONTROL.
+
+
+
+
+
+        Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 07,2023 at 02:29:15 UTC from IEEE Xplore. Restrictions apply.

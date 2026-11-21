@@ -1,0 +1,595 @@
+4710                                                 IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 7, JULY 2024
+
+
+  A Uniﬁed Framework for Veriﬁcation of Observational Properties for
+              Partially-Observed Discrete-Event Systems
+
+             Jianing Zhao    , Student Member, IEEE, Shaoyuan Li    , Senior Member, IEEE,
+                             and Xiang Yin    , Member, IEEE
+
+
+  Abstract—In this article, we investigate property veriﬁcation      In many scenarios, DES are partially-observed either from the
+problems in partially-observed discrete-event systems (DES). Par-   system-user’s point of view due to the limited sensing capabilities,
+ticularly, we are interested in verifying observational properties   or from the outsider’s point of view due to the partial information
+that are related to the information-ﬂow of the system. Obser-
+                                                                          release [11]. In this context, one may need to determine whether or
+vational properties considered here include diagnosability, pre-
+                                                                     not the observer has sufﬁcient knowledge about the system baseddictability, detectability, and opacity, which have drawn consider-
+able attentions in the literature. However, in contrast to existing   on both the DES model and the partial observations. Such proper-
+results, where different veriﬁcation procedures are developed for    ties related to the information-ﬂow of the partially-observed DES are
+different properties case by case, in this work, we provide a uniﬁed   referred to as the observational properties. In this article, we are
+framework for verifying all these properties by reducing each of   concerned with the veriﬁcations of observational properties for partially
+them as an instance of HyperLTL model checking. Our approach is   observed DES.
+based on the construction of a Kripke structure that effectively cap-      Property veriﬁcation of partially-observed DES dates back to the
+tures the issue of unobservability as well as the ﬁnite string seman-   early investigations of supervisory control of partially-observed DES,
+tics in partially-observed DES so that HyperLTL model checking
+                                                            where the notion of observability was investigated [17]. In this setting,
+techniques can be suitably applied. Then for each observational
+                                                                                                          it is usually assumed that the behaviors of the systems can only beproperty considered, we explicitly provide the HyperLTL formula to
+be checked over the Kripke structure for the purpose of veriﬁca-   observed partially via a natural projection or an observation mask, and
+tion. Our approach is uniform in the sense that all different prop-   one needs to determine whether or not the imperfect information is
+erties can be veriﬁed with the same model checking engine and   sufﬁcient to realize a supervisor. Later on, veriﬁcation of partially-
+also brings new insights for classifying observational properties   observed DES has been investigated more thoroughly in the contexts of
+in terms of their veriﬁcation complexity. Numerical experiments    fault diagnosis, fault predication, state detection, and security analysis.
+are conducted, which show that our framework is computationally   See the recent textbook [11] and tutorial paper [29] for more details on
+more efﬁcient for verifying properties involving quantiﬁer alterna-    this topic.
+tions, such as opacity, compared with the standard subset-based
+                                                                     Here, we brieﬂy review some important observational properties that
+approaches.
+                                                                        are considered in this work as follows. The notion of diagnosability is
+  Index Terms—Discrete-event systems (DES), HyperLTL, partial   one of the most widely investigated observational properties in DES
+observation, property veriﬁcation.                                         literature [22], which characterizes the ability that one can always
+                                                                  determine the occurrences of fault events within a ﬁnite delay. As the
+                                                                    dual of the fault diagnosis problem, the property of prognosability or
+                                                                             predictability was proposed in [10] and [13] for the fault prognosis
+                                     I. INTRODUCTION
+                                                                  problem, which provides the necessary and sufﬁcient condition un-
+   Discrete-Event systems (DES) is an important class of complex   der which the fault can always be predicted with no false-alarm or
+engineering systems with discrete state spaces and event-triggering   miss-alarm. In the context of state estimation of partially-observed
+dynamics [6]. It is widely used in the modeling and analysis of the  DES, Shu and Lin [23], [24], [25] proposed several different notions
+high-level logic behaviors of complex automated systems, such as   of detectability to characterize whether or not the system state can be
+manufacturing systems, softwares, and autonomous robots. Given a   determined unambiguously. More recently, motivated by the security
+DES, one of the most fundamental problems is to determine whether   and privacy considerations in cyber-physical systems, the notion of
+or not the designed system satisﬁes some desired speciﬁcations of our   opacity has drawn many attentions, where it is assumed that there exists
+interest by formal and algorithmic procedures. This is also referred to   a passive intruder (eavesdropper) that can access the information-ﬂow
+as the property veriﬁcation problem, which is critical to ensure safety   of the system and the system has some “secret” that does not want to
+and security of DES [18].                                        be revealed to the intruder [5]. Depending on different security require-
+                                                                   ments, different notions of opacity have been studied including, e.g.,
+                                                                                     initial-state opacity [21], current-state opacity [16], and inﬁnite-step
+                                                                      opacity [20].
+                                                              While there is a wide literature on the veriﬁcation of observa-
+  Manuscript received 20 June 2023; revised 10 December 2023; ac-    tional properties for partially-observed DES, several problems still
+cepted 6 January 2024. Date of publication 18 January 2024; date of   remain. In particular, the existing approaches for the veriﬁcation of
+current version 28 June 2024. This work was supported by the National   partially-observed DES are mainly based on the observer structure
+Natural Science Foundation of China under Grant 62061136004, Grant   and its variants [6]. For some properties, such as diagnosability, pre-
+62173226, and Grant 61803259. Recommended by Associate Editor    dictability, and strong detectability, researchers have further proposed
+Cristian Mahulea. (Corresponding author: Xiang Yin.)                   polynomial-time algorithms [13], [14], [30]. However, the existing
+  The authors are with the Department of Automation, Shanghai Jiao   veriﬁcation techniques are mainly developed for different properties
+Tong University, Shanghai 200240, China, and also with the Key Labo-
+                                                                  case by case. The following questions arise naturally.
+ratory of System Control and Information Processing, the Ministry of Ed-
+ucation of China, Shanghai 200240, China (e-mail: jnzhao@sjtu.edu.cn;    1) Can we provide a uniﬁed methodology for verifying the existing
+syli@sjtu.edu.cn; yinxiang@sjtu.edu.cn).                                    notions of observational properties in literature without investigat-
+   Digital Object Identiﬁer 10.1109/TAC.2024.3355378                       ing each of them case by case?
+
+
+
+               1558-2523 © 2024 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                          See https://www.ieee.org/publications/rights/index.html for more information.
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:54:29 UTC from IEEE Xplore. Restrictions apply.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 7, JULY 2024                                                                4711
+
+
+
+ 2) Can we ﬁnd a suitable way to classify different notions of observa-   HyperLTL directly, which does not need to construct an information-
+    tional properties in literature in terms of their similarities and the   synchronization structure for each speciﬁc property.
+    veriﬁcation complexity?
+   In this article, we aim to answer the above two questions by pro-
+                                                                                                                                              II. PRELIMINARIESviding a uniﬁed approach for verifying partially-observed DES. Our
+approach relies on the recently developed new temporal logic called                                                              A. System Model
+HyperLTL [7]. HyperLTL generalizes the standard linear-time temporal
+logic (LTL), which is evaluated over only a single trace, by adding      Let Σ be a ﬁnite set of events (or alphabets). A ﬁnite (respectively,
+quantiﬁers among different traces. HyperLTL has been shown as a very   inﬁnite) string s=σ1 · · · σn(· · · ), σi ∈Σ is a ﬁnite (respectively, inﬁ-
+suitable tool for expressing information-ﬂow properties (also called    nite) sequence of events. We denote by Σ∗and Σω the sets of all ﬁnite
+hyperproperties [8]) in the context of formal veriﬁcation. Speciﬁcally,   and inﬁnite strings over Σ, respectively. The empty string ϵ is included
+our uniform framework consists of two steps. First, for a DES plant   in Σ∗. The length of a ﬁnite string s∈Σ∗is denoted by |s| and|ϵ|=0.
+model, we construct the corresponding (modiﬁed) Kripke structure that  A ∗-language (respectively, ω-language) is a set of ﬁnite (respectively,
+tracks both the state information and the observation information in   inﬁnite) strings. Given a language L ⊆Σ∗∪Σω, the preﬁx closure
+the system. The issue of unobservability is effectively handled by the   of language L, denoted by L, is deﬁned as the set of all its ﬁnite
+proposed structure. Next, we show that most of the observational prop-   preﬁxes, i.e., L={s ∈Σ∗:∃w∈Σ∗∪Σω s.t. sw∈L}. A ∗-language
+erties in DES literature can be captured by explicit HyperLTL formulas  L ⊆Σ∗is said to be preﬁx closed if L=L. Given any string s∈L, the
+over the constructed Kripke structure. These properties include, but   postlanguage of s in L is deﬁned as L/s={w ∈Σ∗∪Σω :sw∈L}.
+notrestrictedto,diagnosability,predictability,(strong/weak/I-/delayed)    We consider a DES modeled by a ﬁnite-state automaton (FSA)
+detectability, and (initial-state/current-state/inﬁnite-step) opacity.
+  Although veriﬁcation algorithms already exist for these observa-              G = (X, Σ, δ, X0),
+tional properties in literature, our uniﬁed approach is still of signiﬁcance
+in threefold as follows.
+                                                            where X is a ﬁnite set of states; Σ is a ﬁnite set of events; δ:X × Σ→X
+ 1) First, our approach is uniform in the sense that all properties are                                                                                        is a partial transition function such that: for any x, x′ ∈X and σ∈Σ,
+    expressed using the same logic over the same Kripke structure.   x′ =δ(x, σ) means that there exists a transition from state x to state x′
+   As a consequence, one does not need to develop a customized   witheventlabelσ;andX0 ⊆X isthesetofallpossibleinitialstates.We
+    veriﬁcation algorithm for each property case by case any more.      also extend the transition function to δ:X × Σ∗→X recursively by: 1)
+ 2) Second, by expressing observational properties of DES in terms of   δ(x, ϵ)=x; and 2) for any x∈X, s∈Σ∗, and σ∈Σ, we have δ(x, sσ)=
+   HyperLTL, the proposed uniﬁed framework provides the access to   δ(δ(x, s), σ). We deﬁne L(G, x)={s ∈Σ∗: δ(x, s)!} as the set of
+   HyperLTL model checking algorithms for the property veriﬁcation,   ﬁnite strings that can be generated by system G from state x∈X.
+    based on which one can leverage many highly optimized efﬁcient   For simplicity, we deﬁne L(G)=∪x0∈X0L(G, x0) as the ∗-language
+     tools, such as MCHyper [9], HyperQube [12], and AutoHy-   generated by system G. Similarly, we deﬁne Lω(G, x) = {s ∈Σω :
+   per [3]. Particularly, we show by numerical experiments that our   ∀t ∈{s} s.t. δ(x, t)!} as the inﬁnite strings generated by system G
+                                                                              starting from x ∈X and we also deﬁne Lω(G) = ∪x0∈X0Lω(G, x0).    uniﬁed approach is more efﬁcient than the standard DES algorithms
+                                                                         In a partially-observed DES, not all events can be observed perfectly.    for the properties involving quantiﬁer alternations, such as weak
+                                                         To this end, we consider an observation mask function
+    detectability and opacity.
+ 3) Finally, by writing down each observational property explicitly                                        M : Σ →O ∪{ϵ}
+    in HyperLTL, our framework naturally provides a complexity
+    hierarchy for different properties in terms of the alternation depth                                                            where O is the set of observation symbols. An event σ∈Σ is said to be
+    of the quantiﬁers.                                                                 unobservable if M(σ)=ϵ; otherwise, it is observable. We denote by Σo
+  We would like to remark that, although HyperLTL itself is a tool for                                                             and Σuo the sets of observable and unobservable events, respectively.
+specifying information-ﬂow properties, it cannot be directly applied                                                                Moreover, events σ, σ′ ∈Σ are said to be indistinguishable if M(σ)=
+to check observational properties in DES due to the following two dis-   M(σ′).ThemaskfunctionisalsoextendedtoM :Σ∗∪Σω →O∗∪Oω
+crepancies. The ﬁrst technical challenge is the presence of unobservable                                                                such that, for any s ∈L(G), we have 1) M(ϵ)=ϵ; and 2) for any
+events. Speciﬁcally, observational properties are evaluated over the ob-  s∈Σ∗, σ∈Σ, we have M(sσ)=M(s)M(σ). We also extend mask
+servation sequence to which an unobservable event does not contribute.                                                                           to M :2Σ∗∪Σω →2O∗∪Oω by: for any L ⊆Σ∗∪Σω :M(L)={M(s):
+This is different from the standard HyperLTL model checking where                                                    s∈L}. Therefore, M(L(G)) and M(Lω(G)) are the observed ∗- and
+the time-indexes of the internal trace and its information-ﬂow are the                                                                ω-languages generated by system G, respectively.
+same. Second, the semantics of HyperLTL are deﬁned over inﬁnite
+                                                                  For simplicity, we make the following standard assumptions in the
+traces while observational properties in DES are usually concerned
+                                                                         analysis of partially-observed DES.
+with ﬁnite strings. For example, although initial-state opacity has been
+                                                 A1 System G is live, i.e., ∀x ∈X, ∃σ ∈Σ : δ(x, σ)!.expressed using HyperLTL (not for DES models and without unobserv-
+able events) [1], [28], it has been pointed out by [18] that expressing   A2 System G does not contain an unobservable cycle,  i.e., ∀x ∈
+                                                      X, ∀s ∈Σ∗\ {ϵ} : x = δ(x, s) ⇒M(s)̸ = ϵ.current-state opacity or inﬁnite-step opacity in terms of HyperLTL is
+technically challenging due to the fact that the quantiﬁcation acts at the     Since the system is partially-observed, the system-user needs to
+beginning of trajectories rather than every instant of trajectories. All   determine the state of the system based on the observation string, which
+these technical challenges in applying HyperLTL to DES have been    is referred to as the state estimation problem. In this article, we will
+addressed in our results.                                              consider the following three types of state estimates. All properties
+   Finally, we note that model checking techniques have already been   of partially-observed DES in this article will be deﬁned using state
+used in literature for the veriﬁcation of partially-observed DES. For   estimates [29].
+example, model checking for diagnosability of DES is studied in [4],     Deﬁnition 1 (State Estimates): Let α∈M(L(G)) be an observation
+[19], and [27]. However, these works still use model checking over    string. Then
+single trace, such as LTL model checking. In order to capture the    1) the initial-state estimate upon observation α is the set of initial
+system-wide requirements in observational properties, existing works        states the system could start from initially, i.e.,
+need to build the information structure for the underlying speciﬁc
+property, such as twin-plant for diagnosability. However, here we use          XG,0(α)={x0ˆ        ∈X0 : ∃s∈L(G, x0) s.t. M(s)=α}    (1)
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:54:29 UTC from IEEE Xplore. Restrictions apply.
+
+4712                                                              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 7, JULY 2024
+
+
+ 2) the current-state estimate upon observation α is the set of states   which is deﬁned as follows:
+    the system could be in currently, i.e.,                                (T, Π) |= ∃π.φ        iff  ∃ξ ∈T : (T, Π[π →ξ]) |= φ
+                                                                    (T, Π) |= ∀π.φ        iff  ∀ξ ∈T : (T, Π[π →ξ]) |= φ
+
+      XG(α)=ˆ         δ(x0, s)∈X :                            ∃x0 ∈X0, s∈L(G, x0)   .    (2)      (T,(T, Π)Π) |=|= ¬ψaπ           iffiff  a(T,∈Π(π)[0]Π) ⊭ψ                                                         s.t. M(s)=α
+                                                                    (T, Π) |= ψ1 ∨ψ2   iff  (T, Π) |= ψ1 or (T, Π) |= ψ2
+                                                                    (T, Π) |= ⃝ψ         iff  (T, Π[1, ∞]) |= ψ
+   Furthermore, let αβ ∈M(L(G)) be an observation string, where α      (T, Π) |= ψ1Uψ2     iff  (∃i ≥0 : (T, Π[i, ∞]) |= ψ2) ∧
+is a preﬁx of the entire observation αβ. Then                                                (∀0 ≤j < i : (T, Π[j, ∞]) |= ψ1) .
+ 1) the delayed-state estimate for the instant of α upon observation αβ
+     is the set of states the system could be in |β| steps ago when αβ is  We say a set of traces T ⊆(2AP)ω satisfy a HyperLTL formula φ,
+                                                                 denoted by T |= φ, if (T, Π∅) |= φ.
+    observed, i.e.,
+
+                                                             C. Kripke Structure
+                         ∈X0, sw∈L(G,  XG(αˆ       | αβ)=  δ(x0, s)∈X:∃x0                                              x0) s.t.   .  (3)      In model checking of HyperLTL, the set of traces T ⊆(2AP)ω are                    M(s)=α                          ∧M(sw)=αβ
+                                                                       usually generated by a Kripke structure. Formally, a Kripke structure is
+                                                                  a tuple K =(Q, Q0, Δ, AP, L), where Q is the set of states, Q0 ⊆Q
+                                                                                        is the set of initial states, Δ ⊆Q × Q is the transition relation, AP is
+B. LTL and HyperLTL                                                                        the set of atomic propositions and L:Q→2AP is the labeling function.
+   Let AP be a set of atomic propositions representing some basic    We say ρ=ρ0ρ1 . . .∈Qω is a run in K if ρ0 ∈Q0 and ⟨ρi, ρi+1⟩∈
+properties of interest. A trace π = π0π1 · · · ∈(2AP)ω is an inﬁnite  Δ, ∀i≥0. We say π=π0π1 . . .∈(2AP)ω is a trace in K if there exists
+sequence over 2AP. We denote by π[i] = πi the ith element in the trace   a run ρ=ρ0ρ1 . . .∈Qω such that πi =L(ρi), ∀i≥0. We denote by
+and by π[i, ∞] = πiπi+1 · · · ∈(2AP)ω its sufﬁx starting from the ith  Run(K) and Trace(K) the sets of all runs and traces generated by K,
+instant. LTL is a widely used approach for evaluating whether or not a   respectively. Then we say that a Kripke structure K satisﬁes HyperLTL
+trace π satisﬁes some desired property. The syntax of LTL formulas is   formula φ, denoted by K |=φ, if Trace(K)|=φ.
+as follows:
+
+                                                                                                                   III. PARTIALLY-OBSERVED DES IN KRIPKE STRUCTURE
+          ψ ::= a | ¬ψ | ψ ∨ψ | ⃝ψ | ψUψ,                                                           The main objective of this article is to use HyperLTL model checking
+                                                                     techniques to solve the observational property veriﬁcation problems
+where a∈AP is an atomic proposition; ¬ and ∨are Boolean operators   for partially-observed DES. To this end, we need to transform the
+“negation” and “disjunction,” respectively, and ⃝and U are temporal  FSA model for DES into a Kripke structure for the purpose of model
+operators “next” and “until,” respectively. We can induce Boolean oper-   checking.
+ators, such as “implication” by ψ1 →ψ2 ≡¬ψ1 ∨ψ2 and “conjunction”      In HyperLTL model checking, atomic propositions are usually as-
+by ψ1 ∧ψ2 ≡¬(¬ψ1 ∨¬ψ2). Furthermore, we can induce temporal   signed to each state or transition in the system model. However, in
+operators “eventually” by ♦ψ ≡⊤Uψ and “always” by □ψ ≡¬♦¬ψ.   the setting of partially-observed DES, we note that, for any internal
+The semantics of LTL can be found in [2]. We denote by π|=ϕ that    string s=σ1σ2 · · ·∈Σω, its observation string is M(α)=o1o2 · · ·∈
+trace π satisﬁes LTL formula ϕ.                              Oω, where for each i≥1, oi is not necessarily the observation of event
+  Note that LTL can only evaluate a single trace. In many applications,   σi, since there may exist unobservable strings in between. Therefore,
+the desired property is system-wide and can only be evaluated among   the time-indexes of the internal string and its information-ﬂow may
+multiple traces. For example, in diagnosability analysis, we need to   be mismatched. We also cannot assign the empty proposition to those
+check the existence of two strings with the same observation: one is   unobservable transitions since it means “no property of interest,” which
+fault but the other is normal. HyperLTL generalizes LTL by further    is different from the empty observation.
+supporting trace quantiﬁers. Let V ={π1, π2, . . .} be the set of trace     To address unobservability, let x, x′ ∈X be two states in G and
+variables, where each πi represents an individual trace. The syntax of  o∈Δ ∪{ϵ} be an observation symbol including the empty observation
+HyperLTL formulas is as follows [7]:                                           ϵ. We denote by x ⇝o x′  if x can reach x′ via some string whose
+                                                                      observation is o, i.e., ∃s∈L(G, x) such that δ(x, s)=x′ and M(s)=o.
+                                                               Without unobservable event, the above string s must be a single event
+           φ ::= ∃π. φ | ∀π. φ | ψ,                        when o∈Δ, and be ϵ when o=ϵ. However, for the general case, s can
+          ψ ::= aπ | ¬ψ | ψ ∨ψ | ⃝ψ | ψUψ                 be a string with more than one event even when o=ϵ.
+                                                          Now, we present how to construct the Kripke structure associated
+                                                                  with a DES for the purpose of veriﬁcation of observational properties.
+where ∃and ∀are the universal and the existential trace quantiﬁers,     Deﬁnition 2 (Kripke Structure for DES): Given partially-observed
+representing “for some trace” and “for all traces,” respectively. Formula  DES G with mask M : Σ →O ∪{ϵ}, its associated Kripke structure
+ψ is just an LTL formula except that the atomic propositions can refer    is deﬁned by
+to distinct trace variables. Particularly, since HyperLTL formulas can
+refer to multiple traces, we denote by aπ an atomic proposition a ∈AP             KG = (Q, Q0, Δ, AP, L)
+that should be checked on trace π.                                                            where
+  The semantics of HyperLTL are deﬁned over a set of traces T ⊆                                                                       1) Q ⊆X × (O ∪{ϵ}) is the set of states;(2AP)ω and a partial mapping (called trace assignment) Π:V →
+                                                                       2) Q0 = {(x, ϵ) ∈X × {ϵ} : ∃x0 ∈X0 s.t. x0 ⇝ϵ x} is the set of(2AP)ω. In particular, we denote by Π∅the empty assignment whose
+domain is the empty set ∅. We denote by Π[π →ξ] the same trace         initial states;
+assignment as Π expect that π is mapped to ξ. The trace assignment    3) Δ ⊆Q × Q is the transition function deﬁned by: for any two states
+sufﬁx Π[i, ∞] denotes the trace assignment Π′(π) = Π(π)[i, ∞] for all       q = (x, o), q′ = (x′, o′) ∈Q, we have
+π. Then we denote by (T, Π) |= φ that HyperLTL φ is satisﬁed over                                                                  o′
+a set of traces T ⊆(2AP)ω and trace assignment Π : V →(2AP)ω,                   ⟨(x, o), (x′, o′)⟩∈Δ iff x ⇝x′ ∧o′ ∈O
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:54:29 UTC from IEEE Xplore. Restrictions apply.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 7, JULY 2024                                                                4713
+
+
+                                                           by construction, we have xi ⇝oi+1 xi+1. Therefore, we can always
+                                                         ﬁnd an initial state ˆx0 ∈X0 and an inﬁnite string s ∈Lω(G, ˆx0) such
+                                                                              that M(s) = o1o2 · · · and each xi is reached by a preﬁx of s whose
+                                                                      observation is o1o2 · · · oi. That is, ρ ∈Run(s, ˆx0).
+                                               We illustrate the construction of Kripke structure KG from DES G
+                                                           by the following example.
+                                                             Example  1: Let  us  consider system G shown  in  Fig.  1(a),
+                                                            where X ={0, 1, 2, 3, 4, 5}, Σo ={a, b, c, d}, Σuo ={u1, u2, f}, O =
+                                                                   {o1, o2, o3} and the observation mask M : Σ →O  is deﬁned by:
+                                               M(a)=M(b)=o1, M(c)=o3, M(d)=o2, and M(u1)=M(u2)=
+                                                 M(f)=ϵ. The initial states of KG are (0, ϵ) and (3, ϵ) since the
+                                                               system may reach state 3 from the  initial state 0 via unobserv-
+                                                                      able  string u1. From  state (0, ϵ), by observing symbol o1, one
+                                                   may reach states 1,2,4, and 5. Therefore, transitions from (0, ϵ)
+                                                                           to states (1, o1), (2, o1), (4, o1), and (5, o1) are all deﬁned in KG.
+                                                         The labeling function can be encoded directly from the state, e.g.,
+Fig. 1.  Example for a partially-observed DES and its Kripke structure.   L((0, ϵ))={0} and L((1, o1))={1, o1}. For example, let us consider
+(a) System G. (b) Kripke structure KG.                                        initial-state x0 = 0 and inﬁnite string s=u1bu2f(d)ω ∈Lω(G) with
+                                                       M(s)=o1(o2)ω. Then a run in KG compatible with s and x0 can
+                                                                          be, e.g., (0, ϵ)(4, o1)(2, o2)ω ∈Run(s, x0) or (3, ϵ)(1, o1)(2, o2)ω ∈ 4) AP = X ∪O is the set of atomic propositions;                                                           Run(s, x0).
+ 5) L : Q →2AP  is the labeling function deﬁned by: for each q =
+    (x, o) ∈Q, we have
+                                                                                                            IV. MAIN RESULTS
+                           {x},       if q ∈Q0                 L(q) =                                       (4)      In this section, we consider the veriﬁcation of all observational
+                            {x, o},    if q /∈Q0.                     properties including diagnosability, predictability, detectability, and
+   Intuitively, for each state (x, o) in KG, the ﬁrst component x captures   opacity in a uniﬁed manner using HyperLTL on the constructed Kripke
+the current state of G and the second component o captures the latest   structure for DES.
+observation symbol happened in G. At each state (x, o), when a
+feasible string s ∈L(G, x) such that M(s)=o′ occurs, the Kripke   A. Diagnosability and Predictability in HyperLTL
+structure moves to new state (δ(x, s), o′), where the ﬁrst component is
+determined by the transition function in G and the second component     For the fault diagnosis/prognosis problem, it is generally assumed
+simply records the observed symbol. Note that the above string s may    that system G may contain some faults modeled as a set of fault events                                                   ΣF ⊆Σ. With a slight abuse of notation, for any string s ∈Σ ∪Σω, webe in the form of s=w1σw2, where w1, w2 ∈Σ∗uo and M(σ)=o. Since                                                                  denote by ΣF ∈s if string s contains a fault event in ΣF. For simplicity,there is no event observed initially, the initial state is of form (x, ϵ). The
+labeling function assigns the state symbol x and the observation symbol  we assume that the state-space of G is partitioned as X = XN ˙∪XF,
+o as the atomic propositions hold at each (x, o). Therefore, the trace   where XN is the set of normal states and XF is the set of fault states
+information in KG already contains both the state sequence information   such that
+and the observation sequence information, which are sufﬁcient for the        ∀x0 ∈X0  ∀s ∈L(G, x0) : ΣF ∈s ⇔δ(x0, s) ∈XF.    (6)
+purpose of verifying observational properties of G. An example of the
+construction of KG for G is given in Fig. 1 for the illustration.         Note that this assumption is without loss of generality, since we can
+  To formally see the connection between G and KG, let us consider an   always reﬁne the state-space of G such that the partition holds.
+arbitrary inﬁnite string s ∈Lω(G, x0) in G. Note that, we can always      Diagnosability then characterizes whether or not we can always
+write s in the form of                                                    detect the occurrence of a fault event within a ﬁnite number of steps.
+                                                         To this end, we deﬁne
+                 s = w0σ1w1σ2w2 · · · ∈Σω
+                                                     ΨF = {s ∈L(G) : ΣF ∈s ∧(∀t ∈{s} \ {s} : ΣF /∈t)}where each wi ∈Σ∗uo is an unobservable string and each σi ∈Σo is an
+observable event with M(σi) = oi. Let                                as the set of strings in which fault event occurs for the ﬁrst time. The
+                                                                     notion of diagnosability is reviewed as follows [22].                x|w0|                   x0                              x|w1|                              x0                                            x|w2|        x0           0 · · ·                        1 · · ·                                      2 · · ·                 0                              1                                            2      · · · ∈Xω       (5)     Deﬁnition 3 (Diagnosability): Given system G, observation mask
+                              M : Δ →O ∪{ϵ} and fault events ΣF ⊆Σ, we say system G is                visited along w0 visited along σ1w1 visited along σ2w2
+                                                                  diagnosable if any occurrence of fault can always be determined within
+be the inﬁnite sequence of states visited along s from x0, where x00 =   a ﬁnite number of delays, i.e.,
+x0. Note that, in the construction of KG, upon each observation, we
+will “jump” directly to a state without considering the states visited          (∃n ∈N)(∀s ∈ΨF)(∀t ∈L(G)/s)
+by unobservable strings in between. Therefore, we know that, for any
+of the indexes k0, k1, . . . , where ki ∈{0, . . . , |wi|}, the following run                       [|M(t)| ≥n ⇒ˆXG(M(st)) ⊆XF].       (7)
+exists in KG:                                                   When it refers to fault prediction, the objective is to predict the
+        ρ = (xk00  , ϵ)(xk11  , o1)(xk22  , o2) · · · ∈Run(KG).             occurrences of fault events in advance such that
+                                                                                                  i) there is no miss-alarm in the sense that any fault can be alarmed
+We call such a run compatible with string s from initial state x0. Since                                                                         before it occurs;
+the choices of the indexes k0, k1, . . . are not unique, we denote by
+Run(s, x0) ⊆Run(KG) the set of all runs that are compatible with s      ii) there is no false-alarm in the sense that, once a fault alarm is issued,
+and x0. Note that when s ∈L(G, x0) is a ﬁnite string, there also exists        fault events will occur inevitably.
+a ﬁnite run that is compatible with s and x0. With a slight abuse of     To deﬁne the notion of predictability, it is convenient to deﬁne
+notation, we still denote this by ρ ∈Run(s, x0).                         1) the set of boundary states ∂(G), which is the set of normal states
+  On the other hand, for any run                                     from which a fault event can occur in the next step, i.e.,
+          ρ = (x0, ϵ)(x1, o1)(x2, o2) · · · ∈Run(KG)                       ∂(G) = {x ∈XN : ∃σ ∈ΣF s.t. δ(x, σ)!}
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:54:29 UTC from IEEE Xplore. Restrictions apply.
+
+4714                                                              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 7, JULY 2024
+
+
+ 2) the set of indicator states I(G), which is the set of normal states   occurrence of fault in π1. Therefore, ♦Fπ1 and the truncated observa-
+   from which the system will enter fault states inevitably within a   tion equivalence can be captured together by (oπ1 =oπ2)UFπ1. This
+    ﬁnite number of steps, i.e,                                         suggests that G is not predictable if
+                       ∃n ∈N  ∀s ∈L(G, x)                         ∃π1.∃π2. [(oπ1 = oπ2)UFπ1 ∧¬♦Fπ2] .
+        I(G) =  x ∈XN :                                              .
+                                            s.t. |s| ≥n ⇒δ(x, s) ∈XF          Then by taking the negation of the existence of such two traces, we
+                                                                      obtain the following main theorem for predictability.
+  Using the notions of boundary states and indicator states, we recall
+the deﬁnition of predictability as follows [10].
+   Deﬁnition 4 (Predictability): Given system G, observation mask      Theorem 2 (HyperLTL for Predictability): System G is pre-
+M : Δ →O ∪{ϵ}, and fault events ΣF ⊆Σ, we say system G is     dictable if and only if KG |= φpre, where
+predictable if the occurrence of fault can always be alarmed before
+it happens, i.e.,                                                                            φpre = ∀π1.∀π2. [(oπ1 = oπ2)UFπ1 →♦Fπ2] .     (10)
+
+         (∀x0 ∈X0)(∀s ∈L(G, x0) : δ(x0, s) ∈∂(G))
+
+          (∃t ∈{s})[XG(M(t))ˆ        ⊆I(G)].                       (8)
+                                                               B. Detectability in HyperLTL
+  Before expressing diagnosability in HyperLTL, we introduce some
+notation simpliﬁcations. For any trace variable π, we deﬁne Fπ as the      Detectability is a property characterizing whether or not the precise
+                                                                                state of the system can be determined unambiguously under imperfectproposition that the trace is at a fault state, i.e., Fπ ≡  x∈XF xπ. Also,                                                                  observations.Dependingonthespeciﬁcdetectionrequirements,variouslet π1 and π2 be two trace variables. Then we deﬁne
+                                                                      notions of detectability have been proposed in literature. In this section,
+                  oπ1 = oπ2iff    oπ1 ↔oπ2                 we consider variants of detectability including I-detectability, strong
+                              o∈O                                       detectability, weak detectability, and delayed detectability, and show
+                                                    how each of them can be formulated in terms of the HyperLTL formula.
+which is the proposition that π1 and π2 are observational-equivalent at       First, we review some existing notions of detectability.
+the initial instant. As such, formula □(oπ1 =oπ2) represents that two      Deﬁnition 5 (Detectability): Given system G and observation mask
+inﬁnite traces π1, π2 are observational-equivalent at any instants.   M : Σ →O ∪{ϵ}, we say system G is
+  Now, we present the following theorem, stating how to formulate    1) I-detectable [23] if the initial-state of the system can always be
+diagnosability of G using HyperLTL for Kripke structure KG. Due to                                                                     determined after a ﬁnite number of observations, i.e.,
+space constraints, all proofs are omitted in this article. All proofs as
+well as more illustrative examples can be found in [31].                    (∃n ∈N)(∀α ∈M(L(G)) : |α| ≥n)[| XG,0(α)|ˆ    = 1].
+
+    Theorem 1 (HyperLTL for Diagnosability): System G is diag-      2) Strongly detectable [25]  if the current-state of the system can
+  nosable if and only if KG |= φdia, where                               always be determined after a ﬁnite number of observations, i.e.,
+          φdia = ∀π1.∀π2. [♦Fπ1 ∧□(oπ1 = oπ2) →♦Fπ2] .    (9)                                                               (∃n ∈N)(∀α ∈M(L(G)) : |α| ≥n)[| XG(α)|ˆ   = 1].
+
+
+                                                                       3) Weakly detectable [25]  if the current-state and the subsequent   Intuitively, the above theorem says that, to make the system di-
+                                                                                    states of the system can be determined after a ﬁnite number ofagnosable, for any two inﬁnite strings having the same observation,
+if one string contains a fault event, i.e., ♦Fπ1, then the other string       observations for some trajectory of the system, i.e.,
+should also contain a fault event, i.e., ♦Fπ2. Otherwise, if □¬Fπ2,                                                                  (∃n ∈N)(∃α ∈M(Lω(G)))since □(oπ1 =oπ2), then the fault in the former string can never be
+determined within any ﬁnite number of steps.                                        (∀β ∈{α} : |β| ≥n)[| XG(β)|ˆ   = 1].
+  We show the veriﬁcation of diagnosability by an example.
+  Example 2: Let us still consider system G shown in Fig. 1(a) with    4) Delayed-detectable [24] if the precise state of the system at any
+Kripke structure KG in Fig. 1(b). Here, we further assume ΣF ={f},        instant can be determined after some observation delays, i.e.,
+i.e., XF ={2}. One can observe that G is diagnosable since one can
+claim the occurrence of fault immediately after observing symbol o2.        (∃n∈N)(∀αβ ∈M(L(G)):|β|≥n)[| XG(αˆ       | αβ)|=1].
+Now, we show how this is captured by Theorem 1 using our framework.
+Taking the negation of φdia, we have
+                                                          Now, we formulate the above variants of detectability using Hyper-
+       ¬φdia = ∃π1.∃π2. [♦Fπ1 ∧□(oπ1 = oπ2) ∧□¬Fπ2] .         LTL. Based on different types of state-estimates, we present our result
+                                                                           in three parts in what follows.To satisfy Fπ1, trace π1 must be of form π1 = · · · {2, o2}ω, while to                                                                                               Still, before expressing detectability in HyperLTL, we deﬁne somesatisfy □¬Fπ2 = ¬♦Fπ2, trace π2 must be of form π2 = · · · {5, o3}ω.                                                                        notation simpliﬁcations for HyperLTL formulas. For any trace variableHowever, this implies that □(oπ1 = oπ2) cannot be further satisﬁed.                                                                   π, we deﬁne Xπ0 as the proposition that the trace starts from an initial           KGTherefore,        we             have                      |= φdia.                                                  Xπ                                                ≡                                                                                         xπ.                                                                                                   Furthermore,                                                                                                                             for                                                                                                                                 trace                                                                                                                                    variables                                                                                state                                                                                 in G,                                                                                                                   i.e.,                                                                                                                 π1                                                                                          0                                                                                x∈X0  For the           case                of                      predictability,                        we observe that, a system is not                                                                             xπ1                                                                                   xπ2                                                 =                                                             and                                                        we                                                                      deﬁne                                                                                                    as the                                                                                                           proposition                                                                                                                                   that                                                                                                                             the                                                                        π2,                                                                                                                                              states of π1predictable if for some string that goes to a boundary state x1 ∈∂(G),                                                             and π2 at the initial instant are equivalent, i.e.,
+there exists another string that goes to a normal but nonindicator state
+x2 ∈XN \ I(G) such that they have the same observation. This is                   xπ1 = xπ2 iff     xπ1 ↔xπ2
+because, from the former state x1, a fault event can occur immediately,                             x∈X
+while from the latter state x2, some nonfault string can still execute
+inﬁnitely. In the context of traces in Kripke structure KG, the former  We denote by xπ1̸ =xπ2 if ¬(xπ1 =xπ2), which means that π1[0] and
+string can be captured by a trace π1 such that ♦Fπ1, while the second   π2[0] are not state-equivalent.
+string can be captured by a trace π2 such that ¬♦Fπ2. Furthermore,     The following theorem states how to formulate I-detectability of G
+the observation equivalence condition is only applied before the ﬁrst   using HyperLTL for Kripke structure KG.
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:54:29 UTC from IEEE Xplore. Restrictions apply.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 7, JULY 2024                                                                4715
+
+
+
+                                                             C. Opacity in HyperLTL
+    Theorem 3 (HyperLTL  for  I-Detectability): System G  is       Opacity is another important information-ﬂow property describing
+  I-detectable if and only if KG |= φid, where                           the privacy and security requirements of the system. In this context,
+                   [Xπ10 ∧Xπ20  ∧□(oπ1 = oπ2)]                        it is assumed that there exists an intruder (passive observer) that can
+      φid = ∀π1.∀π2.                                                 .     (11)     also observe the occurrences of events through the observation mask.                     →(xπ1 = xπ2)                                                                   Furthermore, it is assumed that the system has some “secret”. Then
+                                                                      opacity captures the conﬁdentiality that the secret can be revealed to
+                                                                        the intruder via the information-ﬂow. In the context of DES, the secret
+                                                                      of the system is usually modeled as a set of secret states XS ⊆X. This
+   Intuitively, the above theorem says that, for any two inﬁnite traces in                                                                          naturally partitions the state space as X = XS ˙∪XNS, where XNS =KG that are initiated from actual initial-states in G, if they always have                                             X\XS is the set of nonsecret states. According to what kind of secrets
+the same observation proposition, then they must have the same state                                                                        the system wants to protect, variants of opacity have been proposed in
+proposition initially. Otherwise, there exist two inﬁnite traces starting                                                                                    literature. In this section, we consider the initial-state opacity, inﬁnite-
+from two distinct initial-states but having the same observation, which                                                                         step opacity, and current-state opacity, and formulate all of them in
+violates the requirement of I-detectability.                                                           HyperLTL.
+   Next, we consider the cases of strong detectability and weak de-                                                                     Deﬁnition 6 (Opacity): Given system G, observation mask M :
+tectability. Compared with I-detectability, where two inﬁnite traces                                  Δ →O ∪{ϵ}, and secret states XS ⊆X, we say system G is
+need to have the same state proposition initially, strong detectability
+                                                                       1) initial-state opaque [21], if the intruder can never know for sure
+requires that two inﬁnite traces need to converge to the same state
+                                                                                   that the system was initially from a secret state, i.e.,proposition. Such a convergence requirement can be captured by the
+combinationoftemporaloperators“alwayseventually”♦□.Recallthat,                 (∀α ∈M(L(G)))[XG,0(α)ˆ     ⊈XS]in LTL, π|=♦□ϕ, if there exists i≥0 such that for any j ≥i, we have
+π[j, ∞]|=ϕ.                                                           2) current-state opaque [16], if the intruder can never know for sure
+  Now we present the following theorem stating how to formulate                                                                                   that the system is currently at a secret state, i.e.,
+strong detectability using HyperLTL.
+                                                                      (∀α ∈M(L(G)))[XG(α)ˆ    ⊈XS]
+    Theorem 4 (HyperLTL for Strong Detectability): System G is      3) inﬁnite-step opaque [20], if the intruder can never know for sure
+  strongly detectable if and only if KG |= φsd, where                          that the system was at a secret state for any speciﬁc instant, i.e.,
+ φsd =∀π1.∀π2. [□(oπ1 = oπ2) →♦□(xπ1 = xπ2)] .        (12)                                                                 (∀αβ ∈M(L(G)))[XG,0(αˆ          | αβ) ⊈XS].
+                                                                  For simplicity, we denote by Sπ and NSπ the propositions that
+                                                                        the trace is at a secret state and a nonsecret state, respectively, i.e.,
+  The       case            of weak detectability                                         is similar                                              to the strong                                                          counterpart.                                                            Sπ ≡  x∈XS xπ and NSπ ≡   x∈XNS xπ. Now, we show how theseThe    main           difference                          is that, for strong                                            detectability,                                     we                                                          require that                                                                         three variants of opacity can be formulated in terms of HyperLTL.
+for all traces, we can eventually determine its state, while weak de-                                                                                Essentially, initial-state opacity requires that, for any string, if it
+tectability only requires the existence of such a trace. Therefore, the                                                                                        is initiated from a secret state, then there must exist another string
+HyperLTL condition φwd for weak detectability simply replaces the                                                                such that 1)  it is initiated from a nonsecret state; and 2) the two
+ﬁrst universal quantiﬁer ∀in φsd by an existential quantiﬁer ∃. Note                                                                             strings have the same observation. This requirement can be captured
+that, although Theorem 5 seems to be similar to Theorem 4, there                                                                           easily by HyperLTL formula based on the Kripke structure KG as
+is signiﬁcant difference here: ∀.∀. in φsd does not require quantiﬁer                                                                         follows.
+alternation, while ∃.∀. in φwd has one time of quantiﬁer alternation.
+
+                                                              Theorem 7 (HyperLTL for Initial-State Opacity): System G is
+    Theorem 5 (HyperLTL for Weak Detectability): System G is        initial-state opaque if and only if KG |= φiso, where
+  weakly detectable if and only if KG |= φwd, where
+                                                                            [Xπ10  ∧Sπ1] →
+ φwd =∃π1.∀π2. [□(oπ1 = oπ2) →♦□(xπ1 = xπ2)] .        (13)              φiso = ∀π1.∃π2.                                                  .     (15)                                                                            [Xπ20  ∧□(oπ1 = oπ2) ∧NSπ2]
+
+
+   Finally, we consider the case of delayed detectability, which seems
+to be more complicated since delayed-state estimate XG(αˆ       | αβ) is    When it refers to current-state opacity, however, the following difﬁ-
+                                                                         culty arises if we want to write down HyperLTL formula that is checked
+involved. However, we show that it can still be captured by HyperLTL                                                           on Kripke structure KG. Speciﬁcally, current-state opacity requires that
+quite elegantly in a similar fashion as the cases of other notions of
+                                                                           for any ﬁnite string that ends up with a secret state, there exists anotherdetectability. To this end, we observe that, system G is not delayed-
+                                                                       ﬁnite string ending up with a nonsecret state such that they have the
+detectable if there exists an observation α such that | XG(αˆ       | αβ)| ≥2                                                         same observation. However, the semantics of HyperLTL are deﬁned
+no matter how long the future observation β is. Then by extending                                                                   over inﬁnite traces. To capture this using HyperLTL, we need some
+observation β to the inﬁnite instant, we can obtain two inﬁnite strings                                                          mechanism to indicate that two inﬁnite traces are at secret and nonsecret
+in G such that 1) they have the same observation; and 2) they reach                                                                                   states, respectively, at the same instant. Furthermore, the observation
+different states at instant |α|. This key observation leads to the following                                                                    equivalence requirement should be only applied up to that indicator
+theorem.                                                                                instant, not for the entire inﬁnite horizon.
+                                                                         In order to bridge the gap between the ﬁnite requirement in current-
+    Theorem 6 (HyperLTL for Delayed Detectability): System G is      state opacity and the inﬁnite semantics of HyperLTL, we modiﬁes KG
+  delayed-detectable if and only if KG |= φdd, where                by allowing the process to stop at any ﬁnite instant.
+                                                                     Deﬁnition 7 (Modiﬁed Kripke Structure): Given Kripke structure
+     φdd = ∀π1.∀π2. [□(oπ1 = oπ2) →□(xπ1 = xπ2)] .    (14)   KG =(Q, Q0, Δ, AP, L), we deﬁned the modiﬁed Kripke structure
+
+                                                                            ˜KG = ( ˜Q, ˜Q0, ˜Δ, AP, ˜L)
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:54:29 UTC from IEEE Xplore. Restrictions apply.
+
+4716                                                              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 7, JULY 2024
+
+
+
+where                                                      The case of inﬁnite-step opacity is similar to the case of current-state
+ 1) ˜Q = Q ∪Qc is the set of states, where Qc = {(xc, oc) : (x, o) ∈   opacity. Speciﬁcally, it also requires that, for any string ending up with
+   Q} is simply a copy of the original state set Q;                    a secret state, there exists another string ending up with a nonsecret
+ 2) ˜Q0 = Q0 is the set of initial states;                                     state such that they have the same observation. However, in addition,
+ 3) ˜Δ ⊆˜Q × ˜Q is the transition function deﬁned as follows:        we need to further ensure that, for any string starting from the above
+        a) for any q, q′ ∈Q : ⟨q, q′⟩∈˜Δ, we have ⟨q, q′⟩∈˜Δ;          secret, there exists another string starting from the above nonsecret state
+                                                                such that they have the same observation. Otherwise, the intruder may
+        b) for any q = (x, o) ∈Q, we have                                                                             realize that the system was at a secret state after some steps. To capture
+                                                                                difference,                                                                           one can                                                                                       simply                                                                                                        replace                                                                                                                 the                                                                                                                  “truncated”                                                                                                                             observation                    ⟨(x, o), (xc, oc)⟩, ⟨(xc, oc), (x, o)⟩∈˜Δ.     (16)    this                                                                       =oπ2)Uτ                                                                                       (oπ1                                                                                                       π1 in                                                                                                                (18)                                                                                                 by an inﬁnite                                                                                                                            horizon                                                                    equivalence                                                                                  condition
+                                                                      version of observation equivalence condition □(oπ1 =oπ2). This leads 4) AP = X ∪O ∪{τ} is the set of atomic propositions, where τ is
+                                                                           to the following theorem.
+    a new symbol;
+ 5) ˜L : ˜Q →2 AP is the labeling function deﬁned by
+        a) for any q ∈Q, we have ˜L(q) = L(q);                       Theorem 9 (HyperLTL for Inﬁnite-Step Opacity): System G is
+        b) for any qc = (xc, oc) ∈Qc, we have ˜L(qc) = {x, τ}.          inﬁnite-step opaque if and only if ˜KG |= φifo, where
+   Speciﬁcally, we simply add a new copy state (xc, oc) for each state
+(x, o) in KG. In addition to the original transitions in KG, each state        φifo =
+(x, o) and its copy state (xc, oc) form a loop. Furthermore, for each                                                                           [♦1τ π1 ∧□(τ π1 →Sπ1)] →
+copy      state,        we              assign it                      a new                           atomic                                     proposition                                                 τ.                                                           Intuitively,                                                         τ will                                                                                                                                                                                              . (19)                                                                 ∀π1.∃π2.                                                                           [□(oπ1 = oπ2) ∧□(τ π1 →(τ π2 ∧NSπ2))]              indicatorbe used        as an                        to                           locate                                the speciﬁc                                               instant                                                  of                                                  our interest                                                                     for
+checking secret status.
+  To formally see this, consider an arbitrary run in KG
+
+            ρ = (x0, ϵ)(x1, o1) · · · ∈Run(KG).
+                                                                                 V. DISCUSSIONS AND NUMERICAL EXPERIMENTS
+Then for any instant k ≥0, based on the construction of ˜KG, there
+                                                          Now, let us go back to the second question in the introduction that
+exists the following run in ˜KG:                                                   why some properties are similar while some are more different. This, in
+   ˜ρ=(x0, ϵ)(x1, o1)· · ·(xk, ok)(xck, ock)(xk, ok) (xk+1, ok+1)· · ·        fact, can be easily explained by the theory of HyperLTL. In HyperLTL,
+                                                                        the alternation depth is referred to as the number of times the quantiﬁers
+                                      loop to copy state at instant k                             alter from existential to universal, or vice versa. It is known that the
+                                                                       veriﬁcation complexity of HyperLTL will increase an exponential level
+whose trace is given by
+                                                      when the formula has one more quantiﬁer alternation [7]. For example,
+                                                                        the alternation depth of “∀.∃.” is one, while the alternation depth of       ˜L(˜ρ)={x0}{x1, o1}· · ·{xk, ok}{xk, τ}{xk, ok}· · ·
+                                                                     “∀.∀.” is zero. The former corresponds to the case of opacity and
+As such, with the help of atomic proposition τ, we can easily locate xk   weak detectability, while the latter corresponds to other notions, such as
+for which we what to check whether or not xk ∈XS, and truncate the   diagnosability. Therefore, expressing observational properties in terms
+inﬁnite sequence after τ.                                               of HyperLTL also suggests a natural way to classify existing notions
+  Note that, in the above inﬁnite trace, we only want to loop at the   of observational properties in partially-observed DES: the larger alter-
+copy state once at the speciﬁc instant of interest. However, temporal   nation depth the property has, the higher veriﬁcation complexity it will
+operator ♦τ is not sufﬁcient to express this since τ may occur multiple   require.
+times. To this end, we deﬁne operator ♦1 as “eventually and only once”      Here, we present numerical experiments to compare the efﬁciency
+as follows:                                                            of the proposed HyperLTL-based framework with the customized DES
+                                                                     algorithms for verifying diagnosability (DIAG), predictability (PRED),
+               ♦1τ ≡♦τ ∧□(τ →⃝□¬τ)               (17)    I-detectability (ID), strong/weak detectability (SD/WD), delayed de-
+                                                                                 tectability (DD), initial/current-state opacity (ISO/CSO), and inﬁnite-
+i.e., τ will eventually occur and once it occurs, it will never occur in the                                                                         step opacity (IFO). Speciﬁcally, we implement the DES algorithms
+future. Illustrative example for the construction of the modiﬁed Kripke                                                                      as well as the as transformation algorithm from automata to Kripke
+structure can also be found in [31].                                                                           structures in Python3. For DIAG, PRED, ID, SD, and DD, we adopt  We formulate current-state opacity as a HyperLTL formula on ˜KG.                                                                        the twin-plant-based polynomial-time algorithms [29], and for WD,
+                                                               ISO, CSO, and IFO, we adopt the observer-based algorithms since they
+    Theorem 8 (HyperLTL for Current-State Opacity): System G is     are inherently PSPACE-hard [29]. For the HyperLTL veriﬁcation, we
+  current-state opaque if and only if ˜KG |= φcso, where               employ the newly developed model checker AutoHyper [3]. The ex-                                                                   periments are conducted on a MacBook (8 G/256 G, Apple M1). Specif-
+     φcso =                                                                        ically, for each property with a ﬁxed number of states, we randomly
+                                                                     generate 50 systems and verify the property by both the customized
+                    π1               ∧□(τ π1                 →                         →Sπ1)]              [♦1τ                                                                         algorithm                                                                          and                                                                                            the                                                                                HyperLTL-based                                                                                                               algorithm;                                                                                                          and                                                                                          we increase                                                                                          .     DES    ∀π1.∃π2.                              π1                                                                        the state                                                                number                                                                          from                                                                            15                                                                                                     to 80 states. Table                                                                                                                                           I shows the                                                                                                                    average                                                                                                                          running                =oπ2)Uτ                      ∧□(τ π1                [(oπ1                           →(τ π2 ∧NSπ2))]
+                                                             (18)     times (in seconds) for each property with different sizes. All codes are
+                                                                          available in the project website https://github.com/jnzhaooo/jtudes.
+                                                                         In the conducted experiments, we note that the ﬁrst ﬁve properties
+                                                                      involve no quantiﬁer alternation, and they all have polynomial DES
+  Formula φcso above is explained as follows. For trace π1, which is   algorithms. For these properties, the HyperLTL-based approach does
+quantiﬁedbytheuniversalquantiﬁer,werequirethatitvisitsacopystate   not seem to have computational advantage. For the last four properties,
+only once, i.e., ♦1τ π1, and the copy state it visits is a secret state, i.e.,   they all have one degree of quantiﬁer alternation, and their DES algo-
+□(τ π1 →Sπ1). Then, for such an arbitrary π1, we require the existence   rithms are generally based on the subset construction, which requires
+of trace π2 such that 1) it has the same observation with π1 until the   exponential complexity. For these properties, however, the average run-
+stopping instant, i.e., (oπ1 =oπ2)Uτ π1; and 2) when it stops, it is at a   ning time of HyperLTL-based framework is considerably smaller. The
+nonsecret copy state, i.e., □(τ π1 →(τ π2 ∧NSπ2)).                  main reason for the performance discrepancy is that HyperLTL model
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:54:29 UTC from IEEE Xplore. Restrictions apply.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 69, NO. 7, JULY 2024                                                                4717
+
+
+
+                                                  TABLE I
+                              STATISTIC RESULTS FOR NUMERICAL EXPERIMENTS ON RANDOMLY GENERATED SYSTEMS
+
+
+
+
+
+checkers, such as AutoHyper, handle quantiﬁer alternations more     [8] M. R. Clarkson and F. B. Schneider, “Hyperproperties,” J. Comput. Secur,
+efﬁciently. Speciﬁcally, for the last four properties, where quantiﬁer          vol. 18, no. 6, pp. 1157–1210, 2010.
+alternations are involved, the HyperLTL model checker reduces the     [9] B. Finkbeiner, M. N. Rabe, and C. Sánchez, “Algorithms for model
+                                                                              checking HyperLTL and HyperCTL∗,” in Proc. Int. Conf. Comput. Aidedveriﬁcation problem to a language inclusion problem over an unfolded
+                                                                                       Veriﬁcation, 2015, pp. 30–48.automaton and the speciﬁcation automaton without explicitly searching
+                                                                               [10]  S. Genc and S. Lafortune, “Predictability of event occurrences in partially-
+the entire state space, which yield less complexity than the exponential-                                                                               observed discrete-event systems,” Automatica, vol. 45, no. 2, pp. 301–311,
+time worst-case. In summary, the experimental results show that the        2009.
+proposed framework not only provides a uniﬁed method but also is    [11] C. N. Hadjicostis. Estimation and Inference in Discrete Event Systems.
+more efﬁcient for properties that previously need to be checked using          Berlin, Germany: Springer, 2020.
+subset construction.                                                          [12] T.-H. Hsu, C. Sánchez, and B. Bonakdarpour, “Bounded model checking
+                                                                                           for hyperproperties,” in Proc. Int. Conf. Tools Algorithms Construction
+                                                                                   Anal. Syst., 2021, pp. 94–112.
+                         VI. CONCLUSION                                [13]  T. Jéron, H. Marchand, S. Genc, and S. Lafortune, “Predictability of
+                                                                             sequence patterns in discrete event systems,” IFAC Proc., vol. 41, no. 2,
+   In this article, we revisited the problems of verifying observational                                                                                     pp. 537–543, 2008.
+properties for partially-observed DES, which have been studied very    [14]  S. Jiang, Z. Huang, V. Chandra, and R. Kumar, “A polynomial algorithm
+actively and extensively in the past two decades in the context of          for testing diagnosability of discrete-event systems,” IEEE Trans. Autom.
+DES. We showed that the recent developed new temporal logic called         Control, vol. 46, no. 8, pp. 1318–1321, Aug. 2001.
+HyperLTL can be used as a suitable tool for unifying many of the    [15] C.  Keroglou  and  C.  N.  Hadjicostis,  “Detectability  in  stochastic
+important observational properties in literature. Our framework does          discrete  event  systems,”  Syst.  Control  Lett.,  vol.  84,  pp. 21–26,
+not provide new decidability results since for all properties considered        2015.
+here, veriﬁcation algorithms have already been developed. However,    [16]  F. Lin, “Opacity of discrete event systems and its applications,” Automat-
+                                                                                                ica, vol. 47, no. 3, pp. 496–503, 2011.we believe that our uniﬁed view in terms of HyperLTL provides new
+                                                                               [17]  F. Lin and W. M. Wonham, “On observability of discrete-event systems,”
+insights for those properties that were previously investigated sepa-                                                                                                         Inf. Sci., vol. 44, no. 3, pp. 173–198, 1988.
+rately. Furthermore, our uniﬁed framework is of practical value since    [18]  S. Liu, A. Trivedi, X. Yin, and M. Zamani, “Secure-by-construction syn-
+it provides the access to many of the efﬁcient model checking tools for          thesis of cyber-physical systems,” Annu. Rev. Control, vol. 53, pp. 30–50,
+the purpose of verifying all these observational properties instead of        2022.
+developing a customized algorithm for each case.                          [19] Y. Pencolé and A. Subias, “Diagnosability of event patterns in safe labeled
+  We would like to remark that, although we have shown that many of         time petri nets: A model-checking approach,” IEEE Trans. Autom. Sci.
+the important properties in partially-observed DES can be formulated in         Eng., vol. 19, no. 2, pp. 1151–1162, Apr. 2022.
+terms of HyperLTL, there still exist properties that cannot be captured    [20] A. Saboori and C. N. Hadjicostis, “Veriﬁcation of inﬁnite-step opacity and
+                                                                               complexity considerations,” IEEE Trans. Autom. Control, vol. 57, no. 5,by the existing proposed framework. Examples of such properties are
+                                                                                     pp. 1265–1269, May 2012.
+A-diagnosability [26] and A-detectability [15]. Similarly, for nonob-                                                                               [21] A. Saboori and C. N. Hadjicostis, “Veriﬁcation of initial-state opacity
+servational properties, nonblockingness also cannot be expressed by          in security applications of discrete event systems,” Inf. Sci., vol. 246,
+HyperLTL.Essentially,thesepropertiesrequiringtheexistenceofapath         pp. 115–132, 2013.
+from a state satisfying some condition is essentially a branching-time    [22] M. Sampath, R. Sengupta, S. Lafortune, K. Sinnamohideen, and D.
+property which is beyond the semantics of HyperLTL. To address         Teneketzis, “Diagnosability of discrete-event systems,” IEEE Trans. Au-
+this issue and to further generalize our framework, a possible future         tom. Control, vol. 40, no. 9, pp. 1555–1575, Sep. 1995.
+direction is to use more expressive temporal logic, such as HyperCTL∗    [23]  S. Shu and F. Lin, “I-detectability of discrete-event systems,” IEEE Trans.
+[7] that supports both linear-time and branching-time properties over        Autom. Sci. Eng., vol. 10, no. 1, pp. 187–196, Jan. 2013.
+                                                                               [24]  S. Shu and F. Lin, “Delayed detectability of discrete event systems,” IEEEmultiple traces.
+                                                                                    Trans. Autom. Control, vol. 58, no. 4, pp. 862–875, Apr. 2013.
+                                                                               [25]  S. Shu,  F. Lin, and H. Ying, “Detectability of discrete event sys-
+                    REFERENCES                                        tems,” IEEE Trans. Autom. Control, vol. 52, no. 12, pp. 2356–2359,
+                                                                            Dec. 2007.
+ [1] M. Anand, V. Murali, A. Trivedi, and M. Zamani, “Formal veriﬁcation of    [26] D. Thorsley and D. Teneketzis, “Diagnosability of stochastic discrete-
+     hyperproperties for control systems,” in Proc. Workshop Comput.-Aware         event systems,” IEEE Trans. Autom. Control, vol. 50, no. 4, pp. 476–492,
+     Algorithmic Des. Cyber-Physical Syst., 2021, pp. 29–30.                        Apr. 2005.
+ [2] C. Baier and J.-P. Katoen, Principles of Model Checking. Cambridge, MA,    [27]  T. M. Tuxi, L. K. Carvalho, E. V. L. Nunes, and A. E. C. da Cunha,
+    USA: MIT Press, 2008.                                                        “Diagnosability veriﬁcation using LTL model checking,” Discrete Event
+ [3] R. Beutner and B. Finkbeiner, “AutoHyper: Explicit-state model checking        Dyn. Syst., vol. 32, no. 3, pp. 399–433, 2022.
+      for HyperLTL,” in Proc. Int. Conf. Tools Algorithms Construct Anal. Syst.,    [28] Y. Wang, S. Nalluri, and M. Pajic, “Hyperproperties for robotics: Plan-
+     2023, pp. 145–163.                                                         ning via HyperLTL,” in Proc. IEEE Int. Conf. Robot. Autom., 2020,
+ [4] A. Boussif and M. Ghazel, “Diagnosability analysis of input/output         pp. 8462–8468.
+      discrete-event  systems  using  model-checking,”  IFAC-PapersOnLine,    [29] X. Yin, “Estimation and veriﬁcation of partially-observed discrete-event
+      vol. 48, no. 7, pp. 71–78, 2015.                                                 systems,” in Wiley Encyclopedia of Electrical and Electronics Engineer-
+ [5]  J. W. Bryans, M. Koutny, L. Mazaré, and Y. A. Ryan, “Opacity generalised          ing, Hoboken, NJ, USA: Wiley, 2019.
+      to transition systems,” Int. J. Inf. Secur., vol. 7, no. 6, pp. 421–435, 2008.    [30]  T.-S. Yoo and S. Lafortune, “Polynomial-time veriﬁcation of diagnos-
+ [6] C. Cassandras and S. Lafortune. Introduction to Discrete Event Systems.          ability of partially-observed discrete-event systems,” IEEE Trans. Autom.
+      vol. 3. Berlin, Germany: Springer, 2021.                                         Control, vol. 47, no. 9, pp. 1491–1495, Sep. 2002.
+ [7] M. R. Clarkson, B. Finkbeiner, M. Koleini, K. K. Micinski, M. N. Rabe,    [31]  J. Zhao, S. Li, and X. Yin, “Complete version of ‘A uniﬁed framework
+     and C. Sánchez, “Temporal logics for hyperproperties,” in Proc. Int. Conf.          for veriﬁcation of observational properties for partially-observed discrete-
+      Princ. Secur. Trust, 2014, pp. 265–284.                                         event systems’,” 2022, arXiv:2205.01392.
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 01,2024 at 06:54:29 UTC from IEEE Xplore. Restrictions apply.

@@ -1,0 +1,404 @@
+              Optimal Stabilization of Discrete Event
+                                                       ⋆               Systems with Guaranteed Worst Cost
+
+                                    Yiding Ji ∗Xiang Yin ∗∗
+
+                          ∗Division of Systems Engineering, Boston University, Boston,
+                             Massachusetts, United States (e-mail: jiyiding@bu.edu).
+                        ∗∗Department of Automation, Shanghai Jiao Tong University,
+                                Shanghai, China (e-mail: yinxiang@sjtu.edu.cn).
+
+
+          Abstract:
+           This work investigates optimal stabilization with guaranteed worst-case performance of stochas-
+              tic discrete event systems by supervisory control. We formulate the problem on probabilistic
+           weighted automata. The system is driven to a speciﬁed set of target states after a ﬁnite number of
+             transitions, thus stabilized. The cost of stabilization is concerned with the accumulative weight
+             of transitions reaching target states. Our goal is to optimize the expected cost of reaching target
+             states, while ensuring that the worst-case individual cost is bounded by a given threshold. Then
+         we transform the supervisory control problem to a two-player stochastic game between the
+            supervisor and the environment, which properly encodes the worst-case requirement. Finally an
+           algorithm is presented to synthesize the optimal supervisor by leveraging results from Markov
+           Decision Processes, which turns out to provably solve the original problem.
+
+          Keywords: Discrete event systems, optimal supervisory control, stabilization, stochastic game
+
+
+                    1. INTRODUCTION                   apply the supervisory control theory to drive the system to
+                                                          those target states within a bounded number of transitions
+Supervisory control in discrete event systems (DES) has   and stay there afterwards. This problem  is referred to
+been  well investigated  since  it was proposed. In  this   as stabilization or state attraction, which was originally
+framework, a supervisor controls the plant by enabling   proposed in Brave and Heymann [1990] and generalized
+and disabling events dynamically, so that the plant fulﬁlls   by Schmidt and Breindl [2014]. A matrix-based approach
+a given speciﬁcation; see, e.g., Cassandras and Lafortune    of optimal stabilization for nondeterministic DES was pro-
+[2008], Wonham and Cai [2018].                           vided in Han et al. [2019] recently. Additionally, optimal
+                                                                  stabilization problem considers minimizing the cost of driv-
+In practice, the supervisor may not have perfect obser-                                                            ing the system to target states. This topic was initialed
+vation of the system, which brings in uncertainty and                                                  by Brave and Heymann [1993] for the full observation case
+gives rise to supervisory control under partial observation.                                                  and extended in Marchand et al. [2002], Pruekprasert and
+There is a rich literature on this topic, see, e.g., Alves et al.                                                      Ushio [2016b] for the partial observation case. As a vari-
+[2019], Shu and Lin [2015], Yin and Lafortune [2016a,b,                                                               ant, Pruekprasert and Ushio [2016a] considered optimal
+2017], Komenda and Masopust [2017], Mohajerani et al.                                                                 stabilization under the inﬂuence of disturbances.
+[2017], Ji et al. [2018], Ma et al. [2019, 2018], Rashidinejad
+et al. [2018], Lin et al. [2019] for some recent discussions.    All existing works on optimal stabilization focus on op-
+                                                            timizing the system’s worst possible performance when
+The uncertainties in system modeling also lead to super-                                                        being stabilized. On the other hand, optimal supervisory
+visory control of stochastic DES, where events are associ-                                                             control of probabilistic discrete event systems aims to
+ated with probabilities of occurrence. Both deterministic                                                         ensure a good expected overall performance. Both frame-
+and probabilistic supervisory control frameworks were dis-                                                     works suﬀer from some drawbacks. The worst-case analysis
+cussed, depending on whether events are enabled for sure                                            may ignore overall performance, while good expectation
+or with certain probabilities, see, e.g., Kumar and Garg                                            may not rule out some extreme individual behaviors that
+[2001], Pantelic et al. [2009]. More recently, learning-based                                                            are not very likely but indeed possible. The conventional
+supervisor synthesis was considered in Wu et al. [2019]                                                                settings of optimal supervisory control may be insuﬃcient
+and Meira-G´oes et al. [2019] discussed deception attacks                                                            to provide formal guarantees under multiple scenarios.
+for supervisors in probabilistic settings.
+                                                       Let us consider an everyday situation when a student
+In many applications, some states of the system called                                                 commutes between home and campus. There are three
+target states are of particular interest as they indicate the                                                              possible options: subway, car and on foot. Usually subway
+fulﬁllment of some important tasks. Meanwhile, one may                                                                               is the fastest option with potential risk of severe delay. Self-
+                                                            driving has more expected arriving time, while guarantees
+⋆The second author is supported by the National Natural Science
+                                                            to reach campus within a tolerable amount of time under
+Foundation of China (grants 61803259 and 61833012) and Shanghai
+                                                                            all traﬃc circumstances. Then it is more reasonable toJiao Tong University Scientiﬁc and Technological Innovation Funds.
+
+drive instead of taking the risk of the subway, when the  A stochastic discrete event system is modeled by a proba-
+student could not aﬀord to be late for some activity.          bilistic weighted ﬁnite-state automaton (G, p) where G is
+                                                     a weighted ﬁnite-state automaton and p : X × E →[0, 1]
+Motivated by the above situation, we investigate optimal
+                                                                               is the probability of event occurrence. Speciﬁcally, for any
+stabilization under an acceptable upper bound for worst-                                               x ∈X, e ∈E, we denote by p(e|x) the probability that
+case cost. We formulate this problem in the context of
+                                                          event e occurs from state x. In this work, we assume that:
+probabilistic weighted automata, where each event is as-
+                                                                            (i) for every non-terminating state x, Pe∈E p(e|x) = 1;signed a cost and a probability of occurrence. Next we
+                                                                                (ii) ∀x ∈X, e ∈E: p(e|x) > 0 ⇔f(x, e)!.propose the probabilistic weighted bipartite transition sys-
+tem (PWBTS) and transform the problem to a two-player   For a string s ∈L(G), we introduce Pr(s) as the probabil-
+stochastic game between the supervisor and the environ-    ity that s occurs, which is deﬁned recursively as: Pr(ϵ) = 1
+ment. Then we construct the largest PWBTS which con-   and Pr(se) = Pr(s)p(e|f(x0, s)) for all s ∈E∗, e ∈E.
+tains all enforcing the worst cost, reformulated as a safety   Thus, the occurrence probability of a set of strings L is
+condition over the new information space. Furthermore,   Pr(L) = Ps∈L Pr(s) and L is the so called probabilistic
+it turns out that the game is an Markov Decision Process   language in Kumar and Garg [2001].
+(MDP). Finally we synthesize the optimal supervisor from
+the game, which provably solves the proposed stabilization  A standard supervisor  is a function S   : L(G) →2E
+problem. Our solution procedure leverages results from   that controls the system to achieve certain speciﬁcation
+beyond worst-case synthesis in Bruyere et al. [2017] and   by dynamically enabling/disabling events. The event set
+optimal control of MDPs in Filar and Vrieze [2012].     E is partitioned as E = Ec ∪Euc, where Ec is the set of
+                                                               controllable events and Euc  is the set of uncontrollable
+The rest of the work is organized as follows. Section 2   events. Furthermore,  all events are observable  in  this
+introduces the system model. Section 3 formulates the   context. We denote by S the set of supervisors. Notice
+problem of optimal stabilizing supervisory control with   that a supervisor never disables uncontrollable events and
+guaranteed worst cost. In Section 4, a two-player stochastic   a control decision γ ∈2E  is admissible  if Euc ⊆γ. We
+game  is deﬁned to encode the worst-case requirement.   also say a control decision γ is non-redundant at state x if
+Then in Section 5, the optimal supervisor is synthesized to   ∀e ∈γ, f(x, e)! in G, i.e., all enabled events are deﬁned at
+solve the problem. Finally, Section 6 concludes the paper.   x. Denote by Γ the set of all admissible and non-redundant
+                                                             control decisions, then we only consider Γ in this work. We
+                    2. SYSTEM MODEL
+                                                                also use S/G to represent the supervised system under S,
+We consider the weighted ﬁnite-state automaton model:    where L(S/G) and Run(S/G) stand for the language and
+                                                         the set of runs in S/G, respectively.
+           G = (X, E, f, x0, ω)
+where X  is the ﬁnite state space, E  is the ﬁnite set of   In this work, the supervisors are deterministic in the sense
+events, f  : X × E →X  is the (partial) deterministic   that control commands are issued for sure. Here we make
+transition function and event e  is active at a state x   the same assumption on the supervisor as in Kumar and
+if f(x, e)! where  ! means “is deﬁned”, x0 ∈X  is the   Garg [2001] for the sake of following discussion.
+initial state and ω  : E →N+  is the weight function   Assumption 1. Given system (G, p) and supervisor S, af-
+which represents the event costs. The domain of f can be   ter S issues γ̸ = ∅at x ∈X, the occurrence probability of
+extended to X × E∗in the standard manner Cassandras   event e ∈γ becomes     p(e|x)    in the supervised system.
+                                  Pe′∈γ p(e′|x)and Lafortune [2008] and we  still denote the extended
+function by f. The language generated by G is deﬁned as
+                                                          In other words, after some events are disabled at a state,L(G) = {s ∈E∗: f(x0, s)!}. We denote by s ≤u if string s
+                                                         the probability of each enabled event increases proportion-is a preﬁx of u, and s < u if s ≤u and s̸ = u. The function
+                                                                   ally so that the probabilities of enabled events at non-ω is additive and its domain can be extended to E∗by
+                                                         terminating states still sum up to 1. Additionally, if theletting ω(ϵ) = 0, ω(se) = ω(s) + ω(e) for all s ∈E∗and
+                                                            supervisor disables all events at a state, then that state wille ∈E. Given s = e1e2 · · · en ∈L(G), its (accumulative)
+                                                 become a terminating state. From the results in Kumarcost is the sum of each event’s weight (cost), i.e., ω(s).
+                                                  and Garg [2001], the language in the supervised system is
+Given an automaton G, for x1, x2 ∈X and e ∈E, we    still a probabilistic language under this assumption.
+write x1 e−→x2  if f(x1, e) = x2, for simplicity. A run in
+                                                          e1       e2  A ﬁnite discrete Markov decision process (MDP) is a tuple:
+G is a sequence of states and events: r = x1 −→x2 −→
+    en−1                                M = (XM, A, ∆, ωm)· · · −−−→xn and it may be inﬁnitely long. We denote by
+Run(G) the set of runs in G. A run is initial  if its initial   Here XM is the ﬁnite state space partitioned as XnsM ∪XsM
+state is the initial state of the system. We say a run forms   where XnsM  is the set of non-stochastic states and XsM  is
+a cycle  if x1 = xn and we call a system acyclic if it does   the set of stochastic states. A is the set of actions from XnsM
+not contains cycles, otherwise, it is called cyclic.            to XsM. ∆: XsM × XnsM →[0, 1] is the probability of the
+                                                               transition between a stochastic state and a non stochasticIn system G, x ∈X  is a terminating state  if ∄e ∈E                                                                   state. ωm : XsM × XnsM →R is the reward or cost function.s.t. f(x, e)!, i.e., no outgoing transition is deﬁned. We let
+XT ⊆X be the set of target states where ∀x ∈XT , x  An MDP may be seen as a special two-player stochastic
+is terminating. We further denote by L(XT , G) = {t ∈   game: one player plays from XnsM against a probabilistic
+L(G)  : f(x0, t) ∈XT } the set of strings reaching XT .   adversary which makes randomized decisions characterized
+The target states indicate the completion of some essential   by ∆from XsM. Hence, MDPs are sometimes termed “1 12-
+tasks and ideally, the system should be attracted to them.   player games” in the literature, e.g., Bruyere et al. [2017].
+
+              3. PROBLEM FORMULATION                                                                                                                    𝑥$
+                                                                                                                     𝑢',3, 0.09
+Stability is critical for control systems. Intuitively, a sys-                                            c,5, 0.9     d,5, 1 𝑢(,4, 1
+tem is stable  if all its trajectories are driven to certain                                 𝑥#          𝑥%                                                                                                               a,1, 0.5
+region after a while and remain there afterwards. Addi-                                         𝑢#,100, 0.01         𝑥&
+tionally, certain cost may be entailed by those trajectories.                       𝑥"        𝑢$,70, 0.1
+For DES, the open-loop system G may not end up in target                                                                                                                  b,5, 0.5  𝑥'          𝑥(      f,10, 0.8
+states or the cost of reaching target states is excessively                                        e,10, 0.9
+high, either for a single string or the expectation of mul-                                       𝑢%,10, 0.2
+tiple strings. In this section, we introduce the stabilizing
+supervisor and formulate the key problem of this work.                                                              Fig. 1. The probabilistic system in Example 1
+Deﬁnition 1. (Stabilizing Supervisor). Given G and tar-
+                                                                         4. PROBABILISTIC WEIGHTED BIPARTITEget states XT , a supervisor S is stabilizing if ∀s ∈L(S/G),
+∃t ∈E∗and ∃N ∈N+ s.t. |t| ≥N ⇒f(x0, st) ∈XT .                TRANSITION SYSTEM
+                                                          In this section, we transform Problem 1 to a two-player
+A stabilizing supervisor drives every string in the super-   stochastic game between the supervisor and the envi-
+vised system to target states and it should never disable all   ronment.For this purpose, a novel information structure
+events at a non-target state by deﬁnition. We call a system   called  probabilistic weighted  bipartite  transition system
+as stabilizable  if there exists a stabilizing supervisor and  (PWBTS) was proposed to characterize the game.
+denote by L(XT , S/G) = {s ∈L(S/G) : f(x0, s) ∈XT }   Deﬁnition 2. (PWBTS). A PWBTS w.r.t. (G, p) is a tuple
+the set of strings reaching target states under S.                 T = (QY , QZ, E, Γ, ω, fyz, fzy, pw, y0)
+Then we evaluate the expected cost of strings reaching   where: QY ⊆X×N is the set of states where the supervisor
+XT as ES(XT ) = Ps∈L(XT ,S/G) ω(s)Pr(s), which is also   plays, for y ∈QY , we write y = (Sta(y), Lev(y)); QZ ⊆
+called the expectation of stabilization under S. Since all  X ×N×Γ is the set of states where the environment plays,
+strings in L(XT , G) are ﬁnite and their costs are bounded,    for z ∈QZ, we write z = (Sta(z), Lev(z), Γ(z)); E is the
+the expectation is well deﬁned. Lower ES(XT ) is preferred   set of events;Γ is the set of control decisions; ω : E →N+
+in practice. We also claim that Pr(L(XT , S/G)) = 1 holds    is the weight function of G and labels transitions between
+for a stabilizing supervisor under Assumption 1, while we  QZ and QY  states; fyz  : QY × Γ →QZ is the transition
+omit the argument here due to space limitation.            function from QY states to QZ state where for y ∈QY ,
+                                                   γ ∈Γ and z ∈QZ, we have: fyz(y, γ) = z ⇒[z = (y, γ)];
+However, one severe shortage of the expected cost is the   fzy  : QZ × E →QY  is the transition function from QZ
+failure to rule out certain extreme cases. A stabilizing   states to QY  states where for z = (y, γ) ∈QZ, e ∈E
+supervisor with good expectation of stabilization may still   and y′ ∈QY , we have: [fzy(z, e) =  y′] ⇔[e ∈γ] ∧
+permit strings with exceptionally high cost to occur, which    [y′ = f(y, e)] ∧[Lev(y′) = Lev(z) + ω(e)]; pw  : QZ ×
+is troublesome. Thus we have to ensure an acceptable  E →(0, 1] is the probability function for transitions where
+worst-case performance,  i.e., upper bound of individual    for z = (y, γ) ∈QZ, e ∈γ, we have: fzy(z, e)! ⇒pw(e|z) =
+string cost when optimizing the expectation. That is, our       p(e|Sta(z))
+supervisors is risk aware of high individual cost. This gives                       y0 = (x0, 0) ∈QY  is the initial state.                         Pe′∈γ p(e′|Sta(z));rise to the following problem of Optimal Stabilization by
+Supervisory Control with Guaranteed Worst Cost.                                              The game on a PWBTS starts from the initial state y0 and
+Problem 1. Given probabilistic system (G, p) with target   the two players (supervisor and environment) take turns
+states XT and cost threshold µ ∈N+, design a supervisor   to play. We refer to a QY -state as a Y -state for simplicity,
+S∗such that ES∗(XT ) = minS∈Sa ES(XT ) where Sa =   where the supervisor issues control decisions. A Y -state
+{S ∈S : S is stabilizing and ∀s ∈L(XT , S/G), ω(s) ≤µ}    contains a state Sta(y) from G and a positive integer
+                                                      Lev(y) indicating the cost of a string reaching Sta(y). We
+Here the condition ∀s ∈L(XT , S/G), ω(s) ≤µ is equiva-   also refer to a QZ-state as a Z-state where the environment
+lent with the maximum (worst) string cost of reaching XT   executes the events enabled by the supervisor. A Z-state
+being bounded. Thus, we synthesize the optimal supervisor   contains a state Sta(z), a positive integer component
+under the constraint of worst-case cost. The stabilizing   Lev(z) and a control decision Γ(z). fzy are deﬁned from
+supervisor should settle for trade-oﬀs between optimal ex-  Y -states to Z-states to reﬂect the control decisions issued
+pectation and acceptable worst-case cost. Since event costs   by the supervisor. For y ∈QY  in a PWBTS T, we let
+are always positive and target states are terminating, the  CT (y) be set of control decisions deﬁned at y. While
+resulting stabilizing supervisor leads to an acyclic system.   fzy transitions are deﬁned from Z-states to Y -states to
+Example 1. The system is shown in Figure 1. Here XT =   indicate the occurrence of enabled events. We put “⇔” in
+{x6} so x6 is the only target state. The set of controllable   deﬁning fzy due to the fact that the supervisor is unable to
+events is Ec = {a, b, c, d, e, f} and the set of uncontrollable   choose which enabled event to occur and we should have
+events is Euc = {u1, u2, u3, u4, u5}. The event weights and   them all deﬁned at a Z-state. Notice that along with fzy,
+probabilities are labeled with the events. For example,  we recalculate the occurrence probability of each enabled
+(a, 1, 0.5) at x0 means ω(a) = 1 and p(a|x0) = 0.5.          event e ∈γ following Assumption 1, which is reﬂected in
+                                                             probability function pw. Counterparts of the PWBTS for
+We set the worst-case cost threshold as µ = 100. Appar-
+                                                           nonstochastic DES are deﬁned in Ji et al. [2019a,b].
+ently, some strings do not reach the target state while
+some others violate the threshold. Our goal is to design   Given a PWBTS T, we say it is complete  if ∀y ∈QY ,
+an optimal supervisor to solve Problem 1 on the system.   CT (y)̸ = ∅, i.e., every Y -state has a successor. While a Z-
+
+state z is deadlock-free if either ∃e ∈E such that fzy(z, e)!   formally deﬁne it by construction in Algorithm 1. Here
+or Sta(z) ∈XT . In other words, a deadlock-free Z-state   being maximum means that for all PWBTS T satisfying
+either has a outgoing transition or it has a terminating   the above two conditions, T ⊑T mµ always holds.
+states from G. Otherwise, we call z a deadlocking state.
+                                              Algorithm 1 Construct T mµ with respect to G                                        γ1      e1      γ2      e2
+In T, a run is of the form r = y1 −→z1 −→y2 −→z2 −→
+    γn     en                                        Input: G, p, µ
+· · · −→zn −→yn+1. We let LastY (r) and LastZ(r) be the  Output: T mµ = (QmY , QmZ , E, Γ, ω, fyz,m fzy,m pmw , y0)
+last Y -state and Z-state of r. Then we denote by Runy(T)                                                                                  1: QmY = {y0}, QmZ = ∅;(respectively Runz(T)) the set of initial runs whose last                                                                                  2: Tpre = DoDFS(y0, G, p, µ);
+states are Y -states (respectively Z-states). Also, we let                                                                                  3: while there exist Y -states that have no successor do
+lg(r) be the string generated by run r, i.e., lg(r) = e1 · · · en.                                                                                  4:   Remove all such Y -states and their predecessor Z-
+Then we deﬁne the supervisor’s strategy (control strategy)        states, take the accessible part;
+in T  as πs   : Runy(T) →Γ and the environment’s      5: return T m;µ
+strategy deﬁned as πe  : Runz(T) →Eo. Each player      6: procedure DoDFS(y, G, p, µ)
+selects transitions according to its strategy. We let Πs      7:    for γ ∈Γ do
+(respectively Πe) be the set of supervisor’s (respectively      8:        z = fyz(y, γ);
+environment’s) strategies. We also deﬁne Run(πs, y) =      9:          if z is deadlock-free then
+                      γn−1                                   en−1    γ1              e1                                                                                       γ−→z to fyz;m{y −→z1       −→y2                           · · · −−−→zn−1                       −−−→yn                                                                    : ∀i < n, γi =    10:         add transition y
+                                        ei−1                          γi−1       γ1                e1                                            as the set of    11:               if z /∈QmZ then                           −−−→yi)}                              · · · −−−→zi−1πs(y −→z1        −→y2
+runs starting from y and consistent with control strategy    12:         QmZ = QmZ ∪{z};
+                                                                          13:              for e ∈γ doπs, i.e., the control decisions in the run are speciﬁed by πs.
+                                                                          14:                     y′ = fzy(z, e);Speciﬁcally, for s ∈L(G), we write r(πs, y0, s) as the run
+in Run(πs, y0) with lg(r) = s, i.e., r(πs, y0, s) generates s.    15:               add z e−→y′ to fzy,m  calculate pmw (e|z);
+                                                                          16:                        if y′ /∈QmY thenNotice that there is no diﬀerence between a control strat-                                                                          17:             QmY = QmY ∪{y′};egy and a standard supervisor in their mechanisms. For                                                                          18:                            if Lev(y′) ≤µ then
+this reason, we will not distinguish between them from                                                                          19:                   DoDFS(y′, G, p, µ);
+now on. Given a control strategy πs and string s, we                                                                          20:                     else
+use notations πs/G and πs(s) to stand for the supervised                                                                          21:                        stop searching;
+system under πs and the control decision of πs on oc-
+currence of s, respectively. Then πs  is included in T  if                       µ
+                                                     Algorithm 1 builds T m in a depth-ﬁrst search manner.∀s ∈L(πs/G), πs(s) ∈CT (LastY (r(πs, y0, s))), in other                                      We start construction from y0. Then we run DoDFS
+words, the control decisions of πs on any string are deﬁned                                                               recursively to add new states and transitions following
+in T. Besides, πs is memoryless  if ∀r, r′ ∈Runy(T) with                                                       Deﬁnition 2. The costs of strings are integrated into the
+LastY (r) = LastY (r′), πs(r) = πs(r′) holds. That is, a                                                                states and their values are updated. We track the cost until
+memoryless strategy only depends on the last state of runs.
+                                                                                it exceeds µ, then stop construction in line 21. Otherwise,
+    5. SYNTHESIZE THE OPTIMAL SUPERVISOR     we repeat DoDFS in line 19 until no states are added.
+
+We proceed to solve Problem 1 sequentially based on the   After DoDFS, there may be two types of Y -states that
+PWBTS in this section. First we resolve the worst-case   have no successors: Y -states whose integer components are
+cost requirement, then synthesize the optimal supervisor.   above µ or whose only feasible control decision leads to
+                                                         deadlocking Z-states. We prune away such states together
+We may compare the “size” of PWBTSs in graph sense.
+                                          1    1               with their predecessor states since the supervisor may notConsider T1 =  (Q1Y , Q1Z, E, Γ, ω1, fyz, fzy, p1w, y10) and
+                            2    2                            choose which enabled event to occur. In other words, this
+T2 = (Q2Y , Q2Z, E, Γ, ω2, fyz, fzy, p2w, y20), T1 is a subgame   results in a subgame of Tpre, whose states have cost levels
+of T2, denoted by T1 ⊑T2, if Q1Y ⊆Q2Y , Q1Z ⊆Q2Z and for   no greater than µ and are closed to the environment.
+all y ∈Q1Y , z ∈Q1Z, γ ∈Γ, e ∈E, we have that fyz(y,1    γ) =   Remark 1. Let  | · | be the cardinality of a set. By con-
+                                                                                  µ  is polynomial in the sizez ⇒fyz(y,2    γ) = z and fzy(z,1    e) = y ⇒fzy(z,2    e) = y.          struction, the complexity of T m
+We call a set of states Q in T as a closed set to the    of system G: the states in T mµ have components from X
+supervisor  if we have: (i) for all y ∈(Q ∩QY ) and for   and 2E. Furthermore, it is also polynomial in the threshold
+all γ ∈Γ, fyz(y, γ)! ⇒fyz(y, γ) ∈Q, i.e., all successors  µ as we stop construction when the cost exceeds µ. So µit
+of the supervisor’s states in Q are also in Q; (ii) for all   takes pseudo-polynomial time O(|X|·µ·2|E|) to build T m.
+z ∈(Q ∩QZ), there exists e ∈E such that fzy(z, e) ∈Q,   Example 2. We build T mµ with respect to the system in
+i.e., every environment’s state in Q has a successor in Q.   Example 1. After DoDFS in Algorithm 1, part of Tpre is in
+Intuitively, if the supervisor reaches a closed set, then the   Figure 2. The square states are Y -states and the oval states
+environment is able to “trap” its opponent there forever.   are Z-states. For simplicity, we only show the transition
+A closed set to the environment is deﬁned analogously.      probabilities in the ﬁgure and omit the transition weights.
+
+Afterwards, we construct the maximum complete PWBTS  The game is initialed at Y -state (x0, 0). Since both events
+where (i) all Z-states are deadlock-free and (ii) all the   a and b are controllable, the supervisor has four choices: to
+control strategies lead to the target states without ex-   enable a or b alone, to enable them both or to disable them.
+ceeding the worst-case cost threshold µ. We denote this   Thus, there are four fyz transitions deﬁned at (x0, 0).
+structure by T mµ = (QmY , QmZ , E, Γ, ω, fyz,m fzy,m pmw , y0) and   Here we show the enabled events under each control
+
+decision and use {} for enabling no event. Only enabled
+                                                                                                                                                                                             𝛾"={}
+events that are also active at that state are included in                             𝛾%={a}             𝑥",0                          (𝑥", 0,{})
+a control decision. Notice that  if the supervisor chooses                                            𝛾$={a,b}                 𝛾'={b}
+γ0 from (x0, 0), then the successor Z-state (x0, 0, {}) is a             (𝑥",0, 𝛾%)                                  (𝑥", 0, 𝛾$)                                              (𝑥", 0, 𝛾')
+                                                                                                                                                 a,1          a,0.5                            b, 0.5            b,1deadlocking state since no event may occur from it and x0
+is not a target state. For this reason, (x0, 0, {}) is not added                            𝑥%,1                                       𝑥&,5
+                                                                                                                                           𝛾&={𝑢%,𝑢&}               𝛾*={𝑢%,𝑢&,c}                𝛾.={𝑢$}           𝛾-={𝑢$,e}to the structure in DoDFS and we make this state shaded.
+Similarly, another deadlocking Z-state (x3, 6, {}) is also                   (𝑥%,1, 𝛾&)                       (𝑥%,1, 𝛾*)                     (𝑥&,5, 𝛾.)                    (𝑥&,5, 𝛾-)
+                                                                                                                                                   𝑢&,0.9   𝑢%,0.01                                                                                                                                                                                                 𝑢$,1   𝑢$,0.1        e,0.9shaded and not included. If the supervisor chooses γ2, then                                                                                                                                                                                                            c, 0.9                                                                                                                                         𝑢%,0.1
+two fzy transitions are deﬁned at the Z-state (x0, 0, γ2).                                     𝑢&,0.09                            𝑥+,75         𝑥*,15
+Meanwhile, the transition probabilities for events a and          𝑥+,101          𝑥$,4           𝑥',6                   𝛾"={}         𝛾%%={𝑢'}            𝛾%"={𝑢',f}
+                                                                                                                                                  𝛾+={𝑢*}           𝛾,={d}       𝛾"={}b at (x0, 0, γ2) are pw((x0, 0, γ2), a) = pw((x0, 0, γ2), b) =
+                                                                                                                                                                                      (𝑥$,4, 𝛾+)           (𝑥',6, 𝛾,)              (𝑥+,75, {})          (𝑥*,15, 𝛾%%)            (𝑥*,15, 𝛾%")0.5. We also update the cost levels when we reach new Y -
+                                                                                                                                                  𝑢*,1               d, 1             (𝑥',6,{})                  𝑢',1            𝑢',0.2             f,0.8           and                         since                           ω(a) =                                 1 and                                         ω(b) =                                                          5. Thestates (x1, 1)                  (x2, 5)                                                                                                                                                                                                              𝑥+,25                                                                                                                                                                                  𝑥&,25                                                                                                                                      𝑥+,8          𝑥+,11                                                                                                                                                                                                  𝛾.={𝑢$}                                                                                                                                                                                                                            𝛾-={𝑢$,e}                                                                                                                                                                                                                                                              𝛾"={}remaining        game               graph                              is                         interpreted                                       in                                   a similar                                              way.                                                                                                                                                                                    𝛾"={}                                                                                                                                                          𝛾"={}
+                                                                                                                                                                                      (𝑥+,8, {})           (𝑥+,11, {})                (𝑥&,25, 𝛾.)                  (𝑥&,25, 𝛾-)                 (𝑥+,25, {})
+                                                                                                                                                                                                                        𝑢$,0.Notice that DoDFS stops at the two red Y -states (x6, 101)                                                                                                                                                                                                                                  e,0.9                                                                                                                                                                                         𝑢$,1                                                                                                                                                                         1and (x6, 115) since Lev((x6, 101)) and Lev((x6, 115)) are                                                                                                                                                                    𝑥+,95                𝑥*,35     𝛾%%={𝑢'}above µ = 100. Also we calculate transition probabilities                                                                      𝛾"={}            𝛾%"={𝑢',f}
+following Deﬁnition 2. For example, at Z-state (x1, 1, γ4),                                                                                (𝑥+,95, {})          (𝑥*,35, 𝛾%")            (𝑥*,35, 𝛾%%)
+since only u1 and u4 are enabled in γ4, the probability                                                                                             f,0.8           𝑢',0.2      𝑢',1
+of u1 becomes p(u1|x1)+p(u4|x1)p(u1|x1)   = 0.1 and the probability                                                                  𝑥+,45             𝑥&,45      𝛾-={𝑢$,e}
+                        p(u2|x1)                                                                                                                                                 𝛾"={}            𝛾.={𝑢$}
+of u2 becomes  p(u1|x1)+p(u4|x1) = 0.9. While at Z-state                                                                                         (𝑥+,25, {})           (𝑥&,45, 𝛾.)            (𝑥&,45, 𝛾-)
+(x1, 1, γ5), since u1, u4 and c are all enabled, the transition                                                                                                𝑢$,1      𝑢$,0.           e,0.9
+probabilities in Figure 2 are the same as the occurrence                                                                                          1                                                                                                                                                                                              𝑥+,115      𝑥*,45
+probabilities of those events at state x1 in Figure 1.
+Then we prune states from Figure 2 by Algorithm 1. Ac-   Fig. 2. Part of the Tpre (without the shaded states)
+tually, there should be more states after the dashed state
+(x5, 45) by DoDFS. However, all such states together with
+                                                                                                𝑥",0
+(x5, 45) become inaccessible after (x6, 115), (x4, 45, γ8) and                             𝛾%={b}
+(x4, 45, γ9) are removed. We do not draw them in Figure 2.                                     (𝑥", 0, 𝛾%)
+                                                                                                                     b, 5, 1Finally, T mµ is shown in Figure 3. As is seen, every leaf state
+in T mµ  is with the target state x6 and has cost level less                      𝛾)={𝑢(}   𝑥#,5     𝛾&={𝑢(,e}
+that 100. Hence, each control strategy in T mµ is stabilizing                     (𝑥#,5, 𝛾))                       (𝑥#,5, 𝛾&)
+and meets the worst-case cost threshold µ.   2                                                                                                          𝑢(,70,0.1            e,10, 0.9                                                                                           𝑢(,70, 1
+Notice that it is possible that Algorithm 1 returns nothing,
+                                                                                 𝑥*,75                  𝑥+,15
+which indicates that no supervisor satisﬁes the worst-case               𝛾"={}               𝛾,"={𝑢%,f}              𝛾,,={𝑢%}
+cost requirement. If that is the case, there is no need to                    (𝑥*,75, {})           (𝑥+,15, 𝛾,")           (𝑥+,15, 𝛾,,)
+search for the optimal strategy and Problem 1 has no                                                 f, 10, 0.8          𝑢%,10,0.2  𝑢%,10,1
+solution. When T mµ is not empty, we justify Algorithm 1.                                𝑥*,25            𝑥#,25
+Lemma 1. A control strategy πs is stabilizing and ∀s ∈                                   𝛾"={}                      𝛾)={𝑢(}
+                                                  µ                                          (𝑥*,25, {})             (𝑥#,25, 𝛾))
+L(XT , πs/G), ω(s) ≤µ if and only if πs is included in T m.                                                              𝑢(,70, 1
+                                          µ                                                           𝑥*,95
+Lemma 1 implies that any control strategy in T m stabilizes                                                               𝛾"={}
+the system without violating the worst-case cost threshold                                                                (𝑥*,95, {})
+µ. The proof is omitted here. Also by construction, the
+leaf stats of T mµ  are such that {z ∈QmZ   : Sta(z) ∈   Fig. 3. The T mµ in Example 2
+XT , Lev(z) ≤µ}. We are particularly interested in those
+states and the supervisor should only reach them on T m.µ   Algorithm 2 Find an optimal control strategy
+Since the supervisor plays by making control decisions and            µ                                                   Input: T m
+the antagonistic environment plays by assigning proba-                                               Output: An optimal control strategy π∗s
+bility       distributions to the enabled events, the game on      1: Find QT = {z ∈QmZ  : Sta(z) ∈XT , Lev(z) ≤µ}; µ
+T m is actually an Markov Decision Process (MDP). Then      2: View QT as the set of states to reach in the MDP T m;µ
+our goal is to search for an optimal control strategy on      3: Apply the method of solving stochastic shortest path
+T mµ and the dynamic/linear programming method for the      problem to search for an optimal control strategy π∗s;
+stochastic shortest path problem suﬃces. By established
+results in Filar and Vrieze [2012], the optimal supervisor   Theorem 2. π∗s returned by Algorithm 2 solves Problem 1.
+is memoryless. To proceed, we present Algorithm 2.
+                                                  Example 3. We continue Example 2 to solve Problem 1
+The following theorem captures the main result of this   following Algorithm  2. We view T mµ  as an MDP and
+work. Since it takes polynomial time in the size of an MDP   synthesize an optimal supervisor, which reaches the leaf
+to search for an optimal strategy Filar and Vrieze [2012],   states in Figure 3. The expectation of stabilization is 42.6
+Algorithm 2 requires polynomial time in the size of T m.µ       for the optimal supervisor shown in Figure 4.
+
+It is interesting to notice that if the supervisor disables b   Kumar, R. and Garg, V.K. (2001). Control of stochastic
+but enables a at x0, then we get an even lower expectation      discrete event systems modeled by probabilistic lan-
+of stabilization, given that the probability of u1 is fairly     guages. IEEE Trans. on Auto. Control, 46(4), 593–606.
+low. However, the worst-case cost is greater than 100 since   Lin, L., Thuijsman, S., Zhu, Y., Ware, S., Su, R., and
+u1 is uncontrollable. This reveals the trade-oﬀbetween the      Reniers, M. (2019).  Synthesis of supremal successful
+expected cost and the worst cost of stabilization.            normal actuator attackers on normal supervisors.  In
+                        b,5, 1             𝑢(,70, 0.1                       American Control Conference, 5614–5619.
+                 𝑥"        𝑥$                           𝑥#              Ma, Z., He, Z., and Li, Z. (2019).  Supervisory control
+                                                   f,10, 0.8
+                                                                  in partially observable petri nets with sensor reduction.
+                            e,10, 0.9   𝑥%                                                          𝑢(,70, 1                 In 15th IEEE International Conference on Automation                                                       𝑥′$
+                                          𝑢',10, 0.2                          Science and Engineering, 189–194.
+                                               Ma, Z., He, Z., Li, Z., and Giua, A. (2018).  Design of
+                                                          monitor-based supervisors in labelled Petri nets. In 14thFig. 4. The optimal supervisor solving Problem 1
+                                                                           Intl. Workshop on Discrete Event Systems, 374–380.
+                      6. CONCLUSION                   Marchand, H., Boivineau, O., and Lafortune, S. (2002). On
+                                                          optimal control of a class of partially observed discrete
+This work was the ﬁrst to study optimal stabilization
+                                                            event systems. Automatica, 38(11), 1935–1943.
+on stochastic DES by supervisory control with a guaran-
+                                                             Meira-G´oes, R., Kwong, R., and Lafortune, S. (2019).
+tee of worst-case performance. To transform the control
+                                                             Synthesis of sensor deception attacks for systems mod-
+problem to a two-player stochastic game between the su-
+                                                                eled as probabilistic automata.  In American Control
+pervisor and the environment, we proposed probabilistic
+                                                            Conference, 5620–5626.
+weighted bipartite transition system (PWBTS). Then we
+                                                       Mohajerani, S., Malik, R., and Fabian, M. (2017). Com-
+constructed the largest PWBTS to encode the worst-case
+                                                                 positional synthesis of supervisors in the form of state
+cost. We further illustrated that the game is an Markov De-
+                                                        machines and state maps. Automatica, 76, 277–281.
+cision Process (MDP). Finally we synthesized the optimal
+                                                               Pantelic, V., Postma, S.M., and Lawford, M. (2009).
+control strategy by solving the MDP. For future work, we
+                                                                 Probabilistic supervisory control of probabilistic dis-
+would consider more complicated performance measures
+                                                                 crete event systems. IEEE Transactions on Automatic
+and the potential application of our developed method.
+                                                              Control, 54(8), 2013–2018.
+                                                          Pruekprasert, S. and Ushio, T. (2016a). Optimal stabi-             REFERENCES
+                                                                       lizing controller for the region of weak attraction under
+Alves, M.V., da Cunha, A.E., Carvalho, L.K., Moreira,                                                            the inﬂuence of disturbances. IEICE Transactions on
+  M.V., and Basilio, J.C. (2019).  Robust supervisory                                                          Information and Systems, 99(6), 1428–1435.
+  control of discrete event systems against intermittent                                                          Pruekprasert, S. and Ushio, T. (2016b). Optimal stabi-
+   loss of observations. Intl. Journal of Control, 1–13.                                                                       lizing supervisor of quantitative discrete event systems
+Brave, Y. and Heymann, M. (1990).   Stabilization of                                                       under partial observation. IEICE Trans. on Fund. of
+  discrete-event processes. International Journal of Con-                                                                    Elect, Commu. and Computer Science, 99(2), 475–482.
+   trol, 51(5), 1101–1117.                                                          Rashidinejad, A., Reniers, M., and Feng, L. (2018). Super-
+Brave, Y. and Heymann, M. (1993). On optimal attraction                                                               visory control of timed discrete-event systems subject to
+  in discrete-event processes. Info. sciences, 67, 245–245.                                                      communication delays and non-ﬁfo observations. In 14th
+Bruyere, V., Filiot, E., Randour, M., and Raskin, J.F.                                                                           Intl. Workshop on Discrete Event Systems., 456–463.
+  (2017). Meet your expectations with guarantees: Beyond                                                       Schmidt, K.W. and Breindl, C. (2014). A framework for
+  worst-case synthesis in quantitative games. Information                                                                 state attraction of discrete event systems under partial
+  and Computation, 254, 259–295.                                                               observation. Information Sciences, 281, 265–280.
+Cassandras, C.G. and Lafortune, S. (2008). Introduction                                                       Shu, S. and Lin, F. (2015).   Supervisor synthesis for
+  to discrete event systems – 2nd Edition. Springer.                                                        networked discrete event systems with communication
+Filar,  J. and Vrieze, K. (2012).   Competitive Markov                                                                 delays. IEEE Trans. on Auto. Cont., 60(8), 2183–2188.
+  decision processes. Springer.                                             Wonham, W.M. and Cai, K. (2018). Supervisory control
+Han, X., Chen, Z., and Su, R. (2019). Synthesis of mini-                                                                   of discrete-event systems. Springer.
+  mally restrictive optimal stability-enforcing supervisors                                             Wu, B., Zhang, X., and Lin, H. (2019). Permissive super-
+   for nondeterministic discrete event systems. Systems &                                                                  visor synthesis for Markov decision processes through
+  Control Letters, 123, 33–39.                                                                  learning.  IEEE Transactions on Automatic Control,
+Ji, Y., Yin, X., and Lafortune, S. (2018). Mean payoﬀ                                                                 64(8), 3332–3338.
+  supervisory control under partial observation. In 57th                                                         Yin, X. and Lafortune, S. (2016a). Synthesis of maximally
+  IEEE Conference on Decision and Control, 3981–3987.                                                             permissive supervisors for partially-observed discrete-
+Ji, Y., Yin, X., and Lafortune, S. (2019a).  Enforcing                                                            event systems. IEEE Transactions on Automatic Con-
+  opacity by insertion functions under multiple energy                                                                               trol, 61(5), 1239–1254.
+  constraints. Automatica, 108, 108476.                                                         Yin, X. and Lafortune,  S. (2016b).  A uniform ap-
+Ji, Y., Yin, X., and Lafortune, S. (2019b).  Supervisory                                                         proach for synthesizing property-enforcing supervisors
+  control under local mean payoﬀconstraints,.  In 58th                                                                     for partially-observed discrete-event systems.  IEEE
+  IEEE Conference on Decision and Control, 1043–1049.                                                           Trans. on Automatic Control, 61(8), 2140–2154.
+Komenda, J. and Masopust, T. (2017). Computation of                                                         Yin, X. and Lafortune, S. (2017). Synthesis of maximally-
+  controllable and coobservable sublanguages in decen-                                                             permissive supervisors for the range control problem.
+  tralized supervisory control via communication.  Disc.                                              IEEE Trans. on Automatic Control, 62(8), 3914–3929.
+  Event Dyn. Systems: Theory and App., 27(4), 585–608.

@@ -1,0 +1,1004 @@
+                                                                                                                                                             1
+
+         Opacity Enforcing Supervisory Control
+           with a Priori Unknown Supervisors
+
+           Bohan Cui, Student Member, IEEE, Ziyue Ma, Senior Member, IEEE, Alessandro Giua, Fellow, IEEE
+                                           and Xiang Yin, Member, IEEE
+
+
+
+
+          Abstract—We  investigate  the  enforcement  of  opacity  in    is in a secret state, thereby providing plausible deniability for
+          discrete-event systems via supervisory control. A system is said   sensitive operations.
+          to be opaque  if a passive intruder can never unambiguously                                                        As a fundamental system-theoretic property for information-
+          infer whether the system  is in a secret state through  its ob-
+                                                                     flow security, opacity has attracted considerable attention in          servations. In this context, the intruder’s knowledge about the
+         supervisor plays a critical role in both problem formulation and   recent years from the control systems community. In the con-2026   solvability. Existing studies typically assume that the policy of   text of DES, various notions of opacity have been proposed,
+          the supervisor is either fully unknown to the intruder or fully   including current/initial-state opacity [2], [14], [21], [27], [35],
+        known a priori, the latter leading to severe technical challenges                                                                            K/infinite-step opacity [34], [40], [50], joint opacity [32], [54]
+        and unresolved problems under incomparable observations. This
+                                                               and pre-opacity [48]. From the modeling perspective, beyondApr   paper  investigates  opacity supervisory  control under a new
+5   intermediate information setting, which we refer to as the a   the finite-state automaton model of DES, opacity has also
+           priori unknown supervisor setting. In this setting, the supervisor’s   been investigated for infinite-state systems, such as Petri nets
+          internal realization  is not publicly available, but the intruder   [5], [41], timed systems [9], [13], [17], [52], and continuous
+        can partially infer its behavior by eavesdropping on the control                                                                 dynamical systems [1], [26], [30], [51]. Moreover, in addition
+          decisions issued online during system execution. We formalize the
+                                                                              to binary (opaque/non-opaque) analysis, several security-level          intruder’s information-flow under both observation-triggered and
+          decision-triggered decision-issuance mechanisms and define the   metrics have been proposed to quantify the degree of opacity
+         corresponding notions of opacity. We provide sound and complete   of a system [7], [15], [24], [29].
+         algorithms for synthesizing opacity-enforcing supervisors without    When the open-loop system is not opaque, an important[eess.SY]   imposing any restrictions on the observable or controllable event
+                                                               problem is to enforce opacity via suitable enforcement mech-
+            sets. By constructing an information-state structure that embeds
+          the supervisor’s estimate of the intruder’s belief, the synthesis   anisms. In the DES  literature, various opacity-enforcement
+        problem  is reduced to a safety game. Finally, we show that,  mechanisms have been developed, such as supervisory control
+        under strictly finer intruder observations, the proposed setting   [4], [8], [11], [33], [39], [42], [46], [49], information-flow
+          coincides with the standard a priori known supervisor model.     editing  [6],  [19],  [22],  [43], event encryption/delays  [12],
+           Index Terms—Discrete-Event Systems, Supervisory Control   [20], [31], [36], and hybrid combinations of these techniques
+         Theory, Opacity, Partial Observation.                              [38], [44]. Among them, supervisory control is one of the
+                                                              most fundamental and widely investigated approaches. The
+                                                                key idea  is  to synthesize a  supervisor,  in  the Ramadge-                                        I. INTRODUCTION
+                                                   Wonham framework [45], that dynamically disables/enables
+         A. Motivations
+                                                                        events online so as to eliminate secret-revealing behaviors,
+         NSURING the privacy and security of system behaviors   thereby rendering the resulting closed-loop system opaque.
+             has become a critical challenge in modern engineering  E
+        and cyber-physical systems (CPS), where information leakage
+                                                                      B. Status and Challenges in Opacity Supervisory Control         or malicious observation can result in severe consequences.arXiv:2604.04070v1
+         This paper investigates a fundamental security property, known     In the context of supervisory control for opacity, one of the
+         as opacity [3], [16], [23], within the framework of discrete-  most important factors is what information the intruder knows
+         event systems (DES). In this setting, we assume the presence   about the closed-loop system under control. This information
+         of a passive intruder that monitors the evolution of the system   directly affects the definition of opacity for controlled systems,
+         through its information-flow. A system is said to be opaque   since it determines which language the intruder uses to con-
+            if the intruder can never infer with certainty that the system   struct the system state estimate. Moreover, it also significantly
+                                                                           influences the technical  difficulty of the control synthesis
+             This work was supported by the National Natural Science Foundation of
+          China (62173226, 62061136004, 92367203).                          problem. This  is because  it may be infeasible to decouple
+             B. Cui and X. Yin are with the School of Automation and Sensing,   the intruder’s knowledge of the closed-loop behavior from the
+          Shanghai Jiao Tong University, Shanghai 200240, China, and also with the   supervisor’s control policy, which is exactly what needs to be
+         Key Laboratory of System Control and Information Processing, the Ministry
+           of Education of China, Shanghai 200240, China. E-mail: {bohan_cui,   synthesized. Existing works in the literature can be broadly
+        yinxiang}@sjtu.edu.cn. Ziyue Ma  is with the School of Electro-   divided into the following two categories.
+          Mechanical Engineering, Xidian University, Xi’an 710071, China. E-mail:     Fully Unknown Supervisor  Setting. A simple  setting
+        maziyue@xidian.edu.cn. Alessandro Giua is with the Department of
+            Electrical and Electronic Engineering, University of Cagliari, Cagliari 09123,   for opacity-enforcing supervisory control assumes that the
+              Italy. E-mail: giua@unica.it. (Corresponding Author: Xiang Yin)      intruder is fully unaware of the supervisor’s implementation.
+
+                                                                                                                                                  2
+
+
+Therefore, the intruder still estimates the system state based on                           Plant 𝐺
+the open-loop language (i.e., without control), although some                                𝑠∈ℒ(𝑆/𝐺)
+strings in this language are no longer feasible in the closed
+loop. Under this assumption, the knowledge of the supervisor
+and the intruder can be fully decoupled. Specifically, one can                                                                            𝑥 ∈ 𝑋𝑆?
+first construct the intruder’s state estimate based on the open-
+                                                                     Actuator                                   𝑃𝑎: Σ →Σ𝑎  𝑃𝑜: Σ →Σ𝑜
+loop system, and then enforce opacity as a safety specification                 𝛼𝑎′ ∈Γ∗           𝛼𝑎∈Σ𝑎∗                                                                                                   Intruderover  this estimate from the supervisor’s perspective. This
+setting has been completely solved in [42] for  finite-state
+                                                                                       Supervisor
+systems, where no restriction is imposed on the supervisor’s
+                                                 𝛾∈2Σ𝑐           𝑆: Σ𝑜∗→Γ        𝛼𝑜∈Σ𝑜∗observable event set Σo, the supervisor’s controllable event set
+Σc, or the intruder’s observable event set Σa. A similar setting,                  unknow a priori
+in which the intruder is completely unaware of the supervisor,
+has also been considered in [37], [47], [53].                          Fig. 1.  Conceptual illustration of the a priori unknown opacity supervisory
+                                                                                  control setting investigated.
+ A Priori Known Supervisor Setting. A more technically
+challenging setting assumes that the supervisor’s control policy
+is fully known a priori to the intruder. That is, the control
+                                                     on by an intruder. From the theoretical perspective, this setting
+policy of the supervisor will become public information once
+                                                                        identifies a new class of opacity-enforcing supervisory control
+it is designed offline. Therefore, during the online execution
+                                                            problems, where the intruder can leverage more information
+phase, the intruder uses the closed-loop language under su-
+                                                             than in the fully unknown setting, yet incomparable to the a
+pervision to estimate the system state, which is more precise
+                                                                    priori known setting. In particular, this new setting admits a
+than in the open-loop case. This setting requires the control
+                                                          complete solvability result without imposing any assumptions
+design to explicitly account for how control laws affect the
+                                                     on the event sets; that is, the supervisor and the intruder may
+intruder’s knowledge during the offline design stage. Such a
+                                                         have incomparable observations.
+consideration is generally very difficult when the intruder’s and
+                                                     Our main contributions are summarized as follows:the supervisor’s observations are incomparable, in which case
+their information states cannot be decoupled. To our knowl-      • We formulate a new class of opacity-enforcing supervi-
+edge, a general solution to the opacity control problem under       sory control problems, where the internal realization of
+this setting has remained open for almost 20 years. Existing        the supervisor is initially undisclosed, but the intruder
+methods either rely on iterative designs without convergence       can monitor the issuance of control decisions online
+guarantees [10], [39], or impose additional assumptions on the       during system  executions.  In  particular, we  consider
+event sets [11], [28], [33], [46], [49].                          two distinct decision-issuance mechanisms: observation-
+                                                                         triggered, where the supervisor issues a decision upon
+C. Our Results and Contributions                                 observing a new event, and decision-triggered, where
+  In this paper, we investigate the opacity-enforcing supervi-       a decision  is issued only when the supervisor needs
+sory control problem from a new angle. Specifically, different        to modify the current control action applied. For both
+from the fully unknown setting and the a priori known setting       mechanisms, we define the intruder’s information-flow
+studied in the literature, we consider a new setting in which       and the corresponding notion of opacity under the a priori
+the control policy of the synthesized supervisor is not directly      unknown supervisor setting.
+public information to the intruder. Instead, the intruder can      • We then develop an effective game-theoretic approach to
+only access partial information about the supervisor by eaves-        solve the supervisor synthesis problem under this new set-
+dropping on the online control decisions that have already         ting. To capture the dynamic interaction among the plant,
+been issued. Therefore, we refer to this setting as the a priori        the supervisor, and the intruder, we construct a novel
+unknown setting. Note that the intruder’s knowledge about the       information structure that incorporates the supervisor’s
+supervisor along executed strings is still imperfect, since the        estimate of the intruder’s knowledge. We characterize the
+supervisor and the intruder may have different observations.        intruder’s state-estimation process as a function of both
+In particular, the intruder may observe that the supervisor          its observations and the released control decisions. Based
+has issued a new control decision, but does not know which      on this characterization, we reduce the synthesis problem
+supervisor observation triggered this decision update.                 to a safety game and provide systematic algorithms for
+  The proposed a priori unknown setting is of importance       computing an opacity-enforcing supervisor. We prove that
+from both theoretical and practical perspectives. From the       our algorithms are sound and complete.
+practical perspective,  it captures realistic scenarios in which      • Our setting is more general than the fully unknown su-
+the supervisor’s control policy is not immediately available        pervisor setting, while still enjoying complete solvability
+to the intruder, but is gradually revealed through its online       without imposing any assumptions on the event sets. That
+interaction with the system. Such a situation arises in many          is, no restriction is imposed on Σo, Σc, or Σa. Compared
+applications; for example, the supervisor may need to broad-       with the a priori known setting, the intruder’s knowledge
+cast or transmit its control decisions to actuators over commu-          is incomparable since they leverage different information.
+nication channels that are not secure and may be eavesdropped     On the other hand, this setting avoids the main technical
+
+                                                                                                                                                  3
+
+
+     difficulty caused by the coupling between the supervisor’s   generated by G is L(G) := L(G, x0). For any s ∈L(G),
+    and the intruder’s information states, which leads to our  we write δ(x0, s) simply as δ(s). For any x ∈X, we define
+     decidability result.                                 Λ(x) = {σ ∈Σ : δ(x, σ)!} as the set of active events at state
+   • Finally, under the assumption that the intruder’s obser-   x. For a set of states q ∈2X, we also write S x∈q Λ(x) as
+     vation is strictly finer than that of the supervisor,  i.e.,  Λ(q) for simplicity.
+    Σo ⊆Σa, we prove that our new setting coincides with    When the system is partially observed, Σ is partitioned as
+     the standard a priori known setting under this assumption.  Σ = Σo ˙∪Σuo, where Σo is the set of observable events and
+    However, even in this case, the standard opacity con-  Σuo is the set of unobservable events. The occurrence of each
+      trol problem typically requires the additional assumption   event is imperfectly observed through a natural projection Po :
+    Σc ⊆Σo [10], and the general case remains open to  Σ∗→Σ∗o defined as follows:
+     our knowledge. Therefore, our results also effectively
+                                                                                 Po(s)σ   if  σ ∈Σo
+     solve the standard opacity-enforcement problem under     Po(ϵ) = ϵ and Po(sσ) =                                         .   (1)
+                                                                                    Po(s)     if  σ ∈Σuo    Σo ⊆Σa without further requiring that all controllable
+     events be observable to the supervisor.                                      −1                                                   The inverse projection Po     : Σ∗o →2Σ∗is defined by
+                                         Po−1 (α) := {s ∈Σ∗: Po(s) = α}. For any observation
+D. Organization                               α ∈Po(L(G)), we define Eopo (α) as the current-state estimate
+  The rest of this paper is organized as follows. Section II   that captures the set of  all possible states the (open-loop)
+presents some necessary  preliminaries. In Section  III, we   system could be  in  currently when α  is observed under
+formulate the opacity-enforcing control problem with a priori   projection Po, i.e.,
+unknown supervisors, focusing on the observation-triggered                                −1                                                               Eopo (α) = {δ(s) ∈X : s ∈Po  (α) ∩L(G)}.decision-issuance mechanism. Section IV investigates the evo-
+lution of information from both the intruder’s and the su-
+pervisor’s perspectives and introduces a novel information-   B. Supervisory Control Theory
+state structure that captures both the supervisor’s knowledge                                                                  In the supervisory control framework, a supervisor can
+and the intruder’s knowledge. In Section V-A, we present a                                                                            restrict the behavior of the system G by dynamically dis-
+synthesis algorithm that first restricts the policy space to the                                                                abling/enabling some system events. In this setting, the event
+IS-based control structure and then solves the resulting safety                                                                       set Σ is further partitioned as Σ = Σc ˙∪Σuc, where Σc is the
+game; we also prove that the algorithm enforces opacity and is                                                                       set of controllable events and Σuc is the set of uncontrollable
+without loss of generality. In Section VI, we further introduce                                                                   events. A control decision γ ∈2Σ  is said to be valid  if
+the decision-triggered decision-issuance mechanism and solve                                                   Σuc ⊆γ, namely, uncontrollable events can never be disabled.
+the corresponding synthesis problem.  Finally, Section VII                                        We define Γ = {γ ∈2Σ : Σuc ⊆γ} as the set of valid control
+concludes the paper.                                                                  decisions. Since a supervisor can only make decisions based on
+                                                                                    its observations, a partial-observation supervisor is a function
+                         II. PRELIMINARIES
+                                                         S : Po(L(G)) →Γ.A. System Model
+  Let Σ be a finite set of events. A string is a finite sequence  We use the notation S/G to represent the controlled system
+of events, and we denote by Σ∗the set of all strings over  and the language generated by S/G, denoted by L(S/G), is
+Σ including the empty string ϵ. We denote Σϵ = Σ ∪{ϵ}.   defined recursively in the following manners:
+For string s ∈Σ∗, the length of s is denoted by |s| with                                                                 1) ϵ ∈L(S/G); and
+|ϵ| = 0. A language L ⊆Σ∗is a set of strings. For any string                                                                 2) for any s ∈Σ∗, σ ∈Σ we have sσ ∈L(S/G) iff sσ ∈
+s ∈L, we denote by L/s the post-language of s in L, i.e.,                                                         L(G), s ∈L(S/G), and σ ∈S(Po(s)).
+L/s := {w ∈Σ∗: sw ∈L}. The prefix-closure of L is denote
+by ¯L, i.e., ¯L = {u ∈Σ∗: ∃v ∈Σ∗s.t. uv ∈L}. A language   Since the supervisor knows its own control policy, then for
+                                                       any observation α ∈Po(L/G), the controlled state estimateL ⊆Σ∗is said to be live if ∀s ∈L, ∃σ ∈Σ : sσ ∈L.
+                                                                                 w.r.t. Σo and supervisor S is  We consider a discrete-event system modeled by a deter-
+ministic finite-state automaton (DFA)                         ESo (α) = {δ(s) ∈X : s ∈Po−1 (α) ∩L(S/G)}.
+           G = (X, Σ, δ, x0),
+                                                          C. Opacity under Passive Intruderswhere X is the finite set of states, Σ is the finite set of events,
+δ : X × Σ →X is the partial deterministic transition function   We assume that system G has a “secret”, modeled as a set
+such that δ(x, σ) = x′ means that there exists a transition   of secret states XS ⊆X. We define the set of events whose
+from x to x′ with event σ, and x0 ∈X  is the initial state.   occurrence can be observed by the intruder as Σa ⊆Σ. We
+The transition function δ can also be extended to δ  : X ×   also define Σua = Σ \ Σa as the set of unobservable events
+Σ∗→X recursively by: for any x ∈X, s ∈Σ∗, σ ∈Σ, we  from the intruder’s perspective. The projection Pa : Σ∗→Σ∗a,
+have δ(x, sσ) = δ(δ(x, s), σ) with δ(x, ϵ) = x. The language   inverse projection P a−1  : Σ∗a →2Σ∗and (open-loop) state
+generated by G from state x is defined by L(G, x) = {s ∈   estimate Eopa   : Pa(L(G)) →2X are also defined in the same
+Σ∗: δ(x, s)!}, where “!” means “is defined”. The language  way as Po, P o−1 and Eopo  , respectively. In general, Σa and Σo
+
+                                                                                                                                                  4
+
+
+can be incomparable, i.e., both Σo̸ ⊆Σa and Σa̸ ⊆Σo may                                      u3
+hold.
+  In opacity analysis, we consider a passive intruder that has                                  u1       u1                                                                             u1   2        4        6
+the following capabilities:                                           a                u2       u1
+                                                              0        1   u2A1:  it knows the system model G;                                                                                                 b       u2
+A2:  it can eavesdrop on the occurrences of events in Σa.                                3        5        7
+A (open-loop) system is said to be current-state opaque  if
+the intruder can never determine for sure that the system is    Fig. 2. System G, where Σo = {u1, u2}, Σa = {a, b}, Σc = {u1, u2, u3}.
+currently in a secret state based on its observation.
+
+Definition 1 (Current-State Opacity). Given system G, set   observation-triggered or a decision-triggered decision-issuance
+of observable events Σa of the intruder, and set of secret states  mechanism.
+XS, we say G is current-state opaque (w.r.t. Σa and XS) if      Formally, based on the above setting, given a supervisor S :
+                                                   Po(L(G)) →Γ, the information-flow of the controlled system            (∀s ∈L(G))[Eopa (Pa(s))̸ ⊆XS].            (2)
+                                                      from the intruder’s perspective is captured as the function:
+  We finally define some operators that will be used later.
+The unobservable reach of the supervisor for state set q ⊆X               PS : L(S/G) →(Σϵa × Γϵ)∗
+under control decision γ ∈Γ is
+                                                          such that
+    URγ,o(q) = {δ(x, w) ∈X : x ∈q, w ∈(Σuo ∩γ)∗}.                                                                                      (i) PS(ϵ) = (ϵ, S(ϵ)); and
+We also define the unobservable reach of the intruder for states     (ii) for any string sσ ∈L(S/G), we have
+q ⊆X under γ ∈Γ w.r.t. Σua by URγ,a(q). Moreover, we                                      PS(s)(σ, ϵ)                if σ ∈Σa \ Σo
+define                                   PS(s)(ϵ, S(Po(sσ)))    if σ ∈Σo \ Σa                                                   PS(sσ)=                                                                     .
+  UR+γ,a(q) = {δ(x, w)∈X : x∈q, w∈(Σua ∩γ)∗\ {ϵ}}                      PS(s)(σ, S(Po(sσ)))   if σ ∈Σo ∩Σa
+                                      PS(s)                       if σ ∈Σuo ∩Σua
+as the intruder’s unobservable reach in one or more steps,                                                                 (3)
+starting from the subset of states q ⊆X under the control                                        We denote by O = Σϵa × Γϵ  the observation  set of the
+decision γ ∈Γ.                                                                       intruder. Intuitively, the information-flow function PS maps
+  The observable reach of state set q ⊆X under the event                                                          each string s to a sequence of observation pairs. In each pair
+σ ∈Σo ∪Σa is given by                                           (e, γ), the first element e ∈Σa ∪{ϵ} represents an observed
+          NXσ(q) = {δ(x, σ) ∈X : x ∈q}.                event (or an empty observation if the event is unobservable),
+                                                       and the second element γ ∈Γ ∪{ϵ} represents the control
+  III. OPACITY WITH A PRIORI UNKNOWN SUPERVISORS     pattern issued by the supervisor (or an empty observation if
+                                                     no control update occurs). The above definition captures the
+  When the open-loop system is not opaque, our objective
+                                                             following four cases, depending on event observability from
+is  to design a supervisor such  that  the  resulting  closed-
+                                                                 the perspectives of the supervisor and the intruder:
+loop system is opaque. As discussed in the introduction, we
+consider the a priori unknown supervisor setting, where the      • When σ ∈Σa \ Σo, only the intruder can observe the
+                                                           newly occurred event. Therefore, the event σ is appendedsupervisor reveals to the intruder only the control decisions
+                                                                         to the information-flow, but no new control decision isissued online, rather than its complete control policy a priori.
+                                                                    issued by the supervisor as it observes nothing.More specifically, in addition to Assumptions A1 and A2,
+                                                                   • When σ ∈Σo \ Σa, only the supervisor can observe thethis  setting  is  further characterized by the following two
+                                                           newly occurred event. Therefore, the supervisor updatesassumptions:
+                                                                                          its control decision to S(Po(sσ)), which is available to
+A3: The  intruder does not know the  supervisor’s  control
+                                                                      the intruder. However, the intruder does not know which
+     policy a priori, but it can observe every control decision
+                                                                          specific observation triggered this decision update.
+     issued by the supervisor as the system evolves.
+                                                                   • When σ ∈ Σo ∩Σa, both  the  supervisor and  the
+A4: The supervisor  issues a control decision immediately
+                                                                        intruder can observe  the  event.  Therefore,  the  tuple
+    upon the occurrence of each newly observed event.
+                                                                      (σ, S(Po(sσ))) is appended to the information-flow.
+Note  that A4  corresponds  to  the  observation-triggered      • When σ ∈Σuo ∩Σua, neither the supervisor nor the
+decision-issuance mechanism, since the supervisor updates                                                                        intruder  is aware of the event occurrence; hence, the
+(and issues) a control decision after each observation, even                                                                   information-flow remains unchanged.
+when two successive decisions are identical. In some applica-
+                                          We use the following example to illustrate the information-
+tions, to reduce bandwidth consumption, the supervisor may
+                                                            flow of the intruder with a priori unknown supervisors.
+transmit a control decision to the actuator only when it needs to
+change the current decision applied. Such a decision-issuance  Example 1 (Online Information-Flow). Let us consider system
+mechanism is referred to as decision-triggered, and it will be  G shown in Figure 2, where Σo = {u1, u2}, Σa = {a, b},
+discussed in Section VI. In this paper, we assume that the  Σc = {u1, u2, u3}. Suppose G is controlled by a supervisor
+intruder  is unaware of whether the supervisor employs an  S   : Po(L(G)) →Γ defined by: S(u1) = S(u1u2) =
+
+                                                                                                                                                  5
+
+
+{a, b, u2}, S(u2) = S(u2u1) = {a, b, u1}, and S(α) = Σ   Definition 3 (Opacity with A Priori Unknown Supervisors).
+for any other α ∈Po(L(G)). For string au1u2u2 ∈L(S/G),  Given system G and supervisor S, we say that the closed-loop
+the information-flow of the intruder is                       system S/G is opaque (w.r.t. Σa and XS) if
+PS(au1u2u2) = (ϵ, Σ)(a, ϵ)(ϵ, {a, b, u2})(ϵ, {a, b, u2})(ϵ, Σ).              (∀s ∈L(S/G))[Ea(PS(s))̸ ⊆XS].           (5)
+Note that, since there is no event σ ∈Σo∩Σa in this example,    Our objective  is to synthesize a supervisor that restricts
+there is no element of form (σ, γ) in the information-flow.                                                                 the system behavior so that the resulting closed-loop system
+  Based on its information-flow, the intruder can also estimate    is opaque under the a priori unknown supervisor  setting.
+the system state. Note that, since the intruder can only access   Hereafter, we no longer consider the open-loop opacity case,
+the online control decision issued  at each step,  it has no  and the term opacity always refers to the closed-loop setting.
+a priori knowledge of the supervisor’s observable event set                                                   Problem 1 (Opacity-Enforcing Supervisory Control Prob-
+Σo or controllable event set Σc,  let alone the supervisor’s   lem). Given open-loop system G and secret states XS ⊆X,
+control policy. Therefore, from the intruder’s point of view,                                                               synthesize a supervisor S  : Po(L(G)) →Γ such that the
+the system may be controlled by an arbitrary supervisor, as                                                              closed-loop system S/G  is opaque with the synthesized a
+long as it can generate an information-flow compatible with                                                                       priori unknown S (w.r.t. Σa and XS).
+the intruder’s observations. We denote by S the set of  all
+possible supervisors with arbitrary event sets Σ′o and Σ′c. Then,     Before formally presenting our synthesis procedure, we
+the state estimate of the intruder, which only knows online-   provide a candidate solution to the running example to better
+released control decisions, is defined as follows.                   illustrate the problem setting.
+
+Definition 2 (Controlled State Estimate). Given system G,  Example 3 (Opacity-Enforcing Supervisor). We still consider
+for any information-flow α ∈PS(L(S/G)) generated under   the running example with secret state XS = {7}. Clearly,
+some supervisor S ∈S, which  is unknown a  priori, we   the supervisor S described in Example 1 is not opaque since
+define the intruder’s controlled state estimate of the closed-  Ea(PS(au1u2u2)) = {7} ⊆XS. A possible solution to enforce
+loop system as                                                opacity is to modify S to S′ by changing S(u1u2) = {a, b, u2}
+                                                                    to S′(u1u2) = Σ, while keeping the remaining control deci-
+      Ea(α)={δ(s) ∈X : ∃S′ ∈S s.t. PS′(s) = α}.     (4)   sions unchanged. To see how S′ enforces opacity, consider
+                                                                 the (unique) string au1u2u2 ∈L(S′/G) leading to the secret  We use the following example to illustrate the controlled
+                                                                      state 7. Along this string, the information-flow isstate estimate of the closed-loop system and compare it with
+the open-loop state estimate.                                 PS′(au1u2u2) = (ϵ, Σ)(a, ϵ)(ϵ, {a, b, u2})(ϵ, Σ)(ϵ, Σ).
+Example 2  (Controlled State Estimate).  Let us  still con-
+                                           On the other hand, for string au1u2u1 ∈L(S′/G) leading tosider system G  in Figure 2 and assume  that the system
+                                                                no-secret state 6 /∈XS, we also haveis controlled by supervisor S in Example 1, which  is un-
+known a  priori  to  the  intruder. Suppose  the  string  exe-      PS′(au1u2u1) = (ϵ, Σ)(a, ϵ)(ϵ, {a, b, u2})(ϵ, Σ)(ϵ, Σ).
+cuted  is au1u2u2 ∈  L(G).  Without  the  information  of
+control  decisions,  the  intruder observes Pa(au1u2u2) =   Therefore, we have Ea(PS′(au1u2u2)) = {6, 7}̸ ⊆XS and
+a. Then we have the open-loop  state estimate Eopa (a) =  S′/G is opaque under online-released control decisions.
+{1, 2, 3, 4, 5, 6, 7}. By additionally observing the online re-
+                                             Remark 1 (Comparison with the A Priori Known Setting).
+leased control decisions, the information-flow of the intruder is
+                                            When the control policy of the supervisor S is fully known a
+PS(au1u2u2) = (ϵ, Σ)(a, ϵ)(ϵ, {a, b, u2})(ϵ, {a, b, u2})(ϵ, Σ)
+                                                                    priori to the intruder, but the intruder cannot access the online
+and the controlled state estimate is Ea(PS(au1u2u2)) = {7},
+                                                                 control decisions issued by the supervisor, for any executed
+i.e., the intruder knows for sure that the current state is 7.
+                                                                      string s ∈L(S/G), the state estimate of the closed-loop
+This is because three control decisions are released after the
+                                                         system from the intruder’s perspective is defined as
+intruder observes event a, implying that at least three events in
+Σo have occurred after a. According to the system structure,    ESa (Pa(s)) = {δ(t) ∈X : t ∈L(S/G) ∧Pa(s) = Pa(t)}.
+the current state must belong to {6, 7}. Furthermore, the
+second-to-last released control decision is {a, b, u2}, which   In general, the two state estimates ESa (Pa(s)) and Ea(PS(s))
+indicates that events u1 and u3 were disabled before the   are incomparable, since they leverage different information:
+intruder observes the  final control decision Σ. The  latter      • The a  priori unknown  setting allows the  intruder  to
+must be issued upon the transitions from states 4, 5 to 6, 7.        precisely observe the control decision currently being
+Therefore, the current state cannot be 6, since state 6 can        applied, but  it does not know which control decisions
+only be reached via event u1.                                          will be issued in the future, as they may change through
+                                                                    events that are unobservable to the intruder.   Similarly, for the case where the intruder can access the
+                                                                   • By contrast, in the a priori known supervisor setting, theonline control decisions, we say the closed-loop system  is
+                                                                        intruder can further leverage the supervisor’s completeopaque if the intruder cannot, based on its information-flow,
+                                                                      control policy, but  it may  still face uncertainty aboutdetermine with certainty that the system is in a secret state.
+                                                          which specific control decision is currently applied.
+
+                                                                                                                                                  6
+
+
+Yet, when the intruder’s observable event set is larger than the       3)  If  only  a new  control  decision  is  observed,  i.e.,
+supervisor’s, i.e., Σo ⊆Σa, these two state estimates coincide.            (ϵ, γ1) ∈O,  the  intruder should update  its  state
+We do not provide a formal proof here due to space con-          estimate to
+straints; however, the intuition is straightforward. Specifically,
+                                                                                                                 ˆqa,1 = URγ1,a(UR+γ0,a(ˆqa,0)).under the assumption Σo ⊆Σa, the intruder knows precisely
+when the supervisor updates its control decision. Hence, if the          Here, one must  first account for the occurrence of
+supervisor’s control policy is known a priori, the intruder can            at  least one unobservable event of the  intruder  in
+combine this supervisory model with its online observations to          (γ0 ∩Σua)∗, and then further compose  it with the
+uniquely determine the current control decision being applied.         unobservable reach within (γ1 ∩Σua)∗.
+On the other hand, since Σo ⊆Σa, the control decision cannot                                                   The above process continues indefinitely as new information
+change within the intruder’s unobservable reach. Therefore,                                                                 (σ, γ) ∈O  arrives, thereby inducing  the  recursive  state
+knowing the supervisor’s future decision logic offline brings                                                               estimate from the perspective of the intruder.
+no additional information compared with simply knowing the                                                     To formalize the recursive computation, let G be the sys-
+current decision online. In other words, under Σo ⊆Σa,                                                     tem and S  : Po(L) →Γ be a supervisor. For any string
+our problem coincides with the standard opacity supervisory                                                        s = σ1 · · · σn ∈L(S/G), we denote by ˆO = Σϵ × Γ the
+control problem with an a priori known supervisor. However,                                                                       set of event-decision tuple, and define the augmented string
+to our knowledge, existing results for this setting still require                                                               of string s (under supervisor S) by
+the additional assumption Σc ⊆Σo, which is no longer needed
+in our approach.                                               ˆs=(ϵ, S(ϵ))(σ1, S(Po(σ1))) · · · (σn, S(Po(σ1 · · · σn)))∈ˆO∗.
+
+                                                          That  is, each event  is augmented with the current control     IV. INFORMATION STRUCTURES WITH A PRIORI
+                                                                  decision. Note that not all event or decision components in the           UNKNOWN SUPERVISORS
+                                                      augmented string are observable to the intruder, and therefore
+  In this section, we investigate how information evolves in
+                                              may not trigger an update to the state estimate. We propose
+the closed-loop system under our setting. We first study the
+                                                                 the following finite structure to compute the recursive state
+information evolution from the intruder’s point of view. We
+                                                               estimate along augmented strings.
+then propose a new information structure for control synthesis,
+over whose state space the supervisors will be realized.        Definition 4 (Intruder State Estimator).  Given system
+                                                   G, the state estimator of the intruder with a priori unknown
+A. Information Evolution from The Intruder’s Perspective      supervisor is defined as a 4-tuple
+  We first investigate the evolution of information from the              A = (M, ˆO, f, m0),
+intruder’s perspective. Suppose that the plant  is controlled
+by supervisor S  : Po(L(G)) →Γ. Under the setting where   where:
+control decisions are released online at each decision instant,      • M ⊆(X × 2X × Γ) ∪{m0} is the set of states, where
+the intruder’s state estimate updates as follows:              m0 is the unique initial state;
+   • Initially, starting from x0, the intruder observes the initial      • ˆO = Σϵ × Γ is the set of events;
+     control decision γ0 ∈Γ and updates its state estimate to      • f : M × ˆO →M is the deterministic transition function
+                                                                    defined as follows:
+                               ˆqa,0 = URγ0,a({x0})                (6)
+                                                                   1) For initial state m0 and each control decision γ ∈Γ,
+    by considering all unobservable strings in (γ0 ∩Σua)∗.        we define
+   • Subsequently, depending on the observation type  it re-
+                                                               f(m0, (ϵ, γ)) = (x0, URγ,a({x0}), γ).      (9)     ceives, the intruder proceeds in one of the following ways:
+    1)  If a new event without control decision is observed,       2) For each state m = (x, q, γ) ∈M, event σ ∈Λ(x) ∩γ
+          i.e., (σ1, ϵ) ∈O, it updates the state estimate to              and control decision γ′ ∈Γ, we define f(m, (σ, γ′)) =
+                                                                      (δ(x, σ), q′, γ′), where
+                            ˆqa,1 = URγ0,a(NXσ1(ˆqa,0))           (7)
+                                      URγ,a(NXσ(q))      if σ ∈Σa \ Σo      by          only               considering                            the occurrence of σ1 and keep the
+                                      URγ′,a(UR+γ,a(q))   if σ ∈Σo \ Σa       control               decision                      γ0 unchanged;                                                                                                                                                                                     .                                                                                      q′ =
+                                                                     URγ′,a(NXσ(q))     if σ ∈Σo ∩Σa    2)  If a new event together with a control decision  is
+                                      q                          if σ ∈Σuo ∩Σua       observed, i.e., (σ1, γ1) ∈O, then it knows that a new
+                                                                                                                        (10)
+       control decision γ1 is issued by the supervisor upon
+       the occurrence of σ1. Therefore, the intruder should      Intuitively, for each state (x, q, γ) ∈M  in A, the  first
+       update its state estimate to                         component x ∈X represents the actual state of the plant,
+                                                                 the second component q ∈2X  represents  the  intruder’s
+                           ˆqa,1 = URγ1,a(NXσ1(ˆqa,0)).           (8)                                                                        state estimate, and the last component γ ∈Γ represents the
+      Compared with Eq. (7), the only difference is that the   current control decision being applied. Therefore, for each
+       unobservable reach should be computed based on (γ1∩  new event (σ, γ′) ∈ˆO, σ ∈Σ represents the actual event
+      Σua)∗rather than (γ0 ∩Σua)∗;                            that occurs in the plant, and γ′ represents the new control
+
+                                                                                                                                                  7
+
+
+                                                     and   the   state  estimator  reaches   the   state  m3  =
+                                                                    (2, {2, 3, 4, 5, 6, 7},   {a, b, u2}).   Similarly,  upon   events
+        6,{6},{a,b,u1}       m0             7,{7},Σ                                                                          (ϵ, {a, b, u2})  and   (ϵ, Σ),  the  state  estimator  reaches
+                (u1, {a,b,u1})       (ϵ, Σ)             (u2, Σ)      m4 =  (5, {5, 7}, {a, b, u2}) and m5 =  (7, {7}, Σ)  in
+       5,{5, 6},{a,b,u1}        0, {0}, Σ       5,{5, 7},{a,b,u2}        sequence. As we can see, the second component of m5  is
+                                      (a, Σ)                            exactly the state estimate of the intruder upon the information-
+ (b, {a, b, u1})      (u2, {a,b,u1})  (u1, {a,b,u2})     (u2, {a,b,u2})                                                               flow PS(au1u2u2), which aligns with our previous result in
+      3,{2,...,7},{a,b,u1}    1,{1,...,7},Σ    2,{2,...,7},{a,b,u2}      Example 2.
+
+
+                                                             B. Information Structure of the Supervisor
+Fig. 3.  Partial representation of online current-state estimator A.
+                                                    Now, we tackle the main problem of what information
+                                                                    structure is needed to realize an opacity-enforcing supervisor.
+decision applied upon the occurrence of σ. As a result, the   Since the observations of the supervisor and the intruder are
+plant’s state component updates to δ(x, σ) according to the   generally incomparable, the supervisor also remains uncertain
+system dynamics, while the last component records the new   about the intruder’s knowledge. Therefore, the supervisor must
+control decision γ′. The second component of the intruder’s   estimate the intruder’s state estimate from its own perspective.
+state estimate updates from q to q′ based on the cases discussed  To this end, we define a set of the intruder’s state estimates
+above, categorized by event observability. Note that m0 is the   as an information state. Thus,
+initial state, from which only events of the form (ϵ, γ) are
+                                                                                     I = 2M = 2(X×2X×Γ)∪{m0}            (12)defined; this captures the fact that the supervisor makes an
+initial control decision before any events occur.                     is the set of information states. Specifically, an information
+  The following  result  establishes  the  correctness  of  the   state ı ∈I is of form
+proposed state estimator, which states that, for any string, the
+                                                                                        ı = {(x1, q1, γ1), (x2, q2, γ2), . . . , (xk, qk, γk)}.     (13)state estimator of the intruder based on the information-flow,
+is exactly the second component of the state reached by the            |  m1{z   } |  m2{z   }     |  mk{z   }
+augmented string in the state estimator.                                        We denote by
+Proposition 1. Let G be the system and S : Po(L) →Γ be a                                                         X(ı) = {x1, . . . , xk} and Q(ı) = {q1, . . . , qk}     (14)
+supervisor. For any string s ∈L(S/G), we have
+                                                                 the set of plant states and the set of state estimates in ı. We
+              f(ˆs) = (δ(s), Ea(PS(s)), S(Po(s))).        (11)                                                           say an information state ı ∈I of form Eq. (13) is consistent
+Proof. See the Appendix.                                                    if γi = γj, ∀i, j. If ı is consistent, then we denote by Γ(ı) the
+                                                          unique control decision in each state estimate within ı. Since
+  We illustrate the intruder state estimator A by the following                                             we will use the information state to represent the knowledge
+example.                                                               of the supervisor, and both the supervisor and the intruder
+Example 4 (Intruder’s Information-Flow). Let us still consider   always know the control decision applied,  all information
+the system G as shown in Figure 2 and the supervisor S in   states encountered hereafter are consistent by nature.
+Example 1. Part of the overall structure A is presented in    Now,  let us  evaluate  the  evolution  of  the  supervisor’s
+Figure 3, where we only show states reached by augmented   knowledge,  i.e., its information state, upon each new piece
+strings under the given supervisor S. Let us consider string   of information received. Suppose that the supervisor’s current
+s = au1u2u2 ∈L(S/G). Then its augmented string is          information state is ı ∈I of form Eq. (13). When it observes
+                                                           a new event σ ∈Σo and issues a control decision γ ∈Γ,
+      ˆs = (ϵ, Σ)(a, Σ)(u1, {a, b, u2})(u2, {a, b, u2})(u2, Σ)       the supervisor should update its knowledge of the intruder’s
+                                                               estimate by considering how each possible intruder’s stateand the information-flow of the intruder is
+                                                               estimate is updated based on the same information. This is
+PS(au1u2u2) = (ϵ, Σ)(a, ϵ)(ϵ, {a, b, u2})(ϵ, {a, b, u2})(ϵ, Σ).   captured by the following operator:
+Upon the first event (ϵ, Σ), we have URΣ,a({0}) = {0}, i.e.,      NX(σ,γ)(ı) = {m′ ∈M : ∃m∈ı s.t. m′ =f(m, (σ, γ))}.
+the state estimator reaches the state m1 = (0, {0}, Σ). Then,                                                           (15)
+upon event (a, Σ) in A (note that the intruder observes (a, ϵ)  The above knowledge update is only one step, as the intruder
+since no new control decision is issued), we have          may further observe events in Σa \ Σo. Therefore, the super-
+                                                                  visor should also account for the subsequent estimate updates
+   URΣ,a(NXa({0})) = URΣ,a({1}) = {1, 2, 3, 4, 5, 6, 7},                                                               of the intruder that are silent from its own perspective. To this
+i.e., A reaches state m2 = (1, {1, 2, 3, 4, 5, 6, 7}, Σ). Next,   end, for any information state ı ∈I, we further define the
+upon event (ϵ, {a, b, u2}), we have                            following operator:
+       UR{a,b,u2},a(UR+Σ,a({1, 2, 3, 4, 5, 6, 7}))               URγ(ı) =  m′ ∈M : ∃m∈ı, w∈((Σuo ∩γ) × {γ})∗   .                                                                                                                                        s.t. m′ =f(m, w)
+      =UR{a,b,u2},a({2, 3, 4, 5, 6, 7}) = {2, 3, 4, 5, 6, 7}                                                                 (16)
+
+                                                                                                                                                  8
+
+
+Intuitively, for each possible intruder’s state estimate m, before
+the supervisor observes the next event, strings in (Σuo ∩γ)∗
+may occur. These events are unobservable to the supervisor              {m0}, ϵ                         {(6, {6})}, {a,b,u1}
+but have been enabled. Note that the control decision within
+the unobservable reach remains unchanged. Therefore,  all          {(0, {0}),(1,{1, ..., 7})}, Σ      {(3, {2,...,7}),(5, {5,6})},{a,b,u1},u1
+unobservable events are augmented with the same decision
+γ in w. This ensures that the supervisor maintains consistency
+                                                                                       {(0, {0}),(1,{1, ..., 7})},Σ,u2      {(3, {2,...,7}),(5, {5,6})},{a,b,u1}
+in the control decisions applied, even though it cannot observe
+these unobservable events.
+  In what follows, we restrict our attention to the IS-based        {(0, {0}),(1,{1, ..., 7})},Σ,u1                  {(7, {7})}, Σ
+supervisor, which makes decisions solely based on the current
+information state rather than the entire history. Under such                                                                                         {(2, {2, ..., 7})}, {a,b,u2}            {(5, {5, 7})}, {a,b,u2}, u2
+supervisors, the evolution of the information  state can be
+uniquely determined using finite memory. To formalize this,
+we introduce the following IS-based control structure.                  {(2, {2, ..., 7})}, {a,b,u2}, u2             {(5, {5, 7})}, {a,b,u2}
+
+Definition 5 (IS-based Control Structures). An information-
+state-based (IS-based) control structure is a tuple                    Fig. 4.  IS-based Control Structure of S in Example 1.
+        S = (ISD, ISO, hSOD, hSDO, ıS0 ),
+where                                                 where γn is the unique control decision at ISD(α) in S.
+   • ISO ⊆I is the set of observation-states;                  The following result establishes the meaningfulness of the
+   • ISD ⊆I × Σϵo is the set of decision-states;                proposed information structure. Specifically,  it shows  that,
+   • hSOD  : ISO × Σo →ISD  is the transition function from   for any supervisor decoded from an IS-based structure, the
+     observation-states to decision-states such that: for every   observation-state reached explicitly captures both the super-
+      ı ∈ISO and σ ∈Σo ∩Γ(ı), we define                        visor’s own knowledge of the plant states and its knowledge
+                hSOD(ı, σ) = (ı, σ).              (17)   about the state estimate from the intruder’s perspective. This
+                                                              ensures that the supervisor’s decision-making process prop-
+   • hSDO  : ISD × Γ →ISo  is the transition function from   erly accounts for the uncertainty in the intruder’s knowledge
+     decision-states to observation-states such that: for every  and that the supervisor’s state representation aligns with the
+      (ı, σ) ∈ISD, there exists a unique decision γ ∈Γ such   information-flow from both the supervisor’s and intruder’s
+     that hSDO(ı, γ)! and                                       viewpoints.
+            hSDO(ı, γ) = URγ(NX(σ,γ)(ı))         (18)   Proposition  2. Given an IS-based control structure S,  let
+                                           S  : Po(L(G)) →Γ be its decoded supervisor. For any ob-   • ıS0 = ({m0}, ϵ) ∈ISD  is the  initial state, which  is a                                                                 servation α ∈Po(L(S/G)), let ı = ISO(α) be the observation-     decision-state.
+                                                                        state reached. Then we have
+  The IS-based control structure operates intuitively as fol-
+                                                                                                                        (21)                                                           X(ı) = ESo (α)lows. From each  decision-state ISD, there  exists a unique                                                                                −1                                                               Q(ı) = {Ea(PS(s)) : s ∈Po  (α)∩L(S/G)}.control decision defined, upon which the structure moves to
+a successor observation-state  ı′ ∈ISO  via transition hSDO.                                                                Proof. See the Appendix.
+Then, from  this observation-state,  all feasible observations
+σ ∈Σo ∩Γ(ı′) are defined, and each occurrence takes the   We illustrate the notions of the IS-based control structure
+structure to another decision-state according to the transition  and the decoded supervisor with the following example.
+hSOD, and so forth. Following this, for each observation string
+                                                 Example 5 (Control Structure and Decoded Supervisor).α = σ1σ2...σn ∈Σ∗o,  it induces a unique sequence in the
+                                             We still consider the system shown in Figure 2. An examplecontrol structure
+        γ0     σ1     γ1      γn−1       σn     γn               of the IS-based control structure is shown in Figure 4. In this
+   ıS0 −→ı′0 −→ı1 −→· · · −−−→ı′n−1 −−→ın −→ı′n,   (19)   structure, each rectangle with rounded corners represents a
+where γi is the unique control decision defined at decision-   decision-state ı ∈ISD, from which a unique control decision
+state  ıi. We denote ISD(α) = ın and ISO(α) =  ı′n as the  γ is selected; each plain rectangle represents an observation-
+decision-state and the observation-state reached upon α in S,   state  ı′ ∈ISO from which transitions lead by feasible events
+                                              σ ∈Σo ∩Γ(ı′) are all defined. For simplicity, we factor outrespectively. This essentially allows us to decode an IS-based
+supervisor from each IS-based control structure.                the consistent control decision for each m ∈ı and ı ∈I and
+                                                                write simply as ı = ({(x1, q1), ..., (xk, qk)}, γ) in Figure 4.
+Definition 6 (Decoded  Supervisors). Given an IS-based                                              We start from the decision-state ı0 = ({m0}, ϵ), where the
+control structure S, its decoded supervisor S : Po(L(G)) →Γ   control decision is γ0 = Σ (all events enabled), the system
+is defined by:                                                               evolves to the observation-state  ı′0 = URΣ(NX(ϵ,Σ)(ı0)) =
+      ∀α = σ1σ2 . . . σn ∈Po(L(G)) : S(α) = γn,    (20)  URΣ({(0, {0}, Σ)}) =  {(0, {0},Σ),(1, {1, ..., 7},Σ)}.  Then,
+
+                                                                                                                                                  9
+
+
+upon observation u2, the structure transitions to decision-   Algorithm 1: Synthesis of Control Structure S
+state  ı1 =  (ı′0, u2), at which the unique control decision     Input: G, Σc, Σa, Σo, XS
+γ1 =  {a, b, u1}  (events u2, u3  disabled)  is applied, and    Output: S
+leading deterministically to the next observation-state  ı′1 =    1 ıB0 ←({mo}, ϵ),   ı ←ıB0
+({(3, {2, ..., 7},{a,b,u1}),(5, {5, 6},{a,b,u1})}). After this, the    2 IBD ←{ıB0 },  IBO ←∅,  hBDO ←∅,  hBOD ←∅
+structure transitions to ({(6, {6})}, {a,b,u1}) via observation    3 foreach γ ∈Γ do
+u1 and applies the decision {a, b, u1}. Another branch  is    4       if ı′ = hBDO(ı, γ) is safe then
+defined analogously. This control structure induces a unique    5     hBDO ←hBDO ∪{(ı, γ, ı′)}
+supervisor S defined by: S(u1) = S(u1u2) = {a, b, u2},    6           if  ı′̸ ∈IBO then
+S(u2) = S(u2u1) = {a, b, u1}, and S(α) = Σ for any    7         IBO ←IBO ∪{ı′}
+other α ∈Po(L(G)), which is exactly the one discussed in    8           foreach σ ∈Σo ∩γ do
+Example 1.                                                               9          hBOD ←hBOD ∪{(ı′, σ, hBOD(ı′, σ))}
+                                                                           10                     if hBOD(ı′, σ)̸ ∈IBD then
+        V. SYNTHESIS OF IS-BASED SUPERVISORS             11                         ı ←hBOD(ı′, σ),  IBD ←IBD ∪{ı}
+                                                                           12                 back to line 3
+  In this section, we tackle the supervisor synthesis problem
+based on the proposed information structure. We first present
+an algorithm to effectively search for an IS-based supervisor   13 while IBbad̸ = ∅do
+that enforces opacity. We then prove the soundness and com-   14    Remove all incomplete states IBbad from B
+pleteness of the algorithm by showing that restricting attention   15    Remove all transitions involving IBbad from B
+to IS-based supervisors is without loss of generality.
+                                                                           16  if ıB0̸ ∈IBD then
+                                                                           17    return no solution exists
+A. Supervisor Synthesis Algorithm                                  18 else
+                                                       IS                                             D ←{ıB0 }, ISO ←∅, hSDO ←∅, hSOD ←∅, ı ←ıB0  Recall that, in the construction of the IS-based control struc-   19
+ture, we showed that the second component of the observation-   20    Pick a transition (ı, γ, ı′) ∈hBDO
+                                               hSDO ←hSDO ∪{(ı, γ, ı′)}state reach is the set of all possible state estimates of the   21
+                                                                                                                                                                  ı′̸ ∈ISO thenintruder that are consistent with the supervisor’s observation.   22       if
+                                                          IS                                                   O ←ISO ∪{ı′}For any observation-state ı ∈ISO, we say that ı is safe if  it   23
+does not contain any element that is a possible state estimate   24        foreach (ı′, σ, ı′′) ∈hBOD do
+                                                   hSOD ←hSOD ∪{(ı′, σ, ı′′)}of the intruder, entirely composed of secret states. Formally,   25
+                                                                                                                                                                        ı′′̸ ∈ISD thenthis condition is given by:                                            26                if
+                                                                           27                    ı ←ı′′,  ISD ←ISD ∪{ı}
+                 ∀q ∈Q(ı) : q̸ ⊆XS.                (22)   28              back to line 20
+
+We say an IS-based control structure is safe if all observation-                                                                           29    return IS-based Control Structure S
+states in it are safe. The following result shows that, to enforce
+opacity, it suffices to construct an IS-based control structure
+in which all observation-states are safe.
+
+Theorem 1. Let S be a safe IS-based control structure. Then   that enumerates  all reachable  information-states  satisfying
+its decoded supervisor S solves Problem 1, i.e.,                  safety. Compared to the IS-based control structure in Defini-
+                                                                    tion 5, the decision-state in B may have multiple control deci-
+            (∀s ∈L(S/G))[Ea(PS(s))̸ ⊆XS].                 sions. Specifically, lines 1-2 initialize B with a single decision-
+                                                                           state: ({m0}, ϵ). A depth-first search  is then performed toProof. We prove by contraposition. Suppose that S/G is not
+                                                                  recursively expand B from the initial state, exploring only
+opaque. Then we know that there exists a string s ∈L(S/G),
+                                                                  observation-states that remain safe throughout the process.such that Ea(PS(s∗)) ⊆XS. According to Proposition 2, for
+                                                   The expansion stops whenever  it encounters either:  (i) an
+observation α = Po(s), we have q = Ea(PS(s)) ∈Q(ISO(α))                                                                  observation-state violates safety, or  (ii) an information-state
+such that q ⊆XS. Therefore, observation-state ISO(α) is not                                                           has been previously visited. By this construction, every state
+safe, which means that S is not safe.
+                                                                    in IBO preserves the required safety properties.
+  In order to find a safe IS-based control, we use a safety-
+                                                 Example 6 (Expand the Solution Space). Let us continue
+game-based approach, which is formally provided in Algo-
+                                                             with the running example. A portion of the overall structure
+rithm 1. The main idea is to first enumerate all possible control
+                              B  is  illustrated  in Figure  5.  Initially, we  set  the  initial
+decisions and then extract a feasible S from them. Specifically,
+                                                                      state as ıB0 = ({m0}, ϵ). Starting from here, the searchAlgorithm 1 consists of the following three steps.
+                                                                        iteratively expands B along all possible decisions; here we
+  Step 1: Initial Expansion (line 1–12). This step constructs
+                                                                take the decision S(ϵ) = Σ as an example. Then from
+a structure
+                                                                 the observation-state {(0, {0},Σ),(1,{1, ..., 7},Σ)}, the search
+       B = IBD, IBO , hBDO, hBOD, ıB0                 expands B along all possible observations u1 and u2 and
+
+                                                                                                                                                 10
+
+
+
+
+
+         {m0}, ϵ                  {(0, {0}),(1,{1, ..., 7})}, Σ       {(3, {2,...,7}),(5, {5,6})},{a,b,u2}     {(3, {2,...,7}),(5, {5,7})},{a,b,u2},u2
+
+
+  {(0, {0}),(1,{1, ..., 7})},Σ,u1     {(0, {0}),(1,{1, ..., 7})},Σ,u2          {(3, {2,...,7}),(5, {5,6})},Σ           {(3, {2,...,7}),(5, {5,6,7})},Σ,u2
+
+
+    {(2, {2, ..., 7})}, {a,b,u2}          {(5, {5, 6, 7})}, {a,b,u1}        {(3, {2,...,7}),(5, {5,6})},{a,b,u1}        {(3, {2,...,7}),(5, {5,6,7})},Σ,u1
+
+
+  {(2, {2, ..., 7})}, {a,b,u2}, u2            {(5, {5, 6, 7})}, Σ                {(5, {5, 6, 7})},{a,b,u1},u1         {(3, {2,...,7}),(5, {5,6})},{a,b,u1},u1
+
+
+      {(5, {5, 7})}, {a,b,u2}             {(5, {5, 6, 7})}, Σ, u2                 {(5, {5, 6, 7})}, Σ, u1                         {(6, {6})}, Σ
+
+
+    {(5, {5, 7})}, {a,b,u2}, u2                {(7, {7})}, Σ                         {(7, {6, 7})},Σ                            {(6, {6, 7})},Σ
+
+
+
+
+Fig. 5.  Partial representation of structure B. Incomplete states are highlighted in red. An extracted control structure is highlighted in blue.
+
+
+so  forth. This search terminates  until  it encounters either  removed in a subsequent iteration. After this iterative pruning
+a state that has been previously  visited, which are states   process, the structure’s completeness is finally maintained.
+{(7, {6, 7},Σ)}, {(6, {6, 7},Σ)} and {(6, {6},Σ)} in the shown
+                                                          Step 3: Supervisor Extraction (line 16–28). The algorithm
+part, or the unsafe observation-state, which is {(7, {7},Σ)} in
+                                                                        finally constructs a control structure S based on the remaining
+the shown part. Thus, transitions drawn with the dashed line
+                                                                    structure B. Specifically, we proceed as follows:
+do not belong in B.
+                                                                   • The initial decision-state of S is set to be ı = ıB0 ;
+  Step 2: Completeness Check (line 13–15). This step prunes      • From  state  ı, we  select a  control decision γ and a
+the previously obtained structure B by removing the following        successor observation-state ı′ from the transition relation
+two types of incomplete states.                        hBDO. Since ı is complete, such a transition always exists;
+                                                                   • From the reached observation-state  ı′, we consider all   • A decision-state ı ∈IBD is incomplete if it has no control
+     decision defined. Thus, once the system reaches  ı, no        transitions (ı′, σ, ı′′) defined in B. Since ı′ is complete,
+     control decision can be taken to ensure safety. The set of        the transition  (ı′, σ, ı′′) is guaranteed to exist for each
+     incomplete decision-states is defined by                  σ ∈Σo ∩γ ∩Λ(X(ı′));
+                                                                   • We continue the above selection process using depth-first
+        IB           bad,D = {ı ∈IBD : ∀γ ∈Γ s.t. fDO(ı,B    γ)¬!}.             search until no further new states are encountered.
+
+                                                   The above step thus constructs an IS-based control structure   • An observation-state ı ∈IBO is incomplete if some feasi-
+                                                      from which an IS-based supervisor can be decoded.     ble observations are not defined. Since observations occur
+     uncontrollably, reaching such a state would risk violating  Remark 2. Note that our main purpose is to synthesize a
+     safety upon the occurrence of any missing observations.   supervisor that guarantees opacity. Thus, we are primarily
+    The set of incomplete observation-states is defined         interested in the solvability of Problem 1 and do not consider
+                    ∃σ ∈Σo ∩Γ(ı) ∩Λ(X(ı))          the permissiveness in  detail here.  If one further seeks to      IB                                                                                      .        bad,O =   ı ∈IBO  :                                                                 synthesize a maximally permissive supervisor, they can instead                                                s.t. fOD(ı,B   σ)¬!
+                                                                pick a locally maximal control decision in line 20; see, e.g.,
+  In this step, all incomplete states IBbad = IBbad,D ∪IBbad,O   similar treatments in [49].
+together with  their outgoing and incoming  transitions are
+                                                 Example 8  (Extract the Supervisor).  After expanding the
+eliminated. However, the pruning of an incomplete state may
+                                                                  solution space and pruning the incomplete states, we obtain
+cause a predecessor  state to become incomplete. We thus
+                                                                 the structure drawn in black and blue lines. From the initial
+perform  this elimination  in a while-loop  until no  further
+                                                                   decision-state ({m0}, ϵ), we choose  the  available  controlincomplete states remain.
+                                                               decision Σ, leading to an observation-state, from which two
+Example 7 (Prune Incomplete States). We continue with the   possible observations u1 and u2 are considered. Consider
+running example. In Figure 5, all incomplete states are high-   the decision-states ı1 = ({(2, {2, ..., 7}, {a, b, u2})}, u2) and
+lighted in red. For example, state ({(5, {5, 7},{a,b,u2})}, u2)   ı2 = ({(0, {0},Σ),(1,{1, ..., 7},Σ)},u2) from each two control
+is incomplete because  it has no  feasible control decision   decisions Σ and {a, b, u1} are available, each leading to a
+defined. By removing this red-highlighted state from B, the   different observation-state. qqIf we choose Σ at ı1 and choose
+state {(5, {5, 7},{a,b,u2})} becomes incomplete because of the   {a, b, u1} at ı2, the resulting control structure consists of the
+absence of the observable events u2, and will therefore be   blue part in Figure 5, which induces the supervisor whose
+
+                                                                                                                                                 11
+
+
+controlled behavior is as discussed in Example 3.            By  the above  construction,  for each observation α =
+                                                            σ1σ2...σn ∈Po(L(S/G)), it induces an unique path in BS
+
+B. Correctness of the Algorithm                                             S(ϵ)     σ1     S(σ1)     σn      S(σ1...σn)
+                                                                                ı0 −−−→ı′0 −→ı1 −−−→· · · −−→ın −−−−−−→ı′n,
+  We prove the correctness of Algorithm 1 in this subsection.
+The soundness of the algorithm is relatively straightforward:   such that (i) X(ı′n) = ESo (α), and (ii) Q(ı′n) = {Ea(PS(s)) :
+it eliminates all unsafe states and therefore guarantees opacity.   s ∈ Po−1 (α) ∩L(S/G)}.  Since S  solves Problem  1,
+However, the completeness of the algorithm is highly nontriv-  we  have  Ea(PS(s))̸ ⊆  XS, ∀s  ∈  L(S/G)  and  thus
+ial, since the solution space of the problem is unbounded (i.e.,   each  observation-state  in BS  is  safe.  Finally,  for  each
+language-based supervisors), whereas our algorithm restricts   defined  transition  ((ı, σ), S(ασ), ı′), we  have  (i)   ı′ =
+attention a priori to a  finite solution space over IS-based   {(δ(s), Ea(PS(s)), S(ασ)) : s ∈Po−1 (ασ) ∩L(S/G)}, when
+control structures.                                 σ ∈Σa, we can conclude that
+                                  (δ(sσw1), Ea(PS(s)(σ, S(ασ))w2), S(ασ)) : Lemma 1 (Soundness). Given IS-based Control Structure S                                      −1                                                                                                                   ı′ =  s∈Po  (α)∩L(S/G), w1 ∈(Σuo∩S(ασ))∗,returned by Algorithm 1, its decoded supervisor S constitutes
+                                                                       PS(s)(σ, S(ασ))w2 = PS(sσw1)   a solution to Problem 1.                     
+                                                                                (δ(sσ), Ea(PS(s)(σ, S(ασ))), S(ασ)):Proof. The proof follows directly from Theorem 1 and the    = URS(ασ)              −1
+                                                        s∈Po (α)∩L(S/G)
+construction of B, which ensures that all observation-states
+                                    = URS(ασ)(NX(σ,S(ασ))(ı)),are safe. Since S is extracted as a subgraph of B by construc-
+tion, all observation-states in S are also safe. Therefore, the  and when σ ∈Σua, we can conclude that
+decoded supervisor of S provides a solution to Problem 1.
+                                  (δ(sσw1), Ea(PS(s)(ϵ, S(ασ))w2), S(ασ)) : 
+                                      −1                   Next, we establish the completeness of the algorithm, which       ı′ =  s∈Po  (α)∩L(S/G), w1 ∈(Σuo∩S(ασ))∗,
+states that synthesizing a supervisor within the IS-based solu-          PS(s)(ϵ, S(ασ))w2 = PS(sσw1)   
+tion space is without loss of generality.                                                                                (δ(sσ), Ea(PS(s)(ϵ, S(ασ))), S(ασ)):                                    = URS(ασ)              −1
+Lemma 2 (Completeness). Algorithm 1 will not return “no                   s∈Po (α)∩L(S/G)
+solution exists” when a solution to Problem 1 exists.        = URS(ασ)(NX(σ,S(ασ))(ı));
+Proof. We show that ıB0 ∈IBD holds in line 16 when an  and  (ii) Γ(ı′) = S(ασ). And for each defined  transition
+opacity-enforcing supervisor (possibly non-IS-based) exists.      (ı′, σ′, ı′′), we have  ı′′ = (ı′, σ′). For transitions (ı, S(ϵ), ı′)
+  Suppose that there exists a language-based supervisor S  :  and (ı′, σ, ı′′) we can analogously get the same results. Thus,
+Po(L(G)) →Γ that solves Problem 1. We  first construct  we can conclude that BS ⊑B according to Step 1.
+a decision-observation structure BS as follows. We start by     Next, we prove that B  is at least as large as BS  after
+initializing a finite decision-state space                           calling the completeness check (Step  2). This conclusion
+                                     −1                 directly follows the above construction, where each decision-              {(δ(s), Ea(PS(s)), S(α)):s ∈Po  (α)∩   IS   D =                                                                                    ,       state in BS has at least one successor observation-state, and         L(S/G)}, σ ∈I × Σϵo : ασ ∈Po(L(S/G))
+                                                          each observation-state in BS has all transitions defined within
+and initializing a finite observation-state space                                                                 the corresponding feasible observation events, and thus are
+                                                             complete.                                                                     Since                                                         we have BS                                                     ⊑B,                                                                                                                           all                                                                                                                  states                                                                                                                       that                                                                                                                  are                                                                                                         complete             {(δ(s),                           S(α)):s                   Ea(PS(s)),                     ∈Po−1 (α)∩     IS                                                                                  .    O =                                                                    in BS are                                                                            also complete                                                                                              in B,                                                                                  and                                                                                                   thus                                                                                                               will                                                                                                          not                                                                                                   be removed.             L(S/G)}                 ∈I :                     α ∈Po(L(S/G))
+                                                                 Therefore, we can finally conclude that the initial state of
+Then for each ασ ∈Po(L(S/G) and for decision-state      BS is also the initial state of B after Step 2, i.e., ({m0}, ϵ) ∈
+                 {(δ(s), Ea(PS(s)), S(α)):                IBD. Hence, Algorithm 1 will not return “no solution exists”
+             ı =                               ∈ISD,          when such a solution does exist,  i.e., Algorithm 1  is also              s ∈P o−1 (α) ∩L(S/G)}, σ
+                                                             complete.
+we define a transition (ı, S(ασ), ı′) from decision-state ı to
+observation-state ı′, where                            By combining Lemmas 1 and  2, we can  establish the
+                                                                 correctness of Algorithm 1.
+                  (δ(s), Ea(PS(s)), S(ασ)):
+               ı′ =        −1             ∈ISO,                s ∈P o  (ασ) ∩L(S/G)                Theorem 2. Algorithm 1 correctly solves Problem 1, i.e., it
+                                                                               is both sound and complete.
+and we define transitions (ı′, σ′, ı′′) from observation-state ı′
+to decision-state ı′′ for each σ′ ∈Σo ∩S(ασ) ∩Λ(X(ı′)),     We conclude this section by discussing the complexity of
+                                                                 the proposed supervisor synthesis algorithm. To synthesize an
+                                  ı′′ = (ı′, σ′) ∈ISD.                        opacity-enforcing supervisor,  first, we need to construct the
+Finally, we  set  ISD  =   ISD ∪{(m0, ϵ)}  and we  de-   structure B which contains at most 2|X|×2|X|×2|Σc| × |Σo|
+fine  transition  (ı, S(ϵ), ı′)  for  ı =  ({m0}, ϵ) and  ı′ =   decision-states and 2|X|×2|X|×2|Σc| observation-states, but this
+{(δ(w), Ea(PS(w)),S(ϵ)) : w ∈(Σuo∩S(ϵ))∗} and transitions   result can be further mitigated to 2|X|×2|X| × 2|Σc| × |Σo|
+(ı′, σ, ı′′) for each σ ∈Σo ∩S(ϵ) ∩Λ(X(ı′)) and ı′′ = (ı′,σ).   decision-states and 2|X|×2|X| × 2|Σc| observation-states since
+We set ({m0}, ϵ) as the initial state.                            the information states are always consistent by construction.
+
+                                                                                                                                                  12
+
+
+ For each decision-state there are at most 2|Σc| transitions and   only when the condition D  is  satisfied. This ensures that
+ for each observation-state there are at most |Σo| transitions   the intruder only observes a change in the control decision
+ Therefore, in the worst case, the largest possible B contains  when the supervisor’s control decision actually differs from
+ 2|X|×2|X|+|Σc| · (|Σo| + 1) states and 2|X|×2|X|+|Σc| · |Σo| ·   the previous one, reflecting the decision-triggered nature of
+ (2|Σc| + 1) transitions. The complexity of the completeness   the system. Accordingly, the controlled state estimate under
+ check procedure is quadratic in the size of B. The complexity   the decision-triggered mechanism is defined analogously to
+ of the supervisor extraction procedure is linear in the size of  Ea(α) by modifying PS to ˜PS, i.e.,
+B. Overall, the entire complexity of the proposed synthesis       ˜Ea(α)={δ(s) ∈X : ∃S′ ∈S s.t. ˜PS′(s) = α}.     (24)
+ algorithm is doubly exponential in the size of the system G.
+ This double-exponential complexity arises due to the inher-   Thus, the definition of opacity in Definition 3 should also be
+ ent difficulty of handling incomparable observations, as the   modified based on ˜Ea rather than Ea.
+ information state involves both the intruder’s state estimate
+                                                 Example 9 (Decision-triggered Online Observation). We still
+ and the supervisor’s knowledge of the intruder. This double-
+                                                              consider the running example system and consider supervisor
+ exponential nature is consistent with established results for
+                                            S : Po(L(G)) →Γ such that S(u1) = S(u1u2) = {a, b, u2},
+ systems with incomparable observation sets [11], [42], [46].
+                                                      S(u2) = S(u2u1) = {a, b, u1}, and S(α) = Σ for any
+                                                               other α ∈Po(L(G)). Then for string au1u2u2 ∈L(S/G), its
+         VI. FROM OBSERVATION-TRIGGERED TO
+                                                               information-flow under observation-triggered mechanism is
+       DECISION-TRIGGERED DECISION ISSUANCE
+                                                          PS(s) = (ϵ, Σ)(a, ϵ)(ϵ, {a, b, u2})(ϵ, {a, b, u2})(ϵ, Σ).   In the above sections, we have solved the opacity-enforcing
+ supervisory control problem under the assumption A4, which  Under the decision-triggered mechanism, its information-flow
+ states that “The supervisor issues the control decision im-    is
+ mediately upon each new observable event occurrence.” In              ˜PS(s) = (ϵ, Σ)(a, ϵ)(ϵ, {a, b, u2})(ϵ, Σ).
+ many applications,  e.g.,  for security or energy/bandwidth-
+                                                             Here, the intruder does not see the second (ϵ, {a, b, u2}) as saving purposes, the supervisor does not need to resend a new
+                                                                  the control decision is not changed. control decision to the actuator if it is the same as the currently
+ applied one. Therefore, instead of assumption A4 capturing     In order to synthesize a supervisor enforcing opacity for
+ the observation-triggered decision-issuance mechanism, we   the decision-triggered mechanism, we can  still follow the
+ further investigate the decision-triggered mechanism, which  same approach used for the observation-triggered mechanism.
+ is captured by assumption A4′.                                    Specifically, we need to:
+A4′: Upon each new observable event, the supervisor sends a    1) Compute the modified  state estimator of the intruder
+    new control decision only when it differs from the previ-       based on the new information-flow;
+     ous one; otherwise, the previous decision is maintained.     2) Compute the knowledge of the supervisor regarding the
+ Hereafter, we show how to apply the proposed approach to        intruder’s state estimate from its own perspective;
+ solve Problem 1 when assumption A4 is modified to A4′.        3) Find an IS-based control structure with no bad states.
+   Recalled that, for any string s ∈L(S/G), the information-  The last two parts follow exactly the same procedure as in
+ flow from  the  intruder’s  perspective  in  the  observation-   the observation-triggered case. However, for the first part, we
+ triggered setting is defined by PS(s) ∈(Σϵa × Γϵ)∗. How-   need to make the following modifications.
+ ever, in the decision-triggered setting, the intruder has less     Modified State Estimator. In order to compute ˜Ea, one can
+ information. To account for this, the information-flow under   modified the intruder state estimator A to
+ assumption A4′ is captured by a new function:
+                                                                                                  ˜A = (M, ˆO, ˜f, m0),
+                   ˜PS : L(S/G) →(Σϵa × Γϵ)∗                                                       where ˜f : M × ˆO →M  is modified from f such that, for
+ such that                                                  each state m = (x, q, γ) ∈M, event σ ∈Λ(x)∩γ and control
+   (i) ˜PS(ϵ) = (ϵ, S(ϵ)); and                                    decision γ′ ∈Γ, we have ˜f(m, (σ, γ′)) = (δ(x, σ), q′, γ′),
+  (ii) for any string sσ ∈L(S/G), we have                  where
+                                  URγ,a(NXσ(q))      if σ ∈Σa and γ =γ′                                                   [σ                             ϵ)                if                   ˜PS(s)(σ,                                ∈Σa] ∧¬D
+                                  URγ′,a(UR+γ,a(q))   if σ̸ ∈Σa and γ̸ =γ′                                                         if                    ˜PS(s)(ϵ, S(Po(sσ)))                                                                 [σ̸ ∈Σa]                         ∧D           q′ =              ˜PS(sσ)=                                                                ,             URγ′,a(NXσ(q))     if σ ∈Σa and γ̸ =γ′   .  (25)                         ∧D                                                         if                   ˜PS(s)(σ,                        S(Po(sσ)))                                           [σ ∈Σa]                                  q                          if σ̸ ∈Σa and γ =γ′                                                                 [σ̸                           ∧¬D                                                                 if                   ˜PS(s)                                ∈Σa]
+                                                         (23)  Compared with A, the main difference in the modified ˜A is
+                                                                       that the intruder will update its state estimate only when (i)     where D is the predicate that captures whether a decision
+                                                                                                it observes a new event, and  (ii) the decision made by the     change occurs, i.e., D = true iff S(Po(s))̸ = S(Po(sσ)).
+                                                                supervisor is different from the previous one. Similarly, as
+  Compared with the mapping PS, the main difference in
+                                                                     in Proposition 1,  it is easy to show that for any string s ∈ ˜PS  is that we must further account for decision changes.
+                                                    L(S/G), we have
+ That  is, for events in Σo, although the supervisor always
+ updates its decision, such a decision is visible to the intruder                     ˜f(ˆs) = (δ(s), ˜Ea(˜PS(s)), S(Po(s))),        (26)
+
+                                                                                                                                                 13
+
+
+                                                       problem when the intruder has finer information, even when
+                                                                 the supervisor is fully known a priori. In future work, we
+           {m0}, ϵ                        {(6, {5,6})}, {a,b,u1}        would like to extend our framework to the stochastic setting
+                                                     by quantifying the level of opacity [17], [18], [43], as well
+      {(0, {0}),(1,{1, ..., 7})}, Σ      {(3, {2,...,7}),(5, {5,6})},{a,b,u1},u1   as to continuous dynamic systems by considering uncountable
+                                                                        state spaces [25], [53].
+
+    {(0, {0}),(1,{1, ..., 7})},Σ,u2      {(3, {2,...,7}),(5, {5,6})},{a,b,u1}
+                                                                 REFERENCES
+
+                                                                                      [1] Liwei An and Guang-Hong Yang.   Enhancement  of  opacity  for
+    {(0, {0}),(1,{1, ..., 7})},Σ,u1               {(7, {5, 6, 7})}, Σ                     distributed  state estimation in cyber–physical systems.   Automatica,
+                                                                             136:110087, 2022.
+                                                                                      [2] Francesco Basile, Gianmaria De Tommasi, Sara Dubbioso, and Federico
+      {(2, {2, ..., 7})}, {a,b,u2}           {(5, {2,...,7})}, {a,b,u2}, u2              Fiorenza. A sequence-based approach for the verification of current-
+                                                                                                state opacity in bounded discrete event systems. IEEE Transactions on
+                                                                              Automatic Control, 2026.
+    {(2, {2, ..., 7})}, {a,b,u2}, u2           {(5, {2,...,7})}, {a,b,u2}            [3]  Jo˜ao Carlos Basilio, Christoforos N Hadjicostis, and Rong Su. Analysis
+                                                                       and control for resilience of discrete event systems: Fault diagnosis,
+                                                                                    opacity and cyber security. Now Foundations and Trends, 2021.
+                                                                                      [4] Majed Ben-Kalefa and Feng Lin.  Supervisory control for opacity of
+Fig. 6.  IS-based Control Structure ˜S of S in Example 1.                             discrete event systems.  In 2011 49th Annual Allerton Conference on
+                                                                          Communication, Control, and Computing (Allerton), pages 1113–1119.
+                                                                         IEEE, 2011.
+                                                                                      [5]  B´eatrice B´erard, Stefan Haar, Sylvain Schmitz, and Stefan Schwoon.
+i.e., the modified ˜A correctly computes the state estimator of       The complexity of diagnosability and opacity verification for Petri nets.
+the intruder under the decision-triggered mechanism.                Fundamenta Informaticae, 161(4):317–349, 2018.
+  Based on the modified state estimator, the IS-based control     [6] Franck Cassez, J´er´emy Dubreil, and Herv´e Marchand.  Synthesis of
+                                                                         opaque systems with static and dynamic masks.  Formal Methods in
+structure, as well as the associated synthesis algorithm, is the        System Design, 40(1):88–115, 2012.
+same as the observation-triggered case. The only difference     [7] Jun Chen, Mariam Ibrahim, and Ratnesh Kumar.   Quantification of
+                                                                                   secrecy in partially observed stochastic discrete event systems. IEEEis that when defining operators NX(σ,γ)(ı) and URγ(ı), one                                                                                  Transactions on Automation Science and Engineering, 14(1):185–195,
+should use the modified transition function ˜f in ˜A to estimate        2016.
+the knowledge of the intruder rather than using the original     [8] Philippe Darondeau, Herv´e Marchand, and Laurie Ricker.  Enforcing
+                                                                                    opacity of regular predicates on modal transition systems. Discrete Event
+one f.                                                                    Dynamic Systems, 25(1):251–270, 2015.
+  Here, we use the following example to illustrate a solution     [9] Yifan Dong, Dimitri Lefebvre, and Zhiwu Li. k-step opacity verification
+IS-based control structure for the decision-triggered case.            and enforcement of time labeled Petri net systems. IEEE Transactions
+                                                                       on Automatic Control, 2025.
+Example 10  (Control  Structure under Decision-Triggered    [10]  J´er´emy Dubreil, Philippe Darondeau, and Herv´e Marchand.  Opacity
+                                                                                   enforcing control synthesis. In 9th International Workshop on Discrete
+Mechanism). We still consider the system shown in Figure 2.        Event Systems, pages 28–35. IEEE, 2008.
+The IS-based control structure ˜S that induces the previously    [11]  J´er´emy Dubreil, Philippe Darondeau, and Herv´e Marchand.  Supervi-
+considered supervisor S is shown in Figure 6, where (S(u1) =         sory control for opacity.  IEEE Transactions on Automatic Control,
+                                                                              55(5):1089–1100, 2010.
+S(u1u2) =  {a, b, u2}, S(u2) =  S(u2u1) =  {a, b, u1},    [12] Ylies Falcone and Herv´e Marchand.  Enforcement and validation (at
+and S(α) = Σ for any other α ∈Po(L(G))). Recall that         runtime) of various notions of opacity. Discrete Event Dynamic Systems,
+this supervisor cannot enforce current-state opacity under the         25(4):531–570, 2015.
+                                                                               [13] Chao Gao, Dimitri Lefebvre, Carla Seatzu, Zhiwu Li, and Alessandro
+assumption A4, as we have shown in Example 3.                                                                                Giua.  State estimation of timed automata under partial observation.
+  However, under assumption A4′, this supervisor enforces       IEEE Transactions on Automatic Control, 2024.
+opacity. This is because we need to use a different transition    [14] Xiaoguang Han, Kuize Zhang, Jiahui Zhang, Zhiwu Li, and Zengqiang
+function ˜f to estimate the intruder’s state estimate, and the        Chen.  Strong current-state and initial-state opacity of discrete-event                                                                                   systems. Automatica, 148:110756, 2023.
+previously unsafe observation-state {(7, {7},Σ)} now becomes    [15]  Christoforos Keroglou and Christoforos N Hadjicostis.  Probabilistic
+a safe one {(7, {5, 6, 7},Σ)}, and the corresponding controlled        system opacity in discrete event systems.   Discrete Event Dynamic
+                                                                                   Systems, 28(2):289–314, 2018.
+state estimate now becomes                                                                               [16]  St´ephane Lafortune, Feng Lin, and Christoforos N Hadjicostis. On the
+         ˜Ea((ϵ, Σ)(a, ϵ)(ϵ, {a, b, u2})(ϵ, Σ)) = {5, 6, 7}.                   historyReviewsofindiagnosabilityControl, 45:257–266,and opacity2018.in discrete event systems. Annual
+                                                                               [17] Dimitri Lefebvre and Christoforos N Hadjicostis. Exposure and reve-
+                                                                                             lation times as a measure of opacity in timed stochastic discrete event
+                   VII. CONCLUSION                                                                                   systems. IEEE Transactions on Automatic Control, 66(12):5802–5815,
+  In this paper, we revisited the opacity-enforcing supervisor        2020.
+                                                                               [18] Dimitri Lefebvre and Christoforos N Hadjicostis.  Privacy and safety
+control problem from a new perspective. Our work provides         analysis of timed stochastic discrete event systems using markovian
+a sound and complete solution to  this problem under the          trajectory-observers. Discrete Event Dynamic Systems, 30(3):413–440,
+new a priori unknown supervisor setting. This bridges the        2020.
+                                                                               [19] Xiaoyan  Li,  Christoforos N  Hadjicostis, and Zhiwu  Li.   Opacity
+gap between the previous fully unknown and a priori known        enforcement in discrete event systems using extended insertion functions
+settings, as  it preserves the solvability results of the former        under inserted language constraints. IEEE Transactions on Automatic
+while allowing the intruder to leverage certain knowledge         Control, 68(11):6797–6803, 2023.
+                                                                               [20]  P´ublio M Lima, Lilian K Carvalho, and Marcos V Moreira. Ensuring
+of the supervisor, as in the  latter. Furthermore, our results          confidentiality of cyber-physical systems using event-based cryptogra-
+offer a complete solution  to the standard opacity control         phy. Information Sciences, 621:119–135, 2023.
+
+                                                                                                                                                 14
+
+
+
+[21] Feng Lin.   Opacity of discrete event systems and  its applications.    [45] Walter Murry Wonham, Kai Cai, and Karen Rudie. Supervisory control
+     Automatica, 47(3):496–503, 2011.                                              of discrete-event systems: A brief history. Annual Reviews in Control,
+[22] Rongjian Liu, Jianquan Lu, and Christoforos N Hadjicostis.  Opacity        45:250–256, 2018.
+     enforcement via attribute-based edit functions in the presence of an    [46] Yifan Xie, Xiang Yin, and Shaoyuan Li. Opacity enforcing supervisory
+     intended receiver. IEEE Transactions on Automatic Control, 68(9):5646–         control using nondeterministic  supervisors.  IEEE Transactions on
+     5652, 2022.                                                              Automatic Control, 67(12):6567–6582, 2021.
+[23] Siyuan Liu, Ashutosh Trivedi, Xiang Yin, and Majid Zamani. Secure-    [47] Yifan Xie, Xiang Yin, Shaoyuan Li, and Majid Zamani.  Secure-by-
+     by-construction synthesis of cyber-physical systems. Annual Reviews in         construction controller synthesis for stochastic systems under linear
+      Control, 53:30–50, 2022.                                                   temporal  logic  specifications.   In 2021 60th IEEE Conference on
+[24] Siyuan Liu, Xiang Yin, Dimos V Dimarogonas, and Majid Zamani. On         Decision and Control (CDC), pages 7015–7021. IEEE, 2021.
+     approximate opacity of stochastic control systems. IEEE Transactions    [48] Shuo Yang and Xiang Yin. Secure your intention: On notions of pre-
+     on Automatic Control, 2024.                                                   opacity in discrete-event systems.  IEEE Transactions on Automatic
+[25] Siyuan Liu and Majid Zamani.  Verification of approximate opacity         Control, 68(8):4754–4766, 2022.
+      via barrier certificates. IEEE Control Systems Letters, 5(4):1369–1374,    [49] Xiang Yin and St´ephane Lafortune. A uniform approach for synthesiz-
+     2020.                                                                        ing property-enforcing supervisors for partially-observed discrete-event
+[26] Siyuan Liu and Majid Zamani.  Compositional synthesis of opacity-         systems. IEEE Transactions on Automatic Control, 61(8):2140–2154,
+     preserving finite abstractions for interconnected systems.  Automatica,        2015.
+     131:109745, 2021.                                                       [50] Xiang Yin and St´ephane Lafortune. A new approach for the verification
+[27] Shaowen Miao, Aiwen  Lai, and Jan Komenda.   Always guarding         of infinite-step and k-step opacity using two-way observers. Automatica,
+     you: Strong  initial-and-final-state opacity of  discrete-event systems.        80:162–171, 2017.
+     Automatica, 173:112085, 2025.                                           [51] Xiang Yin, Majid Zamani, and Siyuan Liu. On approximate opacity
+[28] Richard Hugh Moulton, Behnam Behinaein Hamgini, Zahra Abedi         of cyber-physical systems. IEEE Transactions on Automatic Control,
+     Khouzani, Rˆomulo Meira-G´oes, Fei Wang, and Karen Rudie.  Using        66(4):1630–1645, 2021.
+     subobservers to synthesize opacity-enforcing supervisors. Discrete Event    [52] Yiwei Zheng, Aiwen Lai, Weiyao Lan, Xiao Yu, and Rong Su.  En-
+    Dynamic Systems, 32(4):611–640, 2022.                                     forcement of opacity for interval weighted discrete-event system by
+[29] Chunyan Mu and David Clark. Verifying opacity properties in security         supervisory control. IEEE Transactions on Automatic Control, 2025.
+     systems.  IEEE Transactions on Dependable and Secure Computing,    [53] Bingzhuo Zhong, Siyuan Liu, Marco Caccamo, and Majid Zamani.
+     20(2):1450–1460, 2022.                                                       Secure-by-construction synthesis for control systems. IEEE Transactions
+[30] Bhaskar Ramasubramanian, Rance Cleaveland, and Steven I Marcus.        on Automatic Control, 2025.
+     Notions of centralized and decentralized opacity in linear systems. IEEE    [54] Guanghui Zhu, Zhiwu Li, and Naiqi Wu.  Online verification of k-
+     Transactions on Automatic Control, 65(4):1442–1455, 2020.                    step opacity by petri nets in centralized and decentralized structures.
+[31] Lucas NR Reis, Lilian K Carvalho, and Marcos V Moreira. Enforcing         Automatica, 145:110528, 2022.
+      current-state opacity and utility of cyber-physical systems using multi-
+     path event routing. IEEE Transactions on Automatic Control, 2026.
+[32] K Ritsuka, St´ephane Lafortune, and Feng Lin.   Joint opacity and                     APPENDIX
+     opacity against state-estimate-intersection-based intrusion of discrete-
+     event systems. Automatica, 176:112136, 2025.                      Proof of Proposition 1
+[33] Anooshiravan  Saboori and  Christoforos N  Hadjicostis.    Opacity-
+     enforcing supervisory strategies via state estimator constructions. IEEE   Proof. The conclusions for the first and third components are
+     Transactions on Automatic Control, 57(5):1155–1165, 2011.
+[34] Anooshiravan Saboori and Christoforos N Hadjicostis.  Verification of   straightforward according to the definition of the intruder state
+      infinite-step opacity and complexity considerations. IEEE Transactions   estimator. We now prove the second component by induction
+     on Automatic Control, 57(5):1265–1269, 2011.                  on the length of ˆs:
+[35] Anooshiravan Saboori and Christoforos N Hadjicostis.  Verification of
+       initial-state opacity in security applications of discrete event systems.     Induction  Basis: We  first suppose  that  ˆs =  (ϵ, S(ϵ)).
+     Information Sciences, 246:115–132, 2013.                  By  Definition  2, we have Ea(PS(s)) =  {δ(s) ∈ X   :
+[36] Bryony H Schonewille and Karen Rudie.  Existence conditions for  ∃S′ ∈S s.t. PS′(s) =  (ϵ, S(ϵ))} = {δ(s) ∈X  : ∃S′ ∈
+      confidentiality                      in discrete-event                                     systems.                                                 In                                           2024 American Control  S s.t. S′(ϵ) = S(ϵ), s ∈L(S′/G), Pa(s) = ϵ} = {δ(s) ∈     Conference (ACC),                       pages 5412–5418.                                      IEEE,                                              2024.
+[37] Chongyang Shi, Abhishek N Kulkarni, Hazhar Rahmani, and Jie Fu. X : s ∈(Σua ∩S(ϵ))∗} = URS(ϵ),a({x0}), which aligns with
+     Synthesis of opacity-enforcing winning strategies against colluded op-   Equation (9). Thus, the induction basis holds.
+     ponent. In 2023 62nd IEEE Conference on Decision and Control (CDC),
+                                                                Induction Step: Now we suppose that the second component     pages 7240–7246. IEEE, 2023.
+[38] Ruochen Tai, Liyong Lin, Yuting Zhu, and Rong Su. Privacy-preserving   equals to Ea(PS(s)) holds for  |ˆs| = k. For the augmented
+      co-synthesis against sensor–actuator eavesdropping intruder. Automat-   string ˆs(σ, γ′), we first note that for all S′ ∈S such that there
+      ica, 150:110860, 2023.                                                                      exists a string t ∈L(S′/G)  : PS′(t) = PS(s)(σ, γ′), there[39] Shigemasa Takai and Yusuke Oka. A formula for the supremal con-
+      trollable and opaque sublanguage arising in supervisory control. SICE  must exists a string  t′ ∈{t}  : PS′(t′) = PS(s), we then
+     Journal of Control, Measurement, and System Integration, 1(4):307–311,   accordingly consider the following three cases:
+     2008.
+[40] Yin Tong, Hao Lan, and Carla Seatzu. Verification of k-step and infinite-    (1)  If σ ∈Σa \ Σo, we have
+      step opacity of bounded labeled petri nets.  Automatica, 140:110221,
+     2022.                                                         Ea(PS(s)(σ, ϵ))
+[41] Yin Tong, Zhiwu Li, Carla Seatzu, and Alessandro Giua.  Verification      = {δ(t) ∈X : ∃S′ ∈S s.t. PS′(t) = PS(s)(σ, ϵ)}      of state-based opacity using petri nets. IEEE Transactions on Automatic
+      Control, 62(6):2823–2837, 2017.                                                    δ(δ(t′), w) ∈X : δ(t′) ∈Ea(PS(s)),
+[42] Yin Tong, Zhiwu Li, Carla Seatzu, and Alessandro Giua.  Current-      =                                                                     ∃S′ ∈S : PS′(t′w) = PS(s)(σ, ϵ)
+      state opacity enforcement in discrete event systems under incomparable
+      observations. Discrete Event Dynamic Systems, 28(2):161–182, 2018.                    δ(δ(t′), w) ∈X : δ(t′) ∈Ea(PS(s)),
+[43] Sumukha Udupa, Chongyang Shi, and Jie Fu.  Synthesis of dynamic      =                                                      w ∈{σ} · (Σua ∩γ)∗
+     masks  for  information-theoretic opacity  in  stochastic systems.   In
+     Proceedings of the ACM/IEEE 16th International Conference on Cyber-      = URγ,a({δ(δ(t′), σ)∈X :δ(t′)∈Ea(PS(s))})
+     Physical Systems (with CPS-IoT Week 2025), pages 1–12, 2025.
+[44] Andrew Wintenberg, Necmiye Ozay, and St´ephane Lafortune. Integrat-      = URγ,a(NXσ(Ea(PS(s))))
+     ing obfuscation and control for privacy. IEEE Transactions on Automatic
+      Control, 2025.                                                    (2)  If σ ∈Σo \ Σa, we have
+
+                                                                                                                                                 15
+
+
+       Ea(PS(s)(ϵ, γ′))                                Then we can conclude that
+                                                                                    −1 (α) ∩L(S/G),                                                                                                            o    = {δ(t) ∈X : ∃S′ ∈S s.t. PS′(t) = PS(s)(ϵ, γ′)}    X(ISO(ασ)) =  δ(sσw) ∈X :  s ∈P                                                         w ∈(Σuo ∩S(ασ))∗               δ(δ(t′), w) ∈X : δ(t′) ∈Ea(PS(s)),
+    =                                                                       −1
+              ∃S′ ∈S : PS′(t′w) = PS(s)(ϵ, γ′)              = {δ(s) ∈X : s ∈Po  (ασ) ∩L(S/G)}
+                δ(δ(t′), w) ∈X : δ(t′) ∈Ea(PS(s)),              = ESo (ασ)
+    =
+        w ∈((Σua ∩γ)∗\ {ϵ}) · (Σua ∩γ′)∗                                                       and
+            URγ′,a({δ(δ(t′), w′) ∈X : δ(t′) ∈Ea(PS(s))             Ea(PS(s)(σ, S(ασ))w) :        =
+                            w′ ∈((Σua ∩γ)∗\ {ϵ})        Q(ISO(ασ)) =  s ∈P o−1 (α) ∩L(S/G),    
+    = URγ′,a(UR+γ,a(Ea(PS(s))))                      w ∈((Σuo∩Σa∩S(ασ))×{ϵ})∗ 
+                                          = {Ea(PS(s)) : s ∈Po−1 (ασ) ∩L(S/G)} (3)  If σ ∈Σo ∩Σa, we have
+       Ea(PS(s)(σ, γ′))                            When σ ∈Σo ∩Σua, we have
+    = {δ(t) ∈X : ∃S′ ∈S s.t. PS′(t) = PS(s)(σ, γ′)}    ISO(ασ)
+               δ(δ(t′), w) ∈X : δ(t′) ∈Ea(PS(s)),        = URS(ασ)    (x′, q′, γ′)∈M : ∃(x, q, γ)∈ISO(α)    =             ∃S′ ∈S : PS′(t′w) = PS(s)(σ, γ′)                             (x′,q′,γ′)=f((x,q,γ),(σ,S(ασ)))
+               δ(δ(t′), w) ∈X : δ(t′) ∈Ea(PS(s)),        = URS(ασ)    (δ(sσ),−1Ea(PS(s)(ϵ, S(ασ))), S(ασ)) :    =
+                w ∈{σ} · (Σua ∩γ′)∗                          s ∈Po  (α) ∩L(S/G)
+    = URγ′,a({δ(δ(t′), σ)∈X :δ(t′)∈Ea(PS(s))})       (x, q, γ) ∈M : (x, q, γ) =                                                                                                         =   f((δ(sσ), Ea(PS(s)(ϵ, S(ασ))), S(ασ)), w)    = URγ′,a(NXσ(Ea(PS(s))))                                −1                                s ∈Po  (α)∩L(S/G), w ∈((Σuo∩S(ασ))×{S(ασ)})∗ 
+The above three conditions all align with Equation (10), and                                        We can also conclude that
+the proof is thus completed.
+                                                          X(ISO(ασ)) = ESo (ασ)
+  Proof of Proposition 2
+                                                       and
+Proof. We prove by induction on the length of α.                Ea(PS(s)(ϵ, S(ασ))w) :    
+                                           −1             Induction Basis: Suppose that |α| = 0, i.e., α = ϵ. We have     Q(ISO(ασ)) =   s ∈P o  (α) ∩L(S/G),
+                                       w ∈((Σuo∩Σa∩S(ασ))×{ϵ})∗ 
+      ISO(ϵ) = hSDO(ıS0 , S(ϵ))                          = {Ea(PS(s)) : s ∈Po−1 (ασ) ∩L(S/G)}
+       = URS(ϵ)(NX(ϵ,S(ϵ))({m0}))                 The induction step is thus completed.
+       = URS(ϵ)({(x0, URS(ϵ),a({x0}), S(ϵ))})
+
+According to Proposition 1, URS(ϵ),a({x0}) = Ea((ϵ, S(ϵ))),
+thus we can further conclude ISO(ϵ) = {(x, q, γ) ∈M   :
+(x, q, γ) = f((x, Ea((ϵ, S(ϵ))), S(ϵ)), w), w ∈((Σuo∩S(ϵ))×
+{S(ϵ)})∗} = {(x, q, γ) ∈M  : (x, q, γ) = f((ϵ, S(ϵ))w), w ∈
+((Σuo ∩S(ϵ)) × {S(ϵ)})∗}. Then X(ISO(ϵ)) = {δ(w) ∈
+X   : w ∈(Σuo ∩S(ϵ))∗} = ESo (ϵ) and Q(ISO(ϵ)) =
+{Ea((ϵ, S(ϵ))w)  : w ∈((Σuo ∩Σa ∩S(ϵ)) × {ϵ})∗} =
+{Ea(PS(s))  : s ∈Po−1 (ϵ) ∩L(S/G)}. The induction basis
+thus holds.
+  Induction Step: Now we suppose that the conclusion holds
+for |α| = k, we prove that it also holds for ασ ∈Po(L(S/G)),
+where σ ∈Σo. According to Def. 5, we have that
+        ISO(ασ) = URS(ασ)(NX(σ,S(ασ))(ISO(α))
+
+When σ ∈Σo ∩Σa, we have
+ISO(ασ)
+                 (x′, q′, γ′)∈M : ∃(x, q, γ)∈ISO(α)= URS(ασ)               (x′,q′,γ′)=f((x,q,γ),(σ,S(ασ)))
+               (δ(sσ), Ea(PS(s)(σ, S(ασ))), S(ασ)) := URS(ασ)        −1
+              s ∈P o  (α) ∩L(S/G)
+  (x, q, γ) ∈M : (x, q, γ) =              
+                           =   f((δ(sσ), Ea(PS(s)(σ, S(ασ))), S(ασ)), w)
+  s ∈Po−1 (α)∩L(S/G), w ∈((Σuo∩S(ασ))×{S(ασ)})∗ 

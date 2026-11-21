@@ -1,0 +1,389 @@
+   Proceedings of 2018 IEEE 8th Annual International Conference
+on CYBER Technology in Automation, Control, and Intelligent Systems
+                   July 19-23, 2018, Tianjin, China
+
+
+           Robust Diagnosability and Robust Prognosability
+                     of Discrete-Event Systems Revisited
+
+
+                                     Xiang Yin and Shaoyuan Li
+
+
+     Abstract— In this paper, we revisit the veriﬁcation of robust      In this paper, we investigate the robust fault diagnosis and
+   diagnosability and robust  prognosability  in  the  context  of   prognosis problems under model uncertainty in the frame-
+   partially-observed discrete-event systems. In these problems, we                                                     work of [33], [34], where it is assumed that we do not know
+  assume that the actual system belongs to a set of possible models
+                                                                   precisely the actual system model and it belongs to a set of  and the system is said to be robustly diagnosable (respectively,
+   prognosable) if we can successfully detect (respectively, predict)    possible models. The goal is to detect (or predict) the occur-
+   the occurrences of fault events even  if we do not know the   rences of fault behaviors correctly no matter which model is
+   actual model a priori. Previous algorithms for the veriﬁcation    true. It has been shown that the notion of robust diagnosabil-
+   of these two conditions require exponential complexity in the                                                                             ity serves as the necessary and sufﬁcient condition for the
+  number of possible models. In the paper, we show that both
+                                                                  existence of a robust diagnoser against model uncertainty   robust diagnosability and robust prognosability can be tested in
+  a pairwise manner. This observation leads to new approaches for    [33]. Similarly, the notion of robust prognosability was also
+   the veriﬁcation of these two conditions, which are polynomial in   proposed in [34] as the necessary and sufﬁcient condition for
+  both the number of states and the number of possible models.    the existence of a robust prognoser. Veriﬁcation algorithms
+                                                                      for robust diagnosability and robust prognosability were also
+                              I. INTRODUCTION                      provided in [33] and [34], respectively; both of them are
+                                                           polynomial in the number of states, but are exponential in     This paper is concerned with the problems of fault diag-
+                                                                  the number of possible models as the product space of all   nosis and fault prognosis of Discrete-Event Systems (DES).
+                                                                  possible models needs to be explored.  In the fault diagnosis problem, the goal  is to detect and
+                                                                   In this paper, we revisit the veriﬁcation of robust diagnos-   isolate certain signiﬁcant behaviors based on model-based
+                                                                          ability and robust prognosability in the framework of [33],   inferencing driven by run-time observations, while in the
+                                                                       [34]. The main contribution of this paper is to show that   fault prognosis problem, the goal is to predict certain fault
+                                                             both of these two conditions can be veriﬁed in polynomial-  behaviors and issue alarms before their occurrences. Due
+                                                                   time, not only in the number of  states, but also in the   to their importance in many large-scale automated systems,
+                                                     number of all possible models. This result comes from a   these two problems have drawn considerable attention in the
+                                                             simple but very useful observation that both of these two  DES literature in the past years; see, e.g., some recent works
+                                                                 conditions can be veriﬁed in a pairwise manner, rather than   [1], [2], [3], [4], [5], [6], [7], [8], [9], [10], [11], [12], [13],
+                                                                exploring the entire product space of all possible models.   [14], [15], [16], [17], [18], [19] and a comprehensive survey
+                                                           That  is, to  test whether or not a set of possible models  on fault diagnosis [20].
+                                                                                 is robustly diagnosable (respectively, robust prognosable), if    To handle uncertainty in real-world systems, in the anal-
+                                                               sufﬁces to test, for all pairs of models, whether or not a set   ysis of DES, several different notions of robustness have
+                                                                 of two possible models is robustly diagnosable (respectively,  been proposed. For example, in [21], [22], robustness under
+                                                                 robust prognosable). Our results considerably improve the  sensor failures was investigated. In [23], [24], the problem of
+                                                                  veriﬁcation complexity of robust diagnosability and robust   fault diagnosis with incomplete model was studied. In [25],
+                                                                    prognosability, in particular, when the number of possible   [26], [27], the reliability issue in decentralized fault diagnosis
+                                                        models is relatively large.  and prognosis was investigated. A more widely investigated
+                                                      The rest of this paper is organized as follows. In Section II,  source of uncertainty in DES is the model uncertainty. The
+                                              we present some necessary preliminaries and review the  model uncertainty issue was originally studied in the context
+                                                                deﬁnitions of robust diagnosability and robust prognosability.  of robust supervisory control [28], [29], [30], [31], [32]. In
+                                                               Section  III presents the main  results of  this paper,  i.e.,   the context of fault diagnosis, in [33], the authors investigated
+                                                             both robust diagnosability and robust prognosability can be   the robust fault diagnosis problem in the presence of model
+                                                              veriﬁed in a pairwise manner. An illustrative example  is   uncertainty. In [34], a framework of robust fault prognosis
+                                                             provided in Section IV. Finally, we conclude the paper in  was proposed in order to handle model uncertainty in the
+                                                               Section V.   fault prognosis problem.
+                                                                                                         II. PRELIMINARY
+     This work is supported by the National Nature Science Foundation of
+   China (61590924, 61233004).                                      A. System Model
+     X.  Yin  and  S.  Li  are  with  Department  of  Automation  and      Let Σ be a ﬁnite set of events. We denote by Σ∗the
+  Key  Laboratory  of  System  Control  and  Information  Processing,
+   Shanghai  Jiao  Tong  University,  Shanghai  200240,  China.  E-mail:    set of all ﬁnite strings over Σ including the empty string
+  yinxiang@sjtu.edu.cn,syli@sjtu.edu.                       ϵ. We deﬁne Σϵ = Σ ∪{ϵ}. A language L ⊆Σ∗is a set
+
+
+ 978-1-5386-7057-6/18/$31.00 © 2018 IEEE               302
+
+of strings. For any string s ∈L, |s| denotes its length; we     if
+deﬁne L/s := {t ∈Σ∗: st ∈L}.
+                                                              (∀i ∈I)(∃K ∈N)(∀s ∈L(Gi) \ L(GNi ))(∀t ∈L(Gi)/s) A DES is modeled by a ﬁnite-state automaton
+                                                                                           s.t. [|t| ≥K] ⇒[∀j ∈I, ∀w ∈L(GNj ) : P(w)̸ = P(st)]
+           G = (Q, Σ, δ, q0)                    (1)                                                                (4)
+                                                                        Intuitively, robust diagnosability requires that no matter what
+where Q is a ﬁnite set of states, Σ is a ﬁnite set of events,    the actual model is, any fault string can be distinguished,
+δ : Q×Σ →Q is the partial deterministic transition function    in a ﬁnite number of  steps, from any non-fault  strings
+and q0 is the initial state. Function δ is extended to Q×Σ∗in    in any possible models; hence the fault can be detected
+the usual manner [35]. For the sake of simplicity, hereafter,   unambiguously.
+we write δ(q0, s) by δ(s), i.e., δ(s) is the state reached by      Deﬁnition 2: (Robust Prognosability [34]). The set of pos-
+string s from the initial state. The language generated by G is    sible models {Gi : i ∈I} is said to be robustly prognosable
+L(G) = {s ∈Σ∗: δ(s)!}, where “!” means “is deﬁned”. We     if
+also assume that G is live, i.e., ∀q ∈Q, ∃σ ∈Σ : δ(q, σ)!.
+                                                              (∀i ∈I)(∀s ∈L(GNi ) : δi(s) ∈∂(GNi ))  The event set Σ is partitioned into two disjoint sets Σ =
+Σo ˙∪Σuo, where Σo is the set of observable events and Σuo     (∀j ∈I)(∀t ∈L(GNj ) : δj(t) ∈Υ(GNj ))[P(w)̸ = P(s)]
+is the set of unobservable events. The natural projection P  :                                                                (5)
+Σ∗→Σ∗o is deﬁned recursively by:                                Intuitively, robust prognosability requires that no matter what
+                                                                the true model is, a string that leads to a boundary state can
+                         P(s)σ       if σ ∈Σo                                                         always be distinguished from any strings leading to non-  P(ϵ) = ϵ and P(sσ) =                                                            (2)
+                         P(s)         if σ ∈Σuo           indicator states in any possible models; hence a fault alarm
+                                                        can be issued unambiguously.
+                                                                o by:Natural projection is also extended to P  : 2Σ∗→2Σ∗
+                                                                 In [33], the veriﬁcation of robust diagnosability has been
+for any L ⊆Σ∗: P(L) = {t ∈Σ∗o : ∃s ∈L s.t. P(s) = t}.                                                                  studied. Under the assumption that GNi   is a sub-automaton
+  In the fault diagnosis/prognosis problem, the system is                                                              of Gi and the use of natural projection, the complexity of
+subject  to  fault.  Speciﬁcally, we assume  that  the  nor-                                                                the existing veriﬁcation algorithm is
+mal behavior of G  is modeled by an automaton GN =
+(QN, Σ, δN, qN0 ) such that L(GN) ⊆L(G), i.e., any string
+                                                   O(n · |Σ| ·      |Qi|    ·    |QNi  |  )in L(G) \ L(GN) is a fault string and any string in L(GN)
+is a non-fault string. For the sake of simplicity and without                           i∈I          i∈I
+loss of generality, we assume that GN  is a sub-automaton   which is polynomial in the number of states in each model
+of G [35]. Under this assumption, for any string s ∈L(G),   but  is exponential in the number of  all possible models
+s is a fault string if and only if δ(s) /∈QN ⊆Q.            due to the presence of the “  ” term. The veriﬁcation of
+  For any state q ∈QN, we say that q is a boundary state if   robust prognosability has also been investigated in [34]; the
+∃σ ∈Σ : δ(q, σ) /∈QN, i.e., a fault can occur from this state.   complexity of the veriﬁcation algorithm is
+We denote by ∂(GN) ⊆QN the set of boundary states in
+GN. We say that q is a non-indicator state if ∀K ∈N, ∃s ∈          O(n · |Σ| ·     |QNi  |    ·    |QNi  |  )
+L(GN, q) : |s| ≥K, i.e., an arbitrary long non-fault behavior                          i∈I           i∈I
+can occur from this state. We denote by Υ(GN) ⊆QN the                                                                                                        , which is  still exponential in the number of all possible
+set of non-indicator states in GN.                                                          models. In the next section, we will show how to improve
+                                                                the veriﬁcation complexity by removing the “  ” term.
+B. Robust Fault Diagnosis and Prognosis
+                                                                                                 III. MAIN RESULTS
+  In the context of robust fault diagnosis and prognosis, we
+do not know the system model precisely. Instead, we assume      In this section, we present the main results of this paper.
+that the actual system belongs to a set of n possible models   That is, both robust diagnosability and robust prognosability
+                                                        can be veriﬁed in a pairwise manner. Speciﬁcally, we show
+          G = {G1, G2, . . . , Gn}                (3)    that to verify robust diagnosability (or robust prognosability)
+                                                                   for the set of all possible models,  it sufﬁces to verify this
+where Gi = (Qi, Σ, δi, q0,i), i = 1, . . . , n. We denote by   condition for all pairs of two models.
+I = {1, 2, . . . , n} the index set. For each model Gi, i ∈I,
+it has its own normal model GNi = (QNi  , Σ, δNi  , qN0,i).         A. Pairwise Veriﬁcation of Robust Prognosability
+  In [33] (respectively, [34]), the condition of robust di-    We start by showing that robust prognosability can be
+agnosability (respectively, prognosability) was proposed as   veriﬁed in a pairwise manner as this notion  is easier to
+the necessary and sufﬁcient condition for the existence of   deal with compared with robust diagnosability. We have the
+a robust diagnoser (respectively, prognoser) under model   following main result.
+uncertainty. We recall these two conditions as follows.         Theorem 1: The set of all possible models {Gi : i ∈I}
+  Deﬁnition 1: (Robust Diagnosability [33]). The set of pos-    is robustly prognosable, if and only if, for any i, j ∈I, the
+sible models {Gi : i ∈I} is said to be robustly diagnosable    set of two models {Gi, Gj} is robustly prognosable.
+
+
+                                                 303
+
+     Proof: (⇒) By contraposition. Suppose that there exist   B. Pairwise Veriﬁcation of Robust Diagnosability
+i, j ∈I such that {Gi, Gj} is not robustly prognosable. This      Hereafter, we show that robust diagnosability can also
+implies that                                                       be veriﬁed in such a pairwise manner. However, showing
+       (∃i′ ∈{i, j})(∃s ∈L(GNi′ ) : δi′(s) ∈∂(GNi′ ))             this  result  is a  little  bit more difﬁcult than the case of
+                                                                 prognosability. As we can see  in Equation  (4),  for any
+      (∃j′ ∈{i, j})(∃t ∈L(GNj′ )) : δj′(t) ∈Υ(GNj′ ))    (6)   model i ∈I, the choice of model j that violates robust
+     [P(w) = P(s)]                                          diagnosability may depend on the choice of integer K ∈N.
+                                                  To handle this technique issue, we ﬁrst present a lemma that
+Since {i, j} ⊆I, then we know immediately that {Gi : i ∈                                                              helps us to estimate the upper bound of K when the system
+I} is not robustly prognosable.                                                                              is robustly diagnosable.
+  (⇐) By contraposition. Suppose that {Gi : i ∈I} is not                                              Lemma 1: Let Gi and Gj be two models. Let s ∈L(Gi)\
+robustly prognosable, i.e.,                         L(GNi ) be a faulty string in Gi and t ∈L(Gi)/s be  its
+ (∃i ∈I)(∃s ∈L(GNi ) : δi(s) ∈∂(GNi ))                     continuation such that  |t| ≥|Qi| · |Qj|. If there exists a
+                                                                     string w ∈L(GNj ) such that P(w) = P(st), then for any
+ (∃j ∈I)(∃t ∈L(GNj )) : δj(t) ∈Υ(GNj ))[P(w) = P(s)]  K ∈N,
+                                                            (7)
+                                                                    (∃t′ ∈L(Gi)/s : |t′| ≥K)(∃w′ ∈L(GNj ))[P(w′) = P(st′)]Let i and j be two models satisfying Equation (7). Since the                                                                                                                               (8)
+ﬁrst four quantiﬁers in Equation (7) are all existential, we                                                                  Proof:  Since P(w) = P(st), for string w ∈L(Gj),
+can replace I in Equation (7) by {i, j}. Therefore, we know                                             we can write it by w = w1w2 such that P(w1) = P(s) and
+that {Gi, Gj} is not robustly prognosable.                                                P(w2) = P(t). Therefore, there exists a string of pairs of
+  Theorem 1 suggests immediately an improved approach                                                              events
+for the veriﬁcation of robust prognosability. That  is, we
+consider all possible sets of two models {Gi, Gj} (including    (α11, α21)(α12, α22) . . . (α1m, α2m) (β11, β21)(β12, β22) . . . (β1l , β2l )
+the case of i = j) and verify whether or not {Gi, Gj} is                =:α                         =:β
+robustly prognosable by the algorithm in [34]. If there exists                                            ∈(Σϵ × Σϵ)∗                                             (9)
+such a pair of models that is not robustly prognosable, then
+the set of all models is not robustly prognosable; otherwise,   such that
+by Theorem 1, the set of all models is robustly prognosable.   s=α11 . . . α1m, w1 =α21 . . . α2m, t=β11 . . . β1l , w2 =β21 . . . β2l
+This approach is summarized as Algorithm 1.                                                                                                                     (10)
+
+Algorithm 1 Polynomial Test for Robust Prognosability      and
+  1: for all i = 1, . . . , n do                                  [∀k ≤m : P(α1k) = P(α2k)] ∧[∀k ≤l : P(β1k) = P(β2k)]
+  2:     for all j = i, . . . , n do                                                                                       (11)
+  3:        Test whether or not {Gi, Gj}  is not robustly    Essentially, α and β  are  strings of event paris  that are
+    prognosable by the algorithm in [34]                     obtained by inserting ϵ in s, t, w1 and w2. This is similar
+  4:           if {Gi, Gj} is not robustly prognosable then       to the well-known twin-machine construction.
+  5:           return “{Gi :i∈I} is not robustly prognos-     For any k = 1, . . . , l, we deﬁne
+    able”                                                                           q1                                                                               k := δi(sβ11 . . . β1k) ∈Qi  6:       end if
+  7:    end for                                         and
+  8: end for                                                                          q2                                                                              k := δj(w1β21 . . . β2k) ∈Qj  9: return “{Gi : i ∈I} is robustly prognosable”
+                                                           Let 0 ≤θ1 < θ2 < · · · < θ|t| ≤l be the indices such that
+                                                ∀k = 1, . . . , |t| : β1 = ϵ. We know that there are |t| such  For a set of two possible models {Gi, Gj}, recall that                                     θk̸
+                                                                indices since |β11 . . . β1l | =  |t|. Let us consider the followverifying robust prognosability by the algorithm  in [34]
+                                                                  multi-setrequires
+                                                 S = {(q1θ1, q2θ1), (q1θ2, q2θ2), . . . , (q1θ|t|, q2θ|t|)}    (12)         O(|Σ| · |QNi  | · |QNj  | · |QNi  | + |QNj  | )
+                                                           Since |t| ≥|Qi| · |Qj|, we know that there are two repeated
+Moreover, we only need to repeat this procedure for n(n +                                                                      states in S, say (q1θa, q2θa) = (q1θb, q2θb), where 1 ≤a < b ≤1)/2 times. Therefore, the overall complexity of Algorithm 1                                                                                         |t|.
+is                                                                Therefore, we know that, for any K ∈N, the following
+      O(|Σ| ·     |QNi  | · |QNj  | · |QNi  | + |QNj  |  )            strings are well-deﬁned
+                i,j∈I
+                                                              sβ1
+                                                                                1                                                                                                                      . . . β1θa(β1θa+1 . . . β1θb)K ∈L(Gi)
+which is polynomial not only in the number of states, but
+                                                       w1β21 . . . β2θa(β2θa+1 . . . β2θb)K ∈L(GNj )also in the number of all possible models.
+
+
+                                                 304
+
+Recall that ∀k ≤l : P(β1k) = P(β2k). Therefore, we have      using the algorithms in [33]. Then, by Theorem 2, the set of
+                                                                              all models is not robustly prognosable if and only if one such
+   (∃β11 . . . β1θa(β1θa+1 . . . β1θb)K ∈L(Gi)/s : |t′| ≥K)       a pair of models is not robustly diagnosable. This approach
+                      =:t′                                                    is summarized as Algorithm 2.
+   (∃w1β12 . . . β2θa(β2θa+1 . . . β2θb)K ∈L(GNj ))         (13)
+                                                     Algorithm 2 Polynomial Test for Robust Diagnosability
+                   =:w′
+       s.t. [P(w′) = P(st′)]                                                   1: for all i = 1, . . . , n do
+                                                                                     2:     for all j = i, . . . , n do
+Note that, |t′| ≥K comes from the fact that β1                          = ϵ.               3:        Test whether or not is {Gi, Gj} is robustly di-                                                                                   θb̸
+  With the help of Lemma 1, we are now ready to show       agonsable by the algorithm in [33]
+that robust diagnosability can also be tested in a pairwise      4:           if {Gi, Gj} is not robustly diagonsable then
+manner.                                                                           5:           return “{Gi : i∈I} is not robustly diagons-
+  Theorem 2: The set of all possible models {Gi : i ∈I}       able”
+is robustly diagnosable, if and only if, for any i, j ∈I, the       6:       end if
+set of two models {Gi, Gj} is robustly diagnosable.                7:    end for
+     Proof: (⇒) By contraposition. Suppose that there exist       8: end for
+i, j ∈I such that {Gi, Gj} is not robustly diagnosable. This      9: return “{Gi : i ∈I} is robustly diagonsable”
+implies that
+(∃i′ ∈{i, j})(∀K ∈N)(∃s ∈L(Gi′) \ L(GNi′ ))                  Recall that, for a set of two possible models {Gi, Gj},
+(∃t ∈L(Gi′)/s)                                       (14)    verifying robust diagnosability by the algorithm  in [33]
+s.t. [|t| ≥K] ∧[∃j′ ∈{i, j}, ∃w ∈L(GNj′ ) : P(st) = P(w)]    requires
+                                                               O(|Σ| · |QNi  | · |QNj  | · (|Qi| + |Qj|))Since {i, j} ⊆I, then we know immediately that {Gi : i ∈
+I} is not robustly diagnosable.                                                             Also, we only need to repeat this procedure for n(n + 1)/2
+  (⇐) By contraposition. Suppose that {Gi : i ∈I} is not                                                                 times. Therefore, the complexity of Algorithm 2 is
+robustly diagnosable, i.e.,
+                                                            O(|Σ| ·     |QNi  | · |QNj  | · (|Qi| + |Qj|) ) (∃i ∈I)(∀K ∈N)(∃s ∈L(Gi) \ L(GNi ))(∃t ∈L(Gi)/s)
+                                                                                       i,j∈I
+ s.t. [|t| ≥K] ∧[∃j ∈I, ∃w ∈L(GNj ) : P(st) = P(w)]
+                                                       (15)   which is polynomial in both the number of states and the
+                                                   number of all possible models.
+Let i ∈I be a model such that Equation (15) is satisﬁed.
+Let us choose K such that                                                 IV. ILLUSTRATIVE EXAMPLE
+         K ≥|Qi| · max {|Qj|}              (16)      In  this  section, we  illustrate our main  results by an
+                            j∈I
+                                                      example adopted from [1], [34].
+Then, for the above K, there exist sK ∈L(Gi)\L(GNi ) and     Dependency graph (DG) is a technique used in operation
+tK ∈L(Gi)/sK such that |tK| ≥K and there exists j ∈I   systems that records the commands issued via a log ﬁle. In
+such that ∃w ∈L(GNj ) : P(sKtK) = P(w).                  a DG, there are two types of states, PROCESSES and FILES,
+  Let us consider the above string sK and model j ∈I.   and transitions between states deﬁne the dependencies of the
+Next, we show that {Gi, Gj} is not robustly diagnosable.   command issued. Let us consider an operation system with
+Since |tK| ≥K ≥|Qi| · |Qj|, by Lemma 1, we know that     three possible dependency graphs G1, G2 and G3 shown in
+                                                                               1(a),                                                                             1(b)                                                                       and 1(c),                                                                                                    respectively.                                                                                                         In                                                                                                   each                                                                                                              system, (∀K′ ∈N)(∃t′ ∈L(Gi)/sK : |t′| ≥K′)(∃w′ ∈L(GNj ))     Figures                                                                                    b, c, d,                                                                                       DELETE                                                                          CREATE,                                                                                  WRITE,                                                                                     READ,                                                              events a,                                                                      e represent
+    s.t. [P(w′) = P(sKt′)]                              (17)                                                      and BUSY, respectively. We require that, for each possible
+                                                         model, event d representing DELETE should not happenTherefore, we have that
+                                                         immediately after the occurrence of event c representing
+(∃i ∈{i, j})(∀K′ ∈N)(∃sK ∈L(Gi) \ L(GNi ))            READ. Therefore, the normal behaviors GN1 , GN2 and GN3  are
+(∃t′ ∈L(Gi)/sK)                                     (18)   shown in Figures 1(d), 1(e) and 1(f), respectively. Note that
+                                                                                                       i   is a sub-automaton of Gi. Moreover, we assumes.t. [|t′|≥K′]∧[∃j ∈{i, j}, ∃w′ ∈L(GNj ) : P(w′)=P(sKt′)]   each GN                                                                     that Σo = {b, c, e} is the set of observable events. Then we
+That is, {Gi, Gj} is not robustly diagnosable.                  are interested in whether or not {G1, G2, G3} is robustly
+  Similar to the case of robust prognosability, Theorem 2 al-   prognosable. To see this, let us consider models G1 and G2
+so suggests a direct way to improve the veriﬁcation complex-    ﬁrst. We can verify according to the algorithm in [34] that
+ity of robust diagnosability. That is, we consider all possible   {G1, G2} is robustly prognosable. However, if we consider
+sets of two models {Gi, Gj} (including the case of i = j)   models G2 and G3, then we have δ2(aad) = FILE 2 ∈
+and verify whether or not {Gi, Gj} is robustly diagnosable  Υ(GN2 ) δ3(aad) = FILE 2 ∈∂(GN2 ) and P(aad) = P(aad).
+
+
+                                                 305
+
+                           ܩଶ                                             ܩଷ     ܩଵ
+
+
+
+
+
+                                                     ILOHB  ¶
+
+
+                                    SURFHVVB   ¶
+
+
+                                    SURFHVVB   ¶
+
+                            (a) G1                                            (b) G2                                              (c) G3
+
+    ܩଵே                ܩଶே                ܩଷே
+
+
+
+
+
+                                            ILOHB  ¶
+
+                          (d) GN1                                              (e) GN2                                                   (f) GN3
+
+                             Fig. 1: Three possible dependency graphs for an operation system.
+
+
+Therefore, we know that {G2, G3} is not robustly prognos-   problem is the modular diagnosis/prognosis problem [37],
+able and by Theorem 1, we know that the entire system   where the monolithic model is composed by a set of local
+{G1, G2, G3} is not robustly prognosable.                   modules. It has also been shown that testing diagnosability
+                                                                   (or prognosability) for the monolithic model is PSPACE-hard
+           V. DISCUSSION AND CONCLUSION                in the number of modules [38].
+  There are some other problems in the literature whose    As in the robust diagnosis and prognosis problems, the
+parameter  structures  are  similar  to  the  robust  diagno-   number of possible models is also a parameter, it is natural
+sis/prognosis problem. One related problem is the decentral-    to ask whether or not these two problems are also PSPACE-
+ized diagnosis/prognosis problem [36], [4], where a set of   hard or they have polynomial-time algorithms. Our paper
+local agents is involved. However,  it has been shown that   provides positive answer to the above question. The positive
+testing codiagnosability (or coprognosability)  is PSPACE-    results come from the fact that both robust diagnosability
+hard in the number of local agents  [6]. Another related   and robust prognosability can be veriﬁed  in a pairwise
+
+
+                                                 306
+
+manner, which allows us to leverage existing algorithms    [24] R.H. Kwong and D.L. Yonge-Mallo. Fault diagnosis in discrete-event
+to develop polynomial-time algorithms for verifying these         systems with incomplete models:  Learnability and  diagnosability.
+                                                                IEEE Transactions on Cybernetics, 45(7):1236–1249, 2015.
+two conditions. In the future, we will extend our results to    [25]  J.C. Basilio and S. Lafortune.  Robust codiagnosability of discrete
+supervisor control problem [39], [40], [41], [42], [43].                event systems.  In American Control Conference, pages 2202–2209,
+                                                                             2009.
+                 REFERENCES                                 [26]  S. Nakata and S. Takai.  Reliable decentralized failure diagnosis of
+                                                                                          discrete event systems. SICE Iournal of Control, Measurement, and
+ [1]  T. J´eron, H. Marchand, S. Genc, and S. Lafortune.  Predictability of         System Integration, 6(5):353–359, 2013.
+     sequence patterns in discrete event systems. In Proc. 17th IFAC World    [27] X. Yin and Z. Li. Reliable decentralized fault prognosis of discrete-
+     Congress, pages 537–543, 2008.                                             event systems. IEEE Transactions on S.M.C.: Systems, 46(11):1598–
+ [2]  S. Genc and S. Lafortune.   Predictability of event occurrences in         1603, 2016.
+      partially-observed discrete-event systems. Automatica, 45(2):301–311,    [28]  F. Lin.  Robust and adaptive supervisory control of discrete event
+     2009.                                                                       systems. IEEE Transactions on Automatic Control, 38(12):1848–1852,
+ [3] X. Yin and S. Lafortune. A general approach for solving dynamic         1993.
+     sensor activation problems for a class of properties.  In 54th IEEe    [29]  S. Takai.  Robust supervisory control of a class of timed discrete
+     Conference on Decision and Control, pages 3610–3615. IEEE, 2015.          event systems under partial observation. Systems & Control Letters,
+ [4] R. Kumar and S. Takai. Decentralized prognosis of failures in discrete         39(4):267–273, 2000.
+     event systems. IEEE Transactions on Automatic Control, 55(1):48–59,    [30] S.E. Bourdon, M. Lawford, and W.M. Wonham. Robust nonblocking
+     2010.                                                                       supervisory control of discrete-event systems. IEEE Transactions on
+ [5] X. Yin and S. Lafortune. Codiagnosability and coobservability under         Automatic Control, 50(12):2015–2021, 2005.
+     dynamic observations: Transformation and veriﬁcation.  Automatica,    [31] A. Saboori and S.H. Zad. Robust nonblocking supervisory control of
+     61:241–252, 2015.                                                               discrete-event systems under partial observation. Systems & Control
+                                                                                            Letters, 55(10):839–848, 2006. [6]  F. Cassez. The complexity of codiagnosability for discrete event and
+     timed systems. IEEE Transactions on Automatic Control, 57(7):1752–    [32]  F. Wang, S. Shu, and F. Lin. Robust networked control of discrete event
+                                                                                  systems. IEEE Transactions on Autom. Sci. Engineering, 13(4):1528–     1764, 2012.
+                                                                             1540, 2016. [7] D. Lefebvre.  Fault diagnosis and prognosis with partially observed
+                                                                              [33]  S. Takai. Veriﬁcation of robust diagnosability for partially observed      petri nets. IEEE Transactions on S.M.C.: Systems, 44(10):1413–1424,
+                                                                                          discrete event systems. Automatica, 48(8):1913–1919, 2012.     2014.
+                                                                              [34]  S. Takai. Robust prognosability for a set of partially observed discrete [8]  J. Chen and R. Kumar.  Stochastic failure prognosability of discrete
+                                                                                  event systems. Automatica, 51:123–130, 2015.     event systems. IEEE Transactions on Automatic Control, 60(6):1570–
+                                                                              [35] C. Cassandras and S. Lafortune.   Introduction to Discrete Event     1581, 2015.
+                                                                                  Systems. Springer, 2nd edition, 2008. [9] X. Yin and Z. Li.  Decentralized fault prognosis of discrete event
+                                                                              [36] R. Debouk, S. Lafortune, and D. Teneketzis. Coordinated decentralized     systems with guaranteed performance bound.  Automatica, 69:375–
+                                                                                    protocols for failure diagnosis of discrete event systems.  Discrete     379, 2016.
+                                                                            Event Dynamic Systems: Theory & Applications, 10(1):33–86, 2000.[10] R. Ammour, E. Leclercq, E. Sanlaville, and D. Lefebvre.   Fault
+                                                                              [37] O. Contant, S. Lafortune, and D. Teneketzis.   Diagnosability of     prognosis of timed stochastic discrete event systems with bounded
+                                                                                          discrete event systems with modular structure. Discrete Event Dynamic     estimation error. Automatica, 82:35–41, 2017.
+                                                                                Systems: Theory & Applications, 16(1):9–37, 2006.[11] X. Yin and S. Lafortune.   Minimization of sensor  activation  in
+                                                                              [38] X. Yin and S. Lafortune. Veriﬁcation complexity of a class of obser-      decentralized discrete event systems. IEEE Transactions on Automatic
+                                                                                       vational properties for modular discrete events systems. Automatica,      Control, 2018. DOI: 10.1109/TAC.2017.2783048.
+                                                                            83:199–205, 2017.
+[12] A. Watanabe, A. Leal, J. Cury, and M. de Queiroz. Safe controllability
+                                                                              [39] X. Yin and S. Lafortune. Synthesis of maximally permissive supervi-
+     using online prognosis. IFAC World Congress, pages 12359–12365,
+                                                                                      sors for partially-observed discrete-event systems. IEEE Transactions
+     2017.
+                                                                      on Automatic Control, 61(5):1239–1254, 2016.
+[13] R. Ammour, E. Leclercq, E. Sanlaville, and D. Lefebvre.   Faults
+                                                                              [40] X. Yin and S. Lafortune.  A uniform approach for synthesizing
+     prognosis using partially observed stochastic petri-nets: an incremental
+                                                                                   property-enforcing supervisors for partially-observed discrete-event
+     approach. Discrete Event Dynamic Systems, pages 1–21, 2017.
+                                                                                  systems. IEEE Transactions on Automatic Control, 61(8):2140–2154,
+[14] N. Ran, S. Wang, H. Su, and C. Wang. Fault diagnosis for discrete
+                                                                             2016.
+     event systems modeled by bounded petri nets.  Asian Journal of
+                                                                              [41] X. Yin. Supervisor synthesis for mealy automata with output functions:
+      Control, 2017.
+                                                A model transformation approach. IEEE Transactions on Automatic
+[15] Y. Tong, Z. Li, C. Seatzu, and A. Giua.  Veriﬁcation of state-based
+                                                                                    Control, 62(5):2576–2581, 2017.
+     opacity using Petri nets. IEEE Transactions on Automatic Control,
+                                                                              [42] X. Yin and S. Lafortune. Synthesis of maximally-permissive supervi-
+     62(6):2823–2837, 2017.
+                                                                                      sors for the range control problem. IEEE Transactions on Automatic
+[16] X. Yin and S. Lafortune.  On the decidability and complexity of
+                                                                                    Control, 62(8):3914–3929, 2017.
+      diagnosability for labeled petri nets. IEEE Transactions on Automatic
+                                                                              [43] X.  Yin  and  S.  Lafortune.    Synthesis  of  maximally-permissive
+      Control, 62(11):5931–5938, 2017.
+                                                                              non-blocking  supervisors  for  the lower-bound containment  prob-
+[17] N. Ran, H. Su, A. Giua, and C. Seatzu. Codiagnosability analysis of
+                                                                                       lem,.   IEEE  Transactions on Automatic  Control,  2018.   DOI:
+     bounded Petri nets. IEEE Transactions on Automatic Control, 2017.
+                                                                           10.1109/TAC.2018.2828098.
+[18] X. Yin and Z. Li.  Decentralized fault prognosis of discrete-event
+     systems using state-estimate-based protocols. IEEE Transactions on
+     Cybernetics, 2018. DOI: 10.1109/TCYB.2018.2799961.
+[19] X. Yin.  Veriﬁcation of prognosability for labeled Petri nets. IEEE
+     Transactions on Automatic Control, 63(6):1738–1744, 2018.
+[20]  J. Zaytoon and S. Lafortune. Overview of fault diagnosis methods for
+      discrete event systems.  Annual Reviews in Control, 37(2):308–320,
+     2013.
+[21] L.K. Carvalho, M.V. Moreira, J.C. Basilio, and S. Lafortune. Robust
+     diagnosis of discrete-event systems against permanent loss of obser-
+      vations. Automatica, 49(1):223–231, 2013.
+[22] N. Kanagawa and S. Takai. Diagnosability of discrete event systems
+      subject to permanent sensor failures. International Journal of Control,
+     88(12):2598–2610, 2015.
+[23] R.H. Kwong and D.L. Yonge-Mallo.   Fault diagnosis in discrete-
+     event systems: Incomplete models and learning. IEEE Transactions
+     on S.M.C., Part B, 41(1):118–130, 2011.
+
+
+                                                 307

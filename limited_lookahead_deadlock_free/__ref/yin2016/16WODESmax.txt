@@ -1,0 +1,474 @@
+Proceedings of WODES 2016: 13th Int. Workshop on Discrete Event                                      Mo_1_A.1
+Systems, Xi'an, China, May 30 - June 1, 2016
+
+
+  On Maximal Permissiveness in Partially-Observed Discrete Event
+                 Systems: Veriﬁcation and Synthesis
+
+
+                                Xiang Yin and St´ephane Lafortune
+
+
+  Abstract— The notion of maximal permissiveness plays an   when there are controllable events that are unobservable. In
+important role in synthesis problems in the supervisory control    [1], an online approach was proposed in order to compute a
+framework.  It  is well known that the supervisor synthesis                                                    maximal solution. In our recent work [14], [15], we showed
+problem has a unique supremal solution when all the events
+                                                                     that the problem of synthesizing a maximally permissive safeare observable. However, under the partial observation setting,
+no supremal solution exists in general and there may exist   and non-blocking supervisor for partially-observed DES is
+several locally maximal solutions. In this paper, we tackle the    also decidable.
+supervisory control problem under partial observation from a     Although maximal solutions have been reported in the
+new angle. First, we propose an approach to verify whether
+                                                                        literature in [1], [15], the maximal solutions obtained so
+a given supervisor is maximal or not. If a supervisor is not
+maximal, then we provide an algorithm that synthesizes a new    far are just a particular type of maximal solutions, namely,
+supervisor that is strictly more permissive than the given one. To   greedy maximal solutions. In a greedy maximal solution, the
+the best of our knowledge, both the veriﬁcation of maximality   supervisor tries to enable as many events as possible at each
+and the synthesis of a larger solution were previously open    control decision instant. Since no supervisor can enable more
+problems; our algorithms are the ﬁrst ones of their kind.
+                                                              events at any instant, this greedy strategy yields a locally
+                          I. INTRODUCTION                    maximal solution. However, greedy maximal solutions may
+                                                             not be good solutions for the following reasons. First, en-
+  We consider the supervisor synthesis problem for partially-
+                                                              abling fewer events at some particular instant may allow to
+observed Discrete Event Systems (DES) in the supervisory
+                                                            enable more events at later instants, thereby yielding more
+control framework  initialed in  [9]. Given a speciﬁcation
+                                                             behaviors in the future post-language. Second, the greedy
+language and a plant model, the supervisor existence problem
+                                                    maximal solution may not contain a given behavior.
+asks whether or not the spceciﬁcation can be exactly achieved
+                                                                 In order to resolve the limitations of greedy maximalby a supervisor. When a language cannot be exactly achieved,
+                                                                   solutions, we tackle the synthesis problem from a new angle.then the synthesis problem asks to ﬁnd a supervisor that
+                                                                Speciﬁcally, we consider the following problems:achieves a sublanguage of the speciﬁcation language. It is
+well known that controllability and observability provide    (1) Verify whether a given supervisor is maximal or not.
+the necessary and sufﬁcient conditions for the existence of    (2) Synthesize a new supervisor that is strictly more permis-
+a supervisor under the partial observation setting [6], [8].        sive than a given non-maximal supervisor.
+When all the events are observable, the synthesis problem has                                        We refer to the ﬁrst problem as the veriﬁcation problem and
+a unique supremal solution, namely the supremal controllable                                                                   to the second problem as the synthesis problem. Clearly, the
+sublanguage. However, since observability is not preserved                                                               veriﬁcation problem is the ﬁrst step towards the synthesis
+under union  in  general,  the  synthesis problem  is much                                                           problems: if the given supervisor is veriﬁed to be maximal,
+more challenging under the partial observation setting. In                                                            then there is no need to solve the synthesis problems. The
+particular, instead of a unique supremal solution, several                                                                synthesis problems considered here can also be viewed as
+incomparable locally maximal solutions may exist.                                                                synthesis problems with a strict lower bound speciﬁcation,
+  Several approaches have been proposed in the literature                                                               since the given supervisor could model the lower bound
+in order to tackle the synthesis problem; see, e.g., [1]–[3],                                                            behavior that a newly synthesized supervisor must achieve.
+[5], [7], [12], [13], [15]–[17]. One approach is to compute                                                  To the best of our knowledge, the maximality veriﬁcation
+the supremal controllable and normal solution, which was                                                       problem is still open in the literature. Moreover, the synthesis
+initially proposed  in  [6],  [8];  see,  also  [2],  [5]  for  its                                                       problem formulated above is also open.
+computation. When all controllable events are observable,                                                    The  contributions of  this paper  are as  follows.  First,
+normality and controllability coincide with observability and                                             we provide complete solutions  to problems  (1) and  (2)
+controllability, which implies  that the synthesis problem                                                           formulated above in the case of preﬁx-closed speciﬁcations.
+has a supremal solution for this special case. However, the                                                                Speciﬁcally, we provide an approach to verify whether a
+supremal normal solution may be conservative in general,                                                            given supervisor  is maximal or not. Moreover, when the
+  This work was partially supported by the US National Science Foundation   answer to the veriﬁcation problem is negative, an algorithm is
+grants CCF-1138860 (Expeditions in Computing project ExCAPE: Expedi-   proposed in order to synthesize a new supervisor that strictly
+tions in Computer Augmented Program Engineering) and CNS-1446298.     contains the behavior generated by the given supervisor.
+  Xiang Yin and St´ephane Lafortune are with the Department of Electrical
+Engineering and Computer Science, University of Michigan, Ann Arbor,   The proposed approaches rely on the AIC investigated in
+MI 48109, USA. {xiangyin,stephane}@umich.edu.         our previous work. However, the new notions of control
+
+
+                                                                                          1
+
+simulation relation and control replacement are proposed in    satisﬁes some speciﬁcation. In  this paper, we only con-
+order to solve the new problems.                                sider preﬁx-closed languages, i.e., we only consider safety
+  Due to space constraints, all proofs have been omitted.      speciﬁcations; non-blockingness is not considered. Hence,
+                                                                the speciﬁcation  is given as a preﬁx-closed sublanguage
+                        II. PRELIMINARIES                               K = K ⊆L(G). In words, all strings in K are legal and all
+  Let Σ be a ﬁnite set of events. We denote by Σ∗the    strings in L(G) \ K are illegal. Let K = (XK, Σ, δK, x0,K)
+set of all ﬁnite strings over Σ, including the empty string   be an automaton generating K, i.e., K = L(K). We assume
+ϵ. A language L is a subset of Σ∗. We denote by L the    w.l.o.g. that K ⊏G. This assumption essentially says that
+preﬁx-closure of language L ⊆Σ∗. A DES is modeled as    all states in XK are legal and all states in X \XK are illegal.
+a ﬁnite-state automaton G = (X, Σ, δ, x0, Xm), where X        It is well known that there exists a supervisor S such
+is the ﬁnite set of states, Σ is the ﬁnite set of events, δ  :    that L(S/G) = K iff K is controllable and observable; the
+X × Σ →X  is the partial transition function, x0 ∈X  is   reader is referred to [4] for deﬁnitions of these properties.
+the initial state, and Xm ⊆X is the set of marked states.  When K cannot be exactly achieved, the synthesis problem
+The transition function δ is extended to X ×Σ∗in the usual   asks  to ﬁnd a sublanguage  of K  that  is “as  large  as
+manner and the extended function is still denoted by δ; see,    possible”. Since observability is not preserved under union
+e.g., [4]. For brevity, we write δ(x, s) as δ(s) if x = x0.    in general, there does not exist a supremal controllable and
+We denote by L(G, x) the language generated by G from   observable sublanguage. This is the fundamental difﬁculty in
+state x, i.e., L(G, x) := {s ∈Σ∗: δ(x, s)!}, where ! means    the synthesis problem under partial observation. Therefore,
+“is deﬁned”. We write L(G, x) as L(G) if x = x0;  it is    instead of computing a supremal controllable and observable
+the language generated by G. In this paper, we will only   sublanguage, one is interested in computing a locally maxi-
+deal with preﬁx-closed languages. Therefore, we assume that   mal controllable and observable sublanguage of K. Formally,
+Xm = X and denote an automaton by G = (X, Σ, δ, x0).    we say that a supervisor S is safe if L(S/G) ⊆K and we
+  Given two automata A = (XA, Σ, δA, xA,0) and B =   say that S is maximal if
+(XB, Σ, δB, xB,0), we say that A is a sub-automaton of B,     (i) S is safe; and
+denoted by A ⊑B,  if δA(xA,0, s) = δB(xB,0, s) for all     (ii) For any safe S′, we have L(S/G)̸⊂L(S′/G).
+s ∈L(A). We say that A is a strict sub-automaton of B,      Previous efforts in the literature have only addressed a
+denoted by A ⊏B, if (i) A ⊑B; and (ii) ∀x, y ∈XA, ∀s ∈    particular type of maximal solution, namely, a greedy maxi-
+Σ∗: δB(x, s)=y ⇒δA(x, s)=y. For any two automata A   mal solution. However, as was discussed in the introduction,
+and B such that L(A) ⊆L(B), we can always reﬁne the   greedy maximal solutions have drawbacks in general. In this
+state spaces of A and B such that A ⊏B; see, e.g., [5].      paper, instead of synthesizing a greedy maximal solution, we
+  In the framework of supervisory control [9], we assume    tackle the synthesis problem from a different angle:
+that Σ = Σc ˙∪Σuc, where Σc and Σuc  are the  set of   “Suppose  that there  exists a supervisor  that achieves a
+controllable events and the  set of uncontrollable events,   desired lower bound behavior. We wish to determine whether
+respectively. A control decision γ ∈2Σ is a set of events that   or not we can improve this supervisor by synthesizing a new
+a supervisor may enable, with the constraint that Σuc ⊆γ.   supervisor whose closed-loop behavior is strictly larger than
+We denote by Γ the set of all control decisions, i.e., Γ :=    the given one.”
+{γ ∈2Σ  : Σuc ⊆γ}. Due to limited sensing capabilities,   Let us denote by R ⊆K ⊆L(G) the lower bound
+a supervisor may not be able to observe the occurrence of   speciﬁcation that the supervisor must achieve. Let R =
+every event. Under the partial observation setting [6], [8],   (XR, Σ, δR, x0,R)  be  an  automaton  generating R,   i.e.,
+we further assume that Σ = Σo ˙∪Σuo, where Σo and Σuo   L(R) = R. We denote by SR the supervisor that achieves
+are the set of observable events and the set of unobservable   R,  i.e., L(SR/G) = R. We are interested in whether or
+events, respectively. The natural projection P  : Σ∗→Σ∗o is   not we can improve this lower bound supervisor, namely,
+deﬁned in the usual manner; see, e.g., [4]. The projection P   ﬁnd a new supervisor S′ such that R ⊂L(S′/G). Note
+is extended to 2Σ∗by P(L) = {t : ∃s∈L s.t. t=P(s)} and    that the existence of SR achieving R implicitly assumes
+P −1 denotes the inverse projection. A partial-observation    that R is controllable and observable. This assumption is
+supervisor is a function S : P(L(G)) →Γ. We use S/G to    w.l.o.g. since we can always compute the inﬁmal preﬁx-
+represent the closed-loop system under control. The language   closed superlanguage  of R  if R  is not  controllable  or
+generated by S/G is denoted by L(S/G); see, e.g., [4].       observable; see, e.g., [10].
+  Let S ⊆X be a subset of states, γ ∈Γ be a control      In order to solve this problem, we ﬁrst need to verify
+decision, and σ ∈Σo be an observable event. We deﬁne the   whether the given supervisor SR is already maximal or not.
+following two operators:                                                If so, then we cannot improve it any further. Therefore, we
+URγ(S)={x∈X : ∃u∈S, ∃s∈(Σuo ∩γ)∗s.t. x=δ(u, s)};   deﬁne the maximality veriﬁcation problem as follows.
+Nextσ(S)={x ∈X : ∃u ∈S s.t. x = δ(u, σ)}.                Problem 1: Given a supervisor SR such that L(SR/G) ⊆
+                                            K, verify whether or not SR is maximal.
+                 III. PROBLEM FORMULATION                                                                                 If the answer to the veriﬁcation problem is negative, then
+  In the supervisor synthesis problem, one is interested in  we consider the following synthesis problem.
+designing a supervisor such that the closed-loop behavior     Problem 2: Given a non-maximal supervisor SR such
+
+
+                                                                                          2
+
+that L(SR/G) ⊆K, ﬁnd a safe supervisor S such that    1. ∀y ∈QTY  : [CT (y)̸ = ∅]; and
+L(SR/G) ⊂L(S/G).                                             2. ∀z ∈QTZ, ∀e ∈Γ(z) ∩Σo  : [(∃x ∈I(z) : δ(x, e)!) ⇒
+                                                    hTZY (z, e)!]            IV. ALL INCLUSIVE CONTROLLER
+                                     A supervisor S for G works as follows. Initially, it makes
+  In  this section, we ﬁrst review the notion of bipartite
+                                                                control decision S(ϵ). Then new control decision S(σ) is
+transition system (BTS) and the notion of  all  inclusive
+                                                made upon the occurrence of (enabled) observable event
+controller (AIC) from our earlier work [15]. Then we discuss
+                                                             σ, and so forth. Let s = σ1 . . . σn ∈P(L(S/G)) be an
+how to realize a supervisor by using a BTS.
+                                                          observed string. Then the execution of s induces the run
+  Since we consider partially-observed systems, we deﬁne
+an information state as a set of states and denote by I = 2X                ρS(s) := γ0σ1γ1 . . . γn−1σnγn            (4)
+the set of information states. First, we recall the deﬁnition
+                                                     where γ0 = S(ϵ) and γi = S(σ1 . . . σi), i ≤n. The runof BTS from [15].
+  Deﬁnition 1: (Bipartite Transition System). A  bipartite   ρS(s) again yields an alternating sequence of Y -and Z-states
+transition system T w.r.t. G is a 7-tuple                                γ0     σ1      γ1      γn−1       σn     γn
+                                                             y0 −→z0 −→y1 −→. . . −−−→zn−1 −−→yn −→zn   (5)
+        T = (QTY , QTZ, hTY Z, hTZY , Σo, Γ, y0)         (1)
+                                        We denote by ISYS (s) and ISZS (s), the last Y -state and Z-
+where QTY ⊆I is the set of Y -states; QTZ ⊆I × Γ is the    state in y0z0y1z2 . . . zn−1ynzn, respectively, i.e., ISYS (s) =
+set of Z-states and I(z) and Γ(z) denote, respectively, the   yn and ISZS (s) = zn. That is, ISYS (s) and ISZS (s) are the
+information state and the control decision components of a  Y -state and the Z-state that result from the occurrence of
+Z-state z, so that z = (I(z), Γ(z)); hTY Z  : QTY × Γ →QTZ    string s under supervisor S, respectively.
+is the partial transition function from Y -states to Z-states,     With the above notions, we can “decode” supervisors from
+which satisﬁes the following constraint: for any y ∈QTY , z ∈   a BTS as explained in the following deﬁnition.
+QTZ and γ ∈Γ, we have                                      Deﬁnition 2: Let T be a complete BTS. A supervisor S
+                                                                              is said to be included in T  if for any observed string s ∈   hTY Z(y, γ) = z ⇒[I(z)=URγ(y)] ∧[Γ(z) = γ];    (2)
+                                                 P(L(S/G)), we have that S(s) ∈CT (ISYS (s)). We denote
+hTZY  : QTZ ×Σo →QTY  is the partial transition function from   by S(T) the set of supervisors included in T.
+Z-states to Y -states, which satisﬁes the following constraint:      In [15], the AIC structure is deﬁned as the largest BTS
+for any y ∈QTY , z ∈QTZ and e ∈Σo, we have                including only safe supervisors.
+      hTZY (z, e) = y ⇒e∈Γ(z) ∧y=Nexte(I(z));     (3)      Deﬁnition 3: (All Inclusive Controller). The All Inclusive
+                                                               Controller for G, AIC(G) = (QAICGY       , QAICGZ      , hAICGY Z    ,
+Σo is the set of observable events of G; Γ is the set of control   hAICGZY    , Σo, Γ, y0), is deﬁned as the largest complete BTS
+decisions of G; and y0 ∈QTY  is the initial Y -state, where   such that ∀z ∈QAICGZ       : I(z) ⊆XK.
+y0 = {x0}.                                           The reader is referred to [15] for more details on the AIC.
+  Unless otherwise speciﬁed,  all BTSs in this paper are   Here we recall one important property of the AIC from [15].
+deﬁned w.r.t. the system model G. Intuitively, a BTS is a                                                      Theorem 1: A supervisor S is safe iff S ∈S(AIC(G)).
+game structure between the system (control decision) and                                                      Example 1: Consider the system G and the speciﬁcation
+the environment (event occurrence). Speciﬁcally, each Y -                             K in Fig. 1. We have that K ⊏G and state 7  is the
+state  is a system state from which control decisions are                                                         unique illegal state. Let Σo = {a, b} and Σc = {c1, c2}.
+made. Similarly, each Z-state is an environment state from                                                   Then the AIC for this system is shown in Fig. 1(c), which
+which observable events occur. The structure is bipartite due                                                                              is also a complete BTS. For the initial Y -state y0 = {0},
+to the alternating nature between control and observation.                                                    by making control decision {c1}, we will reach Z-state
+We denote by CT (y) the set of control decisions deﬁned                                                        z = ({0, 1}, {c1}). From z, both observable events a and
+at y ∈QTY  in T, i.e., CT (y) = {γ ∈Γ : hTY Z(y, γ)!}. For   b can occur. If a occurs, then the next Y -state is y1 = {3}.
+simplicity, hereafter, we also write y γ−→T z if z = hTY Z(y, γ)   At Y -state {3}, we can either choose to enable c1 or c2,
+and z σ−→T y if z = hTZY (z, σ). For two BTSs T1 and T2,   but we cannot make control decision {c1, c2}, since it will
+we have that hT1Y Z(y, γ) = hT2Y Z(y, γ) whenever they are   unobservably lead to illegal state 7. This is why this control
+deﬁned. Therefore, we will drop the superscript in hTY Z(y, γ)   decision is not deﬁned at {3} in the AIC.
+and write  it as hY Z(y, γ) and y γ−→z  if  it is deﬁned for
+some T; the same holds for hZY  and z σ−→y. We call   A. BTS Realization of Supervisor
+a sequence γ0σ1γ1σ2 . . . σnγn, where γi ∈Γ, σi ∈Σo, a      In general, there may be multiple control decisions deﬁned
+run. Then a BTS essentially generates a set of runs and we    at a Y -state in a BTS. We say that a complete BTS T
+denote by R(T, y) the set of runs generated by                                 T from                                                              state    is deterministic  if ∀y ∈QTY   : |CT (y)| =  1.  If T  is                                                  γ0                                                        σ1
+y ∈QTY , i.e., R(T, y) = {γ0σ1 . . . σnγn : y −→T y1 −→T    deterministic, then we denote by cT (y) the unique control
+      σn       γn
+z1 . . . −−→T zn −→T yn+1}.                                   decision deﬁned at y. A deterministic BTS includes a unique
+  Deﬁnition 1 provides the general deﬁnition of a BTS.   supervisor and we denote by ST  the unique supervisor
+However, for the purpose of control, we also want a BTS   included in T. Then T essentially is a ﬁnite realization of
+to be complete. Formally, we say a BTS T is complete if:     the supervisor ST .
+
+
+                                                                                          3
+
+                                                                   (or includes) SR. In order to verify whether or not SR is           0                     0
+       𝑎      𝑏              𝑎      𝑏           maximal, the idea is to “compare” TR with AIC(G) and to               𝑐1                           𝑐1
+                                                        check whether or not we can ﬁnd a supervisor included in
+        𝑏    𝑎                𝑏    𝑎
+    3     1     4        3     1     4         the AIC that is strictly more permissive than SR. In order to
+ 𝑐2 𝑐1                 𝑐2 𝑐1  𝑐2 𝑐1                 𝑐2 𝑐1   compare TR with AIC(G), we need to establish a formal
+    5            6        5     7     6         relationship between states in TR and states in AIC(G). This                                     𝑐2       𝑐1
+                                                                              is formalized by the notion of control simulation relation
+                                                   (CSR) deﬁned as follows.
+                 (a) K                                 (b) G                 Deﬁnition 4: (Control Simulation Relation). Let T1 and
+                                                     T2 be two BTSs. A relation Φ = ΦY ∪ΦZ ⊆(QT1Y ×QT2Y )∪            { }    𝑎              { }          {𝑐1}
+  3  , { }     3    0  , { }         0              0,1  , {𝑐1}     (QT1Z ×QT2Z ) is said to be a control simulation relation from
+         {𝑐1}                  𝑏                                𝑎, 𝑏     T1 to T2 if the following conditions hold:
+                                { }                       { }   3,5  , {𝑐1}   {𝑐2}    4       4  , { }   3,4  , { }       3,4          1. (y0, y0) ∈Φ;
+                  {𝑐1}       {𝑐2}                 {𝑐1}        {𝑐2}     2. For every (y1, y2) ∈ΦY we have that:
+                                                                            γ1                                            γ2
+    3,6  , {𝑐2}     4,5  , {𝑐1}   4,6  , {𝑐2}   3,4,5  , {𝑐1}   3,4,6  , {𝑐2}       y1 −→T1 z1 in T1 implies the existence of y2 −→T2 z2 in
+                                                       T2 such that γ1 ⊆γ2 and (z1, z2) ∈ΦZ;
+                             (c) The AIC AIC(G).
+                                                                     3. For every (z1, z2) ∈ΦZ we have that:
+Fig. 1.   For G, we have Σo = {a, b} and Σc = {c1, c2}. In the AIC,                                                               z1 σ−→T1 y1 in T1 implies the existence of z2 σ−→T2 y2 inrectangular states represent Y -states and oval states represent Z-states. For
+the sake of simplicity, uncontrollable events, e.g., a and b, are omitted in     T2 such that (y1, y2) ∈ΦY .
+each control decision in the ﬁgure. We also omit redundant events in each  We say that T1 is control-simulated by T2 or that T2 control-control decision, namely events that are not feasible within the unobservable
+reach, e.g., event c2 at Y -state {0}.                                  simulates T1, denoted by T1 ⪯T2, if there exists a control
+                                                              simulation relation from T1 to T2.
+                                                                           Intuitively,  the  control  simulation  relation  captures
+           0                  0                                                         whether or not T2  is able to match an arbitrary control         𝑎    𝑏                       { }
+                                                              decision made by T1 by  either taking the same control                        𝑎       𝑏
+        3     4       3      0  , { }     4                decision or a control decision that is strictly larger than the
+         𝑐1        𝑐2   {𝑐1}                      {𝑐2}           one made by T2 and maintain this ability for all possible
+        5     6     3,5  , {𝑐1}           3,6  , {𝑐2}             future behaviors.
+                                                        Given two BTSs T1 and T2, a relevant question is whether
+                 (a) R         (b) BTS TR s.t. S(TR) = {SR}
+                                                              or not there exists a CSR from T1 to T2. To answer this
+    Fig. 2.  Lower bound supervisor SR and its BTS realization TR.
+                                                                question, we deﬁne an operator
+  We say that a supervisor S is information-state-based (IS-
+                                                                        Y ×QT2Y ∪2QT1Z ×QT2Z →2QT1Y ×QT2Y ∪2QT1Y ×QT2Y   (6)based)  if ∀s, t ∈P(L(S/G)), we have that ISYS (s) =   F : 2QT1
+ISYS (t) ⇒S(s) = S(t). Given the system model G, a
+                                                              as follows. For any Φ = ΦY ∪ΦZ ⊆(QT1Y × QT2Y ) ∪(QT1Z ×supervisor S has a BTS realization, if and only if, S is an IS-
+                                                 QT2Z ), we havebased supervisor. Note that not all supervisors are IS-based,
+since a supervisor may issue different control decisions upon    1. (y1, y2) ∈F(ΦY ) if (y1, y2) ∈ΦY and for any transition
+                                                                            γ1                                 γ2
+different visits to the same Y -state. However, the following      y1 −→T1 z1 in T1, there exists y2 −→T2 z2 in T2 such
+result reveals that, by suitable state-space reﬁnement, any       that γ1 ⊆γ2 and (z1, z2) ∈ΦZ.
+ﬁnite memory supervisor can be expressed as an IS-based    2. (z1, z2) ∈F(ΦZ) if (z1, z2) ∈ΦZ and for any transition
+supervisor; therefore, it can be realized by a BTS.               z1 σ−→T1 y1 in T1, there exists z2 σ−→T2 y2 in T2 such that
+  Proposition 1: Let SR be a supervisor and R be an       (y1, y2) ∈ΦY .
+automaton such that L(SR/G) = L(R). If R ⊑G, then      Proposition 2: The operation F has following properties
+supervisor SR is an IS-based supervisor.                                                                     1. Φ is a control simulation relation from T1 to T2, if and
+  Based on the above result, hereafter we assume w.l.o.g.                                                             only if, Φ ⊆F(Φ) and (y0, y0) ∈Φ;
+that R ⊑G. Therefore SR is an IS-based supervisor and it                                                                     2. Φ1 ⊆Φ2 ⇒F(Φ1) ⊆F(Φ2).
+can be realized by a deterministic BTS, denoted by TR.                                                    The above results have the following implications. First,
+  Example 2: Let us consider the lower bound speciﬁcation                                                               since Φ ⊆F(Φ) for any CSR Φ, we know that the maximal
+R generated by automaton R shown in Fig. 2(a). Since R ⊑                                                                    relation Φ is a ﬁxed-point of operator F, i.e., F(Φ) = Φ.
+G, we know that supervisor SR achieving R can be realized                                                      Note that F(Φ) ⊆Φ always holds. By the second property
+by the deterministic BTS TR shown in Fig. 2(b).                                                                   in Proposition 2, we know that F  is monotone. Therefore,
+                                                    by Tarski’s ﬁxed-point theorem, we know that the supremal
+          V. CONTROL SIMULATION RELATION
+                                                           ﬁxed-point of F, denoted by Φ∗(T1, T2), exists and  it can
+  Let us return to Problem 1, in which R  is the lower   be computed as follows
+bound speciﬁcation, SR is the corresponding supervisor that
+                                                                                Y × QT2Y ) ∪(QT1Z × QT2Z ))  (7)achieves R, and TR is the deterministic BTS that realizes                                                        Φ∗(T1, T2) = k→∞Flim   k((QT1
+
+                                                                                          4
+
+In other words, Φ∗(T1, T2) is a maximal control simulation    By Theorems 2 and 3, it is clear that, in order to verify
+relation from T1 to T2 if (y0, y0) ∈Φ∗(T1, T2). Otherwise,   whether or not SR is maximal, we need to ﬁrst compute the
+T1̸ ⪯T2  if  (y0, y0)̸ ∈Φ∗(T1, T2). This  is  similar  to   maximal control simulation relation Φ∗(TR, AIC(G)) from
+the standard simulation relation; see, e.g., [11]. Note that  TR to AIC(G). Then we need to check, for each Y -state y
+the limit in Equation (7) can be achieved within at most    in TR, whether or not there exists a (y, T)-replacement by
+|QT1Y ||QT2Y  | + |QT1Z ||QT2Z | iterations.                          using Φ∗(TR, AIC(G)). If not, then the supervisor SR  is
+                                                        maximal. The above procedure is formally summarized by
+          VI. VERIFICATION OF MAXIMALITY                                                        Algorithm MAX-VER. The overall complexity of Algorithm
+  In this section, we show how to verify maximality using  MAX-VER is O(22|X|+2|Σc|), since it takes O(22|X|+2|Σc|)
+the notion of CSR.                                               to compute Φ∗(TR, AIC(G)) and O(2|X| × 2|Σc|) to check
+   First, we introduce the notion of control replacement.         all possible control decisions for each Y -state.
+  Deﬁnition 5: Let T be a deterministic BTS. Then we say
+that γ ∈Γ is a control replacement for T at y ∈QTY  (or a    Algorithm 1: MAX-VER(TR, AIC(G))
+(y, T)-replacement) if cT (y) ⊂γ and
+                                                                             1 Compute Φ := Φ∗(TR, AIC(G));
+   (∀cT (y)σ1γ1 . . . σnγn ∈R(T, y))                     (8)       2 for y ∈QTRY  do
+   (∃γσ1γ′1 . . . σnγ′n ∈R(AIC(G), y))[γi ⊆γ′i, ∀i ≤n]           3     for γ ∈CAIC(G)(y) : cTR(y) ⊂γ do
+  When γ is a (y, T)-replacement, this implies that if we       4            if (hY Z(y, cTR(y)), hY Z(y, γ)) ∈Φ then
+replace the original control decision deﬁned  at y  in T,       5           return “No” and y;
+cT (y), by γ, then we are  still able to (safely) match  all
+behaviors generated by T in the future. It worth noting that       6 return “Yes”;
+not every decision γ ∈CAIC(G)(y) such that cT (y) ⊂γ is
+a (y, T)-replacement. This is because enabling more events                                                      Example 3: Let us return  to the system G shown  in
+may introduce more uncertainty and the supervisor must be                                                                  Fig. 1(b) and the lower bound automaton R shown  in
+more conservative in the future in order to maintain safety.
+                                                                  Fig. 2(a). The corresponding BTS TR that realizes SR and
+We see that the deﬁnition of control replacement is very                                                                the AIC AIC(G) have already been shown in Figs. 2(b)
+similar to that of CSR. In fact, the following theorem reveals
+                                                      and 1(c), respectively. Let us consider the initial Y -state y0 =
+that checking whether or not a control decision is a (y, T)-
+                                                    {0} in TR. Clearly, control decision {c1} ∈CAIC(G)(y0)
+replacement can be done by using the CSR.
+                                                                              is a (y0, TR)-replacement. For example,  if we replace the
+  Theorem 2: Let T be a deterministic BTS and y ∈QTY be    original control decision cTR(y0) = {} by {c1}, then after
+a Y -state. Then γ ∈CAIC(G)(y) is a (y, T)-replacement, if                                                           observing event a Y -state {3, 4} is reached and we can still
+and only if, cT (y) ⊂γ and (z, z′) ∈Φ∗(T, AIC(G)), where                                                               take control decision {c1} that was originally deﬁned at state
+z = hY Z(y, cT (y)) and z′ = hY Z(y, γ).                                                    {3} in order to maintain safety. Similarly, if event b occurs,
+  We are now ready to present the theorem that provides a                                                            then Y -state {3, 4} is reached and we can still take control
+necessary and sufﬁcient condition for maximality.                                                              decision {c2} which is deﬁned at {4} in TR. Therefore, we
+  Theorem 3: Let S be an IS-based supervisor and T be the                                               know that SR is not a maximal solution.
+deterministic BTS s.t. S(T) = {S}. Then S is maximal iff
+                                                                VII. THE ROLE OF STRICT SUB-AUTOMATON
+(∀y∈QTY )(∀γ ∈CAIC(G)(y))[γ is not a (y, T)-replacement]
+                                                    The proof of Theorem 3 is constructive. Speciﬁcally, we     Proof:  (Sketch only)
+                                                                construct a new supervisor S′ such that L(S′/G) is strictly  (⇒) By contraposition. Suppose that there exists a Y -
+                                                                   larger than L(S/G). However,  this  is not sufﬁcient  for
+state y ∈QTY  and a control decision γ ∈CAIC(G)(y))                                                                the purpose of synthesis, since S′  is deﬁned in terms of
+such that γ is a (y, T)-replacement. We construct supervisor
+                                                           languages and  it is  still not clear how to realize this S′.S′ : P(L(G)) →Γ as follows:
+                                               One may conjecture that there always exists an IS-based
+    S(t),   if t ∈P(L(S/G))∧                        supervisor that is strictly more permissive than a given IS-
+                 S (t)̸=y ∨(∃s∈{t}\{t} : ISYS (s)=y)]   based supervisor if it is not maximal. However, this is not         [ISYS′(t)=    γ,       if t ∈P(L(S/G)) ∧ISYS (t) = y              true. One can check that supervisor SR, which is realized
+                                             BTS                                                                                in Fig.                                                                                          2(b),                                                                                                              is a                                                                             maximal                                                                                                 IS-based                                                                                                               supervisor                                                  TR                                 S (s)̸ = y]           by
+                                                                               (w.r.t.                                                                       the                                                                                   state                                                                         space                                                                                     of G),                                                                                              since                                                                      we cannot                                                                                        ﬁnd                                                                                                               another    Σuc,  ∧(∀selse ∈{t} \ {t})[ISY
+                                                            (9)  BTS T ′ such that TR ⪯T ′. However, we have already shown
+For the above constructed S′, we can show that L(S/G) ⊂    in Example 3 that SR is not a maximal supervisor.
+L(S′/G) ⊆K. Therefore, S is not a maximal solution.        The reason why there may not exist an IS-based supervisor
+  (⇐) By contraposition. Suppose that ∃S′ ∈S(AIC(G))    that is more permissive than a non-maximal IS-based super-
+such that L(S/G) ⊂L(S′/G). Then ∃t ∈P(L(S/G)) such    visor is explained as follows. It is possible that two different
+that S(t) ⊂S′(t) and S(t′) = S′(t′), ∀t′ ∈{t} \ {t}. We   information states under the original control strategy can be
+know that ISYS (t) = ISYS′(t); call this Y -state y. Then we   merged as a single information state under the new (more
+can show that S′(t) is a (y, T)-replacement.                   permissive) control strategy. As a consequence, information
+
+
+                                                                                          5
+
+              0
+          𝑎        𝑏                   𝑐1
+            𝑏   𝑎                               { }    𝑎              { }          {𝑐1}           𝑎            { }
+     3   3’    1    4’   4        3  , { }     3     0  , { }         0              0,1  , {𝑐1}          3,4′        3,4′  , { }
+           𝑐1  𝑐2      𝑐1  𝑐2                    {𝑐1}                                                  𝑏                       𝑏                  {𝑐2}  𝑐2  𝑐1                              𝑐2 𝑐1
+         5’         6’                                                3,5  , {𝑐1}  {𝑐2}     4    { }  4  , { }   3′, 4  , { }  { }   3′, 4          {𝑐1}
+                                                                                                                                                       3,4′, 6′  , {𝑐2}               𝑐2   𝑐1                                      {𝑐1}       {𝑐2}                 {𝑐1}          {𝑐2}
+     5     𝑐2  7   𝑐1    6             3,6′  , {𝑐2}    4,5′  , {𝑐1}  4,6  , {𝑐2}   3′, 4,5′  , {𝑐1}   3′, 4,6,6′  , {𝑐2}    3,4′, 5,5′  , {𝑐1}
+
+                    (a) K′ and G′                                                                (b) AIC(G′)
+                       Fig. 3.   In Figure 3(a), G′ is the entire automaton and K′ is obtained by removing illegal state 7 from G′.
+
+
+is lost by using the newly reached information state. We call    Algorithm 2: GROW(TR, AIC(G))
+this phenomenon information merge. For example, for BTS
+                                                                             1  if MAX-VER(TR, AIC(G))=“Yes” then
+TR shown in Fig. 2(b),  if we replace the original control                                                                             2    return T ∗←TR
+decision {} deﬁned at the initial state by {c1}, then the two                                                                        else
+different Y -states {3} and {4} in TR, which are reached by                                                                             3     Let ˜y be the Y -state returned by MAX-VER and
+observing a and b, respectively, are merged as a single state
+                                                                       ˜γmax be a locally maximal
+{3, 4}. However, simply knowing state {3, 4} is not sufﬁcient
+                                                                                                    (˜y, TR)-replacement;
+for making control decisions in order to contain the original
+                                                                             4   QYT ∗←{y0}, QZT ∗←∅;behavior. To ﬁnd an IS-based solution, state {3, 4} has to be                                                                             5    DoDFS(y0, T ∗);
+split into two states: one is reached by observing a and the                                                                             6    return T ∗;
+other is reached by observing b.
+  Let y ∈2X be an information state. We denote by y|R   procedureDoDFS(y, T ∗);
+the restriction of y to the state space of R,  i.e., XR. The       7  if y|R̸ = ∅then
+following result says that the state merging phenomenon       8       if y = ˜y then
+described above will not occur when R ⊏K.                        9       Act ←˜γmax;
+  Lemma 1: Assume that R ⊏K ⊏G. Then for any            else
+supervisor S′ s.t. R = L(R) ⊂L(S′/G), we have that           10       Act ←cTR(y|R);
+1. ∀s∈P(R) : ISYS′(s)|R = ISYSR(s);                                else
+2. ∀s, t∈P(R) : ISYSR(s)̸=ISYSR(t)⇒ISYS′(s)̸=ISYS′(t).        11    Find a locally maximal control decision Act s.t.
+  Recall that we have assumed in Section IV-A that R ⊑G.                                                        ∀γ ∈CAIC(G)(y) : Act̸ ⊂γ;
+Based on Lemma 1, hereafter, we assume w.l.o.g. that R ⊏
+                                                                            12 z ←hY Z(y, Act);K ⊏G, which implies that XK ⊆XG ⊆X.
+                                                                                   Act          ∗
+  Example 4: Let us return to the running example. The      13 Add transition                                                                     y −−→z to hTY Z;
+                                                                                       ∗
+                                                                     thenautomata R and K in Fig. 1 do not satisfy the assumption      14  if z /∈QT                                                                                   ∗ Z
+that R ⊏K. Therefore, we reﬁne the state-spaces of K and      15   QTZ ←QTZ ∗ ∪{z};
+G and obtain new automata K′ and G′ shown in Fig. 3(a)      16     for σ ∈Σo : hZY (z, σ)! do
+such that R ⊏K′ ⊏G′, L(K) = L(K′) and L(G) =      17         y′ ←hZY (z, σ);
+L(G′). The AIC for the reﬁned system is shown in Fig. 3(b).      18      Add transition                                                                                z σ−→y′ to hTZY∗ ;
+                                                                                                ∗
+We see that the original state {3, 4} in AIC(G) splits into      19            if y′ /∈QT                                                                            then                                                                                            ∗ Y
+two states {3′, 4} and {3, 4′} in AIC(G′).                         20        QTY ←QTY ∗ ∪{y′};
+                                                                            21          DoDFS(y′, T ∗);       VIII. SYNTHESIS OF A LARGER SOLUTION
+
+  We tackle synthesis Problem 2 in this section. We continue
+to denote by SR the IS-based supervisor that achieves R and                                            L(SR/G) ⊂L(S′/G). First, we apply Algorithm MAX-
+by TR the deterministic BTS that realizes SR. Suppose that                                       VER to check whether or not SR is maximal. If not, then
+S′ is a new supervisor such that L(SR/G) ⊂L(S′/G). Let                                       MAX-VER will return a Y -state, denoted by  ˜y. Therefore,
+y = ISYS′(s) for some s ∈P(L(S′/G)). If y|R = ∅, then  we can replace the original control decision at  ˜y by some
+it implies that  s̸ ∈P(L(R)). In other words, the supervisor
+                                                                   larger control decision in CAIC(G)(˜y). We denote by ˜γmax ∈
+knows for sure that the system has already gone outside the
+                                                         CAIC(G)(˜y) a locally maximal (˜y, TR)-replacement, i.e.,
+lower bound language. If y|R̸ = ∅, then the supervisor is not
+sure whether or not the system has already gone outside R.   ∀γ ∈CAIC(G)(˜y) : γ is a (˜y, TR)-replacement ⇒˜γmax̸ ⊂γ
+In this case, according to Lemma 1, y|R uniquely determines
+a corresponding Y -state ISYSR(s) under SR.                  Next, we construct a new deterministic BTS T ∗in which
+  Based on  the above  discussion, Algorithm GROW  is    the original control decision at ˜y is replaced by ˜γmax. More
+proposed in order to synthesize a safe supervisor S′ such that    speciﬁcally, T ∗is constructed by a depth-ﬁrst search from
+
+
+                                                                                          6
+
+the initial Y -state according to the following rules: for each   make sure that the assumption that R ⊏K ⊏G holds. As
+Y -state y encountered:                                      a consequence, state space reﬁnement of G may be required
+1.  If y|R =  ∅, then we take a locally maximal control   and the size of the new AIC may be larger than the previous
+                                                             one. Therefore, the solution space may be unbounded. So far,   decision in the AIC, since we know for sure that the
+   string is already outside of P(L(R)) and there is no need  we have not elucidated if or when ﬁnite convergence occurs;
+                                                                        this is an important topic for future work.   to match the lower bound behavior.
+2.  If y|R̸ = ∅and y = ˜y, then we take control decision ˜γmax                     IX. CONCLUSION
+   to replace the original one.
+                                         We have presented new results on the veriﬁcation and
+3.  If y|R̸ = ∅and  y̸ =  ˜y, then we take the same control
+                                                                synthesis of maximally permissive supervisors in  partial-
+   decision taken by SR at y|R, i.e., cTR(y|R).
+                                                          observed DES. First, we provided an algorithm to verify
+The above three rules and the depth-ﬁrst search are imple-                                                         whether or not a supervisor is maximal. If the answer to
+mented by procedure DoDFS, in which a recursive call is                                                                the veriﬁcation problem is negative, then an algorithm was
+made in order to to traverse the entire state space. Since there                                                         proposed in order to synthesize a supervisor that  strictly
+are at most 2|X|+|Σc| + |Σo| × 2|X|+|Σc| transitions in T ∗,                                                              contains the behavior generated by the given non-maximal
+the complexity of procedure DoDFS is O(|Σo| × 2|X|+|Σc|).                                                                  supervisor.
+Moreover,  it  takes O(22|X|+2|Σc|)  to execute Algorithm
+MAX-VER. Therefore, the entire complexity of Algorithm                    REFERENCES
+GROW is O(22|X|+2|Σ|).                                                    [1] N. Ben Hadj-Alouane, S. Lafortune, and F. Lin.  Centralized and
+  We illustrate Algorithm GROW by the following example.           distributed algorithms for on-line synthesis of maximal control policies
+                                                                            under partial observation.  Discrete Event Dynamic Systems: Theory
+  Example 5: Let us return to the running example. The     & Applications, 6(4):379–427, 1996.
+inputs of Algorithm GROW are TR and AIC(G′) shown      [2] R. Brandt, V. Garg, R. Kumar,  F.  Lin,  S.I. Marcus, and W.M.
+                                                                Wonham. Formulas for calculating supremal controllable and normal
+in Figs. 2(b) and 3(b), respectively. By executing Algorithm                                                                                sublanguages. Syst. & Contr. Lett., 15(2):111–117, 1990.
+MAX-VER, as shown in Example 3, we know that SR is      [3] K. Cai, R. Zhang, and W.M. Wonham.  Relative observability of
+not maximal and it returns Y -state ˜y = {0}. Then we start          discrete-event systems and its supremal sublanguages. IEEE Trans.
+                                                                          Autom. Control, 60(3):659–670, 2015.
+procedure DoDFS from the initial Y -state y0 = {0}. Since                                                                                     [4] C.G. Cassandras and S. Lafortune.  Introduction to Discrete Event
+{0}|R̸ = ∅= ˜y, we take a locally maximal control replace-          Systems. Springer, 2nd edition, 2008.
+ment, say ˜γmax = {c1}, and move to Z-state ({0, 1}, {c1}).      [5] H. Cho and  S.I. Marcus.  On supremal languages of classes of
+                                                                              sublanguages that arise in supervisor synthesis problems with partial
+Then we need to consider all possible event occurrences from                                                                                     observation. Math. Contr. Sig. Syst., 2(1):47–69, 1989.
+this Z-state. If a occurs, then Y -state {3, 4′} is reached.      [6] R. Cieslak, C. Desclaux, A.S. Fawaz, and P. Varaiya.  Supervisory
+Since {3, 4′}|R = {3}̸ =  ∅̸ =  ˜y, we need to take control          control of discrete-event processes with partial observations.  IEEE
+                                                                                   Trans. Autom. Control, 33(3):249–260, 1988.
+decision cTR({3}) = {c1} that is originally deﬁned in TR.      [7] K. Inan. Nondeterministic supervision under partial observations. In
+Similarly, we need to take control decision {c2} if Y -state         11th Int. Conf. Analy. Optim. Syst.: Discr. Event Syst., pages 39–48.
+{3′, 4} is reached. The above procedure yields a deterministic          Springer, 1994.
+                                                                                     [8]  F. Lin and W.M. Wonham. On observability of discrete-event systems.BTS T ∗, which is the part highlighted in Fig. 3(b).                                                                                  Inform. Sciences, 44(3):173–198, 1988.
+  Now we present the correctness of Algorithm GROW.          [9]  P.J. Ramadge and W.M. Wonham. Supervisory control of a class of
+  Theorem 4: Let T ∗be the BTS returned by Algorithm           discrete event processes. SIAM J. Cont. Opt., 25(1):206–230, 1987.
+                                                                              [10] K. Rudie and W.M. Wonham. The inﬁmal preﬁx-closed and observable
+GROW and ST ∗be the unique supervisor included in T ∗.         superlanguange of a given language. Syst. & Contr. Let., 15(5):361–
+Then we have that: (i) ST ∗is a safe supervisor; and (ii) if         371, 1990.
+SR is not maximal, then L(SR/G) ⊂L(ST ∗/G).                [11]  P. Tabuada. Veriﬁcation and Control of Hybrid Systems: A Symbolic
+                                                                            Approach. Springer, 2009.
+  Remark 1: By Theorem 4, we know that Problem 2 is    [12]  S. Takai and T. Ushio.  Effective computation of an Lm(G)-closed,
+solved by Algorithm GROW. However, Problem 2 only           controllable, and observable sublanguage arising in supervisory con-
+requires  to synthesize a supervisor  that  is  strictly more             trol. Syst. & Contr. Let., 49(3):191–200, 2003.
+                                                                              [13] X. Yin and S. Lafortune.  A general approach  for synthesis of
+permissive than SR and the synthesized supervisor may still          supervisors for partially-observed discrete-event systems. In 19th IFAC
+not be maximal. Therefore, one may also be interested in the         World Congress, pages 2422–2428, 2014.
+following problem:                                                       [14] X. Yin and S. Lafortune.  Synthesis of maximally permissive non-
+                                                                                blocking supervisors for partially observed discrete event systems. In
+  “Given  a  non-maximal  supervisor  SR  such   that         53rd IEEE Conf. Decision and Control, pages 5156–5162, 2014.
+L(SR/G) ⊆K, ﬁnd a maximal supervisor S such that    [15] X. Yin and S. Lafortune. Synthesis of maximally permissive supervi-
+L(SR/G) ⊂L(S/G).”                                                         sors for partially observed discrete event systems. IEEE Trans. Autom.                                                                                         Contr., 2016. Doi 10.1109/TAC.2015.2460391.
+  The solution to Problem 2 provides a straightforward way    [16] X. Yin and  S.  Lafortune.  A uniform approach  for  synthesiz-
+to ﬁnd a solution to the above problem, namely, we can          ing  property-enforcing  supervisors  for  partially-observed  discrete-
+                                                                                  event  systems.    IEEE  Trans.  Autom.  Contr.,  2016.    Doikeep growing the behavior generated by the supervisor by
+                                                                           10.1109/TAC.2015.2484359.
+iteratively applying Algorithm GROW. If this iteration ter-    [17]  T.-S. Yoo and S. Lafortune.  Solvability of centralized supervisory
+minates, then the solution obtained is a maximal solution that          control under partial observation.  Discrete Event Dynamic Systems:
+                                                                          Theory & Applications, 16(4):527–553, 2006.contains R. However, it is not straightforward to determine if
+this approach will terminate in a ﬁnite number steps. This is
+because, each time we apply Algorithm GROW, we need to
+
+
+                                                                                          7

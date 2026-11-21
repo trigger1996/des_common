@@ -1,0 +1,1203 @@
+             VERIFICATION OF DIAGNOSABILITY FOR CYBER-PHYSICAL SYSTEMS: A
+                      HYBRID BARRIER CERTIFICATE APPROACH
+
+
+                          BINGZHUO ZHONG1∗, WEIJIE DONG2∗, XIANG YIN2, AND MAJID ZAMANI3
+
+
+                       Abstract. Diagnosability is a system theoretical property characterizing whether fault occurrences in a system
+                        can always be detected within a finite time. In this paper, we investigate the verification of diagnosability
+                              for cyber-physical systems with continuous state sets. We develop an abstraction-free and automata-based2024                  framework to verify (the lack of) diagnosability, leveraging a notion of hybrid barrier certificates. To this end,
+                     we first construct a (δ,K)-deterministic finite automaton that captures the occurrence of faults targeted for
+                            diagnosis. Then, the verification of diagnosability property is converted into a safety verification problem
+                           over a product system between the automaton and the augmented version of the dynamical system. WeAug                   demonstrate that this verification problem can be addressed by computing hybrid barrier certificates for the
+13                   productand counter-examplesystem. To thisguidedend, inductivewe introducesynthesistwo systematicto search methods,for such certificates.leveraging sum-of-squaresAdditionally, programmingif the system
+                                    is found to be diagnosable, we propose methodologies to construct a diagnoser to identify fault occurrences
+                              online. Finally, we showcase the effectiveness of our methods through a case study.
+
+
+
+                                                                     1. Introduction[eess.SY]
+                  1.1. Motivation. Complex cyber-physical systems (CPSs), including intelligent transportation systems and
+              manufacturing systems, are fundamental to safety-critical infrastructure. Nevertheless, these systems often
+               experience failures that are challenging to detect due to the multitude of internal components and subsystems
+               operating concurrently. This complexity renders fault diagnosis and detection essential yet challenging tasks,
+             which are crucial for ensuring safety and functionality over complex CPSs.
+
+            To tackle these challenges, assessing the diagnosability of complex CPSs is pivotal. Diagnosability, which
+             was first introduced in [1], is a type of information-flow properties that determines whether or not faults
+              within a system can be conclusively identified within a finite time frame after their occurrences. Analyzing
+                diagnosability provides several advantages [2].  For example, in the design phase of CPSs, results from
+                diagnosability analysis help optimizing sensor placement and the development of built-in tests, enhancing
+                 later fault diagnosis and detection. For operational systems, these results inform improvements in diagnostics
+             and maintenance scheduling. Therefore, a deeper understanding on the diagnosability of CPSs allows for a
+                 cost-effective assessment of trade-offs among reliability, functionality, and diagnosability.
+
+               Building upon the foundational study in [1], the field of diagnosability analysis has been extensively investigated,arXiv:2408.06982v1
+                 especially within the context of discrete event systems (DES), which are characterized by event-driven dynamics
+             and a discrete set of states, including Petri nets [3–9], stochastic automata [10–12], and finite state automata
+                [13–15]. Note that these works mainly focus on exploring diagnosability utilizing event-based observation
+              models, whose outputs are symbolically distinct and tagged with unique labels. However, in many real-world
+                 applications, system outputs are typically continuous-space physical signals rather than discrete event sequences.
+            Due to the interference of measurement noise in these signals, identifying two continuous signals with absolute
+              accuracy are difficult, making it challenging to apply the traditional framework of diagnosability devised for
+          DES to systems with continuous-space outputs.
+
+            To bridge this gap, research efforts have expanded the concept of diagnosability to encompass systems operating
+                in continuous state sets [16–19]. Specifically, [19] explored diagnosability in hybrid systems that exhibit both
+
+                  ∗Both authors contributed equally to this research.
+                                                                            1
+
+2                BINGZHUO ZHONG1∗, WEIJIE DONG2∗, XIANG YIN2, AND MAJID ZAMANI3
+
+continuous and discrete dynamics by representing mode switches as discrete events. The authors in [17]
+introduced and verified a new notion of diagnosability for hybrid systems by abstracting them into timed
+automata. This method was further refined in [18], which incorporated assessments of the impacts of time
+delays and measurement uncertainties on fault detection. Additionally, [16] proposed the concept of approximate
+diagnosability for metric systems, accounting for inprecision in output measurements. The assessment of this
+approximate diagnosability was then conducted using a finite-state model, established through an approximate
+simulation relation [16]. However, this method faces significant challenges due to the curse of dimensionality,
+particularly because it requires discretizing the continuous state and input sets to build a finite abstraction of
+the system.
+
+
+1.2. Contribution. In this paper, we explore the concept of δ-approximate K-diagnosability in the context of
+discrete-time control systems, extending the notion of K-diagnosability, as introduced in [20], to metric systems.
+This requires that all faults should be detectable within a maximum of K time steps after they occur. As we
+do not have any prior knowledge of whether or when faults will occur, the primary challenge in abstraction-free
+verification lies in accurately tracking faults and recording the time elapsed since their occurrence without
+relying on a finite abstraction of the original system.
+
+To address these challenges, we construct a deterministic finite automaton ((δ, K)-DFA) that effectively
+monitors fault occurrences and the elapsed time since their occurrence, independent of when the fault occurs.
+Subsequently, through integrating this automaton with an augmented version of the discrete-time control
+system to construct a product system, we establish the necessary and sufficient conditions under which the
+control system achieves δ-approximate K-diagnosability. Note that these conditions also provide a uniform
+framework for verifying (the lack of) δ-approximate K-diagnosability over both discrete-event systems and
+continuous-space systems, regardless of using discretization-based or discretization-free approaches. Based
+on these conditions, the verification of (the lack of) δ-approximate K-diagnosability is refined into a safety
+verification problem over the product system, which is essentially a hybrid system. To solve such a safety
+verification problem, we leverage the notion of hybrid barrier certificates introduced in [21] and propose two
+methodologies for computing these certificates, grounded in the counterexample-guided inductive synthesis
+(CEGIS) framework and sum-of-squares (SOS) programming. Additionally, we propose the construction of a
+diagnoser capable of detecting faults when the system is shown to be δ-approximate K-diagnosable.
+
+A limited subset of the results in this paper has been presented in [22]. Here, we provide detailed proofs of
+the results in [22] that were omitted. Apart from the verification of diagnosability, here, we also propose
+methodologies to verify the lack of δ-approximate K-diagnosability via hybrid barrier certificates. Accordingly,
+we propose two computational schemes, namely CEGIS-based and SOS-based schemes, to compute hybrid
+barrier certificates to verify (the lack of) diagnosability. Furthermore, construction of a diagnoser that detects
+fault is provided, which was missing in [22].
+
+
+1.3. Related Works. Since diagnosability is a class of information-flow properties, it is important to highlight
+various different approximate notions of information-flow properties. For example, to enhance security measures,
+the concept of approximate opacity was proposed for metric systems in [23] and subsequently extended for
+discrete-time stochastic systems in [24]. Focusing on state estimation, approximate observability was investigated
+for discrete-time nonlinear systems in [25]. These results typically require the construction of finite abstractions
+from the original systems, which can lead to scalability issues due to the discretization of continuous state and
+input sets. To overcome these limitations, discretization-free methods were introduced in [26,27], which employ
+barrier certificates to ascertain approximate opacity. It is crucial to note that these methodologies essentially
+address different information-flow properties than those discussed in this paper.
+
+Additionally, we would also like to mention the results in [28], which showed that diagnosability over DES can be
+formulated as HyperLTL properties by proper system transformation over the original DES, and in [29], which
+focused on a class of HyperLTL property called conditional invariance. They showed that the verification of
+such properties can be solved by exploiting the automata-based structures associated with the complements of
+
+                   VERIFICATION OF DIAGNOSABILITY FOR CYBER-PHYSICAL SYSTEMS                       3
+
+these properties. However, δ-approximate K-diagnosability does not fall into the class of conditional invariance.
+Moreover, it is still an open problem for how to perform the system transformation introduced in [28] over
+the DES to systems with continuous or hybrid state and input sets without building finite abstractions. To
+the best of our knowledge, the current work as well as its preliminary version [22] are the first to propose
+methodologies that does not require abstractions for verifying δ-approximate K-diagnosability for discrete-time
+continuous-space systems.
+
+
+1.4. Organization. The remainder of the paper is organized as follows.  Section 2 introduces notations,
+foundational models, and problem formulation of this paper.  Section 3 details the construction of a (δ,
+K)-deterministic finite automaton that is employed to verify the δ-approximate K-diagnosability property,
+leveraging the notion of hybrid barrier certificates. Section 4 elaborates two methods for calculating hybrid
+barrier certificates, specifically through the use of the CEGIS framework and SOS programming techniques.
+In Section 5, we describe the construction of a diagnoser based on the system satisfying the δ-approximate
+K-diagnosability conditions. A case study demonstrating the efficacy of our approaches is presented in Section
+6. Lastly, the paper concludes with Section 7.
+
+
+                                              2. Problem Formulation
+
+2.1. Notations. We denote by R and N the set of real numbers and non-negative integers, respectively. These
+symbols are annotated with subscripts to restrict them in the usual way, e.g., R>0 denotes the set of positive
+real numbers. For a, b ∈R (resp. a, b ∈N) with a ≤b, the closed, open and half-open intervals in R (resp.
+N) are denoted by [a, b], (a, b), [a, b), and (a, b], respectively. Moreover, Rn×m, with n, m ∈N≥1, denotes the
+vector space of real matrices with n rows and m columns. Given N ∈N≥1 vectors xi ∈Rni, with i ∈[1; N],
+ni ∈N≥1, and n=Pi ni, we denote the concatenated vector in Rn by x=[x1;. . .; xN] and the Euclidean norm
+of x by ∥x∥. Given a set X, we denote by 2X the power set of X. Given a matrix A, we denote by A⊤
+and Ar(i) the transpose and the i-th row of A, respectively. Considering a set Y , Y ∗denotes the Cartesian
+product of a finite number of Y . Given sets X and Y , the complement of X with respect to Y  is defined
+as Y \ X = {x ∈Y  : x /∈X}. Given functions f : X →Y and g : A →B, we define f × g : X × A →Y × B as
+(f × g)(x, a) = (f(x), g(a)).
+
+
+2.2. Preliminaries. In this paper, we focus on discrete-time control systems defined as below.
+
+Definition 2.1. A discrete-time control system (dt-CS) is a tuple Σ := (X, X0, XF , U, f, Y, h), where X ⊂Rn,
+X0 ⊆X, XF ⊂X, U ⊂Rm, and Y ⊂Rq denote the state set, initial state set, faulty state set, input set, and
+output set, respectively, which are bounded. Moreover, the function f : X × U →X and h : X →Y are the
+state transition function and the output function, respectively.
+
+
+Equivalently, a dt-CS Σ can be described by
+
+                                   x(k + 1) = f(x(k), ν(k)),
+                    Σ :                                                                         (2.1)                                         y(k) = h(x(k)),      k ∈N,
+
+where x(k) ∈X, ν(k) ∈U, and y(k) ∈Y are the state, input, and output of the system at time step k, respec-
+tively. Additionally, we denote by ν := (ν(0), . . . , ν(k), . . .) an input run of Σ, by xx0,ν := (x(0), . . . , x(k), . . .)
+a state run of Σ starting from initial state x0 under input run ν, i.e., x(0) = x0, x(k + 1) = f(x(k), ν(k)),
+∀k ∈N, and by yx0,ν the output run corresponding to xx0,ν.
+
+A state run xx0,ν is deemed a faulty run if it visits the set of faulty states XF ⊂X, which means there exists
+i ∈N such that xx0,ν(i) ∈XF . Here, we say that a fault occurs if the system’s run visits the faulty state set
+for the first time. It is important to note that XF can represent either a physically unsafe region or a region
+where a task violation is detected. In the interest of safety, it becomes imperative to diagnose the occurrence
+of a fault in a timely manner, preventing the possibility of cascading disasters. It is worth mentioning that the
+
+4                BINGZHUO ZHONG1∗, WEIJIE DONG2∗, XIANG YIN2, AND MAJID ZAMANI3
+
+repair of faults is not considered in this work. In other words, once the system enters a faulty state, it remains
+faulty indefinitely, even if it subsequently exits the faulty state set.
+
+In most cases, the output run cannot be measured perfectly due to measurement noises. Therefore, we assume
+that the output run can only be observed imprecisely. Considering the actual output run yx0,ν, one has
+                                         ||yx0,ν(k) −yδx0,ν(k)|| ≤δ, ∀k ∈N,                                   (2.2)
+in which δ ∈R≥0 represents the observation precision and yδx0,ν is the actual observation associated with yx0,ν
+that is available. Given an observation precision δ, a fundamental question is whether or not faults in the
+dt-CS as in Definition 2.1 can always be diagnosed. This leads to the notion of δ-approximate K-diagnosability,
+which is formally defined below.
+Definition 2.2. Consider a dt-CS Σ = (X, X0, XF , U, f, Y, h). Given a constant δ ∈R>0, and K ∈N, Σ is
+said to be δ-approximate K-diagnosable, if for all xx0,v := (x0, . . . , xk, . . .) such that x0 ∈X0, xk ∈XF , and
+xi /∈XF , ∀i ∈[0, k −1]; and for all ˆxˆx0,ˆv := (ˆx0, . . . , ˆxk, . . .) such that ˆx0 ∈X0, and ˆxi /∈XF , ∀i ∈[0, k + K],
+one has maxi∈[0,k+K] ||h(xi) −h(ˆxi)|| > δ.
+
+Intuitively, K ∈N represents the maximal time window following a fault occurrence at time k, within which
+the fault must be diagnosed. To verify whether or not a dt-CS is δ-approximate K-diagnosable, the notion of
+deterministic finite automata [30] is leveraged, which is introduced below.
+
+Definition 2.3. (DFA) A deterministic finite automata (DFA) is a tuple A =(Q, q0, Π, τ, F), in which Q
+is a finite set of states, q0 ∈Q is the initial state, Π is a finite set of alphabet, τ : Q × Π →Q is a transition
+function, and F ⊆Q is a set of accepting states.
+
+Considering the transition function τ, we further define a function Nxt : Q→2Q by:
+                               Nxt(q):={q′ ∈Q : ∃σ∈Π, q′ =τ(q, σ)}.                                 (2.3)
+
+Additionally, a notion of labeling function is required to connect a dt-CS to a given DFA A.
+
+Definition 2.4. (Labeling Function) Consider a dt-CS Σ := (X, X0, XF , U, f, Y, h), a DFA A=(Q, q0, Π, τ,
+F), and a finite state run xx0,ν := (x(0), . . . , x(H)) ∈XH+1 of Σ with H ∈N>0 under an input run ν :=
+(ν(0), . . . , ν(H −1)). We define a labeling function L : X →Π and a function LH : XH+1 →ΠH+1 such that
+the trace of xx0,ν over Π is σ :=LH(xx0,ν)= (σ0, σ1, . . . , σH) with σk = L(xx0,ν(k)) for all k ∈[0, H].
+
+2.3. Main Problem. In this paper, our primary focus is on the verification of δ-approximate K-diagnosability
+over a dt-CS. When the dt-CS is diagnosable, we also aim to construct a diagnoser capable of detecting a fault
+within a maximum of K time steps after its initial occurrence, without indicating a fault if none has occurred.
+This diagnoser, referred to as a (δ,K)-diagnoser, is formally defined below.
+Definition 2.5. ((δ,K)-diagnoser) Consider a dt-CS Σ := (X, X0, XF , U, f, Y, h), constants δ ∈R≥0 and
+K ∈N. A (δ,K)-diagnoser is a function
+                         D : Y ∗→{0, 1},                                            (2.4)
+satisfying the following conditions:
+
+     • (C1) For all k ∈N and xx0,v such that xx0,v(i) /∈XF , ∀i ∈[0, k −1], and xx0,v(k) ∈XF , one has
+      D(yδx0,ν(0), . . . , yδx0,ν(k + K)) = 1;
+     • (C2) For all xx0,v such that ∀i ∈N, xx0,v(i) /∈XF , one has D(yδxo,ν) = 0,
+
+where yδx0,ν ∈Y ∗, with yδx0,ν being an imprecise observation defined as in (2.2).
+
+Having the definition of a (δ,K)-diagnoser, we are ready to formulate the main problem to be tackled in this
+paper.
+Problem 2.6. Consider a dt-CS Σ := (X, X0, XF , U, f, Y, h) as in Definition 2.1, constants δ ∈R≥0, and
+K ∈N.
+
+                   VERIFICATION OF DIAGNOSABILITY FOR CYBER-PHYSICAL SYSTEMS                       5
+
+
+                                                                                                     1, 2
+                                                                1, 2         1, 2         1, 2
+                                      x=1.2    x=3.2    x=5.2    x=7.2
+                                         1
+                          x=0                                                1, 2
+                                         2           1, 2         1, 2          1, 2
+                                      x=2.2    x=4.2    x=6.2    x=9
+
+       Figure 1. A finite state system as a running example, with the state in red being the faulty
+        one.
+
+
+     • Verify whether or not Σ is δ-approximate K-diagnosable as described in Definition 2.2;
+     • If Σ is δ-approximate K-diagnosable, then design a (δ,K)-diagnoser as described in Definition 2.5.
+
+To better illustrate the theoretical results of this paper, the following dt-CS with finite state and input sets
+will be leveraged throughout the paper. Note that the results proposed in this paper can be applied to dt-CS
+with both continuous and discrete state and input sets. A case study with continuous state and input sets will
+be used to showcase the effectiveness of the propose results (cf. Section 6).
+
+Example 1. (running example) As a running example, we focus on a dt-CS Σrun := (X, X0, XF , U, f, Y, h) as
+demonstrated in Figure 1. Concretely, one has X = {0, 1.2, 2.2, 3.2, 4.2, 5.2, 6.2, 7.2, 9}, X0 = {0}, XF = {1.2},
+U = {1, 2}, Y = X, and h : X →Y  is defined such that y = x for any x ∈X. For the running example, we
+are interested in two δ-approximate K-diagnosability properties: 1) δ = 1, K = 2; 2) δ = 1, K = 3.
+
+
+                    3. Verification of δ-Approximate K-Diagnosability Properties
+
+3.1. Verification via (δ, K)-Deterministic Finite Automata. Consider a dt-CS Σ=(X, X0, XF , U, f, Y, h).
+To tackle Problem 2.6, we introduce an augmented system associated with Σ, which is the product between Σ
+and itself, defined as
+
+                    Σaug := (X × X, X0 × X0, XF × XF , U × U, f × f, Y × Y, h × h).                   (3.1)
+
+Here, we denote by (x, ˆx)∈X×X a state pair of Σ×Σ, and by (xx0,ν, ˆxˆx0,ˆν) the state run of Σ × Σ starting
+from (x0, ˆx0) under input run (ν, ˆν). Moreover, we use R=X× X to represent the augmented state set. Then,
+considering the desired δ-approximate K-diagnosability property, we propose the construction of a so-called
+(δ,K)-DFA over the augmented system Σaug, which plays a key role in our main results for the verification over
+the original dt-CS Σ against the desired diagnosability property.
+
+Definition 3.1. ((δ,K)-DFA) Consider a dt-CS Σ := (X, X0, XF , U, f, Y, h), the corresponding augmented
+system Σaug as in (3.1), and constants δ ∈R>0, K ∈N. Consider sets P1 := {(x, ˆx) : ||h(x) −h(ˆx)|| ≤δ},
+P2 := {(x, ˆx) : x ∈XF , ˆx ∈X}, and P3 := {(x, ˆx) : ˆx ∈XF , x ∈X}, with P1, P2, P3 ⊆R. We define a
+(δ,K)-DFA for the δ-approximate K-diagnosability property, denoted by A(δ,K) =(¯Q, ¯q0, ¯Π, ¯τ, ¯F), and a labeling
+function ¯L : R →¯Π, in which
+
+     • State set ¯Q := {¯q0, q1, . . . , qK, ¯F, qtrap}.
+     • Alphabet ¯Π := {σ1, σ2, σ3}, with ¯L being defined such that ¯L−1(σ1) := P1 ∩(R \ P2) ∩(R \ P3),
+        ¯L−1(σ2) := (R \ P1) ∪(P1 ∩P3), and ¯L−1(σ3) := P1 ∩P2 ∩(R \ P3).
+     • Transition function ¯τ is defined such that q0 = ¯τ(q0, σ1); q1 = ¯τ(q0, σ3); qtrap = ¯τ(qi, σ2), ∀i ∈[0, K];
+        qi+1 = ¯τ(qi, σ1), and qi+1 = ¯τ(qi, σ3), ∀i ∈[1, K −1]; ¯F = ¯τ(qK, σ1) and ¯F = ¯τ(qK, σ3); qtrap =
+          ¯τ(qtrap, σj) and ¯F = ¯τ(¯F, σj), for all j ∈{1, 2, 3}.
+
+For simple presentation, A(δ,K) is referred to as (δ,K)-DFA in the rest of the paper. Now, let us consider the
+running example to construct the (δ,K)-DFA with respect to the desired diagnosability properties.
+
+Example 1 (continued). Consider a δ-approximate K-diagnosability property with δ = 1 and K = 3. The
+corresponding (δ,K)-DFA is shown in Figure 2, with the alphabet Π := {σ1, σ2, σ3} being defined such that
+
+ 6                BINGZHUO ZHONG1∗, WEIJIE DONG2∗, XIANG YIN2, AND MAJID ZAMANI3
+
+
+                                      σ1
+                                         σ3       σ1∨σ3     σ1∨σ3     σ1∨σ3
+                                                          ¯q0          q1          q2          q3            ¯F
+
+                                                             σ1∨σ2∨σ3
+                                 σ2    σ2  σ2          σ2
+
+
+                                              qtrap
+
+
+                                σ1∨σ2∨σ3
+
+                      Figure 2. The (1, 3)-DFA for the running example.
+
+
+ ¯L−1(σ1) := {(x, ˆx) : ||h(x) −h(ˆx)|| ≤1, x̸ = 1.2, ˆx̸ = 1.2}, ¯L−1(σ2) := {(x, ˆx) : ||h(x) −h(ˆx)|| > 1} ∪{(x, ˆx) :
+ ||h(x) −h(ˆx)|| ≤1, ˆx = 1.2}, and ¯L−1(σ3) := {(x, ˆx) : ||h(x) −h(ˆx)|| ≤1, x = 1.2, ˆx̸ = 1.2}.
+
+
+To verify δ-approximate K-diagnosability of a dt-CS leveraging the corresponding (δ,K)-DFA, a product system
+ between the augmented system Σaug as in (3.1) and the (δ,K)-DFA A(δ,K) is constructed, which is defined as
+ follows.
+
+ Definition 3.2. Consider a dt-CS Σ := (X, X0, XF , U, f, Y, h), the corresponding augmented system Σaug as
+in (3.1), and a (δ,K)-DFA A(δ,K) = (¯Q, ¯q0, ¯Π, ¯τ, ¯F) with a labeling function ¯L : R →Π as in Definition 3.1.
+The product system between Σaug and A(δ,K) is a tuple
+                                   Σaug ⊗A(δ,K) := (˜X, ˜X0, ˜U, ˜f),                                     (3.2)
+where ˜X := R × ¯Q is the state set; ˜X0 is the initial state set, with ˜x0 := (x0, ˆx0, ˜q0) ∈˜X0, (x0, ˆx0) ∈X0 × X0,
+and ˜q0 = ¯τ(¯q0, ¯L(x0, ˆx0)); ˜U := U × U is the input set; and ˜f : ˜X × ˜U →˜X is the transition function such
+that for any ˜x := (x, ˆx, q) ∈˜X and ˜u := (u, ˆu), one has ˜x+ = ˜f(˜x, ˜u) := (x+, ˆx+, q+), with x+ = f(x, u),
+ ˆx+ = f(ˆx, ˆu), and q+ = ¯τ(q, ¯L(x+, ˆx+)).
+
+ Similarly, ˜ν := (˜ν(0), . . . , ˜ν(k), . . .) denotes an input run of Σaug ⊗A(δ,K), and ˜x˜x0,˜ν := (˜x(0), . . . , ˜x(k), . . .)
+ denotes a state run of Σaug⊗A(δ,K) initialized from ˜x0 under input run ˜ν, i.e., ˜x(0) = ˜x0, ˜x(k+1) = ˜f(˜x(k), ˜ν(k)),
+ ∀k ∈N.
+
+ Having the product system Σaug ⊗A(δ,K) as in (3.2), we are ready to propose one of the main results of this
+ paper regarding how to verify whether or not a dt-CS is δ-approximate K-diagnosable.
+
+ Theorem 3.3. Consider a dt-CS Σ = (X, X0, XF , U, f, Y, h) as in Definition 2.1, constants δ ∈R>0,
+ K ∈N, the corresponding augmented system Σaug as in (3.1), the (δ,K)-DFA A(δ,K) = ( ¯Q, ¯q0, ¯Π, ¯τ, ¯F) with
+  a labeling function ¯L : R →Π as in Definition 3.1, and the product system Σaug ⊗A(δ,K) as in (3.2). The
+  dt-CS Σ is δ-approximate K-diagnosable, if and only if ∄˜x˜x0,˜ν such that ˜x˜x0,˜ν(k) ∈R × ¯F for some k ∈N.
+
+The proof of Theorem 3.3 is provided in the Appendix. As a key insight, Theorem 3.3 converts the desired
+ diagnosability property over the dt-CS to a safety property over the product system Σaug ⊗A as in (3.2).
+ Accordingly, one can verify the δ-approximate K-diagnosability property by verifying whether or not the
+“unsafe set” R × ¯F can be reached by the product system Σaug ⊗A. Next, we introduce a corollary to establish
+ the conditions under which one can infer that the dt-CS of interest is not diagnosable.
+
+ Corollary 3.4. Consider a dt-CS Σ = (X, X0, XF , U, f, Y, h) as in Definition 2.1 and constants δ ∈R>0,
+K ∈N. The dt-CS Σ lacks δ-approximate K-diagnosability if and only if ∃˜x˜x0,˜ν such that ˜x˜x0,˜ν(k) ∈R × ¯F for
+some k ∈N, with ˜ν and ˜x˜x0,˜ν being some input and state runs generated by the product system Σaug ⊗A(δ,K)
+in (3.2), respectively.
+
+                   VERIFICATION OF DIAGNOSABILITY FOR CYBER-PHYSICAL SYSTEMS                       7
+
+Note that Corollary 3.4 is a direct result of Theorem 3.3, and we omit its proof for simplicity. So far, we have
+introduced conditions under which a system is (not) δ-approximate K-diagnosable. In Section 3.2, we provide
+sufficient results to check these conditions via a notion of hybrid barrier certificates over the product system
+Σaug ⊗A(δ,K). This notion was inspired by the notion of barrier in [21].
+
+
+3.2. Verifying (the Lack of) Approximate K-Diagnosability. In the previous subsection, we reformulated
+the verification of (the lack of) diagnosability as a safety verification problem over the product system
+Σaug ⊗A(δ,K) in (3.2). To solve this safety verification problem, in this subsection, we deploy a notion of hybrid
+barrier certificates (HBC) over the hybrid state set of Σaug ⊗A(δ,K). The notion of hybrid barrier certificates
+was introduced for the first time in [21], but in a different context. First, we propose the following result related
+to the verification of δ-approximate K-diagnosability.
+
+ Theorem 3.5. Consider a dt-CS Σ=(X, X0, XF , U, f, Y, h) in Definition 2.1, constants δ ∈R>0, K ∈N,
+  the (δ,K)-DFA A(δ,K) = (¯Q, ¯q0, ¯Π, ¯τ, ¯F) with a labeling function ¯L : R →Π in Definition 3.1, and the
+  product system Σaug ⊗A(δ,K) = (˜X, ˜X0, ˜U, ˜f) in (3.2). If there exists a function B : ˜X →R such that
+                                     ∀˜x ∈˜X0,                     B(˜x) ≤0;                                    (3.3)
+                                     ∀˜x ∈R × ¯F,                 B(˜x) > 0;                                    (3.4)
+                      ∀˜x∈R× ¯Q \ {qtrap}, ∀˜u∈˜U, B(˜f(˜x, ˜u))≤B(˜x),                           (3.5)
+  then ∄˜x˜x0,˜ν such that ˜x˜x0,˜ν(k) ∈R × ¯F for some k ∈N, with ˜x˜x0,˜ν being any state run that can be generated
+ by Σaug ⊗A(δ,K) = (˜X, ˜X0, ˜U, ˜f) under an input run ˜ν.
+
+The proof of Theorem 3.5 is provided in the Appendix. As a key insight, (3.5) guarantees that B(x, ˆx, q) is not
+increasing along any state run of Σaug ⊗A(δ,K) within the set R × ¯Q \ {qtrap}. Therefore, considering (3.3)
+and (3.4), any state run starting from the set ˜X0 will never reach the set R × ¯Q.  Hence, according to
+Theorem 3.3, the existence of an HBC indicates that the dt-CS Σ is δ-approximate K-diagnosable. In the rest of
+the paper, a function B(x, ˆx, q) satisfying conditions (3.3)-(3.5) is referred to as B-augmented-barrier-certificate
+(B-HBC) for the product system Σaug ⊗A(δ,K). Next, we propose another type of HBC, which can be used to
+verify the lack of δ-approximate K-diagnosability.
+
+ Theorem 3.6. Consider a dt-CS Σ=(X, X0, XF , U, f, Y, h) in Definition 2.1, constants δ ∈R>0, K ∈N,
+  the (δ,K)-DFA A(δ,K) = (¯Q, ¯q0, ¯Π, ¯τ, ¯F) with a labeling function ¯L : R →Π in Definition 3.1, and the
+  product system Σaug ⊗A(δ,K) = ( ˜X, ˜X0, ˜U, ˜f) in (3.2). Suppose that there exists a function V : ˜X →R such
+  that
+                                     ∀˜x ∈˜X0,                    V(˜x) ≤0;                                    (3.6)
+                             ∀˜x∈(˜P(R) \ R)×(¯Q \ ¯F), V(˜x) > 0;                                     (3.7)
+                                     ∀˜x ∈R × (¯Q \ ¯F), ∃˜u ∈˜U, V(˜f(˜x, ˜u))<V(˜x),                            (3.8)
+ where ˜P(R) := {(x, ˆx) | ∃u, ˆu ∈U, x′ = f(x, u), ˆx′ = f(ˆx, ˆu), where (x′, ˆx′) ∈R}. Then there exists an
+  input run ˜ν and a state run ˜x˜x0,˜ν such that ˜x˜x0,˜ν(k) ∈R × ¯F for some k ∈N.
+
+The proof of Theorem 3.6 is provided in the Appendix. As a key insight, (3.8) ensures that V(x, ˆx, q) decreases
+strictly along the state run of Σaug ⊗Aδ,K within the set R × (¯Q \ ¯F). Therefore, any state run starting from
+the set R×(¯Q\ ¯F) will eventually leave R×(¯Q\ ¯F) since R×(¯Q\ ¯F) is bounded. On the other hand, (3.6) and
+(3.7) ensure that any state run starting from the set ˜X0 does not enter the set (Rn\R)×(¯Q\ ¯F). Therefore, the
+existence of a function V(x, ˆx, q) satisfying (3.6)-(3.8) indicates that any state run initialized from the set ˜X0
+would eventually leave the set R × (¯Q \ ¯F) by entering the set R × ¯F. Therefore, by applying Corollary 3.4, one
+can readily verify that the existence of a function V implies that the dt-CS Σ is not δ-approximate K-diagnosable.
+
+8                BINGZHUO ZHONG1∗, WEIJIE DONG2∗, XIANG YIN2, AND MAJID ZAMANI3
+
+Hereafter, a function V(x, ˆx, q) satisfying (3.6)-(3.8) is referred to as V-augmented-barrier-certificate (V-HBC)
+for the product system Σaug ⊗A(δ,K).
+
+To sum up, by applying Theorem 3.5 (resp. Theorem 3.6), the verification of (resp. the lack of) diagnosability
+can be solved by computing a B-HBC (resp. V-HBC) for the product system Σaug ⊗A(δ,K). In the next section,
+we discuss the computation of both HBCs in detail.
+
+                              4. Computation of Hybrid Barrier Certificates
+
+In this section, we propose two methodologies to compute B-HBC and V-HBC as introduced in Theorems 3.5
+and 3.6, respectively. The first methodology deploys a CEGIS framework [31], under which the HBCs are
+computed using Satisfiability Modulo Theories (SMT) and Gurobi [32] solvers. As the second approach, we
+cast the computation of the hybrid barrier certificates as a sum-of-squares (SOS) programming that can be
+solved using semi-definite-programming (SDP) solvers (e.g., Mosek [33]). Note that the notions of monomial,
+polynomial, and SOS polynomials will be deployed when introducing the SOS-based computation approaches.
+Here, we refer readers to [34] for the definitions of these notions, and we omit them here due to the lack of
+space.
+
+4.1. Computing B-HBC for Verifying Diagnosability. Here, we focus on computing B-HBC as in
+Theorem 3.5. Concretely, given a (δ,K)-DFA A(δ,K) =(¯Q, ¯q0, ¯Π, ¯τ, ¯F) with a labeling function ¯L : R →Π as in
+Definition 3.1 related to the desired diagnosability property, we consider the template of B-HBC as
+                 B0(x, ˆx):=Pz0a=1 ca,0pa,0(x, ˆx), if q= ¯q0;
+                 Bb(x, ˆx):=Pzba=1ca,bpa,b(x, ˆx), if q=qb, b∈[1, K];                    B(x, ˆx, q) :=                                                                           (4.1)
+                              BK+1(x, ˆx):=PzK+1a=1 ca,K+1 pa,K+1(x, ˆx), if q= ¯F;
+                 BK+2(x, ˆx):=PzK+2a=1 ca,K+2 pa,K+2(x, ˆx), if q=qtrap;
+with z0, zb, zK+1, zK+2 ∈N>0 being some known constants, such that for all r ∈[0, K + 2], Br(x, ˆx) is a
+polynomial function of a fixed degree with monomials p1,r(x, ˆx), . . . , pzr,r(x, ˆx) that are given, and coefficients
+c1,r, . . . , czr,r which are unknown. To improve the clarity of the presentation, we define a function
+                            ∆: ¯Q →[0, K + 2],                                           (4.2)
+that maps each state in ¯Q to a natural number within [0, K + 2] according to (4.1). Furthermore, we define sets
+               Qinit := {q ∈¯Q : ∃σ ∈¯Π, q = ¯τ(¯q0, σ)},                                                       (4.3)
+              G(q, q′):={(x, ˆx)∈X × X : ∃σ∈¯Π, ¯L(x, ˆx)=σ, q′ = ¯τ(q, σ)},                                  (4.4)
+               ¯X(q, q′) := {(x, ˆx, u, ˆu) ∈X × X × U × U :  f(x, u), f(ˆx, ˆu) ∈G(q, q′), q, q′ ∈¯Q}.          (4.5)
+Intuitively, Qinit denotes the subset of ¯Q that can be reached from ¯q0 within one transition, while G(q, q′) and
+¯X(q, q′) denote the subset of X × X and X × X × U × U that can trigger a transition from q to q′ considering
+the labeling function ¯L, respectively. Then, given a dt-CS Σ = (X, X0, XF , U, f, Y, h) and the template of
+B(x, ˆx, q) as in (4.1), one can rewrite (3.3)-(3.5) as (4.6)-(4.8):
+
+        ∀q ∈Qinit, ∀(x, ˆx) ∈G(¯q0, q), B∆(q)(x, ˆx) ≤0;                                                      (4.6)
+         ∀(x, ˆx) ∈X × X, B∆( F¯ )(x, ˆx) > 0;                                                                  (4.7)
+        ∀q ∈¯Q \ {qtrap}, ∀q′ ∈Nxt(q), ∀(x, ˆx, u, ˆu) ∈¯X(q, q′), B∆(q′)(f(x, u), f(ˆx, ˆu)) ≤B∆(q)(x, ˆx);     (4.8)
+with Nxt(q) as in (2.3), sets Qinit, G(¯q0, q), and ¯X(q, q′) as in (4.3)-(4.5), respectively. Before discussing how
+to compute a B-HBC over dt-CS, we provide an example of a B-HBC with the template as in (4.1) for the
+running example.
+
+Example 1 (continued). Consider a δ-approximate K-diagnosability with δ = 1 and K = 3. One can verify
+that the following function B satisfies conditions (4.6)-(4.8):
+
+B(x, ˆx, q) :=
+
+                   VERIFICATION OF DIAGNOSABILITY FOR CYBER-PHYSICAL SYSTEMS                       9
+
+−0.2075+0.2024x+0.2024ˆx−0.1001x2−0.1435xˆx−0.1001ˆx2 +0.0248x3−0.0134x2ˆx−0.0134xˆx2+0.0248ˆx3, if q =q0;
+  1.3026+0.9963x+0.9963ˆx−0.5042x2+0.5593xˆx−0.5042ˆx2+0.0362x3+0.0305x2ˆx                                               + 0.0305xˆx2+0.0362ˆx3,                                                                                                                                                           if                                                                                                            q                                                                                               =q1;
+  0.8301+0.7739x+0.7739ˆx−0.3744x2+0.3956xˆx−0.3744ˆx2                                  + 0.0262x3+0.0229x2ˆx+0.0229xˆx2+0.0262ˆx3,                                                                                                                                                           if                                                                                                            q                                                                                               =q2;
+  0.5178+0.5382x+0.5382ˆx−0.2785x2+0.2973xˆx−0.2785ˆx2 + 0.0246x3+0.0096x2ˆx+0.0096xˆx2+0.0246ˆx3, if q =q3;
+  −0.6935+0.1888x+0.1888ˆx−0.1292x2+0.0198xˆx−0.1292ˆx2                                                         −0.0254x3+0.0224x2ˆx+0.0224xˆx2−0.0254ˆx3,                                                                                                                                                            if                                                                                                             q                                                                                                                   =qtrap;
+  0.2008+0.1378x+0.1378ˆx+0.0424x2−0.0884xˆx+0.0424ˆx2 +0.0374x3−0.0295x2ˆx−0.0295xˆx2+0.0374ˆx3,                                                                                                                                                          if                                                                                                            q                                                               =                                                                                                                                             ¯F.
+                                                                                                                         (4.9)
+
+ which can be obtained by solving a linear programming problem over constraints (4.6)-(4.8) as the system in
+Figure 1 has finite state and input sets.
+
+4.1.1. CEGIS-based Approach. To compute a B-HBC using SMT solvers under the CEGIS framework, we first
+rewrite the conditions (4.6)-(4.8) as (4.10)-(4.12), respectively:
+                       Φ1 =   ^  B∆(q)(x, ˆx) ≤0;                                         (4.10)
+                                              q∈Qinit,(x,ˆx)∈G(¯q0,q)
+                       Φ2 =  ^   B∆(F¯ )(x, ˆx) > 0;                                           (4.11)
+                                    (x,ˆx)∈X×X
+                       Φ3 = ^  B∆(q′)(f(x, u), f(ˆx, ˆu)))≤B∆(q)(x, ˆx),                         (4.12)
+                          q∈¯Q\{qtrap},q′∈Nxt(q),
+                                          (x,ˆx,u,ˆu)∈¯X(q,q′)
+with sets Qinit, G(¯q0, q), ¯X(q, q′), and Nxt(q) in (4.3), (4.4), (4.5) and (2.3), respectively. Then, we collect
+N and P points from X × X and U × U, respectively, to obtain sets Dx := {(x1, ˆx1), . . . , (xN, ˆxN)} and
+Du := {(u1, ˆu1), . . . , (uP , ˆuP )}. Having sets Dx and Du, we first compute a function B(x, ˆx, q) as in (4.1) such
+that for all (xj, ˆxj) ∈Dx and (ui, ˆui) ∈Du, Φ1 ∧Φ2 ∧Φ3 is satisfied. Note that in this case, the computation
+of such a function B(x, ˆx, q) boils down to a linear programming problem. As a key insight, when substituting
+the elements of the sets Dx and Du into the constraints in (4.10) -(4.12), the resulting constraints are all linear
+with respect to the unknown coefficients of B in (4.1).
+
+Suppose one obtains a function B(x, ˆx, q) such that Φ1 ∧Φ2 ∧Φ3 is satisfied for all elements of the sets Dx
+and Du (otherwise a function B(x, ˆx, q) with the given template satisfying (4.6)-(4.8) does not exist). To
+check whether the obtained function B(x, ˆx, q) is indeed a B-HBC satisfying (4.10)-(4.12), one can search for
+counterexamples (xc, ˆxc) ∈X × X and (uc, ˆuc) ∈U × U such that ¬(Φ1 ∧Φ2 ∧Φ3) is true. To this end, one
+can deploy Gurobi [32] solver, or encode ¬(Φ1 ∧Φ2 ∧Φ3) as an SMT query and use solver z3 [35], to search for
+(xc, ˆxc) and (uc, ˆuc). In those cases where a counterexamples (xc, ˆxc) and/or (uc, ˆuc) are found, we add them
+to Dx and Du and repeat the process. Otherwise, the obtained B(x, ˆx, q) is a valid B-HBC. The CEGIS-based
+computation of B-HBC as in Theorem 3.5 is summarized in Algorithm 1.
+
+4.1.2. SOS-based Approach. With additional assumptions over dt-CS, as stated below, one can also compute a
+B-HBC using SOS-based approaches.
+
+Assumption 4.1. Consider a dt-CS Σ := (X, X0, XF , U, f, Y, h) in Definition 2.1. We assume that the
+transition function f is a polynomial function in variables x and u, and the output function h is a polynomial
+function in variable x.
+
+Additionally, the following definition is also required for proposing the SOS-based computation of a B-HBC.
+Assumption 4.2. Consider a dt-CS Σ := (X, X0, XF , U, f, Y, h) in Definition 2.1, constants δ ∈R>0, K ∈N,
+and the (δ,K)-DFA A(δ,K) = (¯Q, ¯q0, ¯Π, ¯τ, ¯F) with a labeling function ¯L : R →Π in Definition 3.1. We assume
+that we are given vectors of polynomial functions g0(q)(x, ˆx), g1(x, ˆx), gu(u, ˆu), and g2(q, q′)(x, ˆx) of appropriate
+dimensions for some q, q′ ∈¯Q, where:
+                               G(¯q0, q) ⊆{(x, ˆx) ∈R2n | g0(q)(x, ˆx) ≥0},                                    (4.13)
+
+   10               BINGZHUO ZHONG1∗, WEIJIE DONG2∗, XIANG YIN2, AND MAJID ZAMANI3
+
+
+  Algorithm 1: CEGIS-based computation of B-HBC as in Theorem 3.5.
+Input: A dt-CS Σ := (X, X0, XF , U, f, Y, h), a (δ,K)-DFA A(δ,K) =(¯Q, ¯q0, ¯Π, ¯τ, ¯F) with a labeling function
+          ¯L : R →Π as in Definition 3.1, a template of function B(x, ˆx, q) as in (4.1), and imax as the maximal
+      number of iteration.
+Output: A B-HBC B(x, ˆx, q) if the computation terminates successfully.
+ 1  i = 0, build the sets Dx := {(x1, ˆx1), . . . , (xN, ˆxN)} and Du := {(u1, ˆu1), . . . , (uP , ˆuP )}.
+ 2 while 1 do
+ 3    Compute the coefficients of B(x, ˆx, q) such that (4.10)-(4.12) holds for all elements in the sets Dx and
+       Du.
+ 4      if B(x, ˆx, q) cannot be found then
+ 5      The barrier with the given template doesn’t exist.
+ 6       Terminate unsuccessfully.
+ 7    else
+ 8      Compute counterexamples (xc, ˆxc) and (uc, ˆuc) satisfying ¬(Φ1 ∧Φ2 ∧Φ3) for the obtained
+           B(x, ˆx, q).
+ 9          if (xc, ˆxc) and (uc, ˆuc) cannot be found then
+ 10          B(x, ˆx, q) is a B-HBC.
+ 11          Terminate successfully.
+12        else
+ 13        Dx := Dx ∪{(xc, ˆxc)}, Du := Du ∪{(uc, ˆuc)}.
+ 14                     i = i + 1.
+15      end
+16   end
+17      if  i > imax then
+18       Terminate unsuccessfully.
+19   end
+20 end
+
+
+
+               R ⊆{(x, ˆx) ∈R2n | g1(x, ˆx) ≥0},                                            (4.14)
+                              ¯X(q, q′)⊆{(x, ˆx, u, ˆu) ∈R2(n+m) | g2(q, q′)(x, ˆx, u, ˆu)≥0},                     (4.15)
+                                    ˜U ⊆{(u, ˆu) ∈R2m | gu(u, ˆu) ≥0},                                            (4.16)
+
+  in which all inequalities are component-wise.
+
+
+  For simple presentation, we omit (x, ˆx) and (x, ˆx, u, ˆu) as arguments of these functions in the rest of the paper
+  when it is clear from the context. Now, we propose the SOS-based computation of B-HBC as in Theorem 3.5.
+
+ Lemma 4.3. Consider a dt-CS Σ := (X, X0, XF , U, f, Y, h) such that Assumption 4.1 holds.  Consider
+  constants δ ∈R>0, K ∈N, the (δ,K)-DFA A(δ,K) = (¯Q, ¯q0, ¯Π, ¯τ, ¯F), and functions g0(q), g1, g2(q, q′), and gu
+  in Assumption 4.2, with q, q′ ∈Q. Suppose there exist a constant ϵ > 0 and a function B(x, ˆx, q) in the form
+  of (4.1) such that the following expressions are SOS polynomials:
+        ∀q ∈Qinit,  −B∆(q)(x, ˆx) −λ⊤0 (q)g0(q);                                                         (4.17)
+        B∆(F¯ )(x, ˆx) −λ⊤1 (x, ˆx)g1 −ϵ;                                                                     (4.18)
+        ∀q ∈¯Q \ {qtrap}, q′ ∈¯Q, −B∆(q′)(f(x, u), f(ˆx, ˆu)) + B∆(q)(x, ˆx) −λ⊤u(q)gu −λ⊤2(q)g2(q, q′),       (4.19)
+  where for any q ∈¯Q, λ1 and λ0(q) (resp. λu(q) and λ2(q)) are vectors of SOS polynomials in variables x and
+    ˆx (resp. x, ˆx, u, and ˆu) of appropriate sizes. Then, function B(x, ˆx, q) satisfies (3.3)-(3.5).
+
+                   VERIFICATION OF DIAGNOSABILITY FOR CYBER-PHYSICAL SYSTEMS                      11
+
+The proof of Lemma 4.3 is provided in the Appendix. So far, we have proposed two approaches for computing
+B-HBC in Theorem 3.5. In the next subsection, we discuss how to compute V-HBC in Theorem 3.6 for the
+product system Σaug ⊗A(δ,K).
+
+4.2. Computing V-HBC for Verifying the Lack of Diagnosability. To find a V-HBC in Theorem 3.6,
+given a (δ,K)-DFA A(δ,K) =(¯Q, ¯q0, ¯Π, ¯τ, ¯F) with a labeling function ¯L : R →Π as in Definition 3.1 related to
+the desired diagnosability property, we consider V(x, ˆx, q) in the form of
+                V0(x, ˆx) := Pα0a=1 sa,0ba,0(x, ˆx),  if q = ¯q0;
+                Vb(x, ˆx) := Pαba=1 sa,bba,b(x, ˆx),  if q = qb, b ∈[1, K];                 V(x, ˆx, q) :=                                                                          (4.20)
+                             VK+1(x, ˆx) := PαK+1a=1  sa,K+1ba,K+1(x, ˆx),  if q = ¯F;
+                VK+2(x, ˆx) := PαK+2a=1  sa,K+2ba,K+2(x, ˆx),  if q = qtrap;
+where α0, αb, αK+1, αK+2 ∈N>0 are some known constants, such that for all r ∈[0, K + 2], Vr(x, ˆx) is a
+polynomial function of a fixed degree with monomials b1,r(x, ˆx), . . . , bαr,r(x, ˆx) which are given, and coefficients
+s1,r, . . . , sαr,r which are unknown. Similarly, one can use the function ∆as in (4.2) to match each state in ¯Q
+to a natural number within [0, K + 2] according to (4.20). Then, given a dt-CS Σ=(X, X0, XF , U, f, Y, h) in
+Definition 2.1 and the template of V(x, ˆx, q) as in (4.20), we rewrite (3.6)-(3.8) as in (4.21)-(4.23), respectively:
+
+     ∀q ∈Qinit, ∀(x, ˆx) ∈G(¯q0, q), V∆(q)(x, ˆx) ≤0;                                                        (4.21)
+     ∀q ∈¯Q \ ¯F, ∀(x, ˆx) ∈˜P(R) \ R, V∆(q)(x, ˆx) > 0;                                                    (4.22)
+    ∀q∈¯Q\ ¯F, ∀(x, ˆx)∈R, ∃q′ ∈Nxt(q), ∃(x, ˆx, u, ˆu)∈¯X(q, q′), V∆(q′)(f(x, u), f(ˆx, ˆu)) < V∆(q)(x, ˆx),     (4.23)
+where q′ = ¯τ(q, ¯L((f(x, u), f(ˆx, ˆu)))), Qinit, G(¯q0, q), and Nxt(q) are as in (4.3), (4.4), and (2.3), respectively.
+
+Before proceeding with discussing the systematic computation of a V-HBC over dt-CS with continuous state
+and input sets, we revisit the running example to provide an example of a V-HBC with the template as
+in (4.20).
+
+Example 1 (continued). Consider a δ-approximate K-diagnosability with δ = 1 and K = 2. The following
+function V satisfies conditions (4.21)-(4.23):
+
+V(x, ˆx, q) :=
+ −9.88 × 10−5−1.32 × 10−3x−1.32 × 10−3ˆx+8.93 × 10−5x2 + 1.28 × 10−4xˆx + 8.93 × 10−5ˆx2,  if q = ¯q0;
+  −1.04 × 10−4−1.86 × 10−3x−1.86 × 10−3ˆx+1.50 × 10−4x2 + 1.30 × 10−4xˆx + 1.50 × 10−4ˆx2,  if q = q1;  −1.04 × 10−4−1.86 × 10−3x−1.86 × 10−3ˆx+1.50 × 10−4x2 + 1.30 × 10−4xˆx + 1.50 × 10−4ˆx2,  if q = q2;
+ −1.04−1.13 ×× 10−4−1.8610−4−1.88 ×× 10−3x−1.8610−3x−1.88 ×× 10−3ˆx+1.5010−3ˆx+1.51 ×× 10−4x210−4x2 ++ 1.301.31 ×× 10−4xˆx10−4xˆx ++ 1.501.51 ×× 10−4ˆx2,10−4ˆx2,  ifif qq == qtrap;¯F.
+which can be computed by solving a series of linear programming problems considering those constraints
+in (4.21)-(4.23) since the system in Figure 1 has finite state and input sets.
+
+4.2.1. CEGIS-based Approach. Similar to Section 4.1.1, to compute a V-HBC using SMT solvers under the
+CEGIS framework, we first reformulate conditions (4.21)-(4.23) as in (4.24)-(4.26), respectively:
+                    Φ1 :=   ^  V∆(q)(xj, ˆxj) ≤0;                                           (4.24)
+                                         q∈Qinit,(x,ˆx)∈G(¯q0,q)
+                    Φ2 :=   ^    V∆(q)(x, ˆx) > 0;                                           (4.25)
+                           q∈¯Q\ F¯ ,(x,ˆx)∈˜P (R)\R
+                    Φ3 := ^   _ V∆(q′)(f(x, u), f(ˆx, ˆu))) < V∆(q)(x, ˆx),                    (4.26)
+                          q∈¯Q\ F¯ ,    q′∈Nxt(q),
+                                  (x,ˆx)∈R (x,ˆx,u,ˆu)∈¯X(q,q′)
+
+   12               BINGZHUO ZHONG1∗, WEIJIE DONG2∗, XIANG YIN2, AND MAJID ZAMANI3
+
+  where q′ := ¯τ(q, ¯L((f(x, u), f(ˆx, ˆu)))), sets Qinit, G(¯q0, q), and Nxt(q) are as in (4.3), (4.4), and (2.3), respectively.
+  Then, we collect J points from R to obtain the set D′x := {(x1, ˆx1), . . . , (xJ, ˆxJ)}, and compute function
+  V(x, ˆx, q) as in (4.20) such that Φ1 ∧Φ2 ∧Φ3  is satisfied.   If no such V(x, ˆx, q) can be found, one can
+  conclude that there is no function V(x, ˆx, q) with the selected template satisfying (4.24)-(4.26) simultaneously.
+  Otherwise, similar to the CEGIS-based approach for computing B(x, ˆx, q) as proposed in Section 4.1.1, we
+  encode ¬(Φ1 ∧Φ2 ∧Φ3) as an SMT query and search for counterexample (x′c, ˆx′c) such that ¬(Φ1 ∧Φ2 ∧Φ3) is
+   true. If no such counterexamples can be found, one can conclude that V(x, ˆx, q) obtained based on the set D′x
+   is a V-HBC as introduced in Theorem 3.6. Otherwise, one should add the counterexample to the set D′x and
+  repeat the process. Here, we summarize the CEGIS-based computation of V-HBC in Algorithm 2.
+
+
+  Algorithm 2: CEGIS-based computation of V-HBC as in Theorem 3.6.
+Input: A dt-CS Σ := (X, X0, XF , U, f, Y, h), a (δ,K)-DFA A(δ,K) =(¯Q, ¯q0, ¯Π, ¯τ, ¯F) with a labeling function
+          ¯L : R →Π as in Definition 3.1, and a template of function V(x, ˆx, q) as in (4.20), and imax as the
+       maximal number of iteration.
+Output: A V-HBC V(x, ˆx, q) if the computation terminates successfully.
+ 1  i = 0, build the set D′x := {(x1, ˆx1), . . . , (xJ, ˆxJ)}.
+ 2 while 1 do
+ 3    Compute the coefficients of V(x, ˆx, q) such that (4.24)-(4.26) holds for all (x, ˆx) ∈D′x.
+ 4      if V(x, ˆx, q) cannot be found then
+ 5      The V-HBC with the given template doesn’t exist.
+ 6       Terminate unsuccessfully.
+ 7    else
+ 8      Compute counterexamples (x′c, ˆx′c) satisfying ¬(Φ1 ∧Φ2 ∧Φ3) for the obtained V(x, ˆx, q).
+ 9          if (x′c, ˆx′c) cannot be found then
+ 10          V(x, ˆx, q) is a V-HBC.
+ 11          Terminate successfully.
+12        else
+ 13          D′x := D′x ∪{(x′c, ˆx′c)}.
+ 14                     i = i + 1.
+15      end
+16   end
+17      if  i > imax then
+18       Terminate unsuccessfully.
+19   end
+20 end
+
+
+   4.2.2. SOS-based Approach. To compute a V-HBC over the product system Σaug ⊗A(δ,K), apart from Assump-
+  tion 4.1, the following assumption is required.
+
+  Assumption 4.4. Consider a dt-CS Σ := (X, X0, XF , U, f, Y, h) in Definition 2.1 such that Assumption 4.1
+  holds. We further assume that U is in the form of polytope, i.e. U ={u ∈Rm | Auu−bu ≥0}, with Au ∈Rm×m,
+  bu ∈Rm×1, and m∈N>0, where the inequalities are component-wise.
+
+  Moreover, the following definition is also required for introducing the SOS-based method to compute a V-HBC.
+
+  Assumption 4.5. Consider a dt-CS Σ := (X, X0, XF , U, f, Y, h) as in Definition 2.1. We assume that we are
+  given vectors of polynomial functions g3(x, ˆx) and ¯g1(x, ˆx) of appropriate sizes such that:
+                                        (˜P(R) \ R) ⊆{(x, ˆx) ∈R2n | g3(x, ˆx) ≥0},                            (4.27)
+                  R ⊆{(x, ˆx) ∈R2n | ¯g1(x, ˆx) ≥0},                                     (4.28)
+
+                    VERIFICATION OF DIAGNOSABILITY FOR CYBER-PHYSICAL SYSTEMS                      13
+
+ in which all inequalities are component-wise.
+
+ In the remainder of the paper, we omit (x, ˆx) in (4.27) and (4.28) when they are clear from the context. Now,
+ we are ready to propose the SOS-based scheme to compute a V-HBC in Theorem 3.6.
+
+Lemma 4.6. Consider a dt-CS Σ := (X, X0, XF , U, f, Y, h) in Definition 2.1 such that Assumption 4.4 holds.
+Consider constants δ ∈R>0, K ∈N, the (δ,K)-DFA A(δ,K) = (¯Q, ¯q0, ¯Π, ¯τ, ¯F), and functions g0(q), ¯g1, and g3
+ as in (4.13), (4.28), and (4.27), respectively. Suppose that there exists a function V(x, ˆx, q) as in (4.20) such
+ that the following expressions are SOS polynomials:
+       ∀q ∈Qinit,  −V∆(q)(x, ˆx) −β⊤0 (q)g0(q);                                                          (4.29)
+       ∀q ∈¯Q \ ¯F,  V(x, ˆx, q) −β⊤1 (q)g3 −ε1;                                                           (4.30)
+      ∀q∈¯Q\ ¯F, ∀q′ ∈Nxt(q), −V∆(q′)(f(x, u), f(ˆx, ˆu))+V∆(q)(x, ˆx)
+                        m             m
+                    − X ui−ρ(q,q′)i    (x, ˆx) − X  ˆui−ˆρ(q,q′)i    (x, ˆx) −β⊤2 (q)¯g1 −ε2;       (4.31)
+                                       i=1                     i=1
+       ∀q ∈¯Q \ ¯F, ∀q′ ∈Nxt(q), ∀j ∈[1, m], Ar(j)ρ(q,q′)(x, ˆx)−br(j)−β⊤3,j(q, q′)¯g1;                        (4.32)
+       ∀q ∈¯Q \ ¯F, ∀q′ ∈Nxt(q), ∀e∈[1, m], Ar(e)ˆρ(q,q′)(x, ˆx)−br(j)−β⊤4,e(q, q′)¯g1,                        (4.33)
+in which ε1, ε2 > 0, Nxt(q) is defined as in (2.3); Ar and br are defined as in Assumption 4.4; ∀q ∈¯Q \ ¯F, ∀q′ ∈
+ Nxt(q),
+             ρ(q,q′)(x, ˆx) := [ρ(q,q′)1    (x, ˆx); . . . ; ρ(q,q′)m   (x, ˆx)], ˆρ(q,q′)(x, ˆx) := [ˆρ(q,q′)1    (x, ˆx); . . . ; ˆρ(q,q′)m   (x, ˆx)],
+ are vectors of polynomials; for any q, q′ ∈¯Q, β0(q), β1(q), β3,j(q, q′) and β4,e(q, q′), with j ∈[1, m] and e∈[1, m],
+ (resp. β2(q)) are vectors of SOS polynomials in variables x and ˆx (resp. x, ˆx, u, and ˆu) of appropriate sizes.
+Then, function V(x, ˆx, q) satisfies (3.6)-(3.8).
+
+ The proof of Lemma 4.6 is provided in the Appendix. So far, we have discussed how to compute B-HBC
+ (resp. V-HBC) to verify (the lack of) δ-approximate K-diagnosability. In the next section, a design of a
+(δ,K)-diagnoser as in Definition 2.5 will be proposed.
+
+                                       5. Designing Diagnosers for dt-CS
+
+ In this section, we discuss how to design a diagnoser to detect the occurrence of fault if the dt-CS is shown to
+ be δ-approximate K-diagnosable by leveraging the results in Sections 3 and 4. First, we propose Theorem 5.1,
+ which shows that the existence of a (δ,K)-diagnoser as in Definition 2.5 is actually equivalent to the system
+ being δ-approximate K-diagnosable.
+
+  Theorem 5.1. Consider a dt-CS Σ := (X, X0, XF , U, f, Y, h). Given constants δ ∈R≥0 and K ∈N, there
+  exists a (δ,K)-diagnoser as in Definition 2.5 if and only if Σ is δ-approximate K-diagnosable.
+
+ The proof of Theorem 5.1 is provided in the Appendix. Next, we define a sequence of sets
+   M(k):= {x∈X :∃u∈U, x′ ∈M(k −1), x=f(x′, u)} ∩{x ∈X :||h(x)−yδx0,ν(k)||≤δ} \XF , k ∈N>0,   (5.1)
+ which is initialized as
+                       M(0) := {x ∈X0 : ||h(x) −yδx0,ν(0)|| ≤δ} \ XF .                            (5.2)
+ With this definition, we are ready to propose the design of a (δ,K)-diagnoser in the following results.
+
+ Theorem 5.2. Consider a dt-CS Σ := (X, X0, XF , U, f, Y, h), which is δ-approximate K-diagnosable.
+  Given a state run xx0,ν, the corresponding imprecise observation yδx0,ν as in (2.2), one has
+      (1) ∃k′ ∈N, xx0,ν(k′) ∈XF ⇒∃i ∈[0, k′ + K], M(i) = ∅,
+
+   14               BINGZHUO ZHONG1∗, WEIJIE DONG2∗, XIANG YIN2, AND MAJID ZAMANI3
+
+        (2) ∃i ∈N, with  i ≥K, such that M(i) = ∅, and M(j)̸ = ∅, ∀j ∈[0, i −1] ⇒∃k′ ∈[i −K, i],
+            xx0,ν(k′) ∈XF ,
+    with the set M(k), k ∈N, being defined as in (5.1).
+
+  The proof of Theorem 5.2 is provided in the Appendix. Intuitively, (i) in Theorem 5.2 indicates that if xx0,ν
+  enters the faulty set XF at time step k′, then the set M(i) as in (5.1) would become empty at some time step
+   i ∈[0, k′ +K]. Additionally, (ii) implies that if the set M(i) becomes an empty set for the first time at time step
+    i, then one can conclude that xx0,ν has entered the faulty set XF in the time window [i −K, i]. Therefore, one
+  can construct a (δ,K)-diagnoser as introduced in Definition 2.5 based on Theorem 5.2 with running mechanism
+  as described in Algorithm 3. Note that the termination of the algorithm indicates an occurrence of a fault.
+  Additionally, the set M ′(k) in step 4 of Algorithm 3 can be computed via existing toolboxes such as CORA [36],
+  MPT3 [37], and JuliaReach [38]. In case the set M ′(k) cannot be computed precisely, one can compute a (tight)
+  inner approximation of M ′(k) so that all faults can be detected. Before proceeding to the case study, we revisit
+  the running example to provide more intuition for the running mechanism of the (δ,K)-diagnoser as described
+  in Algorithm 3.
+
+  Algorithm 3: Running mechanism of the (δ,K)-diagnoser constructed based on Theorem 5.2.
+Input: A dt-CS Σ := (X, X0, XF , U, f, Y, h) and an imprecise observation yδx0,ν as in (2.2).
+Output: A fault occurred within the time window [max(k −K, 0), k].
+ 1 k = 0, compute M(0) based on yδx0,ν(0).
+ 2 while 1 do
+ 3    k = k + 1.
+ 4    Compute M ′(k) := {x ∈X : ∃u ∈U, ∃x′ ∈M(k −1), x = f(x′, u)}.
+ 5    Obtain yδx0,ν(k) and compute M ′′(k) := {x ∈X : ||h(x) −yδx0,ν(k)|| ≤δ}.
+ 6    Compute M(K) := (M ′(k) ∩M ′′(k)) \ XF .
+ 7      if M(k) = ∅then
+ 8       Occurrence of a fault within the time window [max(k −K, 0), k] is detected.
+ 9       Computation terminates.
+10   end
+11 end
+
+
+  Example 1 (continued). Since we found a B-HBC as in (4.9) for the running example, then it is δ-approximate
+  K-diagnosable with δ = 1 and K = 3 according to Theorem 3.3 and Theorem 3.5.  Here, we simulate
+  the system with two input runs ν = 1, 2, 1, 2 and ν′ = 2, 1, 2, 1, and we obtain the imprecise output runs
+  yx0,ν = 0, 2.2, 3.2, 5.2, 7.2 and yx0,ν′ = 0, 1.2, 3.2, 5.2, 9, respectively.
+
+  According to the dynamics of the running example as in Figure 1, one can verify that xx0,ν(1) ∈XF and
+  xx0,ν′(k) /∈XF for all i ∈[0, 4]. Therefore, by applying a (δ,K)-diagnoser D running as in Algorithm 3, we
+  obtain the sequences of the set M(k) as in (5.1) associated with yx0,ν and yx0,ν′ as {0}{2.2}{4.2}{6.2}{∅} and
+  {0}{2.2}{4.2}{6.2}{9}, respectively. Therefore, one gets D(yx0,ν) = 1 and D(yx0,ν′) = 0, with function D
+  being defined as in (2.4), showing that the diagnoser running as in Algorithm 3 fulfills conditions (C1) and
+  (C2) as in Definition 2.5.
+
+                                                       6. Case Study
+
+  To demonstrate the effectiveness of the proposed results, we apply them to a case study of a two-room
+  temperature model borrowed from [39] with dynamics:
+          x1(k + 1) = (1−2α−αe−αhu1(k))x1(k)+ αx2(k) + αhThu1(k) + αeTe,
+                      Σ:   x2(k + 1) =  (1−2α−αe−αhu2(k))x2(k) + αx1(k) + αhThu2(k) + αeTe,             (6.1)
+               y(k) =  [x1(k); x2(k)],       k ∈N,
+
+                   VERIFICATION OF DIAGNOSABILITY FOR CYBER-PHYSICAL SYSTEMS                      15
+
+
+                                    σ1
+                                        σ3        σ1∨σ3    σ1∨σ3     σ1∨σ3                                                        ¯q0           q1      . . .          q5             ¯F
+
+                                                             σ1∨σ2∨σ3
+                                σ2    σ2               σ2
+
+
+                                            qtrap
+
+
+                               σ1∨σ2∨σ3
+
+       Figure 3. The (0.5, 5)-DFA for the case study of a two-room temperature model in (6.1).
+
+
+
+with state set X := [15, 30]2, initial state set X0 := [19.5, 20.5]2, faulty state set XF := [24, 26]2, and input
+state set U := [0, 1]2, in which α = 0.01, αe = 0.04, and αh = 0.145 are heat exchange coefficients; Te = 10◦C
+is the external temperature; and Th = 50◦C  is the heater temperature.  Here, we are interested in the
+δ-approximate K-diagnosability with 1) δ = 0.5 and K = 5 and 2) δ = 0.5 and K = 3. The (δ,K)-DFA as in
+Definition 3.1 associated with the 0.5-approximate 5-diagnosability is demonstrated in Figure 3, with alphabet
+Π = {σ1, σ2, σ3} and the labeling function ¯L defined as ¯L−1(σ1) := {(x, ˆx) : ||h(x) −h(ˆx)|| ≤0.5, x, ˆx /∈XF },
+¯L−1(σ2) := {(x, ˆx) : ||h(x) −h(ˆx)|| > 0.5} ∪{(x, ˆx) : ||h(x) −h(ˆx)|| ≤0.5, ˆx ∈XF }, and ¯L−1(σ3) := {(x, ˆx) :
+||h(x) −h(ˆx)|| ≤0.5, x ∈XF , ˆx /∈XF }. The (δ,K)-DFA associated with the 0.5-approximate 3-diagnosability
+can be constructed in a similar way and we omit it here for the lack of space.
+
+Computation of the B-HBC: Having the (δ,K)-DFA as in Figure 3 associated with the 0.5-approximate
+5-diagnosability, we construct the product system Σaug ⊗A(δ,K) as in Definition 3.2, and we consider a template
+of B-HBC as in (4.1), with Bi being polynomial functions of order 2, for all i ∈[0, 7]. By running Algorithm 1,
+we find a B-HBC (see (A.2) in the Appendix), indicating that the system in (6.1) is 0.5-approximate 5-
+diagnosable. Meanwhile, one can compute the B-HBC (see (A.3) in the Appendix) by SOS-based approach,
+which satisfies (4.17)- (4.19) with 4-order SOS polynomial multipliers.
+
+Computation of the V-HBC: Considering the 0.5-approximate 3-diagnosability property, we construct
+the (δ,K)-DFA and the product system Σaug ⊗A(δ,K) as in Definition 3.1 and Definition 3.2, respectively.
+Additionally, we consider a template of V-HBC as in (4.20), with Vi being polynomial functions of order 2,
+for all i ∈[0, 5]. By applying Algorithm 2, we find a V-HBC (see (A.4) in the Appendix), indicating that the
+system in (6.1) is not 0.5-approximate 3-diagnosable. Moreover, one can compute the V-HBC by SOS-based
+approach (see (A.5) in the Appendix), which satisfies (4.29)-(4.33) with 4-order SOS polynomial multipliers.
+
+Demonstration of the diagnoser considering the 0.5-approximate 5-diagnosability: To demonstrate
+the diagnoser with running mechanism as in Algorithm 3, we simulate the system with control policy1
+u(k) = [0.5; 0.5], ∀k ∈N≥0. The state run and the imprecise observation of the system are depicted in Figure 4.
+We can see that the system visited the faulty state set XF at time step k = 5. The evolution of the under
+approximation of M(k), which is computed using JuliaReach [38], is shown in Figure 4 by blue rectangles at
+each time steps. At time step k = 6, the set M(k) becomes empty (highlighted by a yellow cube), indicating
+that a fault has happened within the time interval [1, 5] according to Theorem 5.2.  In other words, the
+fault is diagnosed within 5 step after its appearance, which meets the requirement for the 0.5-approximate
+5-diagnosability property.
+
+
+
+
+1Note that the controller here is only used for demonstrating the effectiveness of the diagnoser. In the context of verification of
+diagnosability property, we try to diagnose a fault based on the imprecise observation regardless of the control inputs applied to
+the system.
+
+16               BINGZHUO ZHONG1∗, WEIJIE DONG2∗, XIANG YIN2, AND MAJID ZAMANI3
+
+
+
+
+
+      Figure 4. Simulation of two-room temperature model starting from initial region [19.5, 20.5]2,
+       where green dots are the actual state of the system and red dots are imprecise observations
+        that are obtained. Faulty region is denoted by gray rectangles at each time step. Sets M(k)
+        are illustrated by blue rectangles and the empty M(k) (at time step k = 7) is shown by a
+        yellow cube.
+
+
+                                                    7. Conclusion
+
+In this paper, we developed an abstraction-free, automata-based framework for verifying δ-approximate K-
+diagnosability using hybrid barrier certificates (HBC) over discrete-time control systems with both continuous
+and discrete states and input sets. Initially, we designed a (δ,K)-DFA that tracks the number of time steps
+following fault occurrences. This allows the verification of (the lack of) δ-approximate K-diagnosability to
+be recasted as a safety verification problem over a product system that integrates the (δ,K)-DFA with an
+augmented version of the discrete-time control system. We further show that the safety verification problem
+over the product system can be addressed by computing appropriate HBCs. Accordingly, we introduced
+two methodologies for computing HBCs, utilizing sum-of-squares programming and counter-example-guided
+inductive synthesis. Moreover, we propose the construction of a diagnoser to identify faults in systems that are
+δ-approximate K-diagnosable. Our future work aims to extend the current result to fault models described by
+language patterns [40,41] or temporal logics [42,43].
+
+
+                                    References
+
+ [1] M. Sampath, R. Sengupta, S. Lafortune, K. Sinnamohideen, D. Teneketzis, Diagnosability of discrete-event systems, IEEE
+    Transactions on Automatic control 40 (9) (1995) 1555–1575.
+ [2] T.-C. Lu, K. W. Przytula, System diagnosability analysis using p-slop map., in: FLAIRS, 2007, pp. 116–121.
+ [3] F. Basile, M. Cabasino, C. Seatzu, Diagnosability analysis of labeled time Petri net systems, IEEE Transactions on Automatic
+    Control 62 (3) (2017) 1384–1396.
+ [4] D. Lefebvre, C. Delherm, Diagnosis of DES with Petri net models, IEEE Transactions on Automation Science and Engineering
+    4 (1) (2007) 114–118.
+ [5] Y. Hu, Z. Ma, Z. Li, A. Giua, Diagnosability enforcement in labeled Petri nets using supervisory control, Automatica 131
+    (2021) 109776.
+ [6] Z. Ma, X. Yin, Z. Li, Marking diagnosability verification in labeled Petri nets, Automatica 131 (2021) 109713.
+
+                   VERIFICATION OF DIAGNOSABILITY FOR CYBER-PHYSICAL SYSTEMS                      17
+
+
+ [7] Y. Pencol´e, A. Subias, Diagnosability of event patterns in safe labeled time Petri nets: a model-checking approach, IEEE
+    Transactions on Automation Science and Engineering 19 (2) (2022) 1151–1162.
+ [8] N. Ran, H. Su, A. Giua, C. Seatzu, Codiagnosability analysis of bounded Petri nets, IEEE Transactions on Automatic Control
+    63 (4) (2018) 1192–1199.
+ [9] X. Yin, S. Lafortune, On the decidability and complexity of diagnosability for labeled Petri nets, IEEE Transactions on
+    Automatic Control 62 (11) (2017) 5931–5938.
+[10] D. Thorsley, D. Teneketzis, Diagnosability of stochastic discrete-event systems, IEEE Transactions on Automatic Control
+    50 (4) (2005) 476–492.
+[11] J. Chen, A probabilistic test for a-diagnosability of stochastic discrete-event systems with guaranteed error bound, IEEE
+    Control Systems Letters (2023).
+[12] X. Yin, J. Chen, Z. Li, S. Li, Robust fault diagnosis of stochastic discrete event systems, IEEE Transactions on Automatic
+    Control 64 (10) (2019) 4237–4244.
+[13] F. Lin, W. Chen, L. Han, B. Shen, et al., N-diagnosability for active on-line diagnosis in discrete event systems, Automatica
+    83 (2017) 220–225.
+[14] Z. Ma, Y. Tong, C. Seatzu, Verification of pattern-pattern diagnosability in partially observed discrete event systems, IEEE
+    Transactions on Automatic Control (2023).
+[15] S. Takai, R. Kumar, A generalized framework for inference-based diagnosis of discrete event systems capturing both disjunctive
+    and conjunctive decision-making, IEEE Transactions on Automatic Control 62 (6) (2017) 2778–2793.
+[16] G. Pola, E. De Santis, M. Di Benedetto, Approximate diagnosis of metric systems, IEEE Control Systems Letters 2 (1) (2017)
+    115–120.
+[17] M. Di Benedetto, S. Di Gennaro, A. D’Innocenzo, Verification of hybrid automata diagnosability by abstraction, IEEE
+     transactions on automatic control 56 (9) (2011) 2050–2061.
+[18] Y. Deng, A. D’Innocenzo, M. Di Benedetto, S. Di Gennaro, A. Julius, Verification of hybrid automata diagnosability with
+    measurement uncertainty, IEEE Transactions on Automatic Control 61 (4) (2016) 982–993.
+[19] M. Bayoudh, L. Trav´e-Massuyes, X. Olive, Hybrid systems diagnosis by coupling continuous and discrete event techniques,
+    IFAC Proceedings Volumes 41 (2) (2008) 7265–7270.
+[20] E. Dallal, S. Lafortune, On most permissive observers in dynamic sensor activation problems, IEEE Transactions on Automatic
+    Control 59 (4) (2013) 966–981.
+[21] V. Murali, A. Trivedi, M. Zamani, Co-buchi barrier certificates for discrete-time dynamical systems, arXiv preprint
+    arXiv:2311.07695 (2023).
+[22] B. Zhong, W. Dong, Y. X., Z. M., Verification of diagnosability for cyber-physical systems via hybrid barrier certificates, in:
+    Proceedings of the 8th IFAC Conference on Analysis and Design of Hybrid Systems (ADHS), IFAC, 2024, to appear.
+[23] X. Yin, M. Zamani, S. Liu, On approximate opacity of cyber-physical systems, IEEE Transactions on Automatic Control
+    66 (4) (2020) 1630–1645.
+[24] S. Liu, X. Yin, M. Zamani, On a notion of approximate opacity for discrete-time stochastic control systems, in: 2020 American
+    Control Conference (ACC), IEEE, 2020, pp. 5413–5418.
+[25] G. Pola, E. De Santis, M. Di Benedetto, Approximate current state observability of discrete-time nonlinear systems under
+     cyber-attacks, Nonlinear Analysis: Hybrid Systems 50 (2023) 101403.
+[26] S. Kalat, S. Liu, M. Zamani, Modular verification of opacity for interconnected control systems via barrier certificates, IEEE
+    Control Systems Letters 6 (2021) 890–895.
+[27] S. Liu, M. Zamani, Verification of approximate opacity via barrier certificates, IEEE Control Systems Letters 5 (4) (2020)
+    1369–1374.
+[28] J. Zhao, X. Yin, S. Li, A unified framework for verification of observational properties for partially-observed discrete-event
+    systems, IEEE Transactions on Automatic Control (2024).
+[29] M. Anand, V. Murali, A. Trivedi, M. Zamani, Verification of hyperproperties for uncertain dynamical systems via barrier
+     certificates, arXiv preprint arXiv:2105.05493 (2021).
+[30] C. Baier, J.-P. Katoen, Principles of model checking, MIT press, 2008.
+[31] A. Solar-Lezama, Program Synthesis by Sketching, PhD thesis, University of California, Berkeley, 2008.
+[32] Gurobi Optimization, LLC, Gurobi Optimizer Reference Manual (2023).
+   URL https://www.gurobi.com
+[33] MOSEK ApS, The MOSEK optimization toolbox for MATLAB manual. Version 9.3.6 (2019).
+   URL http://docs.mosek.com/9.0/toolbox/index.html
+[34] Z. Jarvis-Wloszek, R. Feeley, W. Tan, K. Sun, A. Packard, Control applications of sum of squares programming, in: Positive
+    Polynomials in Control, Springer, 2005, pp. 3–22.
+[35] L. d. Moura, N. Bjørner, Z3: An efficient SMT solver, in: International conference on Tools and Algorithms for the Construction
+    and Analysis of Systems, 2008, pp. 337–340.
+[36] M. Althoff, An introduction to cora 2015, in: Proc. of the Workshop on Applied Verification for Continuous and Hybrid
+    Systems, 2015, p. 120–151. doi:10.29007/zbkv.
+[37] M. Herceg, M. Kvasnica, C. Jones, M. Morari, Multi-Parametric Toolbox 3.0, in: Proc. of the European Control Conference,
+     Z¨urich, Switzerland, 2013, pp. 502–510, http://control.ee.ethz.ch/~mpt.
+
+18               BINGZHUO ZHONG1∗, WEIJIE DONG2∗, XIANG YIN2, AND MAJID ZAMANI3
+
+
+[38] S. Bogomolov, M. Forets, G. Frehse, K. Potomkin, C. Schilling, Juliareach: a toolbox for set-based reachability, in: Proceedings
+      of the 22nd ACM International Conference on Hybrid Systems: Computation and Control, HSCC ’19, ACM, New York, USA,
+     2019, p. 39–44.
+[39] P. Meyer, A. Girard, E. Witrant, Compositional abstraction and safety synthesis using overlapping symbolic models, IEEE
+     Transactions on Automatic Control 63 (6) (2017) 1835–1841.
+[40] D. Lefebvre, C. N. Hadjicostis, Diagnosability of fault patterns with labeled stochastic petri nets, Information Sciences 593
+    (2022) 341–363.
+[41] Z. Ma, Y. Tong, C. Seatzu, Verification of pattern-pattern diagnosability in partially observed discrete event systems, IEEE
+     Transactions on Automatic Control 69 (3) (2024) 2044–2051.
+[42] J. Chen, R. Kumar, Fault detection of discrete-time stochastic systems subject to temporal logic correctness requirements,
+    IEEE Transactions on Automation Science and Engineering 12 (4) (2015) 1369–1379. doi:10.1109/TASE.2015.2453193.
+[43] W. Dong, S. Li, X. Yin, Diagnosis of time-sensitive failures in timed discrete-event systems with metric interval temporal
+      logics, in: 62nd IEEE Conference on Decision and Control (CDC), IEEE, 2023, pp. 6827–6833.
+
+
+                          Appendix A. Proof of Statements
+
+Proof for Theorem 3.3 First, we prove the statement regarding if by contradiction. Suppose that ∄˜ν, ˜x˜x0,˜ν
+such that ˜x˜x0,˜ν(k) ∈R × ¯F for some k ∈N, but the system is not δ-approximate K-diagnosable. The lack of
+δ-approximate K-diagnosability indicates that there exists xx0,v := (x0, . . . , xk, . . .) with x0 ∈X0, xk ∈XF
+and xi /∈XF , ∀i ∈[0, k −1], such that there exists ˆxˆx0,ˆv := (ˆx0, . . . , ˆxk, . . .) for which ˆx0 ∈X0, ˆxi /∈XF ,
+∀i ∈[0, k + K], and maxi∈[0,k+K] ||h(xi) −h(ˆxi)|| ≤δ. Consider the state run (xx0,v, ˆxˆx0,ˆv) of the augmented
+system Σaug.  According to the definition of the (δ,K)-DFA and the construction of the product system
+Σaug ⊗A(δ,K) as in Definition 3.2, considering the ˜x˜x0,˜ν = {(x(0), ˆx(0), q(0)), . . . , (x(k), ˆx(k), q(k)), . . . }, k ∈N,
+in which x(k) := xx0,v(k) and ˆx(k) := ˆxˆx0,ˆv(k), one has q(k + K) = ¯F, which results in a contradiction to the
+fact that ∄˜ν, ˜x˜x0,˜ν such that ˜x˜x0,˜ν(k) ∈R × ¯F for some k ∈N. Therefore, the statement regarding if holds.
+
+Then, we prove the statement regarding only if. Suppose the system is δ-approximate K-diagnosable, meaning
+that for all xx0,v := (x0, . . . , xk, . . .) such that x0 ∈X0, xk ∈XF , and xi /∈XF , ∀i ∈[0, k −1], and for all
+ˆxˆx0,ˆv := (ˆx0, . . . , ˆxk, . . .) such that ˆx0 ∈X0, and ˆxi /∈XF , ∀i ∈[0, k + K], there exists k′ ∈[0, k + K] such that
+||h(xk′) −h(ˆxk′)|| > δ. Considering the state run ˜x˜x0,˜ν = {(x(0), ˆx(0), q(0)), . . . , (x(k), ˆx(k), q(k)), . . . }, k ∈N,
+of the product system Σaug ⊗A(δ,K) as in Definition 3.2, one has q(k′) = qtrap. This immediately implies that
+q(k)̸ = ¯F for all k ∈N so that the statement regarding only if  is true, which completes the proof.     ■
+
+Proof for Theorem 3.5 We prove Theorem 3.5 by contradiction. Suppose that there exists a function
+B such that (3.3)-(3.5) hold, but the dt-CS Σ is not δ-approximate K-diagnosable. In other words, there
+exists xx0,v := (x0, . . . , xk, . . .) with x0 ∈X0, xk ∈XF and xi /∈XF , ∀i ∈[0, k −1], such that there
+exists ˆxˆx0,ˆv := (ˆx0, . . . , ˆxk, . . .) with ˆx0 ∈X0, ˆxi /∈XF , ∀i ∈[0, k + K], and maxi∈[0,k+K] ||h(xi) −h(ˆxi)|| ≤δ.
+Considering the definition of the (δ,K)-DFA and the product system Σaug⊗A(δ,K), one has ˜x˜x0,˜ν(k+K) ∈R× ¯F,
+with ˜x0 := [x0; ˆx0], and ˜ν := ((ν(0), ˆν(0)), . . . , (ν(k+K −1), ˆν(k+K −1))). Note that if there exist t ∈[0, k+K]
+such that ˜x˜x0,˜ν(t) ∈R × qtrap, then one has ˜x˜x0,˜ν(t′) ∈R × qtrap for all t′ ≥t. Therefore, we only consider
+the case in which ˜x˜x0,˜ν(t) /∈R × qtrap, ∀t ∈[0, k + K]. On one hand, according to (3.3) and (3.4), one has
+B(˜x˜x0,˜ν(0)) ≤0 and B(˜x˜x0,˜ν(k + K)) > 0. On the other hand, one has B(˜x˜x0,˜ν(t′)) ≤B(˜x˜x0,˜ν(0)) ≤0 for all
+t′′ > 0 considering (3.5). Note that this results in a contradiction that B(˜x˜x0,˜ν(k + K)) > 0. As a results, for
+all xx0,v := (x0, . . . , xk, . . .) with x0 ∈X0 such that xk ∈XF and xi /∈XF , ∀i ∈[0, k −1], and for all ˆxˆx0,ˆv :=
+(ˆx0, . . . , ˆxk, . . .) with ˆx0 ∈X0 such that ˆxi /∈XF , ∀i ∈[0, k + K], one gets maxi∈[0,k+K] ||h(xi) −h(ˆxi)|| > δ,
+indicating that it does not exist input run ˜ν and state run ˜x˜x0,˜ν such that ˜x˜x0,˜ν(k) ∈R × ¯F for some k ∈N,
+which completes the proof.                                             ■
+Proof for Theorem 3.6 According to (3.6), V(˜x0) ≤0 holds for any ˜x0 ∈˜X0. Consider an input run ˜ν for
+˜x˜x0,˜ν such that (3.8) holds. Then, one can readily verify that there exists ¯t ∈N>0 such that V(˜x˜x0,˜ν(¯t)) <
+min˜x′∈R×( Q\¯ F¯ ) V(˜x′) < V(˜x˜x0,˜ν(¯t −1)), since (3.8) indicates that V(˜x) is strictly decreasing along ˜x˜x0,˜ν and
+the set R × (¯Q \ ¯F) is bounded. In other words, there exists ¯t ∈N>0 such that ˜x˜x0,˜ν(¯t −1) ∈R × (¯Q \ ¯F)
+and  ˜x˜x0,˜ν(¯t) /∈R × (¯Q \ ¯F). On the other hand, for all ˜x˜x0,˜ν(t′) ∈R × (¯Q \ ¯F), with  t′ ∈N, one has
+
+                   VERIFICATION OF DIAGNOSABILITY FOR CYBER-PHYSICAL SYSTEMS                      19
+
+˜x˜x0,˜ν(t′ + 1) /∈(˜P(R) \ R) × (¯Q \ ¯F) considering (3.7), (3.8), and the definition of the set ˜P(R). Therefore,
+one has ˜x˜x0,˜ν(¯t) ∈R × ¯F.                                              ■
+
+Proof for Lemma 4.3 We prove Lemma 4.3 by showing (4.17)-(4.19) are SOS polynomials implies (3.3)-(3.5)
+holds, respectively.
+    (1)  (4.17) implies (3.3):  if (4.17) are SOS polynomials for all q ∈Qinit, then for all (x, ˆx) such that
+        g0(q)(x, ˆx) ≥0, one has λ⊤0 (q)g0(q) ≥0, indicating that −B∆(q)(x, ˆx) ≥0 hold for any (x, ˆx, q) ∈˜X0,
+       which implies that (3.3) holds;
+    (2)  (4.18) implies (3.4):  if (4.17) is SOS polynomials, then for all (x, ˆx) such that g1(x, ˆx) ≥0, one has
+      λ⊤1 (q)g1 ≥0. Therefore, one can verify that B∆( F¯ )(x, ˆx) ≥ϵ > 0 holds for all (x, ˆx, q) ∈R × ¯F so
+        that (3.4) holds;
+    (3)  (4.19) implies (3.5): Suppose that (4.19) are SOS polynomials for all q ∈¯Q \ {qtrap and ¯F}, q′ ∈¯Q.
+       Then, for all (x, ˆx, u, ˆu) such that g2(q, q′)(x, ˆx, u, ˆu) ≥0 holds, and for all (u, ˆu) such that gu(u, ˆu) ≥0
+        holds, one gets λ⊤u(q)gu ≥0 and λ⊤2(q)g2(q, q′) ≥0.  Therefore, one can readily verify that for all
+        (x, ˆx, q) ∈R × ¯Q \ {qtrap, F¯ }, −B∆(q′)(f(x, u), f(ˆx, ˆu)) + B∆(q)(x, ˆx) ≥0 so that (3.5) holds.     ■
+
+
+
+
+
+Proof for Lemma 4.6 First, we show that (4.29) are SOS polynomials implies that (3.6) holds. If (4.29) are
+SOS polynomials for all q ∈Qinit, then for all (x, ˆx) such that g0(q)(x, ˆx) ≥0, one has β⊤0 (q)g0(q) ≥0 so that
+V∆(q)(x, ˆx) ≤0. This means that (3.6) holds.
+
+Next, we show that (4.30) are SOS polynomials implies that (3.7) holds.  Suppose that (4.30) are SOS
+polynomials for any q ∈¯Q \ ¯F. Consider any (x, ˆx) such that g3(q)(x, ˆx) ≥0, one gets β⊤1 (q)g3 ≥0 and hence
+V(x, ˆx, q) ≥ε1 > 0. Therefore, one can conclude that (3.7) holds.
+
+Finally, we show that (4.31)-(4.33) are SOS polynomials implies that (3.8) holds. Concretely, (4.32) and (4.33)
+indicates, respectively, that ρ(q,q′)(x, ˆx) ∈U, and ˆρ(q,q′)(x, ˆx) ∈U hold for any (x, ˆx) such that ¯g1(x, ˆx) ≥0, i.e.
+for all (x, ˆx) ∈R. Additionally, if (4.31) are SOS polynomials for all q ∈¯Q \ ¯F and ∀q′ ∈Nxt(q), then, for any
+(x, ˆx) such that ¯g1(x, ˆx) ≥0 (therefore β⊤2 (q)¯g1), ui = ρ(q,q′)i    (x, ˆx), and ˆui = ˆρ(q,q′)i    (x, ˆx), one can readily verify
+that −V∆(q′)(f(x, u), f(ˆx, ˆu)) + V∆q(x, ˆx) ≥ε2 > 0. Hence, one can see that (3.8) holds, which completes the
+proof.                                                         ■
+
+Proof for Theorem 5.1 We first show the statement regarding only if by contraction. Suppose there exists
+a (δ,K)-diagnoser D satisfying condition (C1) and (C2) as in Definition 2.5, but the dt-CS of interest is
+not δ-approximate K-diagnosable. On the one hand, the lack of diagnosability indicates that there exists
+a state run xx0,v := (x0, . . . , xk, . . .) with 1) x0 ∈X0, 2) xk ∈XF and xi /∈XF , ∀i ∈[0, k −1], such that
+there exists another state run ˆxˆx0,ˆv := (ˆx0, . . . , ˆxk, . . .) for which 1) ˆx0 ∈X0, 2) ˆxi /∈XF , ∀i ∈[0, k + K], 3)
+maxi∈[0,k+K] ||h(xi) −h(ˆxi)|| ≤δ. On the other hand, in order to satisfy condition (C2) in Definition 2.5,
+given any imprecise observation yδx0,ν within the time horizon [0, H], if there exists a state run x′x′0,ν′ such that
+x′x′0,ν′(i) /∈XF , ∀i ∈[0, H], and ||yδx0,ν(t) −h(x′x0,ν(k))|| ≤δ, ∀t ∈[0, H], one should have D(yδx0,ν) = 0. Then,
+considering the output run yx0,ν associated with xx0,ν over time horizon [0, k + K], one has D(yx0,ν) = 0 due
+to the existence of the state run ˆxˆx0,ˆv. This results in a violation of condition (C1) since xx0,ν(k) ∈¯F, which
+is contradictory to the fact that the diagnoser D satisfies conditions (C1) and (C2). Therefore, the statement
+regarding only if holds.
+
+Next, we proceed with showing the statement regarding if. Suppose the dt-CS Σ is δ-approximate K-diagnosable.
+We first define a set
+      Y(H, δ) =  yx0,ν ∈Y H : ∃x′x0,ν s.t. x′x0,ν /∈XF , ||yδx0,ν(t) −h(x′x0,ν(t))|| ≤δ, ∀t ∈[0, H −1]  ,
+which contains all the output runs that are indistinguishable from some other output runs for which the
+associated state runs have not entered the fault state set XF . Based on this set, we construct a diagnoser D
+
+20               BINGZHUO ZHONG1∗, WEIJIE DONG2∗, XIANG YIN2, AND MAJID ZAMANI3
+
+
+
+BSMT (x, ˆx, q) :=
+  −0.1459x21 + 0.0005x1x2 + 0.0002x1ˆx1 + 0.0005x1ˆx2 + 7.2650x1 + 0.0942x22 + 0.0001x2ˆx1 −0.1894x2ˆx2
+
+              +                                 −0.0008ˆx2                                  +                                         +                                                                               0.0942ˆx2                                               +                                                                                  −90.1333,                                                                                                                                                                if                                                                                                           q                                                              =                         0.0100x2                           + 0.0001ˆx1ˆx2                                                                  0.0303ˆx1                                                                                           0.0100ˆx2                                                                                                                              q0;                                                  1                                                                                           2
+   0.1049x2                                     +                                                               0.3635x2          −0.0034x1x2                        −0.0009x1ˆx1                                    −0.0034x1ˆx2                                             −5.0597x1                                                                      −0.0003x2ˆx1                                                                                  −0.7281x2ˆx2            1                                                                                   2
+
+              +                                 −0.0007ˆx2                                  +                                         +                                                                               0.3635ˆx2                                               +                                                      +                                                                                                59.5153,                                                                                                                                                                if                                                                                                           q                                                              =                         0.1188x2                                               −0.0003ˆx1ˆx2                                                                  0.0702ˆx1                                                                                           0.1188ˆx2                                                                                                                              q1;                                                  1                                                                                           2
+   0.1012x2                                     +                                                               0.3467x2          −0.0041x1x2                        −0.0021x1ˆx1                                    −0.0041x1ˆx2                                             −4.8182x1                                                                      −0.0005x2ˆx1                                                                                  −0.6949x2ˆx2            1                                                                                   2
+
+              +                                 −0.0011ˆx2                                  +                                         +                                                                               0.3467ˆx2                                               +                                                      +                                                                                                55.0563,                                                                                                                                                                if                                                                                                           q                                                              =                         0.1504x2                                               −0.0005ˆx1ˆx2                                                                  0.1273ˆx1                                                                                           0.1504ˆx2                                                                                                                              q2;                                                  1                                                                                           2
+
+                                     +                                                               0.3107x2   0.0883x2                                                                      −0.0006x2ˆx1                                                                                  −0.6234x2ˆx2          −0.0042x1x2                        −0.0027x1ˆx1                                    −0.0042x1ˆx2                                             −4.1521x1                                                                                   2            1
+
+                                               +                                                      +                                                                                                45.9998,                                                                                                                                                                if                                                                                                           q                                                              =                                  +                                         +                                                                               0.3107ˆx2              +                                 −0.0013ˆx2                                                                                           0.1643ˆx2                                                                                                                              q3;                                               −0.0006ˆx1ˆx2                                                                  0.1614ˆx1                         0.1643x2                                                                                           2                                                  1 
+   0.0775x21 −0.0037x1x2 −0.0036x1ˆx1 −0.0037x1ˆx2 −3.6148x1 + 0.2621x22 −0.0007x2ˆx1 −0.5263x2ˆx2
+
+              +                                 −0.0015ˆx2                                  +                                         +                                                                               0.2621ˆx2                                               +                                                      +                                                                                                38.9878,                                                                                                                                                                if                                                                                                           q                                                              =                         0.1592x2                                               −0.0007ˆx1ˆx2                                                                  0.1973ˆx1                                                                                           0.1592ˆx2                                                                                                                              q4;                                                  1                                                                                           2
+   0.0531x2                                     +                                                               0.1793x2          −0.0035x1x2                        −0.0035x1ˆx1                                    −0.0035x1ˆx2                                             −2.4083x1                                                                      −0.0007x2ˆx1                                                                                  −0.3606x2ˆx2            1                                                                                   2
+
+              +                                 −0.0016ˆx2                                  +                                         +                                                                               0.1793ˆx2                                               +                                                      +                                                                                                24.0745,                                                                                                                                                                if                                                                                                           q                                                              =                         0.1538x2                                               −0.0007ˆx1ˆx2                                                                  0.1962ˆx1                                                                                           0.1538ˆx2                                                                                                                              q5;                                                  1                                                                                           2
+   −0.0028x2                                      + 0.0033x2                + 0.0058x1ˆx1                        + 0.0029x1ˆx2                                + 0.1072x1                                                                                     −0.0059x2ˆx2               1 + 0.0029x1x2                                                                                      2 + 0.0006x2ˆx1
+                                 −0.0033ˆx2                           +                                  +                                         +                                                                               0.0033ˆx2                                                                                  −4.1225,                                                                                                                                                              if                                                                                                          q                                                              =                    −0.0912x2                                                      0.0006ˆx1ˆx2                                                                  0.0171ˆx1                                                                             −0.0912ˆx2                                                                                                                                   qtrap;                                                  1                                                                                           2
+   0.0284x2                                     +                                                               0.1155x2          −0.0025x1x2                        −0.0025x1ˆx1                                    −0.0025x1ˆx2                                             −1.2449x1                                                                      −0.0006x2ˆx1                                                                                  −0.2326x2ˆx2            1                                                                                   2
+
+              +                                 −0.0013ˆx2                                  +                                         +                                                                               0.1155ˆx2                                               +                                                      +                                                                                                11.0148,                                                                                                                                                                if                                                                                                           q                                                              =                                                                                                                                             ¯F;                         0.1145x2                                               −0.0006ˆx1ˆx2                                                                  0.1534ˆx1                                                                                           0.1145ˆx2                                                  1                                                                                           2 
+                                                                                                           (A.2)
+
+
+
+such that, given an imprecise observation yδx0,ν over time horizon [0, H],
+                         (0,           if yx0,ν ∈Y(H, δ)
+                               D(yx0,ν) =                                                        (A.1)
+                                                      1,       otherwise
+
+Then, we prove the statement regarding if by showing that such a diagnoser satisfies conditions (C1) and (C2)
+as in Definition 2.5.
+
+     • Consider an state run xx0,ν over time horizon [0, H], for any H ∈N, such that xx0,ν(t) /∈XF ,
+        ∀t ∈[0, H], one has yδx0,ν ∈Y(H, δ), with yδx0,ν being any imprecise observation as in (2.2) with respect
+        to the observation precision δ. Therefore, one has D(yδx0,ν) = 0, indicating that condition (C2) in
+        Definition 2.5 is satisfied.
+     • Consider an state run xx0,ν over time horizon [0, k +K], such that xx0,ν(k) ∈XF and xx0,ν(t) /∈XF for
+          all t ∈[0, k−1]. Since the dt-CS Σ is δ-approximate K-diagnosable, for all x′x0,ν such that x′x0,ν(t) /∈XF ,
+        ∀t ∈[0, k + K], there exists  t′′ ∈[0, k + K], ||h(xx0,ν(t′′)) −h(x′x0,ν(t′′))|| > 0. This immediately
+        indicates that for any imprecise observation yδx0,ν associated with xx0,δ, one has yδx0,ν /∈Y(H, δ).
+        Therefore, one has D(yδx0,ν) = 1 according to (A.1), indicating that condition (C1) in Definition 2.5 is
+         satisfied, which completes the proof.                                   ■
+
+Proof for Theorem 5.2 We first show (i) by contradiction. Suppose that one has xx0,ν(k′) ∈XF  , but
+∀i ∈[0, k′ + K], M(i)̸ = ∅. Then, there exists a state run x¯x0,¯v, such that x¯x0,¯v(j) ∈M(j) for all j ∈[0, k′ + K].
+In other words, one has x¯x0,¯v(j) /∈XF for all j ∈[0, k′ + K], while one has
+                          max   ||h(x¯x0,¯v(j)) −h(xx0,ν(j))|| ≤δ.                            (A.6)
+                                    j∈[0,k+K]
+
+                   VERIFICATION OF DIAGNOSABILITY FOR CYBER-PHYSICAL SYSTEMS                      21
+
+
+BSOS(x, ˆx, q) :=
+61.9793 + 52.4632x1 + 30.0867x2 + 45.4627ˆx1 + 36.2866ˆx2 + 75.4901x21 −104.6505x1x2 + 76.7151x22 −112.4098x1ˆx1
+
+                                                                                                                                                                 if                                                                                                           q                                                               =                  +                                    75.9589ˆx2                                                     +                                                                                                   74.8508ˆx2                                                                                                                               q0;               −101.8547x2ˆx1                                         −100.8383x1ˆx2                                                        −115.4499x2ˆx2                                                                           −104.7739ˆx1ˆx2                                                                                                                              2,                                                1
+
+  24.1637      +            +                   +                          +                                 +                                                        90.5688x2                                                 +                                                                                   80.0829x2            2.0924x1                       8.9078x2                                     20.9364ˆx1                                                  16.4481ˆx2                                                            −113.9268x1x2                                                                                           −107.6873x1ˆx1                                                                             1                                                                                                             2
+
+                  +                                    84.5255ˆx2                                                     +                                                                                                   76.3952ˆx2                                                                                                                                                                 if                                                                                                           q                                                               =               −105.7055x2ˆx1                                         −107.0687x1ˆx2                                                        −116.2163x2ˆx2                                                                           −106.6658ˆx1ˆx2                                                                                                                               q1;                                                1                                                                                                                              2,
+
+  5.6908     +            +                   +                           +                                  +                                                          10.4628x2                                                  +                                                                                     6.8278x2           13.8516x1                      13.4998x2                                      25.8271ˆx1                                                   12.1339ˆx2                                                             −102.3958x1x2                                                                                           −97.1537x1ˆx1                                                                              1                                                                                                             2
+
+                  +                                    5.0966ˆx2                                                   +                                                                                                 5.1242ˆx2                                                                                                       q                                                            =               −98.7575x2ˆx1                                                     −102.4821x2ˆx2                                                                        −100.9902ˆx1ˆx2                                                                                                                          q2;                                              1 −99.7841x1ˆx2                                                                                                                        2,  if
+
+                                                +                                                                                  19.9533x2  3.4248     +            +                   +                          +                                                 −17.767x2                                                                                         −128.2189x1ˆx1                                                           −129.2525x1x2           10.0281x1                       9.6047x2                                     24.1036ˆx1                                                  10.4827ˆx2                                                                                                           2                                                                            1
+
+                                                                                                                                                               if                                                                                                          q                                                              =                                                    +                                                                                                  22.5702ˆx2                              −24.1346ˆx2                                                                                                                              q3;                                         −126.3442x1ˆx2                                                        −130.766x2ˆx2                                                                          −127.7656ˆx1ˆx2               −125.6612x2ˆx1                                                                                                                            2,                                                1
+  0.084 + 4.9894x1 + 4.636x2 + 20.4027ˆx1 + 7.67ˆx2 −51.3395x21 −165.9146x1x2 + 52.2193x22 −168.9452x1ˆx1
+                            −58.7638ˆx2                                                   +                                                                                                 55.1961ˆx2                                                                                                                                                              if                                                                                                         q                                                             =             −162.4919x2ˆx1                                       −162.2771x1ˆx2                                                      −168.6144x2ˆx2                                                                         −164.0869ˆx1ˆx2                                                                                                                            q4;                                              1                                                                                                                           2,
+
+  14.5433      +                          +                                                −107.1316x2                                                 +                                                                                   106.7981x2            0.3807x1            + 0.4084x2                   + 14.7334ˆx1                                                   3.9185ˆx2                                                                                            −233.5661x1ˆx1                                                                             1 −232.5885x1x2                                                                                                              2
+                            −115.5868ˆx2                                                    +                                                                                                110.4617ˆx2                                                                                                                                                                 if                                                                                                           q                                                               =             −229.9268x2ˆx1                                        −229.3328x1ˆx2                                                       −232.0117x2ˆx2                                                                          −231.8204ˆx1ˆx2                                                                                                                               q5;                                               1                                                                                                                              2,
+
+  −6.2326       +              +                     +                            +                                   +                                                             0.5714x2                                                 +                                                                                    0.5441x2             12.3431x1                         12.6831x2                                         12.4161ˆx1                                                      11.9542ˆx2                                                                                          −0.7124x1ˆx1                                                                                1 −0.9295x1x2                                                                                                            2
+
+                 +                                  0.5522ˆx2                                               + 0.6022ˆx2                                                                                                                                                if                                                                                                q                                                        =               −0.6987x2ˆx1                                      −0.7316x1ˆx2                                                   −0.7252x2ˆx2                                                                     −0.9339ˆx1ˆx2                                                                                                                        qtrap;                                             1                                                                                                                2,
+
+  −10.5989       +               +                      +                             +                                                     −197.7538x2                                                     +                                                                                        201.7908x2              28.1246x1                          28.5379x2                                          31.5337ˆx1                                                       30.2472ˆx2                                                                 −386.1975x1x2                                                                                    1                                                                                                                     2
+                              −205.1699ˆx2                                                     +                                                                                                   212.0586ˆx2                                                                                                                                                                     if                                                                                                              q =                                                                                                                                                ¯F;   −377.34x1ˆx1               −389.3004x2ˆx1                                          −391.8408x1ˆx2                                                         −386.5924x2ˆx2                                                                            −402.3205ˆx1ˆx2                                                                                                                                2,                                                  1
+                                                                                                           (A.3)
+
+
+
+VSMT (x, ˆx, q) :=
+0.0008x21 −0.5816x1x2 −0.0009x1ˆx1 + 0.581x1ˆx2 −0.002x1 + 25.8503x22 + 0.6081x2ˆx1 −51.7281x2ˆx2 −0.1994x2
+               −0.0001ˆx2                        +                              +                                                          25.8777ˆx2                                     +                                                                   −0.4762,  if                                                                                        q                                                    =                            −0.6081ˆx1ˆx2                                               0.0272ˆx1                                                                        0.2156ˆx2                                                                                                         q0;                              1                                                                       2
+  0.0409x2                     +                                    +                                                             2.6015x2                                          +          −0.0564x1x2                       −0.026x1ˆx1                                         0.0555x1ˆx2                                           −2.6383x1                                                                              0.0705x2ˆx1                                                                                 −5.2038x2ˆx2                                                                                     −4.4242x2           1                                                                                 2
+               −0.0286ˆx2                        +                              +                                                           2.6016ˆx2                                     +                                                                  −23.7729,                                                                                                                                    if                                                                                        q                                                    =                            −0.0706ˆx1ˆx2                                               0.7165ˆx1                                                                       4.4325ˆx2                                                                                                         q1;                              1                                                                      2
+  0.0533x2                     +                                    +                                                             2.1818x2                                          +          −0.069x1x2                      −0.0372x1ˆx1                                         0.0695x1ˆx2                                           −3.5831x1                                                                              0.1202x2ˆx1                                                                                 −4.3665x2ˆx2                                                                                     −2.5315x2           1                                                                                 2
+               −0.0395ˆx2                        +                              +                                                           2.1837ˆx2                                     +                                                                  −33.3048,                                                                                                                                    if                                                                                        q                                                    =                            −0.1206ˆx1ˆx2                                               0.9576ˆx1                                                                       2.5801ˆx2                                                                                                         q2;                              1                                                                      2
+  0.0495x21 −0.0267x1x2 −0.151x1ˆx1 + 0.0264x1ˆx2 −6.1248x1 + 3.0936x22 + 0.3715x2ˆx1 −6.1864x2ˆx2 −4.8224x2
+               −0.1299ˆx2                       +                             +                                                          3.0924ˆx2                                    +                                                                 −48.9751,                                                                                                                                  if                                                                                       q                                                   =                            −0.372ˆx1ˆx2                                             2.3982ˆx1                                                                      4.8275ˆx2                                                                                                        q3;                              1                                                                     2
+  0.0002x2                      +                       −0.0001x1ˆx1                                          0.0001x1ˆx2                                            −0.0086x1                                                           −0.0002x2ˆx2                                                                 −0.0004x2           1 −0.0001x1x2
+
+                                   +                                                                −0.1784,                                                                                                                               if                                                                                     q                                                  =                      +                             +                                                        0.0001ˆx2                          −0.0001ˆx1ˆx2                                            0.0019ˆx1                                                                    0.0054ˆx2                                                                                                          qtrap;                                                                   2
+   −0.0143x2                        +                                      + 0.0007x2                          −0.0066x1ˆx1                                             0.0073x1ˆx2                                              −0.0434x1                                            + 0.0009x2ˆx1                                                                                    −0.0006x2ˆx2                                                                                        −0.1176x2              1 −0.0074x1x2                                                                                     2
+               −0.0009ˆx2                        +                              +                                                           0.0006ˆx2                                     +                                                                  −3.886,                                                                                                                                if                                                                                      q                                                  =                                                                                                                  ¯F;                            −0.0009ˆx1ˆx2                                               0.1176ˆx1                                                                       0.1195ˆx2                              1                                                                      2
+                                                                                                           (A.4)
+
+
+
+Note that (A.6) results in a contradiction to the fact that the dt-CS Σ is δ-approximate K-diagnosable
+considering Definition 2.2.
+Now, we proceed with showing (ii). First, suppose that ∄k′ ∈[0, i] such that xx0,ν(k′) ∈XF . Then, one can
+readily verify that ∀k′ ∈[0, i], xx0,ν(k′) ∈M(k′). In other words, one can conclude that M(k′)̸ = ∅for all
+k′ ∈[0, i] since ∀k′ ∈[0, i], the set M(k′) at least contains xx0,ν(k′). This results in a contradiction to the fact
+
+22               BINGZHUO ZHONG1∗, WEIJIE DONG2∗, XIANG YIN2, AND MAJID ZAMANI3
+
+
+VSOS(x, ˆx, q) :=
+90.873 + 128.5902x1 + 126.1268x2 + 123.4983ˆx1 + 118.9705ˆx2 + 175.8664x21 + 2.1959x1x2 + 170.959x22
+
+                                                                                                                                                                   if                                                                                                             q                                                               =                    +                                       191.9901ˆx2                                                     +                                                                                                 180.5615ˆx2                                                                                                                                q0;     −362.3845x1ˆx1                   −10.1361x2ˆx1                                              −5.235x1ˆx2                                                         −346.6525x2ˆx2                                                                             −30.6354ˆx1ˆx2                                                                                                                               2,                                                      1
+
+  21.0653      +              +                     +                            +                                    +                                                            132.3899x2                                           +                                                    +                                                                                       130.6841x2            144.2286x1                         139.518x2                                        147.671ˆx1                                                     148.1492ˆx2                                                                         72.9988x1x2                                                                                   1                                                                                                                   2
+                   + 118.5449ˆx2                                                     +                                                                                                 110.8106ˆx2                                                                                                                                                                   if                                                                                                             q                                                               =   −172.7302x1ˆx1                 −44.1475x2ˆx1                                                         −166.7411x2ˆx2                                                                             −31.0273ˆx1ˆx2                                                                                                                                q1;                                                   1 −38.0244x1ˆx2                                                                                                                               2,
+
+  60.0098      +              +                     +                             +                                    +                                                              121.4941x2                                            +                                                    +                                                                                         120.262x2            116.1265x1                         116.4412x2                                          116.183ˆx1                                                      117.3591ˆx2                                                                          65.6934x1x2                                                                                     1                                                                                                                   2
+
+                                                                                                                                                                   if                                                                                                             q                                                               =                                                      + 107.24ˆx2                    +                                       114.0595ˆx2                                                                                                                                q2;                                              −39.9788x1ˆx2                                                           −145.5936x2ˆx2                                                                               −40.8048ˆx1ˆx2     −150.5795x1ˆx1                   −45.7302x2ˆx1                                                                                                                               2,                                                      1
+  −19.3845 + 118.5786x1 + 117.8461x2 + 118.0923ˆx1 + 116.5122ˆx2 + 58.8333x21 + 30.7074x1x2 + 57.7209x22
+
+                                                                                                                                                                  if                                                                                                            q                                                               =                     +                                        56.0272ˆx2                                                     +                                                                                                   55.2207ˆx2                                                                                                                                q3;       −84.1498x1ˆx1                     −15.108x2ˆx1                                             −15.7012x1ˆx2                                                          −84.5201x2ˆx2                                                                              −23.8536ˆx1ˆx2                                                                                                                              2,                                                     1
+
+  −83.6295               +                       +                                                        −1.507x2                                            +                                                    +                                                                                         1.5837x2       + 146.2733x1                           146.1867x2                                            146.8514ˆx1                               + 144.0165ˆx2                                                                          7.1393x1x2                                                                                              −31.5865x1ˆx1                                                                                     1                                                                                                                 2
+                                  −1.8947ˆx2                                                    +                                                                                                   4.0396ˆx2                                                                                                                                                             if                                                                                                        q                                                             =                    −24.3528x2ˆx1                                            −25.1087x1ˆx2                                                         −33.2263x2ˆx2                                                                             −7.0456ˆx1ˆx2                                                                                                                                  qtrap;                                                   1                                                                                                                          2,
+
+  56.6331                     +                             +                                                       −22.7515x2                                            +                                                    +                                                                                       24.1708x2      + 137.5805x1              + 137.7372x2                                         137.4526ˆx1                                                       137.6363ˆx2                                                                          3.2284x1x2                                                                                               −2.7251x1ˆx1                                                                                     1                                                                                                                  2
+                                       −22.7993ˆx2                                                      +                                                                                                       25.489ˆx2                                                                                                                                                                   if                                                                                                             q                                                               =                                                                                                                                               ¯F;                          −2.2209x2ˆx1                                                  −1.6331x1ˆx2                                                              −7.2252x2ˆx2                                                                                 −3.6501ˆx1ˆx2                                                           1                                                                                                                               2,
+                                                                                                           (A.5)
+
+
+that M(i) = ∅. Therefore, one can conclude that
+                                         ∃k′ ∈[0, i], xx0,ν(k′) ∈XF .                                  (A.7)
+Based on (A.7), we complete the proof for (ii) via showing that ∄k ∈[0, i −K −1] such that xx0,ν(k′) ∈XF .
+Suppose that ∃k ∈[0, i −K −1] such that xx0,ν(k) ∈XF . By applying (ii), there should exist j ∈[0, k + K]
+such that M(j) = ∅. This is contradictory to the fact that M(j)̸ = ∅, ∀j ∈[0, i −1] since k + K < i. Therefore,
+one can conclude that
+                                ∄k ∈[0, i −K −1], xx0,ν(k) ∈XF .                               (A.8)
+Then, the proof is completed considering (A.7) and (A.8).                            ■
+
+
+
+1Thrust of Artificial Intelligence, Information Hub, Hong Kong University of Science and Technology (Guangzhou),
+China
+
+Email address: bingzhuoz@hkust-gz.edu.cn
+
+
+2 Department of Automation, Shanghai Jiao Tong University, China.
+
+Email address: {wjd dollar,yinxiang}@sjtu.edu.cn
+
+
+3Department of Computer Science, University of Colorado Boulder, USA
+
+Email address: majid.zamani@colorado.edu

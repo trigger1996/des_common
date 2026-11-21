@@ -8,6 +8,9 @@ from time import perf_counter
 
 import matplotlib
 matplotlib.use("Agg")  # This command writes figures and needs no GUI/Tk runtime.
+# Embed TrueType fonts in PDF/PS output; IEEE/PaperCept preflight rejects Type 3 fonts.
+matplotlib.rcParams["pdf.fonttype"] = 42
+matplotlib.rcParams["ps.fonttype"] = 42
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 from rich.console import Console

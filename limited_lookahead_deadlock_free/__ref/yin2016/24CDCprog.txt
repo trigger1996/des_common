@@ -1,0 +1,407 @@
+          2024 IEEE 63rd Conference on Decision and Control (CDC)
+         December 16-19, 2024. MiCo, Milan, Italy
+
+
+          Verification of Approximate Prognosability via Barrier Certificates
+
+
+                                Weijie Dong, Bingzhuo Zhong, Xiang Yin and Majid Zamani
+
+
+
+            Abstract— In this paper, we investigate the verification of     Note that all the aforementioned results on fault prognosis
+           approximate prognosability  for discrete-time control systems   of DES consider dynamical systems with observations rep-
+           with continuous state set in the context of fault prognosis.                                                                         resented as event sequences which can always be precisely
+           Existing works on this topic rely on constructing  finite ab-
+                                                                            distinguished. However, in many practical CPS, observations            stractions, which lead to significant computation burden. To
+           address this challenge, we propose an abstraction-free method    are continuous real-valued signals, so that  it may not be
+            via barrier certificates. Specifically, we consider a notion of so-    possible to confidently distinguish between two observations
+            called approximate (M, δ)-prognosability requiring that every    that are very close to each other due to imperfect mea-
+             fault, characterized by entering a fault region, can be predicted                                                                   surement precision. To address this challenge, researchers
+           before its occurrence under observation precision δ and once
+                                                                  have extended the notion of prognosability to metric systems         an alarm is issued, fault will occur for sure within M time
+                                                                              in [5] by considering the proximity of observations and a10.1109/CDC56724.2024.10886053          instants. Then, we propose a verification scheme based on an
+           M-deterministic finite automaton over an augmented system    finite-abstraction-based methodology was provided to verify
+DOI:            of the original system. Then, we reduce the verification of   approximate prognosability, where imperfect measurement
+|
+            (the lack  of) approximate (M, δ)-prognosability to a safety                                                                           precision is modeled by an accuracy parameter δ. However,
+            verification problem, which can be checked  effectively byIEEE                                                                                 this class of finite-abstraction-based approaches often suffer           barrier  certificates. Furthermore, a counter-example guided
+                                                                                 the                                                                                  curse                                                                                        of dimensionality                                                                                            due to                                                                                                                                  state-set                                                                                                                                      discretiza-           inductive                      synthesis framework  is proposed to compute these   from©2024           barrier certificates.                                                                                   tions,                                                                    which                                                                              can                                                                                                     limit  its scalability                                                                                                 and                                                                                                                               applicability                                                                                                                                            to
+                                                                               larger and more complex systems.
+                                         I. INTRODUCTION                          In this paper, we investigate the verification of prognos-
+                                                                                    ability for discrete-time control systems with continuous
+             Cyber-physical systems (CPS), such as power systems and                                                                               state-space. Specifically, the notion of approximate (M, δ)-
+            intelligent transportation, are critical infrastructures where                                                                          prognosability is considered, which requires that, under ob-
+            faults can potentially lead to catastrophic disasters. In severe                                                                           servation precision δ, every fault can be predicted before its
+           scenarios, merely diagnosing and isolating fault occurrences                                                                        occurrence, and once an alarm is issued, a fault will occur
+        may not suffice to safeguard CPS, as they could occur too                                                                        within M time instants from the alarm. Then, we introduce979-8-3503-1633-9/24/$31.00
+
+|             late, resulting in unrecoverable damages. Therefore, fault                                                                 an abstraction-free approach to verify approximate (M, δ)-
+           prediction or fault prognosis is crucial to prevent faults from                                                                          prognosability by reducing the verification problem into a(CDC)          causing significant damages.                                                                             safety verification problem and utilizing barrier certificates
+             In the context of model-based fault prognosis, a key chal-    to solve  it. Finally, we present a counterexample-guidedControl        lenge lies in determining whether the underlying dynamical    inductive synthesis (CEGIS) framework to compute these
+and       system  is prognosable. This notion characterizes whether    certificates.
+           the information flow generated by the system is sufficient     Recent  literature has explored the verification of  vari-
+            to support the prognostic task. The notion of prognosability   ous approximate versions of information-flow properties inDecision
+         was  first introduced in [7] within the context of discrete-   dynamical systems with imprecise observations [11]. Foron
+           event systems, which represent an important class of CPSs    instance, in [19], the concept of approximate diagnosability
+           characterized by discrete state sets and event-triggered dy-   was introduced for metric systems, ensuring that every oc-
+          namics. Since its introduction, prognosability concept have   currence of a fault can be detected within a finite time hori-Conference
+          been investigated in many literature. We refer the interested   zon. An abstraction-free approach for verifying approximate
+63rd        readers to some recent works [1]–[3], [10], [14], [16], [25],    diagnosability was also proposed in [28]. In the context of
+IEEE        [26] and the survey paper [24].                               information-flow security, the notion of approximate opacity
+                                                           was investigated in [12] and [27], with the development
+2024            This work was supported by the National Natural Science Foundation   of verification algorithms based on barrier  certificates in
+             of China (61803259, 61833012), Guangzhou-HKUST(GZ) Joint Funding
+            Program(Grant No.2023A03J0008), Education Bureau of Guangzhou Mu-    [9], [13] and [15]. Another related concept is approximate
+                nicipality, and NSF CPS Frontier project CNS-2111688.                    current-state observability, particularly in the context of state
+            W.   Dong   and   X.   Yin   are   with   the   Department   of   estimation under attacks [20]. However, as demonstrated in
+            Automation,   Shanghai   Jiao   Tong   University,   China.   E-mail:
+         {wjd dollar,yinxiang}@sjtu.edu.cn.   B.   Zhong    is    the discrete-event counterpart, the notion of prognosability
+             with  the  Thrust  of  Artificial  Intelligence,  Information  Hub,  Hong    is incomparable with above notions. In particular, prognos-
+          Kong  University  of Science and Technology (Guangzhou), China. E-    ability deals with future information, presenting a specific
+              mail: bingzhuoz@hkust-gz.edu.cn. M. Zamani  is with  the
+            Department of Computer Science, University of Colorado Boulder, USA.   challenge for the verification problem. To the best of our
+             E-mail: majid.zamani@colorado.edu.                     knowledge, there has been no exploration of abstraction-free
+
+
+           979-8-3503-1633-9/24/$31.00 ©2024 IEEE                    3693
+
+                  Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on June 16,2025 at 06:19:12 UTC from IEEE Xplore. Restrictions apply.
+
+methodologies for verifying approximate prognosability in     if ∥yx0,u(t)) −yˆx0,ˆu(t)∥≤δ for all t ∈N, which, with a
+the literature.                                                        slight abuse of notation, is denoted by yx0,u ≈yˆx0,ˆu. Then,
+                                                            given a state string xx0,u ∈X+, we define the set of all
+                        II. PRELIMINARIES
+                                                               possible observations of xx0,u by H(xx0,u) := {yˆx0,ˆu ∈
+A. Notations                                    Y + : yx0,u ≈yˆx0,ˆu}.
+  Let R and N be the set of real numbers and non-negative
+                                                                               III. APPROXIMATE (M, δ)-PROGNOSABILITY FOR
+integers, respectively. The set of non-negative real numbers
+                                                         DISCRETE-TIME CONTROL SYSTEMS
+is denoted by R≥0. For a, b ∈N and a ≤b, the closed
+interval in N is denoted by [a, b]. Consider a set X, a string      In the context of fault prognosis problem, the goal is to
+                                                         alarm whether or not the failures will occur. To this end,s = (x0, x1, · · · , xn(· · · )) is a finite (or infinite) sequence
+                                             we define by XF ∈X the faulty state set. We say a stateover X  if xi ∈X for all i = 0, 1, · · · , n(· · · ). We denote
+by X∗and Xω the set of all finite and infinite strings over    string xx0,u ∈Path is faulty  if  it enters the faulty state
+X, respectively, and use X+ = X∗∪Xω to denote the    set, i.e., xx0,u(k) ∈XF for some k ∈N. Note that we do
+                                                             not consider the case of fault recovery in this work, that is,set of all finite or infinite strings. For a finite string s ∈
+X∗, we denote by |s| the number of components in s. For   once the system enters the faulty state set, it remains faulty
+                                                                       indefinitely. We denote by Ψ(G) the set of finite state stringsa string s = (x0, x1, · · · ) ∈X+ and non-negative integers
+                                                                   in which faulty states appear for the first time, i.e.,i, j ∈N, i ≤j, we denote by s(i) = xi  its ith item and
+by s[i:j] = (xi, · · · , xj) the segment between the ith items      Ψ(G) :={x = (x0, . . . , xk) ∈Path(G) : xk ∈XF
+and jth items in the string s. Given a vector x ∈Rn, we
+                                                          ∧(∀t ∈[0, k −1])(xt /∈XF )}.            (2)
+denote by ∥x∥the Euclidean norm of x. For any two sets
+X and Y , we define the complement of X with respect to     Then,  we   formally   define   approximate  (M, δ)-
+Y as Y \X = {x ∈Y  : x /∈X}. For a set X ⊆Rn, the    prognosability as follows:
+boundary and topological closure of X are denoted by ∂X      Definition 1 (Approximate (M, δ)-prognosability):
+and clo(X), respectively.                                   Consider M ∈ N  and  δ ∈  R≥0. A  dt-CS G =
+                                                   (X, X0, U, f, Y, h)  with  observation  precision  δ  is  said
+B. System Model
+                                                                   to be approximate (M, δ)-prognosable if and only if
+  In this work, we consider a discrete-time control system
+                                                              (∀xx0,u = (x0, . . . , xk) ∈Ψ(G))(∃t ∈[0, k −1])) :
+(dt-CS) G by the tuple:
+                                                                                (∀xˆx0,ˆu ∈Path(G))((yˆx0,ˆu[0:t] ∈H(xx0,u[0:t])
+         G := (X, X0, U, f, Y, h),                                                   ∧(∀i ∈[0, t])(xˆx0,ˆu(i) /∈XF )) ⇒
+where X ⊆Rn, U ⊆Rm and Y ⊆Rp are the set of states,       ((∃j ∈[t + 1, t + M])(xˆx0,ˆu(j) ∈XF ))).
+inputs and outputs, respectively; X0 ⊆X is the set of initial                                                                        Intuitively, the above definition says that, for any faulty state
+state; the function f : X × U →X is the transition function                                                                     string xx0,u = (x0, . . . , xk) ∈Ψ(G), it must have a normal
+and h  : X →Y  is the output map. A dt-CS can also be                                                                   prefix such that the prognoser can predict for sure that fault
+described by the following difference equations:                                                      must occur in the next M steps based on its observation.
+                  x(t + 1) = f(x(t), u(t)),              The above notion modifies the approximate prognosability
+       G :                                           (1)
+                       y(t) = h(x(t)),                     given in [5] by utilizing a non-negative integer M to flexibly
+                                                              quantify the required time bound within which a fault is
+where t ∈N and x : N →X, u : N →U, y : N →Y are
+                                                           guaranteed to occur from the time the prognosis alarm has
+state, input, and output strings. We denote by U the set of
+                                                       been issued.
+all input strings. Given an input string u ∈U and an initial
+                                                                 In order to be able to prognose failures of a dt-CS in real
+state x0 ∈X0, the state string starting from x0 under input u
+                                                                time, we aim to construct a prognoser such that it can always
+is denoted by xx0,u = (x0, x1, . . . ) such that for any t ∈N,                                                                  predict the faults before their occurrence and fault will occur
+xt+1 = f(xt, u(t)). Then, the set of state strings generated
+                                                                   for sure within the next M steps once a prognosis alarm is
+by G is denoted by Path(G) = {xx0,u = (x0, x1, . . . ) ∈                                                                  issued, which is referred as a (M, δ)-prognoser. Formally
+X+ : ∃x0 ∈X0, ∃u ∈U, ∀t ∈N, xt+1 = f(xt, u(t))}. The
+                              +                 speaking, a (M, δ)-prognoser is defined as a function D  :output map h is extended to h : X+ →Y   such that for                                             Y ∗→{0, 1}, which provides “1” if a failure is inevitable
+any state string xx0,u = (x0, x1, . . . ) ∈Path(G), we have                                                             within the next M steps, and provides “0”, otherwise. We
+h(xx0,u) = (h(x0), h(x1), . . . ). For the sake of simplicity,                                                           say that a (M, δ)-prognoser works correctly if it satisfies the
+we also denote by yx0,u = h(xx0,u) the output of xx0,u.                                                             following conditions:
+  To model the imprecise observation in real world applica-
+                                                    C1) Any failure can be predicted before its occurrence, i.e.,tions, here, we introduce the notion of observation precision,
+denoted by δ ∈R≥0,  to model  the observation  error.         (∀xx0,u = (x0, . . . , xk) ∈Ψ(G))(∃t ∈[0, k −1]) :
+Furthermore, given an observation precision δ, we say two        (∀y ∈H(xx0,u))(∀t′ ∈[t, k −1])(D(y[0 : t′]) = 1),
+state x, ˆx ∈X are output equivalent if ∥h(x) −h(ˆx)∥≤δ,
+which is denoted by h(x) ≈h(ˆx). Similarly, we say two   C2) Once a prognose alarm is issued, failure is guaranteed
+state strings xx0,u, xˆx0,ˆu ∈Path(G) are output equivalent         to occur within next M steps, i.e.,
+
+
+                                                       3694
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on June 16,2025 at 06:19:12 UTC from IEEE Xplore. Restrictions apply.
+
+                                                               1, 2         (x0, x1, . . . ) ∈Path(G) and  xˆx0,ˆu =  (ˆx0, ˆx1, . . . ) ∈
+                 1             1, 2          1       x=0      x=1.2      x=2.4      x=4.8         Path(G). We denote by Path(¯G) the set of state string
+                                  2                   1, 2         generated by ¯G.
+                 2
+                                    1, 2          1                  x=1.7      x=6.8     x=10.2
+                                  2                  1, 2          B. Verification Structure
+                                                    1, 2                             x=7.7      x=9.3           Given an augmented system ¯G, we first define three state
+                                                                     partitions in ¯G: (i) both components are output equivalent,
+Fig. 1: A finite dt-CS for approximate (M, δ)-prognosability                                            Υ1 = {(x, ˆx) ∈¯X  : h(x) ≈h(ˆx)}; (ii) first component is
+as a running example, where states marked by red denote                                                                         faulty, Υ2 = {(x, ˆx) ∈ ¯X  : x ∈XF }; and  (iii) second
+faulty state.                                                     component  is  faulty, Υ3 = {(x, ˆx) ∈  ¯X   :  ˆx ∈XF }.
+                                                 .                                                     Based on above state partitions, we define a set of event
+       (∀xx0,u ∈Path(G))(∀t ∈N) : [((∃y ∈H(xx0,u))   Σ = {σ1, σ2, σ3, σ4, σ5, σ6} and a labeling function L  :
+      (D(y[0:t])=1))⇒                                    ¯X →2Σ such that L−1(σ1) = Υ1 ∩(¯X\Υ2) ∩(¯X\Υ3),
+        (∃t′ ∈[t + 1, t+M])(xx0,u(t′) ∈XF )].             L−1(σ2) = Υ2 ∩(¯X\Υ3), L−1(σ3) = ¯X\Υ3, L−1(σ4) =
+                                                     Υ3, L−1(σ5) = ( ¯X\Υ1) ∪Υ3, and L−1(σ6) = ¯X. Intu-  The following theorem shows that approximate (M, δ)-
+                                                                             itively, for a state ¯x = (x, ˆx) ∈¯X, σ1 ∈L(¯x) denotes bothprognosability indeed provides the necessary and sufficient
+                                                     component of ¯x are output equivalent and normal; σ2 ∈L(¯x)condition for the existence of an (M, δ)-prognoser.
+                                                            denotes that x is faulty but  ˆx is normal; σ3 ∈L(¯x) and  Theorem 1: Consider a dt-CS G. There exists a (M, δ)-
+                                                      σ4 ∈L(¯x) denote  ˆx  is normal and  faulty, respectively;prognoser satisfying conditions C1 and C2 if and only if the
+                                                      σ5 ∈L(¯x) denotes x and  ˆx are not output equivalent ordt-CS G is approximate (M, δ)-prognosable.
+                                                                                           ˆx is faulty, and σ6 ∈L(¯x) is held for any ¯x ∈¯X.  To better illustrate our previous results, we consider the
+                                                                After assigning different labels to states of augment systemfollowing dt-CS with finite state as our running example.
+                                                                           ¯G, we devise M-deterministic finite automaton (M-DFA)  Example 1: Let us consider a dt-CS G = (X, X0, U,
+                                                         based on event set Σ to record the label sequences of statef, Y, h) depicted in Figure 1, where X = {0, 1.2, 1.7, 2.4,
+                                                              paths of ¯G as follows.4.8, 6.8, 7.7, 9.3, 10.2}, X0 =  {0}, XF =  {10.2}, U =
+                                                                Definition 2 (M-deterministic finite automaton):{1, 2}, Y = X, and the output map h   : X →Y  is
+                                                          Consider M ∈N. An M-DFA is a four-tuple: A := (Q, q0,defined as h(x) := x for any x ∈X. We claim that G
+                                                    Σ, E), where Q = {q0, q1, . . . , qM, qt} is the finite set ofis not approximate (2, 1)-prognosable. For example,  let’s
+                                                                          states, q0 ∈Q is the initial state, Σ = {σ1, σ2, σ3, σ4, σ5, σ6}consider input u =  (2, 2, 1) and x0 =  0. We have a
+                                                                              is the finite set of events, E : Q × Σ →Q is the transitionfinite  state  string xx0,u =  (0, 1.7, 6.8, 10.2) ∈  Ψ(G).
+                                                              function such  that:  q0 =  E(q0, σ1);  q1 =  E(q0, σ2);There  exists  ˆu =  (2, 2, 2, 2) and  ˆx0 =  0 such  that
+                                                                     qt = E(q0, σ5); qM = E(qM, σ6); for any i = [1, M −1],xˆx0,ˆu = (0, 1.7, 6.8, 7.7, 9.3) ∈Path(G) and h(xˆx0,ˆu[0 :
+                                                            qi+1 = E(qi, σ3) and qt = E(qi, σ4).2]) ≈h(xx0,u[0 : 2]). Since xˆx0,ˆu(i) /∈XF  for all i ∈
+[0, 4], by Definition 1, system G is not approximate (2, 1)-     Given a non-negative integer M, the template of M-
+prognosable. On the other hand, one can check that the  DFA is depicted in Figure 2. Intuitively, M-DFA is a DFA
+system is approximate (3, 1)-prognosable.                    with M + 2 states and driven by labels of states in aug-
+                                                     mented system ¯G. Considering a finite state string ¯x¯x0,¯u =
+          IV. VERIFICATION OF APPROXIMATE              ((x0, ˆx0), . . . , (xn, ˆxn)) ∈Path(¯G), M-DFA stays at state
+            (M, δ)-PROGNOSABILITY                    q0 after monitoring  ¯x¯x0,¯u  if only event σ1 occurs, which
+  In  this section, we provide a necessary and  sufficient   means (x0, . . . , xn) and (ˆx0, . . . , ˆxn) are normal and output
+condition under which a dt-CS  is approximate (M, δ)-    equivalent. If M-DFA moves to state q1 driven by ¯x¯x0,¯u, we
+prognosable based on the verification system.             know that (x0, . . . , xn) enters into fault region for the first
+                                                                time, (ˆx0, . . . , ˆxn) is still normal and both of them are output
+A. Augmented Systems                                                               equivalent before the previous  step,  i.e., (x0, . . . , xn) ∈
+  Given a dt-CS G = (X, X0, U, f, Y, h), the augmented   Ψ(G), h((x0, . . . , xn−1)) ≈h((ˆx0, . . . , ˆxn−1)) and  ˆxi  /∈
+system associated with G is defined as               XF for all i ∈[0, n]. Suppose M-DFA reaches state qk, k ∈
+                                                                          [2, M], after monitoring ¯x¯x0,¯u, (xk, ˆxk), k ∈[0, n]. By the                   ¯G := (¯X, ¯X0, ¯U, ¯f, ¯Y ),
+                                                                    definition of event σ3, we know that xi ∈XF  for some
+where ¯X = X ×X, ¯X0 = X0 ×X0, ¯U = U ×U, ¯Y = Y ×Y     i ∈[0, n] and  ˆxj /∈XF  for  all j ∈[0, n]. Note that
+and ¯f : ¯X × ¯U →¯X is the transition function defined by:   according to the definition of labels σ3 and σ2, we do
+for any  ¯x = (x, ˆx) ∈¯X and  ¯u = (u, ˆu) ∈¯U, we have   not require state x and  ˆx to be observable equivalent for
+¯f(¯x, ¯u) = (f(x, u), f(ˆx, ˆu)). Essentially, ¯G is constructed    all  ¯x = (x, ¯x) ∈ ¯X when σ3 ∈L(¯x) or σ2 ∈L(¯x).
+by augmenting dt-CS G with itself. Given an initial state    Specifically, after M-DFA leaving q0, we relax the constraint
+¯x0 = (x0, ˆx0) ∈¯X0 and an input string ¯u = (u, ˆu) ∈U ×U,   of observation equivalence.
+we have the state string  ¯x¯x0,¯u = ((x0, ˆx0), (x1, ˆx1), . . . )     Now, based on the augmented system ¯G and M-DFA, we
+in ¯G starting from  ¯x0 under input  ¯u such that xx0,u =    construct the verification system as follows:
+
+
+                                                       3695
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on June 16,2025 at 06:19:12 UTC from IEEE Xplore. Restrictions apply.
+
+            σ1                                                        [0, k −1], ˜x˜x0,˜u(l) /∈F. By the construction of M-DFA,
+               σ2       σ3         σ3        σ3                 let i = k −M + 1. We have  ˜x˜x0,˜u(i) ∈¯X × {q1}. Let
+           q0         q1                qM−1     qM                    . . .                           xx0,u =  θ1(˜x˜x0,˜u) and  xˆx0,ˆu =  θ2(˜x˜x0,˜u). According to
+                                                                the  first property of verification system V , we know that
+        σ5   σ4          σ4                     σ6
+                                                                the prefix xx0,u[0 : i] of  ˜x˜x0,˜u  is included in Ψ(G),  i.e.,
+            qt                                                 xx0,u[0 : i] ∈Ψ(G). Furthermore, let t ∈max{0, i −1}.
+      σ6                                            Then one has yˆx0,ˆu[0 : t] ≈yx0,u[0 : t] and xˆx0,ˆu(j) /∈XF
+              Fig. 2: The template of M-DFA                  for all j ∈[0, t]. Since  ˜x˜x0,˜u reaches a state in F  at the
+                                                 .                               kth time step, i.e., θ3(˜x˜x0,˜u(k)) = qM, by the definition of
+  Definition 3 (Verification system): Given a dt-CS G, its   events σ2 and σ3, we know that xˆx0,ˆu(m) /∈XF  for all
+verification system is a tuple V := (˜X, ˜X0, ˜U, ˜f, F), where  m ∈[t+1, t+M]. Therefore, the existence of such ˜x˜x0,˜u ∈
+˜X = X × X × Q, ˜X0 = {(x0, ˆx0, q) ∈X0 × X0 × Q : ∃σ ∈   Path(V ) satisfying ˜x˜x0,˜u(k) ∈F for some k ∈N falsifies
+L(x0, ˆx0), q = E(q0, σ)}, ˜U = U × U, and ˜f : ˜X × ˜U →    the desired approximate (M, δ)-prognosability property.
+˜X is a deterministic transition function defined by: for any
+˜x = (x, ˆx, q) ∈˜X and ˜u = (u, ˆu) ∈˜U, we have ˜f(˜x, ˜u) =     V. BARRIER CERTIFICATES FOR CHECKING (LACK OF)
+(x′, ˆx′, q′)  if x′ = f(x, u), ˆx′ = f(ˆx, ˆu) and there exists         APPROXIMATE (M, δ)-PROGNOSABILITY
+σ ∈L(x′, ˆx′) such that q′ = E(q, σ), and F = ¯X × {qM}
+                                                                 In this section, we provide barrier certificates to verifyis the set of accepting states.
+                                                                 (lack of) approximate (M, δ)-prognosability.   Essentially, the verification system V  is constructed by
+synchronizing the augmented system ¯G with the M-DFA
+                                                            A. Verifying Approximate (M, δ)-Prognosability via Barrieraccording to the labeling function L : ¯X →2Σ. Specifically,
+                                                                    Certificatesfor any state  ˜x = (x, ˆx, q) ∈˜X and input  ˜u = (u, ˆu) ∈
+˜U, one  gets  f(˜x, ˜u) =  (x′, ˆx′, q′) whenever  (i)  x′ =      In this section, we leverage a notion of barrier certifi-
+f(x, u), ˆx′ = f(ˆx, ˆu); and (ii) there exists a label of the state   cate to check (M, δ)-prognosability. The following theo-
+pair (x′, ˆx′) satisfying the transition from q to q′, i.e., ∃σ ∈   rem provides a sufficient condition for approximate (M, δ)-
+L(x, ˆx), q′ = E(q, σ). We denote the set of all input string    prognosability.
+pairs by UV = U×U. Then, given an input string ˜u ∈UV and    Theorem 3: Consider a dt-CS G. The dt-CS G is ap-
+an initial state ˜x0 ∈˜X0, we denote by ˜x˜x0,˜u = (˜x0, ˜x1, . . . )   proximate (M, δ)-prognosable  w.r.t  observation  precision
+the state string in the verification system V from initial state   δ and  constant M  if  for  its  verification system V =
+˜x0 under the input ˜u. The set of state strings generated by    (˜X, ˜X0, ˜U, ˜f, F), there exists a function B : ˜X →R such
+V  is denoted by Path(V ). For state ˜x = (x, ˆx, q) ∈˜X, we    that
+denote by θ1(˜x) = x, θ2(˜x) =  ˆx and θ3(˜x) = q  its  first,
+second, and third component, respectively. We extend this      ∀˜x ∈˜X0,                         B(˜x) ≤0,            (3)
+notation to state string  ˜x˜x0,˜u =  (˜x0, ˜x1, . . . ) ∈Path(V )      ∀˜x ∈F,                          B(˜x) > 0,           (4)
+by θi(˜x˜x0,˜u) = (θi(˜x0), θi(˜x1), . . . ) for i ∈{1, 2, 3}. By                                                                       ∀˜x ∈¯X × Q\ {qt}, ∀˜u ∈˜U,    B(˜f(˜x, ˜u)) ≤B(˜x).  (5)
+construction, V has the following two properties:
+                                                             Since the state set Q of the M-DFA is finite and discrete,  • For any  state  string  ˜x˜x0,˜u =   (˜x0, ˜x1, . . . , ˜xn) ∈
+                                                                the state set ˜X is a hybrid state set. To compute B, we first    Path(V ) such that θ3(˜xn) = q1, ˜x0 = (x0, ˆx0) and
+                                                                define a function Ind : Q →[0, M] ∪{t} that maps the state      ˜u =  (u, ˆu), we have two  state  strings xx0,u =
+                                                                       qi ∈Q to its the index i. Then, we fix the template of barrier      θ1(x˜x0,˜u), xˆx0,ˆu =  θ2(x˜x0,˜u) ∈Path(G) such that
+                                                                        certificates as: for any ˜x = (x, ˆx, q) ∈˜X,     yx0,u[0 : n −1] ≈yˆx0,ˆu[0 : n −1], xx0,u ∈Ψ(G) and
+     for any i ∈[0, n], xˆx0,ˆu(i) /∈XF ;                                                                 B(˜x) =
+  • For any pair of state strings xx0,u, xˆx0,ˆu ∈Path(G),
+                                 (                       l     there exists  ˜x˜x0,˜u ∈Path(V ) such that θ1(˜x˜x0,˜u) =      Bl(x, ˆx)=Pzbn=1 αnl pnl (x, ˆx), if l=Ind(q) ∈[0, M],                                                                                                                               (6)
+     xx0,u, θ2(˜x˜x0,˜u) =  xˆx0,ˆu, ˜x0 =  (x0, ˆx0), and  ˜u =                                                                                                                     t  αnt pnt (x, ˆx), if Ind(q)=t,                                                            Bt(x, ˆx)=Pzbn=1
+     (u, ˆu).
+  We are now ready to recast the verification of approximate   where for any l ∈[0, M], pnl (x, ˆx) and pnt (x, ˆx) are monomi-
+(M, δ)-prognosability as a safety verification problem for the    als over the state variables x and ˆx with fixed degree db ∈N,
+verification system.                                αnl and αnt  are unknown coefficients, zbt, zbl ∈N are some
+  Theorem 2: Consider a dt-CS G. The dt-CS G is not    positive integers.
+approximate (M, δ)-prognosable if and only if in the veri-    We use the counterexample-guided inductive synthesis
+fication system V , there exists ˜x˜x0,˜u ∈Path(V ) such that   (CEGIS) framework  [8], [22] to find barrier  certificates.
+˜x˜x0,˜u(k) ∈F for some k ∈N.                            Given a state q ∈Q, the state which M-DFA will reach from
+  Lets intuitively explain the above theorem. Without loss    state q ∈Q after monitoring a state pair ¯x = (x, ˆx) ∈¯X is
+of generality, suppose there exists  ˜x˜x0,˜u ∈Path(V ) that   given by: Θ(q, ¯x) = q′, if there exists σ ∈L(¯x) such that
+reaches a  state  in F  for the  first time  at time step k,    q′ = E(q, σ). Given states q, q′ ∈Q, the set of all state pairs
+i.e., for some k ∈N,  ˜x˜x0,˜u(k) ∈F and for any  l ∈   and input pairs (x, ˆx, u, ˆu) ∈¯X × ¯U, such that M-DFA will
+
+
+                                                       3696
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on June 16,2025 at 06:19:12 UTC from IEEE Xplore. Restrictions apply.
+
+                                 B0(x, ˆx) = −0.6055 −0.3879x −0.3879ˆx+reach state q′ from q after monitoring (f(x, u), f(ˆx, ˆu)) is
+                                                                 0.1548x2                                                                      −0.0640xˆx                                                   + 0.1548ˆx2                                                                                −0.1318x3+given     by
+                                                                      0.1036x2ˆx                                             +                                                                                    0.1036xˆx2                                                                                        −0.1318ˆx3,                                                                                                          q                                                              =                                                                                                                                                        if                                                                                                                              q0;
+                                                                                                      ˆx)                                           =                                                                           0.7116                                                                      −0.5457x                                                                            −0.0956x2−                                                                B1(x,                  ×           q′)       =                {(x,                               ˆx, u,                                  ˆu)                    ∈¯X                                            ¯U                                                          :   Nex(q,
+                                                                    0.0168x3,                                                                                                          q                                                              =                                                                                                                                                        if                                                                                                                              q1;          ∃σ             ∈L(f(x,                           u),                                  f(ˆx,                                            ˆu)),                                             q′ = E(q,                                              σ)}.                                                            (7)
+                                                                                                      ˆx)                                           =                                                                           2.3439                                                                      −0.7707x                                                                                   −0.7707ˆx−                                                                B2(x,
+                                                                 0.7282x2                                             +                                                                                  0.2826xˆx                                                                                    −0.7282ˆx2                                                                                −0.4690x3+                                   Then,        based            on                above                          operators,                         we                                  encode                                               the                                                      definition                                                      B(˜x)=
+of barrier certificates in inequations (3)-(5) as the following              0.6892x2ˆx + 0.6892xˆx2 −0.4690ˆx3,  if q = q2;
+conjunction            of               inequations:                                                                                                      ˆx)                                           =                                                                           1.8874                                                                      −0.6633x                                                                                   −0.6633ˆx+                                                                B3(x,
+                                                                 0.1503x2                                             +                                                                                  0.2311xˆx                                                   + 0.1503ˆx2                                                          + 0.0235x3−
+    ^                                                                      0.0280x2ˆx                                                                         −0.0280xˆx2                                                    + 0.0235ˆx3,                                                                                                          q                                                              =                                                                                                                                                        if Φb    :=                   ≤0;                         (8)                                                                                                                              q3;                    BInd(q)(¯x)    1
+      ¯x∈¯X0,q∈Θ(q,¯x)                                                                                                     ˆx)                                           =                                                                    −1.3440                                                  + 0.2775x                                                       + 0.2477ˆx−                                                                   Bt(x,
+   ^ Φb    :=           > 0;                                                            (9)                                                                 0.0944x2                                                                      −0.1661xˆx                                                                                    −0.0795ˆx2                                                                                −0.0249x3+           BM(¯x)    2
+         ¯x∈¯       X                                                                      0.0255x2ˆx                                             +                                                                                    0.0195xˆx2                                                                                        −0.0256ˆx3,                                                                                                          q                                                              =                                                                                                                                                        if                                                                                                                                                        qt.                                 
+ Φb3 := ^ BInd(q′)(f(x, u), f(ˆx, ˆu)))≤BInd(q)(x, ˆx).  (10)                                                              Therefore, system G is approximate (3, 1)-prognosable ac-
+  q∈Q\{qt},q′∈Γ (q),                                                            cording to Theorem 3.   (x,ˆx,u,ˆu)∈Nex(q,q′)
+                                                            B. Verifying Lack of Approximate (M, δ)-prognosability via
+                                                             Barrier Certificates
+  Given the barrier certificate template as in Equation (6),
+                                                                 In this section, we propose another type of barrier certifi-the CEGIS framework for computing B is as follows:
+                                                              cate V : ˜X →R for verification system V to check the lack
+  1) We select finite set of samples ¯XB ⊂¯X and ¯UB ⊂¯U,   of approximate (M, δ)-prognosability.
+     respectively.                                    Theorem 4: Consider a dt-CS G. The dt-CS G is not
+  2) Compute a candidate B with template defined in Equa-   approximate (M, δ)-prognosable w.r.t observation precision
+     tion (6) such that for any state  ¯x ∈ ¯XB and input   δ and  constant M  if  for  its  verification system V =
+       ¯u ∈¯UB, the formula Φb := Φb1 ∧Φb2 ∧Φb3  is true.    (˜X, ˜X0, ˜U, ˜f, F), there exists a function V  : ˜X →R such
+   By substituting each  ¯x ∈¯XB and  ¯u ∈¯UB into Φb,    that
+     the above computation of candidate B  is reduced to        ∀˜x ∈˜X0,                            V(˜x) ≤0;    (11)
+     a linear programming problem with decision variables                                                                         ∀˜x ∈∂¯X × (Q \ {qM}),             V(˜x) > 0;    (12)
+    αnl , l ∈[0, M] and αnt , which can be solved by the off-                                                                         ∀˜x ∈clo(˜X \ F), ∃˜u ∈˜U,  V(˜f(˜x, ˜u))<V(˜x).    (13)     the-shelf solvers, such as CVXPY [6]. If such candidate
+                                                                     Similarly, we consider a template for barrier certificate V   B does not exist, we conclude that there is no barrier
+                                                                   to based on different states of M-DFA as follows:      certificate B with template defined in Equation (6).
+  3)  If there is a feasible solution for candidate B, in order     V(˜x) =
+     to       check whether                                  it                                is                          indeed                                 a true                                              barrier                                                          certificate                                 (                                                               Vl(x, ˆx) = Pzvn=1                                                                                                                                           l  βnl wnl (x, ˆx), if l = Ind(q) ∈[0, M],                                       ¯x                                                          ¯u     satisfying            Φb for                             all                  ∈¯X and                                ∈¯U, we                                                    search
+                                                     Pzvn=1 βnt wnt (x, ˆx), if Ind(q) = t,     for some counterexamples ¯xc ∈¯X and ¯uc ∈¯U such      Vt(x, ˆx) =      t
+     that ¬Φb is true. We can encode ¬Φb as a Satisfiability                                                          (14)
+    Modulo Theories (SMT) query and solve  it by SMT                                                     where  for any  l ∈[0, M], wnl (x, ˆx) and wnt (x, ˆx) are
+     solver, such as Z3 [4].                                                     monomials over the state variables x and ˆx with fixed degree
+  4)  If the counterexample cannot be found, i.e., ¬Φb has                                                         dv ∈N, βnl  and βnt  are unknown coefficients, zvt , zvl ∈N
+    no feasible solution, the candidate B is a valid barrier                                                                are some positive integers.
+      certificate. Otherwise, if ¬Φb has feasible solution ¯xc     To compute barrier certificate V via the CEGIS framework,
+    and  ¯uc, we  obtain new sample  set by adding  the  we formulate the conditions of V  in Theorem 4 as the
+     counterexamples: ¯XB ∪{¯xc} and ¯UB ∪{¯uc}, and repeat   following inequations:
+     Steps 2)-4).
+                                                Φv1 =  ^    VInd(q)(¯x) ≤0;                     (15)
+  Example 2: Let us consider the dt-CS G shown in Fig-            ¯x∈¯X0,q∈Θ(q,¯x)
+ure 1 with observation precision δ =  1. Let M =  3.
+                                                Φv2 =  ^       VInd(q)(¯x) > 0;                  (16)To check  if system G  is approximate (3, 1)-prognosable,
+                                                                     ¯x∈∂¯X,q∈(Q\{qM})we  utilize the CEGIS framework and compute a barrier
+certificate B satisfying Equation (8)-(10) as shown in the    Φv3 =^   _   VInd(q′)(¯f(¯x, ¯u))))≤VInd(q)(¯x),  (17)
+following equation under the template in Equation (6) with          ¯x∈clo( X),¯        ¯u∈¯U,
+degree 3.                                                       q∈Q\{qM} q′∈Θ(q,f(¯x,¯u))¯
+
+
+                                                       3697
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on June 16,2025 at 06:19:12 UTC from IEEE Xplore. Restrictions apply.
+
+Given the barrier certificate template in Equation (14), we      [4] L. De Moura and N. Bjørner.  Z3: An  efficient smt solver.   In
+can also use the similar CEGIS framework for computing B          International conference on Tools and Algorithms for the Construction
+                                                                      and Analysis of Systems, pages 337–340. Springer, 2008.
+to compute B.                                                                  [5] E. De Santis, M. Di Benedetto, Gabriella Fiore, and G. Pola. Approx-
+  Remark 1:  If a dt-CS G has a polynomial  transition         imate predictability of pseudo-metric systems.  Nonlinear Analysis:
+function and its output map h is a polynomial function in         Hybrid Systems, 36:100869, 2020.
+                                                                                     [6]  S. Diamond and S. Boyd. CVXPY: A python-embedded modeling
+variable x, one can alternatively make use of sum-of-squares         language for convex optimization. The Journal of Machine Learning
+(SOS) programming to search for barrier certificates as in         Research, 17(1):2909–2913, 2016.
+[21], with the help of semidefinite programming tools, such      [7]  S. Genc and S. Lafortune.   Predictability of event occurrences in
+                                                                                      partially-observed discrete-event systems. Automatica, 45(2):301–311,
+as SOSTOOLS [17] and SeDuMi [23]. Recently, machine         2009.
+learning techniques also have been exploited to search for      [8]  P. Jagtap, S. Soudjani, and M. Zamani. Formal synthesis of stochastic
+barrier certificates and the readers are referred to [18] for         systems via control barrier certificates. IEEE Transactions on Auto-
+                                                                              matic Control, 66(7):3097–3110, 2020.
+more details.                                                                    [9] Shadi Tasdighi Kalat, Siyuan Liu, and Majid Zamani.  Modular
+  Example 3: We again still consider the dt-CS G depicted           verification of opacity for interconnected control systems via barrier
+in Figure 1 with observation precision δ = 1. In this case, we            certificates. IEEE Control Systems Letters, 6:890–895, 2021.
+                                                                              [10] D. Lefebvre.  Fault diagnosis and prognosis with partially observed
+consider M = 2. To check if system G is approximate (2, 1)-           petri nets.  IEEE Transactions on Systems, Man, and Cybernetics:
+prognosable, we utilize the CEGIS framework to compute a          Systems, 44(10):1413–1424, 2014.
+barrier certificate satisfying inequations (15)-(17) as shown    [11]  S. Liu, A. Trivedi, X. Yin, and M. Zamani.  Secure-by-construction
+                                                                                     synthesis of cyber-physical systems.  Annual Reviews in Control,
+in the following equation under the template in Equation (6)         53:30–50, 2022.
+with degree 3.                                                            [12]  S. Liu, X. Yin, and M. Zamani. On a notion of approximate opacity
+                                                                                          for discrete-time stochastic control systems. In 2020 American Control
+    V0(x, ˆx) = −0.0267 −0.6546x −0.6546ˆx+               Conference (ACC), pages 5413–5418. IEEE, 2020.
+                                                                              [13]                                                                                      S.                                                                              Liu                                                                              and                                                                     M.                                                                                      Zamani.                                                                                                                  Verification                                                                                                                       of                                                                                                               approximate                                                                                                                                     opacity                                                                                                                                                 via                                                                                                                                                               barrier         8.1664x2                −17.0279xˆx                  +                                   8.1664ˆx2                                  −0.7584x3+
+                                                                          IEEE                                                                                                 Control                                                                                                     Systems                                                                                                   certificates.                                                                                                                                   Letters,                                                                                                                      5(4):1369–1374,                                                                                                                                     2020.
+                                                                              [14]                                                                                 Z.                                                                     Ma,                                                                               X.                                                                                              Yin,                                                                                       and                                                                                                      Z.                                                                                                                       Li.                                                                                                Marking                                                                                                                                       predictability                                                                                                                       and                                                                                                                                                  prediction         0.8023x2ˆx           +                      0.8023xˆx2                               −0.7584ˆx3,                                               q                            =                                                                 if                                                          q0;
+                                                                                   IEEE                                                                                                                Transactions                                                                                                           on                                                                                                                          Automatic                                                                                         in                                                                                        labeled                                                                                                            petri                                                                                                                 nets.                                                                                                                                                 Control,
+                    ˆx) =                   0.9962                      −3.6481x                     + 1.3833ˆx−         V1(x,                                                                             66(8):3608–3623,                                                                                              2021.
+                                                                              [15]                                                                                   V.                                                                                     Murali,                                                                                                  S.                                                                                                      Kalat,                                                                                           and                                                                                 M.                                                                                                     Zamani.                                                                        A                                                                                                                                  data-driven                                                                                                                               approach                                                                                                                                                                 to         12.2918x2           +                      4.5125xˆx                             −0.3641ˆx2                        +                                       1.2333x3−                                                                                                    2023                                                                                                         62nd                                                                                                     IEEE                                                                                                                             Conference                                                                                                                            on                                                                             approximate                                                                                                opacity                                                                                                                      verification.                                                                                                                     In
+                                                                              Decision                                                                             and                                                                                             Control                                                                                         (CDC),                                                                                                        pages                                                                                                         5085–5090.                                                                                                                  IEEE,                                                                                                                                2023.         0.6245x2ˆx           +                      0.1566xˆx2                  +                                     0.0627ˆx3,                                               q                            =                                                                 if                                                          q1;    V(˜x)=                                                                     [16]  F. Nouioua, P. Dague, and L. Ye. Predictability in probabilistic discrete
+         V2(x, ˆx) = 0.8403 −0.3703x −0.3703ˆx−                   event systems.  In Soft Methods for Data Science, pages 381–389.
+                                                                                      Springer,                                                                                      2017.         0.3874x2          +                     0.7815xˆx                            −0.3874ˆx2                       +                                      0.0693x3−                                                                              [17]                                                                        A.                                                                                    Papachristodoulou,                                                                                                                                          J.                                                                                                  Anderson,                                                                                                     G.                                                                                                                 Valmorbida,                                                                                                                                          S.                                                                                                                                             Prajna,                                                                                                                                                                            P.                                                                                                                                                                       Seiler,
+                                                                                                    P.                                                                                                  Parrilo,                                                                     M.                                                                                                         Peet,                                                                                           and                                                                                              D.                                                                                                                               Jagt.                                                                                SOSTOOLS                                                                                                                                     version                                                                                                                                       4.00                                                                                                               sum         0.0518x2ˆx                  −0.0518xˆx2                  + 0.0693ˆx3,                                               q                            =                                                                 if                                                          q2;
+                                                                                                                                arXiv                                                                                                                                                    preprint                                                                                    of                                                                                     squares                                                                                               optimization                                                                                                         toolbox                                                                                                                               for                                                                                  MATLAB.
+                    ˆx) =                 −1.3443                +                            0.2775x                      + 0.2477ˆx−                                                                               arXiv:1310.4716,                                                                                              2013.         Vt(x,
+                                                                              [18]                                                                        A.                                                                                         Peruffo,                                                                                 D.                                                                             Ahmed,                                                                                            and                                                                                               A.                                                                                                           Abate.                                                                                                      Automated                                                                                                                  and                                                                                                                               formal                                                                                                                                                  synthesis         0.0944x2                −0.1661xˆx                            −0.0795ˆx2                                 −0.0249x3+                                                                                                                                               International                                                                                    of                                                                                       neural                                                                                                      barrier                                                                                                                    certificates                                                                                                                        for                                                                                                        dynamical                                                                                                                      models.                                                                                                                                        In
+                                                                                conference                                                                               on                                                                                                         tools                                                                                      and                                                                                                        algorithms                                                                                                                                for                                                                                                                              the                                                                                                                               construction                                                                                                                    and                                                                                                                                                  analysis             0.0256x2ˆx           +                      0.0195xˆx2                               −0.0256ˆx3,                                               q                            =                                                                 if                                                                      qt;
+                                                                                         of systems, pages 370–388. Springer, 2021.
+Thus, system G is not approximate (2, 1)-prognosable ac-    [19] G. Pola, E. De Santis, and M. Di Benedetto. Approximate diagnosis
+                                                                                    of metric systems. IEEE Control Systems Letters, 2(1):115–120, 2017.
+cording to Theorem 4.                                                                              [20] G. Pola, E. De Santis, and M. Di Benedetto. Approximate current state
+                  VI. CONCLUSION                                     observability of discrete-time nonlinear systems under cyber-attacks.
+                                                                             Nonlinear Analysis: Hybrid Systems, 50:101403, 2023.
+  In this paper, we developed an abstraction-free approach    [21]  S. Prajna and A. Jadbabaie. Safety verification of hybrid systems using
+to verify (the lack of) approximate (M, δ)-prognosability for           barrier certificates.  In International Workshop on Hybrid Systems:
+                                                                         Computation and Control, pages 477–492. Springer, 2004.
+discrete-time control systems based on barrier certificates.    [22] A. Solar-Lezama.  Program synthesis by sketching.  University of
+The verification of approximate (M, δ)-prognosability was          California, Berkeley, 2008.
+reduced to a safety problem for the verification system,    [23]  J. Sturm. Using SeDuMi 1.02, a MATLAB toolbox for optimization
+                                                                                over symmetric cones.  Optimization methods and software, 11(1-
+which can be checked via barrier certificates. Finally, we         4):625–653, 1999.
+provided algorithms to search for valid barrier certificates    [24] A. Watanabe, R. Sebem, A.B. Leal, and M. da S Hounsell.  Fault
+based on the CEGIS framework. In the future, we would         prognosis of discrete event systems: An overview. Annual Reviews in
+                                                                                    Control, 51:100–110, 2021.
+like to develop an algorithm to design (M, δ)-prognoser for    [25] X. Yin.  Verification of prognosability for labeled petri nets. IEEE
+approximate (M, δ)-prognosable systems.                               Transactions on Automatic Control, 63(6):1828–1834, 2018.
+                                                                              [26] X. Yin and Z. Li.  Decentralized fault prognosis of discrete event
+                 REFERENCES                                   systems with guaranteed performance bound.  Automatica, 69:375–
+                                                                                379, 2016.
+ [1] R. Ammour, E. Leclercq, E. Sanlaville, and D. Lefebvre.   Fault    [27] X.  Yin, M. Zamani, and  S.  Liu.  On approximate  opacity  of
+     prognosis of timed stochastic discrete event systems with bounded          cyber-physical systems.  IEEE Transactions on Automatic Control,
+     estimation error. Automatica, 82:35–41, 2017.                              66(4):1630–1645, 2020.
+ [2] R. Barcelos and  J. Basilio.  Disjunctive fault prediction of decen-    [28] B. Zhong, W. Dong, X. Yin, and M. Zamani. Verification of diagnos-
+      tralized discrete event systems: Verification, predictor design and k-           ability for cyber-physical systems via hybrid barrier certificates. In 8th
+      copredictability. Automatica, 148:110769, 2023.                         IFAC Conference on Analysis and Design of Hybrid Systems (ADHS),
+ [3] A. Chouchane and M. Ghazel. Fault-prognosability, k-step prognosis         2024.
+     and k-step predictive diagnosis in partially observed petri nets by
+    means of algebraic techniques. Automatica, 162:111513, 2024.
+
+
+                                                       3698
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on June 16,2025 at 06:19:12 UTC from IEEE Xplore. Restrictions apply.

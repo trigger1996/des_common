@@ -1,0 +1,495 @@
+1830                                                                    IEEE TRANSACTIONS ON FUZZY SYSTEMS, VOL. 25, NO. 6, DECEMBER 2017
+
+
+   A Belief-Evolution-Based Approach for Online Control of Fuzzy
+            Discrete-Event Systems Under Partial Observation
+
+                                            Xiang Yin
+
+
+  Abstract—In this paper, we investigate the partially observed supervisor   language, while the later asks to synthesize a supervisor such that behav-
+synthesis problem in the framework of fuzzy discrete-event systems (DESs).    ior of the closed-loop system is a sublanguage of the given speciﬁcation
+The goal is to synthesize a fuzzy supervisor such that the behavior of the
+                                                                    language.closed-loop system is within a given fuzzy language. A new approach for
+solving this problem is proposed based on the idea of belief evolution.     The supervisory control problem has also drawn considerable at-
+Speciﬁcally, we propose an algorithm that can be implemented in an online   tention in the framework of FDES; see, e.g., [6], [11], [20]–[31]. In
+manner. We show that the proposed algorithm is both sound and complete,    particular, in [22], Cao and Ying investigated the supervisor existence
+i.e., it effectively solves the supervisor synthesis problem. To the best of our
+                                                              problem under the partial observation setting, where the notions of
+knowledge, this is the ﬁrst algorithm with such a property for fuzzy DESs,
+as previous works on this topic mostly focus on the supervisor existence   fuzzy controllability and fuzzy observability were proposed. It was
+condition rather than the supervisor synthesis problem.                shown that these two notions together provide the necessary and suf-
+                                                                      ﬁcient conditions for the existence of a supervisor that achieves a
+  Index Terms—Belief evolution, fuzzy discrete-event systems (FDESs),
+                                                                   given fuzzy language. In [25], Qiu and Liu proposed a more generalpartial observation, supervisor control.
+                                                             framework for the supervisory control of partially observed FDES by
+                                                                     considering fuzziness in both observation and control. Necessary and
+                               I. INTRODUCTION                            sufﬁcient conditions for the supervisor existence problem were also
+                                                                         derived.
+  Discrete-event systems (DESs) are a class of dynamic systems which
+                                                                Although the supervisory control of FDES has been investigated
+have inherently event-driven behaviors and discrete state spaces. Mod-
+                                                           by many works, there are still several important problems remain. In
+eling and analysis using DES have been successfully applied to many
+                                                                                particular, both [22] and [25] only focus on the supervisor existence
+applications, e.g., ﬂexible manufacturing systems, software systems,
+                                                                  problem. However, when the necessary and sufﬁcient conditions for
+and communication protocols. However, standard (crisp) DES model
+                                                                        the supervisor existence problem do not hold, how to synthesize a
+cannot capture uncertainty, vagueness, or imprecision of the system.
+                                                                      supervisor has drawn little attention. Moreover, in both the framework
+To address this issue, the theory of fuzzy DES (FDES) was developed
+                                                                      of [22] and the framework of [25], the notion of observability is not
+a decade ago by Lin and Ying in [1] and Lin et al. in [2]. Since then,
+                                                                    preserved under union. Consequently, unlike the fully-observed case,
+many results in the framework of FDES have been developed; see,
+                                                                         there does not exist a supremal solution to the synthesis problem under
+e.g., [3]–[6].
+                                                                        the partial observation setting. To address this issue, in [22], the notion
+  The motivation of studying FDES is that, in many applications, it is
+                                                                      of fuzzy normality, which is strictly stronger than fuzzy observability,
+impossible to obtain the precise model of the system. Instead, one may
+                                                         was proposed. Since fuzzy normality is preserved under union, we can
+only have a vague knowledge about the system’s behavior based on the
+                                                            compute the supremal fuzzy normal sublanguage in order to synthesize
+experience. For example, such an issue arises in the medical treatment
+                                                                  a supervisor. However, this approach has a limitation since normality
+problem, since it is hard to tell whether a patient’s condition is “good”
+                                                   may be too strong in many cases. Therefore, using the supremal normal
+or “bad” precisely. However, FDES provides a suitable framework for
+                                                                approach to synthesize a supervisor is just sound but not complete, i.e.,
+addressing the issues of uncertainty, vagueness, and imprecision. Due
+                                                                        the supremal fuzzy normal language may be empty even if a nonempty
+to these advantages, the theory of FDES has also been successfully
+                                                                      supervisor exists. To the best of our knowledge, ﬁnding a sound and
+applied to many applications, e.g., HIV/AIDS treatment [7], [8], robot
+                                                                complete algorithm for the supervisor synthesis problem in partially
+motion planning [9]–[12], and fault diagnosis [13]–[16].
+                                                                 observed FDES is still an open problem.
+  One of the most important problems in DES is the supervisory con-
+                                                                         In this paper, we tackle the supervisor synthesis problem for partially
+trol problem initiated by Ramadge and Wonham [17]. In this problem,
+                                                                 observed FDES in the framework of Cao and Ying [22]. Speciﬁcally,
+one is interested in synthesizing a supervisor to restrict the system’s
+                                                  we consider fuzzy languages recognized by max-min automata, where
+behavior such that some speciﬁcations are achieved. Due to measure-
+                                                                              controllability is fuzzy and observability is crisp. We propose a new
+ment uncertainties and limited sensor capabilities, the issue of partial
+                                                                        synthesis approach based on the concept of belief evolution. The idea of
+observation also arises in many applications and one has to handle this
+                                                                    using belief sets is motivated by some related approaches in crisp DES;
+issue in the supervisory control problem [18], [19]. In the supervisory
+                                                                             see, e.g., [32]–[35]. Roughly speaking, a belief is a sufﬁcient statistic
+control theory, the most fundamental two problems are the supervi-
+                                                                      of all information available. In this paper, we generalize the idea of
+sor existence problem and the supervisor synthesis problem. The for-
+                                                                             belief evolution from the crisp case to FDES by taking the degree of
+mer asks whether or not we can exactly achieve a given speciﬁcation
+                                                           membership into account. We propose an effective online algorithm
+                                                                              that synthesizes a supervisor recursively. Such an online mechanism is
+  Manuscript received May 2, 2016; revised July 23, 2016; accepted Septem-   useful in many practical situations, where the system is time-varying
+ber 19, 2016. Date of publication October 13, 2016; date of current version   or the system is too large to compute the supervisor ofﬂine all at once.
+November 29, 2017.                                                Moreover, unlike the supremal fuzzy normal approach, which is sound
+  The author is with the Department of Automation, Shanghai Jiao Tong
+                                                                      but not complete, we show that the proposed algorithm is both soundUniversity, Shanghai 200240, China (e-mail: xiangyin@umich.edu).
+   Digital Object Identiﬁer 10.1109/TFUZZ.2016.2617361                  and complete. Therefore, it effectively solves the supervisor synthesis
+
+
+                     1063-6706 © 2016 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                         See http://www.ieee.org/publications standards/publications/rights/index.html for more information.
+
+IEEE TRANSACTIONS ON FUZZY SYSTEMS, VOL. 25, NO. 6, DECEMBER 2017                                                                         1831
+
+
+
+problem for FDES. To the best of our knowledge, this is the ﬁrst   of controllable, uncontrollable, observable, and unobservable events,
+algorithm with such a property for FDES.                                 respectively. The natural projection P  : Σ∗→Σ∗o  is deﬁned in the
+  The rest of this paper is organized as follows. In Section II, we   usual manner; see, e.g., [36]. The natural projection is also extended
+review the theory of FDES. In Section III, we ﬁrst present the concept   to 2Σ ∗.
+of belief evolution. Then, we propose an online algorithm that solves     Then, a partial observation fuzzy supervisor is deﬁned as a function
+the supervisor synthesis problem. In Section IV, we show that the  S : P (supp[LG ]) →F(Σ) such that ∀α ∈P (supp[LG ]), ∀σ ∈Σu c  :
+proposed algorithm is both sound and complete. An illustrative example   S(α)(σ) = 1. For any observable string α ∈P (supp[LG ]), S(α)(σ)
+is provided in Section V. Finally, we conclude the paper in Section VI.   denotes the degree of enablement of event σ. Clearly, we cannot disable
+                                                              an uncontrollable event in any degree.
+                       II. PROBLEM FORMULATION                     Given a fuzzy supervisor S, S/G denotes the closed-loop sys-
+                                                           tem under control. The fuzzy language generated by S/G, denoted
+A. FDES and Fuzzy Languages                              by LS/G , is deﬁned recursively by [22]: 1) LS/G (ϵ) = 1; and 2)
+                                                       LS/G (sσ) = LG (sσ) ∧LS/G (s) ∧S(P (s))(σ).  Let Σ be a ﬁnite set of alphabets or events. We denote by Σ∗the set
+                                                                    Let K ∈F(Σ∗)  be  a  fuzzy  language. We  say  that K  isof ﬁnite strings over Σ. A language L ⊆Σ∗is a subset of Σ∗. For any
+                                                                         fuzzy  controllable  (w.r.t. LG  and Σc)  [21]  if (∀s ∈Σ∗)(∀σ ∈language L, the preﬁx closure of L is deﬁned as L = {s ∈Σ∗: ∃t ∈
+                                                    Σu c)[K(sσ) = K(s) ∧LG (sσ)]. We  say  that K  is  fuzzy  ob-Σ∗s.t. st ∈L}. For any string s, we write s = {s} for simplicity. For
+                                                                     servable   (w.r.t.  LG , Σo  and  Σc)  [22]   if  (∀s, s′ ∈supp[K] :any two languages L1 and L2, we denote by L1L2 their concatenation,
+                                              P (s) = P (s′))(∀σ ∈Σc : sσ ∈supp[K])(∃x ∈[0, 1]) s.t. K(sσ) =i.e., L1L2 = {st ∈Σ∗: s ∈L1, t ∈L2}.
+                                                         K(s) ∧LG (sσ) ∧x and K(s′σ) = K(s′) ∧LG (s′σ) ∧x. A  crisp DES  is  a  deterministic  ﬁnite-state  automaton G =
+                                                                                                   It was shown in [22] that, given a fuzzy language K, there exists(Q, Σ, δ, q0), where Q is a ﬁnite state of states, Σ is a ﬁnite set of events,
+                                                                  a fuzzy supervisor S such that LS/G = K, if and only if, K is fuzzyδ : Q × Σ →Q is the partial transition function, and q0 ∈Q is the ini-
+                                                                          controllable and fuzzy observable. These two conditions are referredtial state. The transition function is also extended to δ : Q × Σ∗→Q
+                                                                           to as the supervisor existence conditions. However, in general, a fuzzyin the usual manner; see, e.g., [36]. The language generated by G is
+                                                                 language may not be controllable and observable. Therefore, we needLG = {s ∈Σ∗: δ(q0, s)!}, where “!” means “is deﬁned.”
+                                                                           to synthesize a fuzzy supervisor S such that the closed-loop fuzzy  Let X be a universal set. A fuzzy set A w.r.t. X is a membership
+                                                                 language is safe, i.e., LS/G ⊆K. This problem is referred to as thefunction A : X →[0, 1] that assigns each element in X a value in
+                                                                     supervisor synthesis problem, which is formulated as follows.[0, 1]. Namely, for any x ∈X, A(x) denotes its degree of membership
+                                                               Problem 1: (Fuzzy Supervisor Synthesis Problem). Let G be anin A. We denote by supp[A] the support of fuzzy set A. Speciﬁcally,
+                                                FDES with Σc and Σo. Let K ⊆LG be a fuzzy speciﬁcation language.supp[A] is a crisp set deﬁned by supp[A] = {x ∈X : A(x) > 0}.
+                                                                    Synthesize a fuzzy supervisor S : P (supp[LG ]) →F(Σ) such thatLet supp[A] = {x1, . . . , xn } be the support of A. We also write A
+                              A(x 1 )    A(x 2 )          A(x n )          LS/G ⊆K.
+in Zadeh’s notation [37] A =   x 1 +   x 2 + · · · +   x n    . We use     Remark II.1:  It was shown in [21] that fuzzy controllability is
+F(X) to denote the set of all fuzzy sets over X. Let A, B ∈F(X)
+                                                                     closed under union. Therefore, the supremal fuzzy controllable sublan-
+be two fuzzy sets. We denote by A ⊆B if ∀x ∈X : A(x) ≤B(x).
+                                                             guage of K exists. Hereafter, we assume without the loss of generality
+We denote by A ⊂B if 1) A ⊆B ; and 2) ∃x ∈X : A(x) < B(x).
+                                                                              that the speciﬁcation language K is fuzzy controllable; otherwise, we
+The empty fuzzy set, denoted by O, is a fuzzy set such that ∀x ∈X :
+                                                               can compute the supremal fuzzy controllable sublanguage of K to re-
+O(x) = 0. We denote by ∨and ∧the supremum and the inﬁmum
+                                                                      place K. However, fuzzy observability is not closed under union [22],
+operators, respectively.
+                                                                                                    i.e., there does not exist a supremal fuzzy observable sublanguage.
+  In this paper, we consider FDES modeled by max–min automata.
+                                                                  This is the fundamental difﬁculty in the partially observed synthesis
+Speciﬁcally, an FDES is a four-tuple G = (Q, Σ, δ, q0), where Q is a
+                                                                 problem. In this paper, we will propose a constructive approach for
+ﬁnite set of states, Σ is a ﬁnite set of events, δ : Q × Σ × Q →[0, 1]
+                                                                      synthesizing a supervisor in order to tackle this difﬁculty.
+is the fuzzy transition function, and q0 is the initial state. The fuzzy                                                           Remark II.2: In this paper, we follow the framework of Cao and
+transition function is extended to δ : Q × Σ∗× Q →[0, 1] inductively
+                                                            Ying [22], where controllability is fuzzy while observability is crisp.
+as follows: for any q1, q2 ∈Q, s ∈Σ∗, and σ ∈Σ, we have
+                                         A general framework, where both controllability and observability are
+                             1,    if q1 = q2,                            fuzzy, was proposed by Qiu and Liu [25]. In principle, the idea in
+           δ(q1, ϵ, q2) =                                           (1)                             0,   otherwise                                 this paper can be extended to the general framework. We choose the
+                                                                  simple framework in order to simplify our technical development and
+         δ(q1, sσ, q2) = ∨q ′∈Q (δ(q1, s, q′) ∧δ(q′, σ, q2)).       (2)   to present the essence of our idea that solves the supervisor synthesis
+                                                                 problem.  The fuzzy language generated by G, denoted by LG , is a fuzzy subset
+over Σ∗, i.e., LG ∈F(Σ∗). Speciﬁcally, LG is deﬁned by ∀s ∈Σ∗:
+LG (s) = ∨q ∈Q δ(q0, s, q). Namely, LG (s) denotes the degree of mem-                          III. SYNTHESIS ALGORITHM
+bership of string s in LG . By deﬁnition, we know that 1) LG (ϵ) = 1;
+                                                                         In this section, we address the fuzzy supervisor synthesis problem.and 2) ∀s, t ∈Σ∗: LG (st) ≤LG (s). Moreover, if a fuzzy language
+                                                                                    First, we discuss the concept of belief evolution in the partial-observedL ∈F(Σ∗) satisﬁes these two conditions, then we can always con-
+                                                                    system. Then, we propose an online approach that effectively synthe-struct an FDES G such that LG = L; see, e.g., [22]. We will assume
+                                                                           sizes a safe supervisor.the above two conditions for any fuzzy language except O.
+
+
+B. Supervisory Control of FDES                               A. Belief Evolution
+
+  We review the supervisory control theory of FDES in the framework      In the partially observed synthesis problem, one of the most impor-
+of Cao and Ying [22]. In this framework, the event set is partitioned by    tant issues is what is our belief about the system. Roughly speaking,
+Σ = Σc ˙∪Σu c = Σo ˙∪Σu o, where Σc, Σu c, Σo, and Σu o are the sets   a belief is a sufﬁcient statistic of all available information we have
+
+1832                                                                    IEEE TRANSACTIONS ON FUZZY SYSTEMS, VOL. 25, NO. 6, DECEMBER 2017
+
+
+                                                              above information, belief set ˆB(α) can be effectively computed by the
+                                                                         recursive procedure discussed earlier. Then our goal is to determine the
+                                                                     next fuzzy control decision S(α) ∈F(Σ). To this end, we take two
+                                                                             steps: 1) ﬁrst we determine the support of S(α), denoted by Dec ∈2Σ ;
+                                                                      2) then we assign each element in Dec a degree of enablement in order
+                                                                           to obtain fuzzy set S(α) ∈F(Σ).
+Fig. 1.  FEDS G and LH = K, where Σc = {c} and Σo = {a}. (a) G.
+(b) H.                                                                    Step-1: First, we determine the support of the control decision.
+                                                                        Speciﬁcally, the crisp set Dec = supp[S(α)] is chosen such that the
+                                                                    following conditions hold
+                                                    C1 Σu c ⊆Dec.obtained so far. Hereafter, we will explore two language-based beliefs,
+                                                    C2 B(α)(Σo ∩Dec) ∩supp[LG ] ⊆supp[K], where B(α) is the be-ˆB and B.
+                                                                                                 lief set updated from ˆB(α) and supp[S(α)] = Dec according
+  Let S : P (supp[LG ]) →F(Σ) be a fuzzy supervisor and α ∈
+                                                                                   to (5).P (supp[LS/G ]) be an observable string. Speciﬁcally, ˆB(α) is deﬁned
+                                                    C3 For any other Dec′ ∈2Σ such that C1 and C2 hold, we have
+as the set of strings in supp[LS/G ] that are possible immediately after
+                                                                        Dec̸ ⊂Dec′.
+observing α, i.e.,
+                                                           Remark III.1: Let us explain the intuition behind the above three
+   ˆB(α) = {s ∈supp[LS/G ] : P (s) = α and s ∈Σ∗Σo ∪{ϵ}}.   (3)   conditions. Condition C1 simply requires that the supervisor cannot
+                                                                        disable any uncontrollable event. Condition C2 requires that the super-
+We deﬁne B(α) as the set of strings in supp[LS/G ] that are consistent
+                                                                         visor only allows strings in supp[K] before the next control decision
+with observation α, i.e.,
+                                                               can be made. This condition guarantees that the closed-loop language
+            B(α) = {s ∈supp[LS/G ] : P (s) = α}.            (4)    is safe if we assign the degree of membership properly. Finally, the last
+                                                                      condition C3 says that Dec is a maximal crisp set satisfying C1 and C2
+Clearly, we know that ˆB(α) ⊆B(α), since the latter contains the unob-
+                                                                           in order to enable as many events as possible. In the next section, we
+servable tails while the former does not. Note that, by the deﬁnition of
+                                                                           will prove that such a control decision satisfying C1–C3 always exists
+the supervisor, sets ˆB(α) and B(α) only depends on the control deci-
+                                                                           for any α ∈Σ∗o encountered.
+sions that have been made so far and they do not depend on the control                                                                          Step-2: Once the support of S(α), i.e., Dec, is determined, we need
+decisions in the future. Therefore, these two sets can also be computed                                                                           to assign a degree of membership to each event in Dec in order to
+recursively, as follows: for any α ∈Σ∗o, σ ∈Σo, we have                                                                      obtain fuzzy control decision S(α). This is deﬁned as follows: for each
+    ˆB(ϵ) = {ϵ}                                                      (5)   event σ ∈Dec, we have
+
+   B(α) = {st ∈supp[LG ] : s ∈ˆB(α) ∧t ∈(Σu o ∩supp[S(α)])∗}                   {Ξ(s, σ) : s ∈B(α), sσ ∈supp[LG ]}   if σ ∈Σc                                                          S(α)(σ) =
+                                                                     (6)               1                                                      if σ ∈Σu c
+                                                                                                                                                (8)
+ ˆB(ασ) = {sσ ∈supp[LG ] : s ∈B(α) ∧σ ∈supp[S(α)]}.       (7)   where
+Let σ1 . . . σn ∈P (supp[LS/G ]) be a sequence of observable events.                         K(sσ),    if K(sσ) < K(s)
+Then, the above recursive deﬁnition essentially yields a sequence al-               Ξ(s, σ) =   1,        otherwise.                   (9)
+ternating between ˆB and B, i.e.,
+                                                           Remark III.2: Let us explain the intuition behind (8) and (9). For
+       S (ϵ)        σ 1      σ n                S (σ 1 ...σ n )
+  B(ϵ) −−→B(ϵ) −→· · · −→ B(σ1 . . . σn ) −−−−−−−→B(σ1 . . . σn ).    any string s and any event σ, Ξ(s, σ) is essentially the largest degree of
+                                                           membership we can enable for event σ following string s. Speciﬁcally,Hereafter, we refer to B(α) and ˆB(α) as belief sets (or beliefs) and refer
+                                                                           for each controllable event σ ∈Σc, if K(s) = K(sσ), then there isto the above sequence as the belief evolution along σ1 . . . σn . Note
+                                                           no need to disable σ for any degree since we are considering max–that sets B(α) and ˆB(α) are both crisp and we will handle the issue of
+                                                         min system and the degree of sσ is bounded by s. On the other hand,membership degree later.
+                                                                                                if K(sσ) < K(s), then we do need to disable σ with degree K(sσ)   Example III.1: Let us consider the system G shown in Fig. 1(a)
+                                                                           to make sure that the closed-loop fuzzy language is still in K. Theand the speciﬁcation language K generated by automaton H shown
+                                                                enablement degree for σ is taken as the inﬁmum of Ξ(s, σ) for anyin Fig. 1(b). Suppose that Σc = {c} and Σo = {a}. We consider a
+                                                                             string in belief B(α). The reason why we need to take the inﬁmumsupervisor S deﬁned by S(ϵ)(c) = 0.5, S(a)(c) = 0.1 and S(ϵ)(a) =
+                                                                           rather than the supremum is still that we need to be conservative inS(a)(a) = 1. Initially, we have that ˆB(ϵ) = {ϵ}. Once the ﬁrst control
+                                                                      order to guarantee safety.decision S(ϵ) is made, we obtain B(ϵ) = {ϵ, c} according to (6). If
+a ∈Σo is observed, then we obtain ˆB(a) = {a, ca} according to (7).      In order to make the supervisor synthesis approach more clear, Al-
+                                                                 gorithm ONLINE-SYNTHESIS is proposed which essentially summarizesBy making a new control decision S(a), we move to B(a) = {ac, cac}.
+                                                                        the recursive procedure we discussed above. Speciﬁcally, whenever a
+                                                      new event is observed, we compute the fuzzy control decision S(α)
+B. Online Synthesis Algorithm                                                             and update our beliefs B and ˆB, where α is the entire observation up
+  We present a formal procedure to synthesize a fuzzy supervisor   to this point. Then, we just wait for the next observable event and
+S : P (supp[LG ]) →F(Σ) such that LS/G ⊆K. In our approach, in-   repeat the above procedure. Therefore, the supervisor is essentially
+stead of computing S directly all at once, we will recursively compute   implementable recursively in an online manner.
+fuzzy set S(α) ∈F(Σ) for each observation α ∈Σ∗o encountered in     The following example illustrates the synthesis procedure.
+an online manner. This is detailed as follows.                         Example III.2: Let us still consider system G and speciﬁcation H
+   First, let α = σ1 . . . σn ∈Σ∗o be the sequence of events been ob-   shown in Fig. 1(a) and (b), respectively, where Σc = {c} and Σo =
+served. Suppose that  all control decisions up to σ1 . . . σn −1,  i.e.,   {a}. Initially, Algorithm ONLINE-SYNTHESIS starts with ˆB(ϵ) = {ϵ}
+S(ϵ), S(σ1), . . . , S(σ1 . . . σn −1), have been computed. By using the   and we go to line 5 to choose the support of S(ϵ). Since the only
+
+IEEE TRANSACTIONS ON FUZZY SYSTEMS, VOL. 25, NO. 6, DECEMBER 2017                                                                         1833
+
+
+                                                                                 IV. PROPERTIES OF THE ALGORITHM
+
+                                                                         In this section, we prove some properties of the proposed algorithm.
+                                                             Given a problem and an algorithm, we say that the algorithm is sound
+                                                                                                if its output is a solution to the problem, i.e., it never returns a wrong
+                                                                    answer. Also, we say that an algorithm is complete if it never returns
+                                                             “no solution” when one exists. Next, we show that, unlike the supre-
+                                                           mal fuzzy normal approach, which is just sound but not complete,
+                                                                  our synthesis algorithm is both sound and complete. Therefore, it ef-
+                                                                            fectively solves the fuzzy supervisor synthesis problem under partial
+                                                                        observation.
+                                                                                   First of all, we show that the proposed algorithm is sound.
+                                                    Lemma IV.1: Let G be the system, K be the speciﬁcation, and S
+                                                              be the fuzzy supervisor synthesized by Algorithm ONLINE-SYNTHESIS.
+                                                                Then, we have LS/G ⊆K.
+                                                                        Proof:  It sufﬁces to show that for any s ∈supp[LS/G ]: 1) s ∈
+                                                                   supp[K]; and 2) LS/G (s) ≤K(s). Hereafter, we show that 1) and 2)controllable event is c, we have two choices for supp[S(ϵ)]: {a} or
+                                                                  hold by induction on the length of P (s).{a, c}. Note that, both decisions {a} and {a, c} satisfy conditions
+                                                                       Induction Basis: For |P (s)| = 0, we know that s ∈B(ϵ). By con-C1 and C2. For example, if we choose {a}, then the next belief is
+                                                                           dition C2, control decision S(ϵ)  is chosen such B(ϵ) ⊆supp[K].B(ϵ) = {ϵ} and we have {ϵ}{a} ∩supp[LG ] ⊆supp[K]; if we choose
+                                                                      Therefore, 1) holds. Next, we show that 2) holds by contradic-{a, c}, then the next belief is B(ϵ) = {ϵ, c} ⊆supp[K] and we still have
+                                                                                 tion. Assume that 2) does not hold for |P (s)| = 0,  i.e., there ex-{ϵ, c}{a} ∩supp[LG ] ⊆supp[K]. Therefore, according to condition
+                                                                                        ists a string s such that |P (s)| = 0 and K(s) < LS/G (s). Note thatC3, we need to choose {a, c} for supp[S(ϵ)], since it strictly contains
+                                                                                                                             s̸ = ϵ, since K(s) = LS/G (s) = 1 by deﬁnition. Therefore, we write{a}. Then, in line 6, we update our belief by using this choice and
+                                                               s = tσ ∈Σ∗u o, where σ ∈Σu o  is the last event in s. We also as-get B(ϵ) = {ϵ, c}. Next, we move to line 7 and we need to determine
+                                                        sume without the loss of generality that ∀w ∈t : LS/G (w) ≤K(w);the degree of membership for each element in supp[S(ϵ)]. For event
+                                                                       otherwise,  it sufﬁces to choose the shortest preﬁx of s such thata ∈Σu c, which is uncontrollable, we have that S(ϵ)(a) = 1. For event
+                                                                                 this assumption holds.  If σ ∈Σu c, by the assumption that K  isc ∈Σc, which is controllable, we have that Ξ(ϵ, c) = 0.5. Also, we
+                                                                  fuzzy controllable, LS/G (tσ) ≤K(tσ), which contradicts the assump-note that for, c ∈B(ϵ), we have cc /∈supp[LG ]. Therefore, we obtain
+                                                                           tion that 2) does not hold. If σ ∈Σc, then we know that K(tσ) <S(ϵ)(c) = Ξ(ϵ, c) = 0.5.
+                                                       LS/G (tσ) ≤LS/G (t) ≤K(t). Therefore, by (9), Ξ(t, σ) = K(tσ) <  Once a new event a ∈Σo  is observed, according to line 3, ﬁrst
+we need to update our belief to ˆB(a) = {a, ca}. Then, we need to   K(t). Since t ∈B(ϵ), by (8), we know that S(ϵ)(σ) ≤Ξ(t, σ) =
+                                                              K(tσ).  Overall, we have  that LS/G (tσ) = LG (tσ) ∧LS/G (t) ∧choose the support of S(a) in line 5; we can still choose supp[S(a)] =
+                                                              S(ϵ)(σ) ≤LG (tσ) ∧LS/G (t) ∧K(tσ) = K(tσ). However, this con-{a, c}. Next, in line 7, for a ∈Σu c, we still have that S(a)(a) = 1.
+                                                                                tradicts to K(tσ) < LS/G (tσ).For event c ∈Σc, this time we have Ξ(a, c) = 0.5 and Ξ(ca, c) = 0.1.
+                                                                       Induction Hypothesis: We assume that 1) and 2) hold for string sTherefore, according to (8), we have S(a)(c) = Ξ(a, c) ∧Ξ(ca, c) =
+                                                                such that |P (s)| = k.0.5 ∧0.1 = 0.1. Since the language in this example is ﬁnite, there will
+                                                                       Induction Step: To proceed, we consider two cases for string s suchbe no further observation. In general, the while loop will not terminate
+                                                                              that |P (s)| = k + 1.since the system may not terminate.
+                                                             Case 1: String s ends up with an observable event.   Remark III.3: In [22], a supervisor construction approach was pro-
+                                              We write s = tσ, where σ ∈Σo and |P (t)| = k. By the induc-vided in order to exactly achieve K when K is fuzzy observable. Specif-
+                                                                           tion hypothesis, we know that  t ∈supp[K] and  t ∈B(P (t)). Byically, the supervisor is deﬁned by: for any α ∈P (supp[LG ]), we have
+                                                                      condition C2, S(P (t))  is chosen such that B(P (t))(Σo ∩Dec) ∩
+                                                             supp[LG ] ⊆supp[K], which implies that tσ ∈supp[K], i.e., 1) holds.
+               ∨{K(sσ) : P (s) = α},    if σ ∈Σc,
+     S(α)(σ) =                                              (10)   For  2),  if σ ∈Σu c, by  the assumption  that K  is  fuzzy  con-
+                     1,                                 if σ ∈Σu c.                trollable, we know that LS/G (tσ) ≤K(tσ).  If σ ∈Σc, then we
+                                                                                                  still assume  that K(tσ) < LS/G (tσ)  for  the sake of  contradic-
+Note that, this supervisor is valid only when K is fuzzy observable;    tion. Since t ∈B(P (t)), σ ∈supp[S(P (t))] and the assumption that
+otherwise, the closed-loop system may not be safe. For example, if we   K(tσ) < LS/G (tσ), by (8), Ξ(t, σ) = K(tσ) < K(t), which means
+use this supervisor for the system in Fig. 1, then we have S(ϵ)(c) =    that S(P (t))(σ) ≤Ξ(t, σ) = K(tσ). Similar to the induction ba-
+S(a)(c) = 0.5. This gives us closed-loop fuzzy language LS/G = 1ϵ +    sis, we have that LS/G (tσ) = LG (tσ) ∧LS/G (t) ∧S(P (t))(σ) ≤
+0.6
+ a + 0.5ac + 0.5c + 0.2ac + cac0.2 , which is not safe. Compared with this  LG (tσ) ∧LS/G (t) ∧K(tσ) = K(tσ). This contradicts to K(tσ) <
+supervisor construction in [22], our supervisor synthesis procedure has  LS/G (tσ).
+the following important features. First, unlike (10), where string s is     Case 2: String s ends up with an unobservable event.
+chosen from supp[K], in (8), string s is chosen from B(α). This is    We write s = tσ1wσ2, where σ1 ∈Σo, w ∈Σ∗u o, σ2 ∈Σu o. By the
+because that supervisor deﬁned by (10) aims to match K exactly and,   induction hypothesis, t ∈supp[K]. Moreover, tσ1 ∈ˆB(P (t)σ1) and
+therefore, it knows a priori that the support of the closed-loop language   tσ1wσ2 ∈B(P (t)σ1). By condition C2, control decision S(P (t)σ1)
+is supp[K]. However, such an information is missing in the synthesis    is  chosen  such  that B(P (t)σ1) ⊆supp[K],  which  implies  that
+problem and we have to use our control decisions in history to formulate   tσ1wσ2 ∈supp[K], i.e., 1) holds. Next, we still show that 2) holds by
+our belief. Second, unlike (10) where the membership degree is taken   contradiction. We assume that K(tσ) < LS/G (tσ). By the induction
+as the supremum, our membership degree is taken as the inﬁmum; we   hypothesis, LS/G (t) ≤K(t). Moreover, we assume  w.l.o.g.  that
+have to be conservative in order to guarantee the safety requirement.    ∀v ∈tσ1w : LS/G (v) ≤K(v); otherwise, it either sufﬁces to choose
+
+1834                                                                    IEEE TRANSACTIONS ON FUZZY SYSTEMS, VOL. 25, NO. 6, DECEMBER 2017
+
+
+
+the shortest preﬁx of tσ1w such that this assumption holds or reduces to
+Case 1. If σ2 ∈Σu c, by the assumption that K is fuzzy controllable, we
+know that LS/G (tσ1wσ2) ≤K(tσ1wσ2), which yields a contradic-
+tion immediately. If σ2 ∈Σc, then we still follow the same strategy we
+used in the induction basis and Case 1. First, tσ1w ∈B(P (t)σ1) and
+σ2 ∈supp[S(P (t)σ1)]. Since K(tσ1wσ2) < LS/G (tσ1wσ2), by (8),
+Ξ(tσ1w, σ2) = K(tσ1wσ2) < K(tσ1w), which means that S(P (t)    Fig. 2.  FEDS G for the treatment process.
+σ1)(σ2) ≤Ξ(tσ1w, σ2) = K(tσ1wσ2). Therefore, LS/G (tσ1wσ2)
+= LG (tσ1wσ2) ∧LS/G (tσ1w) ∧S(P (t)σ1)(σ2) ≤LG (tσ1wσ2) ∧
+LS/G (tσ1w) ∧K(tσ1wσ2) = K(tσ1wσ2).   This   contradicts   to                                                                supp[S′(P (s))]  strictly  contains  supp[S(P (s))].  This  contracts
+K(tσ1wσ2) < LS/G (tσ1wσ2).                   ■
+                                                                           to C3.                                ■
+  Next, we show Algorithm ONLINE-SYNTHESIS is sound.
+                                              We have shown that the synthesis algorithm is not only sound and
+  Lemma IV.2: Algorithm ONLINE-SYNTHESIS  always  effectively
+                                                                   complete, but the solution is also locally maximal in terms of its support.
+synthesizes a supervisor under the assumption that K is fuzzy con-
+                                                     One may also ask whether or not it is also locally maximal in terms of
+trollable.
+                                                                        the fuzzy language, i.e., there does not exist another supervisor S′ such
+   Proof: To prove this, it sufﬁces to show that, for each belief ˆB(α)
+                                                                              that LS ′/G ⊆K and LS/G ⊂LS ′/G . Unfortunately, the synthesized
+encountered in line 5 in the algorithm, there always exists a crisp
+                                                                      supervisor needs not be locally maximal in terms of the fuzzy language
+set Dec = supp[S(α)] satisfying conditions C1–C3. We show this by
+                                                                           in general. This is illustrated by the following example.
+induction on the length of α.                                                                                                                              1      1                                                                         +                                                             Example                                                                                           IV.1: Let us consider system language                                                                                   LG                                                                   =  ϵ +                                                                                                                                                 σ 1  Induction Basis: Initially, we have ˆB(ϵ) = {ϵ}. Let us consider       1                                                                                                      1                                                                                                                                                      1                                                                                                                                                            0.3                                                                                                                                                                     0.2
+                                         + σ 1 σ 2 σ 1  and speciﬁcation language K =  ϵ + σ 1 + σ 1 σ 2 +Dec = Σu c. Clearly,  it satisﬁes C1. Since K is fuzzy controllable,    σ 1 σ 2
+                                                                                                                                       o = {σ1, σ2},  i.e., all events arewe know that {ϵ}Σ∗u c ∩supp[LG ] ⊆supp[K], i.e., Dec = Σu c also    σ 1 0.1σ 2 σ 1 , where we have Σc = Σu
+satisﬁes C2. Since 2Σ  is ﬁnite, there must exist a control decision   controllable but unobservable. Then, the supervisor just needs to
+supp[S(ϵ)] ∈2Σ satisfying C1–C3.                            make one control decision S(ϵ)  at the very beginning. Accord-
+  Induction Hypothesis: We assume that ∀α ∈Σ∗o  : |α| = k, the con-   ing to conditions C1–C3, we have supp[S(ϵ)] = {σ1, σ3}. Since
+trol decision Dec is well deﬁned for ˆB(α).                            Ξ(ϵ, σ1) = 0.3, Ξ(σ1σ2, σ1) = 0.1 and Ξ(σ1, σ2) = 0.2, we have that
+  Induction Step: Let us consider string ασ ∈Σ∗o, where σ ∈Σo and   S(ϵ)(σ1) = 0.3 ∧0.1 = 0.11 and 0.1S(ϵ)(σ2)0.1 = 0.2 0.1and the closed-loop
+|α| = k. By the induction hypothesis, all control decisions up to S(α)   fuzzy language is LS/G =  ϵ + σ 1 + σ 1 σ 2 + σ 1 σ 2 σ 1 . However, we
+are well deﬁned. Therefore, we can effectively compute B(α) and   can design another fuzzy supervisor S′ deﬁned by S′(ϵ)(σ1) = 0.3
+ˆB(ασ). Moreover, by the proof of Lemma IV.1, we know that ˆB(ασ) ⊆   and S(ϵ)(σ2) = 0.1. In this case, we obtain a closed-loop language
+supp[K]. Let us still consider Dec = Σu c as the support of S(ασ),  LS ′/G = 1ϵ + 0.3σ 1 + σ0.11 σ 2 + σ 1 0.1σ 2 σ 1 , which is strictly more permis-
+which satisﬁes C1. Since we have assumed that K is fuzzy controllable,   sive than the synthesized one.
+we know that ˆB(ασ)Σ∗u c ∩supp[LG ] ⊆supp[K]. Therefore, Dec =     Remark IV.1: We explain why the synthesized supervisor may not
+Σu c also satisﬁes C2. Still, there are only ﬁnite control decisions in 2Σ   be maximal in terms of the fuzzy language. In (8), we choose the
+that are strictly larger than Σu c. Therefore, there must exist a control   degree of membership for each event based on K. Although this guar-
+decision supp[S(ασ)] ∈2Σ satisfying C1–C3 for ˆB(ασ).      ■   antees the soundness and the completeness of the algorithm, it may
+  Combing Lemma IV.1 and IV.2, we obtain the following result.      be conservative, i.e., the optimality of the algorithm may be affected.
+   Theorem IV.1: Algorithm ONLINE-SYNTHESIS is both sound and    Particularly, in the above example, the membership degree of σ1σ2σ1
+complete,  i.e.,  it effectively solves the fuzzy supervisor synthesis    is changed in the closed-loop language if we decide to enable σ2 with
+problem.                                                          degree 0.1. In this case, if we enable σ2 with degree 0.1, then there is
+  So far, we have shown that Algorithm ONLINE-SYNTHESIS is sound   no need to restrict σ1 with degree 0.1 since the safety for the second
+and complete. Another relevant question in the supervisory control   σ1 has already been taken care by its predecessor event σ2. In other
+theory is what is the permissiveness of the supervisor. Note that, unlike   words, the best choice of membership degree for an event may depend
+the fully observed case, in general, there does not exist a supremal   on the choice for other event. How to resolve this issue and improve
+supervisor for the partially observed case. Next, we prove an important   the permissiveness of the closed-loop fuzzy language is an interesting
+feature of the synthesized supervisor. We show that the closed-loop   future direction.
+fuzzy language is locally maximal in terms of its support.
+  Lemma IV.3: Let G be the system, K be the speciﬁcation, and
+                                                                               V. ILLUSTRATIVE EXAMPLE
+S  be  the  fuzzy  supervisor  synthesized by Algorithm ONLINE-
+SYNTHESIS. Then, there does not exist another safe fuzzy supervisor      In this section, we illustrate the effectiveness of proposed algorithm
+S′ : P (supp[LG ]) →F(Σ) such that LS ′/G ⊆K and supp[LS/G ] ⊂   by an illustrative example. Speciﬁcally, we adopt the medical treatment
+supp[LS ′/G ].                                                  example from [21], [22]. In principle, our result can also be applied to
+   Proof: By  contradiction. We assume  that  there  exists a  safe   other applications, e.g., robot motion planning [9]–[12].
+fuzzy  supervisor  S′  such  that supp[LS/G ] ⊂supp[LS ′/G ].  This     Suppose that a patient is infected by a disease and a physician wants
+implies  that  there  exists a  string s ∈supp[LG ] such  that ∀α ∈   to conduct a treatment. Based on the physician’s experience, it is known
+P (s) \ {P (s)} : supp[S(α)] = supp[S′(α)];  and supp[S(P (s))] ⊂    that the patient’s condition during the treatment can be represented by
+supp[S′(P (s))]. Since all decisions made by S and S′ up to P (s) are   fuzzy automaton G shown in Fig. 2. Speciﬁcally, event a denotes a
+the same, the belief ˆB(P (s)) are the same under both S and S′. Note   stage-by-stage therapy and events b1, b2, and b3 denote three possible
+that supp[S(P (s))] is chosen such that C1–C3 hold for ˆB(P (s)). Since   anaphylaxis, respectively. Also, state 1 denotes the patient’s initial
+supp[S(P (s))] ⊂supp[S′(P (s))], supp[S′(P (s))] also satisﬁes C1.   condition, state 2 denotes a fair condition, state 3 denotes a good
+Since LS ′/G ⊆K and B(P (s))(Σo ∩supp[S′(P (s))]) ∩supp[LG ] ⊆   condition, states 4 and 5 denote two bad conditions with different
+LS ′/G , taking S′(P (s)) at ˆB(P (s)) also satisﬁes C2. Recall that   levels of anaphylaxis, and state 6 denotes a seriously bad condition.
+
+IEEE TRANSACTIONS ON FUZZY SYSTEMS, VOL. 25, NO. 6, DECEMBER 2017                                                                         1835
+
+
+
+Suppose that anaphylaxis represented by event b3 can be avoided by     [5] M. Nie and W. Tan, “Theory of generalized fuzzy discrete-event systems,”
+using other medicine, but anaphylaxis represented by events b1 and       IEEE Trans. Fuzzy Syst., vol. 23, no. 1, pp. 98–110, Feb. 2015.
+b2 cannot be controlled. On the other hand, only anaphylaxis b2 can     [6] W. Deng and D. Qiu, “Bifuzzy discrete event systems and their supervisory
+                                                                                       control theory,” IEEE Trans. Fuzzy Syst., vol. 23, no. 6, pp. 2107–2121,
+be directly monitored by the physician. Therefore, Σc = {a, b2} and        Dec. 2015.
+Σo = {a, b1}.                                                                      [7] H. Ying et al., “A fuzzy discrete event system approach to determining op-
+  Let us consider the following requirements for the treatment. First,         timal HIV/AIDS treatment regimens,” IEEE Trans. Inf. Technol. Biomed.,
+we want that the patient should never be in a seriously bad condition          vol. 4, no. 10, pp. 663–676, Oct. 2006.
+                                                                                      [8] H. Ying, “A self-learning fuzzy discrete event system for HIV/AIDS
+with any degree, i.e., anaphylaxis b3 should never occur. Second, once                                                                                    treatment regimen selection,” IEEE Trans. Syst., Man, Cybern., Cybern.,
+anaphylaxis b1 occurs, the degree of the therapy should be decreased.          vol. 37, no. 4, pp. 966–979, Aug. 2007.
+Finally, the treatment should be stopped once anaphylaxis b2 occurs.     [9] R. Huq, G. Mann, and R. Gosine, “Distributed fuzzy discrete event system
+These three requirements can be formally described by the follow-          for robotic sensory information processing,” Exp. Syst., vol. 23, no. 5,
+ing speciﬁcation fuzzy language K = 1ϵ + 0.9a + 0.7aa + ab10.7 + ab10.3a +    [10] R.pp. Huq,273–289,G. Mann,2006. and R. Gosine, “Behavior-modulation technique in
+  0.1
+         . With parameters G, K, Σc, and Σo, the decision process of the        mobile robotics using fuzzy discrete event system,” IEEE Trans. Robot.,ab1    b2
+treatment is formulated as a fuzzy supervisor synthesis problem and          vol. 22, no. 5, pp. 903–916, Oct. 2006.
+our goal is to synthesize a safe fuzzy supervisor.                           [11] K. Schmidt and Y. Boutalis, “Fuzzy discrete event systems for multiob-
+                                                                                              jective control: Framework and application to mobile robot navigation,”
+  Note that this problem cannot be handled by any existing approach
+                                                                 IEEE Trans. Fuzzy Syst., vol. 20, no. 5, pp. 910–922, Oct. 2012.
+in the literature due to the following reasons. First, the speciﬁca-    [12] R. Liu, Y.-X. Wang, and L. Zhang, “An FDES-based shared control method
+tion language K is not fuzzy observable, since for a, ab1 ∈supp[K]          for asynchronous brain-actuated robot,” IEEE Trans. Cybern., vol. 46,
+and a ∈Σ, we have P (a) = P (ab1) but we cannot ﬁnd a num-         no. 6, pp. 1452–1462, Jun. 2016.
+ber x ∈[0, 1] such that K(aa) = K(a) ∧LG (aa) ∧x and K(ab1a) =    [13] E. Kilic, “Diagnosability of fuzzy discrete event systems,”  Inf. Sci.,
+                                                                                              vol. 178, no. 3, pp. 858–870, 2008.
+K(ab1) ∧LG (ab1a) ∧x, i.e., 0.7 ∧x = 0.3 ∧x = 0.7 cannot be sat-    [14]  F. Liu and D. Qiu, “Diagnosability of fuzzy discrete-event systems: A
+isﬁed. Second, the supremal fuzzy controllable and normal sublan-         fuzzy approach,” IEEE Trans. Fuzzy Syst., vol. 17, no. 2, pp. 372–384,
+guage of K is the empty fuzzy set O. This can be seen from the fact         Apr. 2009.
+that supremal fuzzy controllable and normal supervisor does not allow    [15] M. Luo, Y. Li, F. Sun, and H. Liu, “A new algorithm for testing di-
+                                                                                       agnosability of fuzzy discrete event systems,” Inf. Sci., vol. 185, no. 1,
+the disablement of controllable but unobservable event. However, in
+                                                                                     pp. 100–113, 2012.
+our example, event b3 ∈Σc ∩Σu o has to be disabled for safety pur-    [16]  F. Liu, “Safe diagnosability of fuzzy discrete-event systems and a
+pose. Therefore, the supremal fuzzy normal approach [22] also fails to         polynomial-time veriﬁcation,” IEEE Trans. Fuzzy Syst., vol. 23, no. 5,
+handle this synthesis problem.                                                    pp. 1534–1544, Oct. 2015.
+  However,  by  applying  the  synthesis  algorithm  proposed  in    [17]  P. Ramadge and W. Wonham, “Supervisory control of a class of discrete
+                                                                                   event processes,” SIAM J. Control Optim., vol. 25, no. 1, pp. 206–230,
+Section   III,  we  obtain  fuzzy  supervisor S : P (supp[LG ]) →        1987.
+F(Σ) deﬁned as follows: S(ϵ) = 0.9a + b11 + b21 , S(a) = 0.3a + b11 +    [18]  F. Lin and W. Wonham, “On observability of discrete-event systems,” Inf.
+
+b2 1 , S(aa) = S(ab2) = b11 + b21  . This supervisor yields the following           Sci., vol. 44, no. 3, pp. 173–198, 1988.
+                                              1     0.9     0.3     0.7      0.3        [19] R. Cieslak, C. Desclaux, A. Fawaz, and P. Varaiya, “Supervisory control
+closed-loop fuzzy language LS/G =  ϵ +  a + aa + ab1 + ab1 a +         of discrete-event processes with partial observations,” IEEE Trans. Autom.
+  0.1   , which is a sublanguage of K. Therefore, the supervisor synthesis         Control, vol. AC-33, no. 3, pp. 249–260, Mar. 1988.ab1 b2
+problem is solved.                                                           [20] D. Qiu, “Supervisory control of fuzzy discrete event systems: A formal
+                                                                                  approach,” IEEE Trans. Syst., Man, Cybern. B, Cybern., vol. 35, no. 1,
+                                                                                     pp. 72–88, Feb. 2005.
+                     VI. CONCLUSION                               [21] Y. Cao and M. Ying, “Supervisory control of fuzzy discrete event systems,”
+                                                                 IEEE Trans. Syst., Man, Cybern. B, Cybern., vol. 35, no. 2, pp. 366–371,
+  In this paper, we proposed a new approach for synthesizing a safe         Feb. 2005.
+fuzzy supervisor for partially observed FDES. The proposed algorithm    [22] Y. Cao and M. Ying, “Observability and decentralized control of fuzzy
+                                                                                         discrete-event systems,” IEEE Trans. Fuzzy Syst., vol. 14, no. 2, pp. 202–can be implemented in an online manner by recursively computing the
+                                                                                 216, Apr. 2006.
+belief of the system. We showed that the proposed algorithm is both    [23] Y. Cao, M. Ying, and G. Chen, “State-based control of fuzzy discrete-
+sound and complete in the sense that it always synthesizes a supervisor         event systems,” IEEE Trans. Syst., Man, Cybern., Cybern., vol. 37, no. 2,
+when one exists. Therefore, it effectively solves the supervisor synthesis         pp. 410–424, Apr. 2007.
+problem for partially observed FDES.                                      [24]  F. Liu and D. Qiu, “Decentralized supervisory control of fuzzy dis-
+                                                                                           crete event systems,” Eur.  J. Control, vol. 14, no. 3, pp. 234–243,
+                                                                              2008.
+               ACKNOWLEDGMENT                             [25] D. Qiu and F. Liu, “Fuzzy discrete-event systems under fuzzy observability
+                                                                         and a test algorithm,” IEEE Trans. Fuzzy Syst., vol. 17, no. 3, pp. 578–589,
+  The author would like to thank the anonymous reviewers for their         Jun. 2009.
+useful comments on improving the paper.                                  [26]  F. Lin and H. Ying, “State-feedback control of fuzzy discrete-event sys-
+                                                                                    tems,” IEEE Trans. Syst., Man, Cybern., Cybern., vol. 40, no. 3, pp. 951–
+                                                                                 956, Jun. 2010.
+                     REFERENCES                               [27]  F. Wang, Z. Feng, and P. Jiang, “Reliable decentralized supervisory con-
+                                                                                                      trol of fuzzy discrete event systems,” Fuzzy Sets Syst., vol. 161, no. 12,
+ [1]  F. Lin and H. Ying, “Modeling and control of fuzzy discrete event sys-         pp. 1657–1668, 2010.
+     tems,” IEEE Trans. Syst., Man, Cybern., Cybern., vol. 32, no. 4, pp. 408–    [28] A. Jayasiri, G. Mann, and R. Gosine, “Generalizing the decentralized
+     415, Aug. 2002.                                                                  control of fuzzy discrete event systems,” IEEE Trans. Fuzzy Syst., vol. 20,
+ [2]  F. Lin et al., “Decision making in fuzzy discrete event systems,” Inf. Sci.,         no. 4, pp. 699–714, Aug. 2012.
+      vol. 177, no. 18, pp. 3749–3763, 2007.                                    [29] A. Jayasiri, G. Mann, and R. Gosine, “Modular supervisory control and
+ [3] X. Du, H. Ying, and F. Lin, “Theory of extended fuzzy discrete-event          hierarchical supervisory control of fuzzy discrete-event systems,” IEEE
+     systems for handling ranges of knowledge uncertainties and subjectivity,”         Trans. Autom. Sci. Eng., vol. 9, no. 2, pp. 353–364, Apr. 2012.
+    IEEE Trans. Fuzzy Syst., vol. 17, no. 2, pp. 316–328, Apr. 2009.            [30] H. Xing, Q. Zhang, and K. Huang, “Analysis and control of fuzzy dis-
+ [4] Y. Cao, G. Chen, and E. Kerre, “Bisimulations for fuzzy-transition sys-          crete event systems using bisimulation equivalence,” Theor. Comput. Sci.,
+     tems,” IEEE Trans. Fuzzy Syst., vol. 19, no. 3, pp. 540–552, Jun. 2011.            vol. 456, pp. 100–111, 2012.
+
+1836                                                                    IEEE TRANSACTIONS ON FUZZY SYSTEMS, VOL. 25, NO. 6, DECEMBER 2017
+
+
+
+[31] W. Deng and D. Qiu, “Supervisory control of fuzzy discrete-event sys-    [34] X. Yin and S. Lafortune, “A uniform approach for synthesizing property-
+     tems for simulation equivalence,” IEEE Trans. Fuzzy Syst., vol. 23, no. 1,         enforcing supervisors  for  partially-observed  discrete-event systems,”
+     pp. 178–192, Feb. 2015.                                           IEEE Trans. Autom. Control, vol. 61, no. 8, pp. 2140–2154, Aug. 2016.
+[32] N. Ben Hadj-Alouane, S. Lafortune, and F. Lin, “Centralized and dis-    [35] X. Yin, “Supervisor synthesis for mealy automata with output functions:
+      tributed algorithms for on-line synthesis of maximal control policies under     A model transformation approach,” IEEE Trans. Autom. Control, 2016,
+      partial observation,” Discrete Event Dynamic Syst.: Theory Appl., vol. 6,          doi: 10.1109/TAC.2016.2601118.
+     no. 4, pp. 379–427, 1996.                                                 [36] C. Cassandras and S. Lafortune, Introduction to Discrete Event Systems,
+[33] X. Yin and S. Lafortune, “Synthesis of maximally permissive supervi-        2nd ed. New York, NY, USA: Springer, 2008.
+      sors for partially observed discrete event systems,” IEEE Trans. Autom.    [37] L. Zadeh, “Fuzzy  sets,”  Inf. Control,  vol.  8, no.  3, pp. 338–353,
+      Control, vol. 61, no. 5, pp. 1239–1254, May 2016.                             1965.

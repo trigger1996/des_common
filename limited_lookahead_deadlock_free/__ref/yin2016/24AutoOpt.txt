@@ -1,0 +1,1002 @@
+                                                            Automatica 164 (2024) 111634
+
+
+                                            Contents lists available at ScienceDirect
+
+                              Automatica
+
+
+                                         journal homepage: www.elsevier.com/locate/automatica
+
+
+Optimal supervisory control of discrete event systems for cyclic tasks✩
+                                                                                        a,∗Peng Lv a, Zhangcong Xu a, Yiding Ji b, Shaoyuan Li a, Xiang Yin
+a Department of Automation and Key Laboratory of System Control and Information Processing, Shanghai Jiao Tong
+University, Shanghai 200240, China
+b Department of Electronic and Computer Engineering, Hong Kong University of Science and Technology, 511458, Hong Kong, China
+
+
+a r t i c l e    i n f o             a b s t r a c t
+
+
+Article history:                                   In this paper, we investigate the problem of optimal supervisory control for cyclic tasks in the context
+Received 18 September 2022                      of discrete-event systems (DES). We consider the completion of each single task as the visit of a
+Received in revised form 8 January 2024         marked state, and overall control objective is to complete tasks cyclically in the sense that marked
+Accepted 14 February 2024                       states are visited infinitely often. Following the standard optimal supervisory control framework, two
+Available online 26 March 2024
+                                            types of costs, disable cost and occurrence cost, are considered. However, instead of considering the
+Keywords:                                   standard accumulated total cost or the average cost per event, we consider the measure for the control
+Discrete event systems                       performance using the average cost per task. We show that such an optimality measure is more suitable
+Optimal supervisory control                        for tasks that need to be completed cyclically. Our goal is to design a live and non-blocking supervisor
+Mean payoff games                          such that the average cost per task in the worst-case is minimized. To solve the problem, we propose
+                                          a game-theoretical approach by converting the optimal control problem as a two-player graph game.
+                                                Structural properties of the converted game are discussed. In particular, we show that this game
+                                         can be solved by a set of mean payoff decision problems, for which effective algorithms exist. Our
+                                       problem can be considered as a special instance of the general ratio-game in the literature. However, by
+                                             exploring new structural property for this problem, we achieve superior computational efficiency when
+                                      compared to the conventional solution designed for more general problem formulations. Illustrative
+                                        examples are provided to demonstrate the proposed algorithm.
+                                                              © 2024 Elsevier Ltd. All rights reserved.
+
+
+
+
+1. Introduction                                                     Lafortune, 2009). In the context of DES, the supervisory con-
+                                                                               trol theory (SCT) initiated by Ramadge and Wonham is a pow-
+                                                                           erful formal methodology that aims to synthesize a feedback1.1. Motivations
+                                                                   supervisor such that the closed-loop system under control sat-
+                                                                                   isfies some desired specifications, such as safety, liveness and
+   Discrete event systems (DES) are dynamic systems with dis-    non-blockingness, in the presence of uncontrollable events; see,
+crete state–spaces and event-driven dynamics, which are widely      e.g., the textbooks (Seatzu, Silva, & Van Schuppen, 2013; Wonham
+used in the modeling and analysis of man-made engineering   & Cai, 2019) and some recent works (Li & Takai, 2022; Ma &
+cyber–physical systems such as manufacturing systems, trans-     Cai, 2022; Sakakibara, Urabe, & Ushio, 2021; Takai, 2021; Yin &
+portation systems and communication networks (Cassandras &     Lafortune, 2016a, 2016b).
+                                                       One important problem in the SCT is to synthesize supervisors
+                                                                  optimally in terms of some performance measures. This is re-
+ ✩This work was supported in part by the National Natural Science Foundation     ferred to as the optimal supervisory control problem and has drawn
+of China (62173226, 62061136004, 62303389), in part by the Guangdong Basic    considerable attentions in the literature; see, e.g., Alves, Pena, and
+and Applied Basic Research Funding, China, grant 2022A151511076, in part    Takahashi (2021), Fu, Ray, and Lagoa (2004), Hill and Lafortune
+by the Guangzhou Basic and Applied Basic Research Scheme, China, grant
+                                                                     (2016), Kumar and Garg (1995), Ma and Zhang (2020), Pena,
+2023A04J1067, and in part by the Guangzhou Municipality-University  Joint
+Funding, China, grant 2023A03J0678. The material in this paper was partially     Vilela, Alves, and Rafael (2021), Sakakibara and Ushio (2020), Sen-
+presented at the 60th IEEE Conference on Decision and Control, December 13–    gupta and Lafortune (1998), Su, Van Schuppen, and Rooda (2011),
+15, 2021, Austin, Texas, USA. This paper was recommended for publication in   Ware and Su (2016). Particularly, an optimal supervisory con-
+revised form by Associate Editor Michel Reniers under the direction of Editor     trol framework was proposed in Sengupta and Lafortune (1998)
+Christos G. Cassandras.
+  ∗Corresponding author.                                       by considering both the occurrence cost and the disable cost.
+                                                          The objective of the supervisor is to reach marked states with     E-mail addresses:  lv-peng@sjtu.edu.cn (P. Lv), randomx200@sjtu.edu.cn
+(Z. Xu), jiyiding@ust.hk (Y. Ji), syli@sjtu.edu.cn (S. Li), yinxiang@sjtu.edu.cn        the smallest worst-case accumulated total cost. This framework
+(X. Yin).                                                        has been extended subsequently to several different settings,
+
+
+https://doi.org/10.1016/j.automatica.2024.111634
+0005-1098/© 2024 Elsevier Ltd. All rights reserved.
+
+P. Lv, Z. Xu, Y. Ji et al.                                                                                                          Automatica 164 (2024) 111634
+
+including, e.g., multiple goals (Marchand, Boivineau, & Lafortune,    games (Brim, Chaloupka, Doyen, Gentilini, & Raskin, 2011; Ehren-
+2000), partial observations (Marchand, Boivineau, & Lafortune,    feucht & Mycielski, 1979). However, in mean payoff games, the
+2002), online control (Grigorov & Rudie, 2006) and probabilistic     cost is averaged per event not per task. Furthermore, no infinite
+systems (Pantelic & Lawford, 2011).                                        visit requirement is imposed therein. Our problem is also related
+   The original framework of Sengupta and Lafortune (1998)     to the problems studied in Chatterjee, Henzinger, and Jurdzinski
+essentially considers finite languages, which is more suitable for     (2005), Ding, Smith, Belta, and Rus (2014). However, Chatterjee
+a single non-repetitive task. In terms of optimal control of infinite     et al. (2005) study the mean-payoff parity game, where the cost
+behaviors, a common approach is to use the average cost per      is still averaged per event not per task. The optimality measure
+event as the optimality measure; see, e.g., Ji, Yin, and Lafortune     in Ding et al. (2014) is more similar to our setting. However,
+(2021a, 2021b), Pruekprasert and Ushio (2016). However, as we      it considers a stochastic setting in terms of Markov decision
+will argue later in the paper, such an optimality measure is not    processes for the expected cost, while our work considers a
+suitable when cyclic tasks are considered, because the optimal so-    non-stochastic supervisory control problem for the worst-case
+lution may keep executing useless behaviors to minimize its cost.     cost, and therefore, the solution methodologies are completely
+Still following the framework of Sengupta and Lafortune (1998),     different.
+the authors in Schmidt (2015) consider the optimal supervisory        In Bloem et al. (2014), a general type of game called ratio-
+control of cyclic tasks, where each task cycle is pre-specified    game is investigated. Instead of considering a single cost function,
+as the reset to its initial state. This setting cannot handle the    the ratio-game aims to minimize the ratio value of two different
+scenario where tasks are modeled by multiple marked states     costs. Our investigated mean payoff Büchi game per task can be
+without a pre-specified visiting order.                             considered as a special instance of the ratio-game. Specifically,
+                                                                          for each edge achieving the task, one can assign a unit cost to the
+1.2. Our results                                               denominator and zero otherwise. However, using existing ratio-
+                                                    game algorithm to solve our problem requires a cubic complexity
+                                                       on the number of vertices, while by leveraging structural property   In this paper, we formulate and solve a class of optimal super-
+                                                                        of the per task game, our algorithm can solve the problem with avisory control problem for cyclic tasks. We also follow the basic
+                                                                   quadratic complexity on the number of vertices. In the context ofsetting in Sengupta and Lafortune (1998), where uncontrollable
+                                                                DES, ratio-games have been first applied in van der Sanden (2018)events are taken into account, and both the occurrence costs and
+                                                                     to optimize the throughput performance of supervisors, which isthe control costs are considered. The tasks are modeled by a set
+                                                               captured by the ratio of two different costs. However, there isof marked states and each completion of the task is captured by
+                                                       no target state considered therein and the synthesized optimalthe visit of a marked state. The task is cyclic in the sense that the
+                                                                   supervisor may not be non-blocking.system needs to visit marked states infinitely often. To formulate
+the optimal control problem, we consider a performance measure
+                                                                                   1.4. Organizationcalled the average cost per task. We argue that such a performance
+measure is more suitable for infinite cyclic behaviors than the
+                                                            The rest of this paper is organized as follows. Section 2 reviewsstandard accumulated total cost or the average cost per event.
+                                                     some basic notions in the optimal supervisory control theory.   In order to solve the proposed optimal control problem, a
+                                                                   Section 3 formulates the optimal supervisory control problemgame-theoretical approach is developed. Specifically, we show
+                                                                          for average cost per task (OSCP-AT) that we solve in this work.two important structural properties of the control problem:
+                                                                   Section 4 discusses how to transform the OSCP-AT into mean(i) the optimal strategy is state-based; and (ii) the optimal value
+                                                                   payoff Büchi game per task (MPBG-PT) and show the equivalencebelongs to a finite space. Then we show that the associated
+                                                         between the two problems. Our main synthesis procedure is pro-threshold decision problem can be reduced to a mean payoff
+                                                               vided in Section 5. Case studies as well as numerical experimentsvalue decision problem, for which effective algorithms exist in
+                                                                   are provided in Section 6. Finally, we conclude the paper inthe literature. By leveraging the structural properties as well as
+                                                                   Section 7. Preliminary and partial versions of some of the resultsthe reduction, a (pseudo) polynomial-time algorithm is proposed
+                                                                        in this paper are presented in Lv, Yin, Ji, and Li (2021). However,for solving this type of optimal supervisory control problem.
+                                                                 the algorithm in Lv et al. (2021) needs to enumerate the entire   The proposed optimal supervisory control problem has various
+                                                                     strategy space which leads to an exponential complexity. Here, bypotential applications in different engineering systems. For ex-
+                                                                   leveraging new structural properties of the problem, we developample, in manufacturing lines, machines need to be reconfigured
+                                                               a new polynomial-time synthesis algorithm, which significantly
+to make products repeatedly, and one always wants to minimize
+                                                            improves the result in Lv et al. (2021).
+the overall production cost for each product. Also, for example,
+in multi-robot surveillance, the team of robots needs to visit
+                                                                             2. Preliminary on optimal supervisory controlsome checkpoints regularly in order to gather or upload data.
+In this case, it is meaningful to minimize the long-run average
+                                                                                   2.1. Supervisory control theorydistance between each time the checkpoint is visited, which can
+be captured by a per task cost.
+                                                                         Let Σ be a finite set of events. A string over Σ  is a finite
+                                                            sequence of events of form s = σ1 . . . σn, σi ∈Σ. We denote by
+1.3. Related works                                     Σ∗the set of all finite strings over Σ including the empty string
+                                                                                   ε. The set of all infinite strings over Σ is denoted by Σω. We
+   Our work is closely related to several existing works in the
+                                                             denote by |s| the length of s and by s[i] the ith event in s. Also,
+literature. Specifically, our solution methodology is motivated
+                                                                                                                          s[i,j] = σi . . . σj denote the sequence from the ith event to the jth
+by the two-player graph games (Gradel & Thomas, 2002) and                                                               event in s. A language L ⊆Σ∗is a set of strings. The prefix-closure
+game-based methodologies have been used in Ji et al. (2021a),                                                                        of L is defined by L = {s ∈Σ∗: ∃w ∈Σ∗s.t. sw ∈L}.
+Pruekprasert and Ushio (2016) for solving optimal supervisory
+                                           We consider a DES modeled as a deterministic finite-state
+control problems. However, our per task optimality metric is
+                                                          automaton (DFA)
+different from those considered therein. The formulated opti-
+mal control problem is motivated by the standard mean payoff   G = (Q, Σ, δ, q0, Qm),
+
+                                                                   2
+
+P. Lv, Z. Xu, Y. Ji et al.                                                                                                          Automatica 164 (2024) 111634
+
+where Q  is a finite set of states, Σ  is a finite set of events,    much. Therefore, the disable cost incurred using control decision
+δ  : Q × Σ →Q  is a partial transition function, q0 ∈Q  is the    γ ∈Γ at state q ∈Q , denoted by c′d(γ , q), is defined by
+initial state and Qm ⊆Q is a set of marked states. The transition
+                                                                                        c′d(γ , q) =  ∑     cd(σ),function is also extended to δ  : Q × Σ∗→Q in the usual
+manner (Cassandras & Lafortune, 2009). The language generated                 σ∈(∆G(q)∩Σc)\γ
+by G is L(G) = {s ∈Σ∗: δ(q0, s)!}, where ‘‘!’’ means ‘‘is defined’’.    which  is the summation of disable costs for  all feasible but
+We also denote by Lω(G) the set of infinite strings generated by G.    disabled events. With a slight abuse of notion and for the sake
+The language marked by G is Lm(G) = {s ∈L(G) : δ(q0, s) ∈Qm}.     of simplicity, hereafter, we still use cd(γ , q) to denote c′d(γ , q).
+Marked states are usually used to model the goal/task of a system.      Then given a supervisor, and for any finite string s =  σ1
+For any q ∈Q , we define ∆G(q) = {σ ∈Σ  : δ(q, σ)!} as the set       . . . σn ∈L(S/G), the total cost incurred along s is defined by
+of active events at q; we also define ∆G(s) = ∆G(δ(q0, s)). For                                                                        CostS(s) = ∑  ce(σi) + ∑ cd(S(s′), δ(s′)),simplicity, we write δ(q, s) as δ(s) when q = q0. For technical
+                                                                                                                         i=1,...,n             s′∈{s}reason that will be clear later, we assume that the transition from
+one state to the other is unique, i.e., for any q, q′ ∈Q , we have    where the first component represents the total occurrence cost
+|{σ ∈Σ : δ(q, σ) = q′}| = 1, and we denote by σq,q′ the unique     for all events in string s and the second component represents
+event from q to q′. Note that, this assumption is without loss of    the total disable cost for all decisions along s.
+generality since we can always refine the state space such that       However, for an infinite string s ∈Lω(S/G), it does not make
+the assumption holds.                                           sense to talk about its total cost as it usually goes to infinity. An
+   In the supervisory control theory, the event set is partitioned     alternative optimality metric is to consider the average cost (or,
+as                                                               the mean payoff), which is defined by
+                                                           { 1        }
+Σ = Σc ˙∪Σuc,                                                        CostAveS  (s) = lim sup    CostS(s[1,n])  ,
+                                                        n→∞   n
+where Σc is the set of controllable events and Σuc is the set of
+                                                       where s[1,n] is the prefix of s with length n.uncontrollable events. Then a supervisor is a mapping
+                                                                          In the DES literature, different types of optimal control prob-
+S : L(G) →Γ                                                lems have been investigated, including, e.g.,
+
+that enables events dynamically based on the executed string,        (1) Total Cost Control for Reachability (Sengupta & Lafortune,
+where Γ = {γ ∈2Σ  : Σuc ⊆γ } is the set of control patterns.          1998): This problem requires to reach marked states op-
+The language generated by the closed-loop system under control,           timally; hence, the supervisor needs to be non-blocking.
+denoted by L(S/G), is defined recursively by                             Furthermore, the supervisor needs to minimize the worst-
+                                                                        case total cost CostS(s) for string s that reaches the marked
+  • ε ∈L(S/G);                                                              states Qm for the first-time. Note that here it is meaning-
+  • For any s ∈Σ∗and σ ∈Σ, we have sσ ∈L(S/G)  iff            ful to discuss the total cost since once a marked state
+      s ∈L(S/G), sσ ∈L(G) and σ ∈S(s).                                            is reached, the entire task is completed, i.e., the optimal
+                                                                           solution should be in finite horizon.
+The language marked by S/G is defined by Lm(S/G) = L(S/G) ∩        (2) Average Cost Control for Liveness(Ji et al., 2021b; Pruekprasert
+Lm(G). The infinite language generated by the closed-loop is de-       & Ushio, 2016): This problem requires to find a live supervi-
+noted by Lω(S/G) such that, for any s ∈Σω, we have s ∈Lω(S/G)           sor such that the system can execute indefinitely. Since the
+iff ∀i ≥1 : s[1,i] ∈L(S/G).                                              horizon is infinite, it makes sense to consider the average
+  A supervisor S is said to be:                                             cost and the supervisor needs to minimize CostAveS  (s) for
+  • live: if ∀s ∈L(S/G), ∃σ ∈Σ : sσ ∈L(S/G);                          the worst-case.
+  • non-blocking: if Lm(S/G) = L(S/G);                        The first problem is useful to describe the scenario, where a single
+  • state-based: if the decisions are only based on the current     task, modeled by marked states, needs to be achieved optimally
+      state, i.e., ∀s, t ∈L(G) : δ(s)=δ(t) ⇒S(s)=S(t).              and for only once. The second problem  is useful to describe
+                                                                 the scenario, where the supervisor needs to ensure the non-
+Note that liveness and non-blockingness are incomparable, and in                                                                 termination of the entire process and to minimize the average
+this work, we require the synthesized supervisor satisfying both     cost during the indefinite process.
+properties.
+                                                                             3. Optimal control for cyclic tasks
+2.2. Cost functions
+                                                                                   3.1. Motivating example
+
+   Following the standard framework of optimal supervisory con-
+                                                                          In the optimal control problem for cyclic tasks, the super-trol (Sengupta & Lafortune, 1998), we consider the following two
+                                                                        visor wants to make sure that marked states can be visited
+types of costs:
+                                                                                  infinitely often so that tasks can be completed repeatedly. Al-
+  • occurrence cost: ce : Σ →N; and                          though such a solution involves infinite strings, the following
+  • disable cost: cd : Σc →N.                                   simple example shows that the standard average cost is not a
+                                                                       suitable performance metric for optimality.
+That is, for each σ ∈Σ, ce(σ) denotes the cost incurred when σ is
+executed. The occurrence cost can model, for example, the energy    Example 1.  Let us consider system G shown in Fig. 1, where
+consumption for each event execution. On the other hand, the      all events are controllable and double circle denotes a marked
+disable cost cd(σ) describes the cost incurred when the supervisor     state. For each state, we assume that there is no disable cost and
+tries to prevent a feasible and controllable event σ from happen-    the occurrence cost is given as the number associated to each
+ing. The disable cost also provides a quantitative measure for the     transition. If one wants to visit marked state q0 infinitely often,
+permissiveness of the supervisor since the supervisor will incur    while minimizing the average cost, a possible optimal solution is
+large disable cost if it interferes the behavior of the system too    as follows:
+
+                                                                   3
+
+P. Lv, Z. Xu, Y. Ji et al.                                                                                                          Automatica 164 (2024) 111634
+
+                                                                             4. Game-based formulation of SCT
+
+
+                                                                       Pruekprasert, Ushio, and Kanazawa (2015), van der Sanden
+                                                                     (2018), a graph-game-based approach was developed for solving
+                                                          an optimal supervisory control problem for average cost per
+                                                                     event. In this paper, to solve the optimal supervisory control
+                           Fig. 1. System G in Example 1.                    problem for average cost per task, we also convert the DES model
+                                                                   as a two-player game over a weighted graph.
+
+  • upon the kth occurrence of event a, the supervisor repeats      4.1. Two-player graph games
+     control decision {c} for k-times and then changes to control
+     decision {b}.                                       A two-player game graph is a bipartite graph
+This is because that c has a lower cost and enabling c few times   A = (V =V0 ˙∪V1, E, v0),
+can help to reduce the cost averaged by events, i.e., CostAveS  (s) goes
+                                                       where V is a set of vertices and V0 and V1 form a partition of Vto 2. Furthermore, marked state q0 is still visited infinitely often,
+                                                                   denoting, respectively, the set of vertices of Player 0 and Player
+which satisfies the cyclicity requirement.
+                                                                        1; E ⊆(V0 × V1) ∪(V1 × V0) is a set of edges; and v0 ∈V0 is   However, this optimal solution is not of practical interest,
+                                                                 the initial vertex of the game. A play in A is an infinite sequence
+because the optimal average cost is achieved by increasing the            ω                                                     ρ ∈ V  such that ⟨ρ[i], ρ[i+1]⟩∈  E, ∀i ≥  0. The set of allpercentage of event c, which is useless for completing the task.
+                                                                   plays starting from v  is denoted by Plays(A, v). For any play
+A simple and practical solution is to alternate between control
+                                                     ρ = v0v1 · · · vn ∈Plays(A, v), ρ is called a cycle if v0 = vn. For adecisions {a} and {b} without allowing event c for even once. This
+                                                                            cycle, if ∀0 < i < j < n, vi̸ = vj, vi̸ = v0 and vj̸ = v0, we call it asimple example suggests that, when tasks modeled by marked
+                                                                    simple cycle; otherwise, it is a compound cycle.
+states are considered, it makes more sense to average the total
+                                                   A strategy for Player i ∈{0, 1} is a function θi  : V ∗Vi →Vcost by the number of completions of tasks, rather than the
+                                                             such that ∀w ∈V ∗, v ∈Vi  : θi(wv) =  v′ ⇒⟨v, v′⟩∈E,number of event occurrences.
+                                                       where V ∗is the set of all finite sequences over V. We denote
+                                                          by ˜Θi the set of all strategies for Player  i ∈{0, 1}. Then given
+3.2. Problem formulation                                         a strategy θi of Player i ∈{0, 1}, we say a play ρ ∈Play(A, v)
+                                                          from v ∈V is consistent with strategy θi if ∀n ≥0 : ρ[n] ∈Vi ⇒
+   Motivated by the above discussions, for each string s ∈L(G),     ρ[n+1] = θi(ρ[1,n]). We denote by Play(A, v, θi) the set of all plays
+we denote by Im(s) the number of visits of marked states Qm along     consistent with θi from v ∈V. If the strategies of both players are
+s, i.e.,                                                                 given, i.e., θ = (θ0, θ1), then the play from v ∈V can be uniquely
+                                                                determined, which is ρ(v, θ) := ∩i=0,1Play(A, v, θi).
+Im(s) = |{s′ ∈{s} : δ(q0, s′) ∈Qm}|.                                The goal of each player is to achieve some objective. Most
+Essentially, Im(s) represents the number of tasks the system has   game objectives investigated in the literature can be categorized
+completed. Let s ∈Lω(S/G) be an infinite string generated by the    as qualitative objectives or quantitative objectives.
+system. Then the average cost per task of s under supervisor S is      (1) Qualitative Objective: A qualitative objective can be expressed
+              {   1          }                        as a winning condition Win ⊆ V ω, which is a set of infinite
+CostAveTS    (s) = lim sup            CostS(s[1,n])   .                  (1)    sequences. Specifically, we say that strategy θi achieves Win for
+          n→∞    Im(s[1,n])
+                                                                    Player i, if Play(A, v0, θi) ⊆Win. In this paper, we focus on finding
+This leads to the Optimal Supervisory Control Problem for Average    winning strategies for Player 0; hence Win is always considered
+Cost Per Task (OSCP-AT) that we solve in this paper.                   for Player 0. Given a set of vertices Vm ⊆V, one can define
+                                                                         different types of winning conditions, e.g.,
+Problem 1 (OSCP-AT). Given system G with Σc, find an optimal                               ω
+supervisor S∗such that                                         • safety: WinS(Vm)={ρ ∈V   : Occ(ρ) ∩Vm =∅};
+                                                            • reachability: WinR(Vm)={ρ ∈V ω : Occ(ρ)∩Vm̸ =∅};
+   (1) S∗is live and non-blocking; and                            • Büchi: WinB(Vm)={ρ ∈V ω : Inf(ρ) ∩Vm̸ =∅},
+   (2) for any s ∈Lω(S∗/G), CostAveTS∗  (s) < ∞; and
+                                                       where Occ(ρ) and Inf(ρ) denote, respectively, the set of vertices   (3) for any S′ satisfying (1) and (2), we have
+                                                                     that occur at least once and infinite number of times in ρ. Game
+                                                              graphs associated with winning conditions WinS(Vm), WinR(Vm)        sup   Cost∗AveTS    (s) ≤   sup   CostAveTS′   (s).
+       s∈Lω(S∗/G)                 s∈Lω(S′/G)                          and WinB(Vm) are referred to as the safety game, reachability
+                                                      game and Büchi game, respectively. Effective algorithms have been
+Remark 1.  It is important to note that, the average cost per task    proposed for solving each of the above games; see, e.g., Gradel
+considered in our problem can be treated as a special instance    and Thomas (2002).
+of the ratio value cost originally studied in Bloem et al. (2014).
+                                                                           (2) Quantitative Objective:  Quantitative objectives are investi-
+Specifically, for any finite string s[1,n], we consider two different
+                                                                gated for a weighted game (A, w), where A is an arena and
+costs c1(s[1,n]) and  c2(s[1,n]). Then for any infinite string  s, its
+                                                                                           c1(s[1,n])   w  : E →N+ is a weight function assigning each edge a weight
+ratio value cost is defined as Ratio(c1,c2)(s) = lim supn→∞ c2(s[1,n]).     (or payoff). Later in this work, we will leverage an important type
+Clearly, by setting c1 = CostS and c2 = Im, this ratio value cost     of quantitative game called the mean payoff game to solve our
+reduces to our average cost per task. In this work, instead of                                                               problem. In the mean payoff game, Player 0 aims to minimize the
+solving our problem directly using the general algorithm in Bloem                                                  mean payoff of a play ρ ∈V ω, i.e.,
+et al. (2014), we will explore new structural properties for the
+                                                                        1
+average cost per task measure, which yield a more efficient and    MP(w)(ρ) = lim sup ∑ w(ρ[i], ρ[i+1]).
+customized algorithm.                                         n→∞  n
+                                                                                                         i<n
+
+                                                                   4
+
+P. Lv, Z. Xu, Y. Ji et al.                                                                                                          Automatica 164 (2024) 111634
+
+The value secured by strategy θ0 of Player 0 at vertex v ∈V is
+
+val    (w)MP(v; θ0) = sup MP(w)(ρ(v, θ0, θ1)),
+                   θ1∈˜Θ1
+
+which is the worst-case payoff it can ensure. The optimal value
+for Player 0 at vertex v ∈V in the game (A, ω) is val (w)MP(v) =
+              (w)
+infθ0∈˜Θ0 val MP(v; θ0). It was shown by Zwick and Paterson (1996)
+that Player 0 has an optimal strategy θ∗0 to secure this optimal
+value; furthermore this strategy is positional, i.e., it only depends
+                                                                                                                            Fig. 2. DES G for Example 2.
+on the current vertex. Note that, here we use superscript (w) to
+emphasize that the payoff is w.r.t. weight function w. We will also
+omit the superscript (w) when there is no ambiguity.
+
+
+4.2. Supervisory control as a game
+
+
+   As we mentioned earlier, our approach is to transform the
+supervisory control problem as a game. Specifically, given a DES
+G = (Q, Σ, δ, q0, Qm), we construct a new game arena
+AG = (V G =V0G ∪V 1G , EG, vG0 )
+
+where
+
+  • V 0G ⊆Q ∪{vD,0} are Player 0’s vertices;
+  • V 1G ⊆(Q × Γ ) ∪{vD,1} are Player 1’s vertices;
+  • EG ⊆(V 0G ×V 1G ) ∪(V 1G ×V 0G ) are edges defined by:
+
+                                      , γ ∈Γ , we have ⟨q, (q, γ )⟩∈EG       – for any q ∈Q ⊆V 0G                                                                                                      Fig. 3. The SC game graph A, where γ0 = {a, d, e} and γ1 = {d, e}.                              G
+       – for any (q, γ ) ∈V 1 , if ∆G(q) ∩γ̸ = ∅, then for each
+        σ ∈∆G(q) ∩γ , we have
+
+            ⟨(q, γ ), δ(q, σ)⟩∈EG                                     there is at most one event from a state to another. If this assump-
+                                                                      tion does not hold, then function w cannot capture the occurrence
+          otherwise, when ∆G(q) ∩γ = ∅, we have
+                                                                      costs correctly since σq,q′ is not unique. In this case, we need to
+            ⟨(q, γ ), vD,0⟩∈EG                                       pre-process plant G such that the assumption holds.
+       – for vD,0 ∈V 0G and vD,1 ∈V 1G , we have                 Example 2. Consider system G shown in Fig. 2, where Σc = {a}
+                                                         and Qm = {q0, q1, q4}. Suppose the occurrence costs of events are           ⟨vD,0, vD,1⟩, ⟨vD,1, vD,0⟩∈EG
+                                                                given by ce(a) = 1 and ce(d) = ce(e) = 2 and the disable cost
+  • vG0 = q0 is the initial vertex.                                       for a ∈Σc is given by cd(a) = 1. Then, the corresponding SC
+                                                    game graph A is shown in Fig. 3, where we use circles and squares
+   Intuitively, game graph AG explicitly distinguishes between
+                                  G                                   to denote Player 0’s vertices and Player 1’s vertices respectively                                                       patternthe supervisor’s decision stage V 0 from which a control                                                         and the numbers on the edges are the cost values. For the sake                                                    Gis chosen and the environment’s decision stage                                      V1 from which     of simplicity, at each state, we only consider control patterns in                                               G
+an event occurs. Furthermore, each state in V 1  is of form (q, γ ),    which all disabled events are defined at this state. That is, those
+where q is the current state, while γ ∈Γ represents the current
+                                                              undefined events are always included in the control pattern. For
+control pattern applied. Note that (q, γ ) can move to some state
+q′ ∈V 0G only when there exists some feasible events enabled at    example,to only considerin statecontrolq3, eventdecisiona is notγ0 feasible;= {a, d, e},therefore,and γ1 =it {d,sufficese} isq under γ . For the case that ∆G(q) ∩γ = ∅, we introduce two
+                        G                G                          redundant.
+new vertices vD,0 ∈V 0 and vD,1 ∈V 1 , where ‘‘D’’ represents
+‘‘deadlock’’. Therefore, the graph has at least one outgoing edge      To capture the average cost per task requirement as formu-
+for each vertex, but may loop in the deadlock vertices forever. We     lated in Problem 1, similarly to the mean payoff game, for any
+will refer to AG as the supervisory control (SC) game graph and for     finite sequence ρ, we denote by Nm(ρ) as the number of occur-
+the sake of simplicity, hereafter we will omit all superscripts G in    rences of Qm in ρ. Then the mean payoff per task of a play ρ ∈V ω
+AG and just write it as A.                                                       is
+   To describe the qualitative winning condition, we define Vm :=                                                                                                   Cost(ρ[0,n])
+Qm ⊆V0 as the set of ‘‘target’’ vertices that should be visited in-     PT(w)(ρ) = lim sup               ,                                 (2)
+finitely often, i.e., we consider Büchi winning condition w.r.t. Vm.            n→∞   Nm(ρ[0,n])
+Furthermore, to introduce the quantitative objective, we define a    where Cost(ρ[0,n]) = ∑ i<n w(ρ[i], ρ[i+1]). Then the mean payoff per
+weight function w : E →N ∪{∞} by:                                task value secured by strategy θ0 of Player 0 at vertex v ∈V w.r.t.
+                                                             weight function w is defined by  • w((q, γ ), q′) = ce(σq,q′);
+  • w(q, (q, γ )) = cd(γ , q);                                           val (w)PT (v; θ0) = sup PT(w)(ρ(v, θ0, θ1)).
+  • w((q, γ ), vD,0)=w(vD,0, vD,1)=w(vD,1, vD,0) = ∞.                                      θ1∈˜Θ1
+
+                                                                          Similarly, we define the optimal mean payoff per task value for
+   The above construction is sufficient to capture all information     Player 0 at vertex v ∈V in the game (A, ω) as val(w)PT (v) =
+                                                                                                    (w)
+needed in the synthesis problem since we have assumed that      infθ0∈˜Θ0 valPT (v; θ0).
+
+                                                                   5
+
+P. Lv, Z. Xu, Y. Ji et al.                                                                                                          Automatica 164 (2024) 111634
+
+Example 3. We still consider the SC game in Fig. 3 and consider     5. Optimal supervisor synthesis procedure
+positional strategies θ0 and θ1 showed by red and blue lines,
+respectively. Then we have ρ(q0, θ0, θ1) = ρ0ρω1 with ρ0 =        In this section, we present our main synthesis procedure for
+q0(q0, γ0) and ρ1 = q2(q2, γ0)q1(q1, γ1). Since there exists only     solving Problem 2 (and hence solves Problem 1). Our approach
+one target vertex q1 in ρ2 and the total cost of ρ2 is 5, we have     consists of the following steps:
+    (w)
+val   PT (q0) = val (w)PT (q0; θ0) = PT(w)(ρ(q0, θ0, θ1)) = 5.
+                                                            • First, we show two key structural properties of MPBG-PT: (i)
+  We consider a game in which Player 0 aims to minimize the         the optimal strategy is positional; and (ii) the value of the
+per task payoff. This leads to the formulation of the following                                                        game is within a finite set;
+problem of Mean Payoff Büchi Game Per Task (MPBG-PT).             • Then, we further consider a threshold decision problem for
+                                                                      the mean payoff per task value, and show that this decision
+Problem 2 (MPBG-PT). Given a game graph A, target vertices Qm        problem can be reduced to the threshold decision problem
+and weight function w : V →N ∪{∞}, find an optimal strategy                                                                                for the standard mean payoff value;
+θ∗0 ∈˜Θ0 for Player 0 such that                                   • Finally, by leveraging the structural properties of the game
+   (1) Play(A, v0, θ∗0 ) ⊆WinB(Vm);                                 and by iteratively applying the threshold decision problems,
+   (2) for any strategy θ′0 ∈  ˜Θ0 satisfying (1), we have val (w)PT       we can effectively solve MPBG-PT.
+       (v0; θ∗0 ) ≤val (w)PT (v0; θ′0).                                               5.1. Structure property of MPBG-PT
+   Note that, if strategy θ∗0 ensures infinite visits of target ver-
+tices, then its per-task value has to be finite, and vice versa. There-        In this subsection, we first show two key structural properties
+fore, in the above problem formulation, the satisfaction of the     of MPBG-PT. First, we show that the value of MPBG-PT can be
+                                                                    (w)
+Büchi condition is equivalent to the boundedness of val                                                              PT (v0; θ∗0 ).    achieved by a positional strategy.
+                                                                          In the literature of two-player graph games, it is well-known
+4.3. Correctness of the transformation                                 that (e.g., Corollary 7 in Gimbert and Zielonka (2005)), given a
+                                                                   payoff function, the optimal value of the game can be achieved by
+   Note that game graph A is constructed from G. Therefore, a    a pair of positional strategies if each player has a positional optimal
+Player 0’s strategy in A and a supervisor for G can be mapped     strategy for the same payoff function by assuming that it can
+from one to the other as follows:                                    control all vertices in the graph. In many cases, the later condition
+  • Given strategy θ0, it induces a supervisor, denoted by Sθ0,      is much easier to test. The reader is referred to Gimbert and
+     inductively by: for any play ρ =  q0(q0, γ0)q1(q1, γ1) . . .    Zielonka (2005) for a more rigorous statement of this result. Here,
+     qn(qn, γn) ∈Play(A, q0, θ0), we have Sθ0(σ0σ1 . . . σn) = γn,    by applying this result to our MPBG-PT, we have the following
+    where σ0 = ϵ and δ(qi, σi+1) = qi+1, ∀i = 0, 1, . . . , n −1.       proposition.
+  • Given supervisor S, it also induces a strategy for Player 0,
+     denoted by θS, inductively by: for any s =  σ1 · · · σn ∈    Proposition 1.  If Problem 2 has a solution, then there exists a pair
+     L(S/G), we have θ0(ρ) = (qn, S(s)), where ρ is the unique     of positional strategies (θ∗0 , θ∗1 ) such that θ∗0 solves Problem 2 and
+     play of form ρ = q0(q0, γ0)q1(q1, γ1) . . . qn ∈Play(A, q0, θS),     val (w)PT (v0) = PT(w)(ρ∗(v0, θ∗0 , θ∗1 )).
+    and δ(qi, σi+1) = qi+1, ∀i = 0, 1, . . . , n −1.
+                                                                   Proof.  For the original weighted game (A =  (V =  V0 ∪  We note that Problem 2 requires the Büchi winning condi-
+                                                                   V1, E, v0), w), we assume that Player 0’s vertices are V0 ∪V1tion, which seems to be stronger than the liveness and non-
+                                                         and there is no Player 1’s vertex and consider (2) as the payoffblockingness requirements in the original problem, because non-
+                                                                   function for Player 0. For any pair of positional strategies (θ0, θ1),blockingness only requires the existence of path to marked states.
+However, these two conditions are essentially equivalent under    ρ(v0, θ0, θ1) ∈WinB(Vm) must be a play of the prefix–suffix form
+the assumption that each event has a non-zero occurrence cost    ρ(v0, θ0, θ1) = ρpre(ρsur)ω, where ρpre = v0 · · · vn is a finite path
+and the requirement that CostAveTS∗  (s) < ∞. This is because,    from v0 to ρsur and ρsur = vn+1 · · · vm is a cycle. Furthermore, we
+if the system is live and non-blocking but cannot visit marked   know that
+states infinitely often, then it must loop somewhere which yields                            Cost(ρ[0,i])
+                                                                     PT(w)(ρ) = lim supinfinite cost per task. For example, for system G in Fig. 1, the                                                              i→∞   Nm(ρ[0,i])
+system itself is already live and non-blocking, but its cost per task
+                                                                                             Cost(ρpre) + k · Cost(ρsur)
+is infinite due to the cycle at state q1. Therefore, it does not satisfy       = lim sup                                       .
+the Büchi winning condition.                                     k→∞    Nm(ρpre) + k · Nm(ρsur)
+   The following theorem shows that, to solve the original OSCP-    As ρpre is a finite sequence, we have
+AT as formulated in Problem 1, it is equivalent to solve the game
+as defined in Problem 2. Therefore, our later developments can                         Cost(ρpre) + k · Cost(ρsur)                                                                     PT(w)(ρ) = lim sup
+only focus on the game-based formulation.                           k→∞    Nm(ρpre) + k · Nm(ρsur)
+                                                                                k · Cost(ρsur)
+                                                                        sup 1. A strategy θ∗0 solves Problem 2 if and only if its induced supervisor       = lim                                                        k→∞                                                                                k · Nm(ρsur)
+Sθ∗0 solves Problem 1.                                                                                     Cost(ρsur)
+                                         =              ,
+Proof. See the Appendix.                                                       Nm(ρsur)
+   Hereafter, we assume without loss of generality that, for the    which means that PT(w)(ρ) is only determined by the mean payoff
+construction game A, there exists a strategy of Player 0 θ0 such    value per task of ρsur. Also, given two cycles ρ1 and ρ2 with
+that Play(A, v0, θ0) ⊆WinB(Vm). The existence of such a strategy    Cost(ρ1) = n1, Cost(ρ2) = n2, Nm(ρ1) =  d1̸ = 0 and Nm(ρ2) =
+                                                                                                                                                                                                                                                                          .can be determined by checking the non-emptyness of the Büchi       d2̸ =  0, suppose  n1d1 <   n2d2 . Clearly, we have  n1d1 <  n1+n2d1+d2
+winning region in polynomial-time; see, e.g., Gradel and Thomas     Therefore, let ρ∗sur be the simple cycle with the minimum value
+(2002). Otherwise, we can conclude immediately that Problem 1    with respect to (2) that is reachable from v0. Then there must
+has no solution.                                                         exist a positional strategy for Player 0 to achieve the following
+
+                                                                   6
+
+P. Lv, Z. Xu, Y. Ji et al.                                                                                                          Automatica 164 (2024) 111634
+
+path ρ∗= ρ∗pre(ρ∗sur)ω, where ρ∗pre  is a finite path from v0 to    weight, PT(w)(ρ(v0, θ0, θ1)) must be a rational number, which
+ρ∗sur. Therefore, Player 0 has an optimal positional strategy in any    means that the optimal mean payoff value per task val (w)PT (v0) is
+weighted game (A, ω) with V1 = ∅with respect to (2). Similarly,     also a rational number. Furthermore, for any simple cycle ρsur
+we can also argue that Player 1 has an optimal positional strategy     in A, the number of vertices in Vm that ρsur passes through can
+in any weighted game (A, ω) with V0 = ∅with respect to (2)    only be an integer between 1 and Vm, and therefore we have
+by letting ρ∗sur be the simple cycle with the maximum value    1 ≤d ≤|Vm|.
+with respect to (2) that is reachable from v0. Since both Players      Then for the numerator Cost(ρsur), since A is a bipartite graph
+have a positional optimal strategy when assuming it can control    and Vm belongs to V0 only, for a given d, the minimum total cost
+all vertices, the proposition is proved according to Corollary 7                                                                                       is 2d · W ′. On the other hand, since val (w)PT (v0) can be achieved
+of Gimbert and Zielonka (2005).  ■                                                          by two optimal positional strategies (θ0, θ1), the maximal edge
+   Based on the above result, hereafter, we will only consider    number in ρsur is |V|. Therefore, we have Cost(ρsur) ≤|V| · W.
+positional strategies for Player 0 to solve Problem 2 and denote by     This proves the theorem.  ■
+Θi the set of all positional strategies for Player i ∈{0, 1}. In fact,
+                                                               Based on the above theorem, we define
+the following result further shows that, for any optimal positional
+θ0 ∈Θ0 of Player 0, the worst-case value can be achieved also by       { n      n, d ∈N, 1 ≤d ≤|Vm|, }                                      Ξ =       :                          ′a positional strategy θ1 ∈Θ1 of Player 1 (either for the mean          d      2d · W ≤n ≤|V| · W
+payoff value or the MPBG-PT value).
+                                                                   as the set of all possible optimal values, or the value space, of
+Lemma 1. Given an optimal positional strategy θ0 ∈Θ0 such that     Player 0.
+Play(A, v0, θ0) ⊆WinB(Vm), we have                                   For example, let us consider the SC game (A, w) in Fig. 3,
+    (w)                                                     which is constructed based on DES G in Fig. 2. Since W = 2, W ′ =
+valPT (v; θ0) = sup PT(w)(ρ(v, θ0, θ1))                          (3)     0, |V| = 13 and |Vm| = 3, the space of the optimal per task value
+               θ1∈Θ1
+                                                                                       is
+val    (w)MP(v; θ0) = sup MP(w)(ρ(v, θ0, θ1)).                         (4)
+               θ1∈Θ1                            Ξ =                                                    {n : d = 1, 2, 3, n = 0, 1, 2, . . . , 26} .                    (5)
+                                                                d
+Proof. We first prove Eq. (3). Let p = supθ1∈Θ1 PT(w)(ρ(v, θ0, θ1)).     Recall that the objective of MPBG-PT is to find an optimal strategy
+Note that since θ0 is a positional strategy, then for any positional     that achieves the minimum value in Ξ. Since we have already
+strategy θ ∈Θ1, ρ(v0, θ0, θ) must be a play of prefix–suffix    shown that Ξ is a finite set, the optimal value can be found by
+form such that ρ(v0, θ0, θ) = ρpre(ρsur)ω with ρsur being a simple     solving a set of threshold decision problems defined as follows.
+cycle. Now we assume Eq. (3) does not hold, which means that
+∃θ′ ∈ ˜Θ1, PT(w)(ρ(v0, θ0, θ′)) >  p. As A is a finite graph with    Problem 3 (Per Task Value Decision Problem). Let (A, w) be a
+a finite vertex set V, there must exist at least one vertex v ∈    weighted game. Given a rational number p ∈Q+, decide whether
+V occurring infinite times in ρ(v0, θ0, θ′). Then, we can divide    there exists a strategy θ0 ∈Θ0 such that val(w)PT (v0; θ0) ≤p. If so,
+ρ(v0, θ0, θ′) into infinite number of cycles according to v, which     find such a strategy.
+may be either simple cycles or compound cycles, and a finite play
+from v0 to these cycles. If PT(w)(ρ(v0, θ0, θ′)) >  p, then there        Clearly,  if we can solve the above value decision problem,
+must exist infinite number of cycles in ρ(v0, θ0, θ′) with the mean    then we can start from the largest p in Ξ and decrease the
+payoff values per task being greater than p, which leads to a    threshold value until the answer to the decision problem becomes
+contradiction. Therefore, Eq. (3) holds.                               negative. Then the strategy achieving the minimum p ∈Ξ is the
+   Regarding Eq. (4), similarly, we can still choose p = supθ1∈Θ1    optimal strategy θ∗0 achieving the optimal value val (w)PT (v0). Now,
+MP(w)(ρ(v, θ0, θ1)). Note that ρ(v0, θ0, θ) is also a play of prefix–    the question comes how to solve Problem 3.
+suffix form. Therefore, following the same contradictive argu-
+ment, we know that there exists no θ′ ∈  ˜Θ1 such that MP(w)                                                                                   5.2. Synthesis of p-shifted game
+(ρ(v0, θ0, θ′)) > p.  ■
+
+  With the help of the above lemma, now we are ready to show        In order to solve the per task value decision problem, our ap-
+the second key structural property of MPBG-PT. That is, the value    proach is to reduce it to the standard mean payoff value decision
+                   (w)
+of MPBG-PT valPT (v0) belongs to a finite set of rational numbers.    problem defined as follows.
+
+ 2.  Let (A, w) be a weighted game, where A = (V = V0∪V1, E, v0),    Problem 4 (Mean Payoff Value Decision Problem). Let (A, w) be a
+W = maxe∈E w(e) and W ′ = mine∈E w(e) be the maximum and    weighted game. Given a rational number p ∈Q+, decide whether
+minimum weights in A, respectively.                               Then the optimal mean payoff                                                                  or not we can find a strategy θ0 ∈Θ0 such that val (w)MP(v0; θ0) ≤p.                                           (w)                                                                         n
+per task value for Player 0, i.e., valPT (v0), is a rational number d ,       If so, find such a strategy.
+where n, d ∈N, such that 1 ≤d ≤|Vm| and 2d · W ′ ≤n ≤|V| · W.
+                                                         Compared with Problem 3, Problem 4 simply replaces the per
+                                                                         (w)
+Proof. By Proposition 1 and Lemma 1, we know that val                                                                   PT (v0)     task criterion by the mean payoff criterion. Clearly, this decision
+can be achieved by a pair of positional strategies (θ0, θ1), which    problem can be solved by the standard mean payoff game al-
+yields a unique play in the prefix–suffix form ρ(v0, θ0, θ1) =    gorithm. Specifically, for each (A, w), one can find the optimal
+ρpre(ρsur)ω. As we have argued before, the per task value of     positional strategy θ∗MP ∈Θ0. If val(w)MP(v0; θ∗MP) ≤p, then it is the
+the play PT(w)(ρ(v0, θ0, θ1))  is only determined by the suffix     solution; otherwise, no solution exists.
+                                               Now we present our main construction for connecting thepart ρsur and we have PT(w)(ρ(v0, θ0, θ1)) =  Cost(ρsurNm(ρsur )) . Therefore,
+PT(w)(ρ(v0, θ0, θ1)) is a fractional number, where the numerator    per task value decision problem with the standard mean payoff
+representing the total cost value incurred along ρsur and the    value decision problem. Specifically, for any (A, w) and p as the
+denominator representing the number of occurrences of Vm in    instance of Problem 3, we construct an instance of Problem 4 as
+ρsur. Since each edge is assigned with a non-negative integer     follows.
+
+                                                                   7
+
+P. Lv, Z. Xu, Y. Ji et al.                                                                                                          Automatica 164 (2024) 111634
+
+Definition 1 (p-Shifted Game). Let (A, w) be a weighted game,      (⇐) Suppose PT(w)(ρ) > p. Then we know that
+where A = (V = V0 ˙∪V1, E, v0) with accepting vertices Vm, and                                                                                              Cost(ρ[0,m](v0, θ∗0 , θ1))p ∈Q+ be a rational number. We define Em = {⟨(q, γ ), q′⟩∈     PT(w)(ρ) = lim sup
+                                                                                                                       0 , θ1))E  : q′ ∈Vm} as the set of edges leading to target vertices. The           m→∞   Nm(ρ[0,m](v0, θ∗
+p-shifted game of (A, w) is a new weighted game (A, ˆw), where         ∑ni=1 w(vi, vi+1)                                         =                          .
+the arena A is the same and the weight function ˆw is defined by:                  Nm(ρ2)
+  • ∀e ∈Em, ˆw(e) = w(e);                                    As we consider non-negative weight function w, Nm(ρ2)̸ =  0.
+  • ∀e ∈E \ Em, ˆw(e) = w(e) + p.                                 Otherwise, MP(ˆw)(ρ) > p. Therefore,
+   The above construction is motivated by the reduction from    ∑ni=1 w(vi, vi+1) + (n −Nm(ρ2)) · p
+mean payoff games to energy games in Brim et al. (2011). How-           Nm(ρ2) + (n −Nm(ρ2))
+ever, here we need to further take the issue of target vertices into    ∑ni=1 ˆw(vi, vi+1)
+account. Furthermore, as we will show later, this construction is  =         > p,
+                                                                n
+used to connect (not precisely reduce) our per task game with
+                                                                               ∑ni=1 ˆw(vi,vi+1)mean payoff game. Intuitively, for a weighted game, its p-shifted    which means that MP(ˆw)(ρ) =        n   > p. However, this is
+game simply adds value p to the weight of each edge leading    a contradiction, which means that PT(w)(ρ) ≤p.  ■
+to non-task vertices. Then the per task value decision problem
+                                                          With the help of the above result, now we present the main
+and the mean payoff value decision problem can be connected
+                                                          theorem that establishes the relationship between Problem 3 andusing the p-shifted game. Note that, since (A, w) and (A, ˆw) share
+                                                           Problem 4.
+the same arena A, it makes sense to apply the same strategy
+θ0 ∈Θ0 of Player 0 to both games. Now let us consider a play                                                                              3. Given any rational number p ∈Ξ and weight function ˆw defined
+ρ ∈Play(A, v, θ0) and suppose that MP( ˆw)(ρ) ≤p, i.e., the play                                                                 with respect to p, for any positional strategy of Player 0 θ0 ∈Θ0 suchsatisfies the mean payoff threshold in game (A, ˆw). Now, let us
+                                                                        that Play(A, v0, θ0) ⊆WinB(Vm), we have
+analyze the mean payoff per task value of the same run but in
+                                                                                          (w)                                 ( ˆw)
+game (A, w), i.e., PT(w)(ρ). By the construction of ˆw, we know that     val PT (v0; θ0) ≤p ⇔valMP(v0; θ0) ≤p.
+MP( ˆw)(ρ) consists of two parts:
+                                                                   Proof. We only prove the ‘‘⇒’’ direction since the other direction  • the payoff collected from w with MP( ˆw)(ρ);                                                       (w)
+  • the added payoff p in each non-task edges.                           is analogous. Since val PT (v0; θ0) ≤p, by Eq. (3), we have ∀θ ∈
+                                                         Θ1, PT(w)(ρ(v0, θ0, θ)) ≤p. Clearly, this also holds when ρ  is
+Since MP( ˆw)(ρ) ≤p, the (average) total payoff collected from     of the prefix–suffix form. Then by Proposition 2, for any play
+w each time visiting task edges must be no larger than p, i.e.,    ρ ∈Play(A, v0, θ0) of prefix–suffix form, we have MP( ˆw)(ρ) ≤p,
+PT(w)(ρ) ≤p. Otherwise, by moving these payoff to each task edge    which also means that ∀θ ∈Θ1, MP( ˆw)(ρ(v0, θ0, θ)) ≤p. Then
+in (A, ˆw), the mean payoff will be larger than p. Similarly, we can    by Eq. (4), we have val(MP(v0;ˆw)     θ0) ≤p.  ■
+argue that if PT(w)(ρ) ≤p, then we have MP( ˆw)(ρ) ≤p.
+                                                                        Therefore, given a rational number p, if we want to solve the
+  Now, we formalize the above heuristic discussion and show
+                                                               per task value decision problem, we can only concentrate on
+that the two decision problems are related by the p-shifted game.
+                                                                 the solution to the mean payoff value decision problem on the
+Note that, according to Proposition 1 and Lemma 1, for both
+                                                                      p-shifted game.
+the mean payoff value and the per task value, one can focus
+on positional strategies for both players, which yield a play of                                                                                   5.3. Synthesis algorithm
+prefix–suffix form.
+
+Proposition 2.   Let (A, w) be a weighted game and (A, ˆw) be
+                                                           Algorithm 1: Optimal Strategy Search
+its p-shifted game for some given p ∈Q+. Let θ0 ∈Θ0 be a
+positional strategy of Player 0 such that Play(A, v0, θ0) ⊆WinB(Vm)       Input: Weighted game (A, w) with Vm
+on arena A. Then for any prefix–suffix form play ρ = ρ1(ρ2)ω ∈       Output: Optimal strategy θ∗0 for Problem 2
+Play(A, v0, θ0), we have                                                       1 order Ξ = {p1, p2, . . . , p|Ξ|} in increasing order;
+                                                                                  2 imin ←1, imax ←|Ξ|, i = 0;
+PT(w)(ρ) ≤p ⇔MP( ˆw)(ρ) ≤p.                                  (6)       3 while imin < imax do
+                                                                                  4       i ←⌊imin+imax2    ⌋;
+Proof. (⇒) Suppose MP( ˆw)(ρ) > p and let ρ2 = v1v2 · · · vnvn+1.       5    Construct pi-shifted game (A, ˆω);
+Then we have                                                                                                                                           ( ˆw)
+                                                                                  6      if ∃θ0 ∈Θ0, valMP(v0; θ0) ≤pi then
+        ∑i<m ˆw(ρ[i], ρ[i+1])                                     7         imax = i;MP( ˆw)(ρ) = lim sup
+        m→∞      m                                               8      Update θ∗0 as θ0;
+       ∑ni=1 ˆw(vi, vi+1)                                                 9    else     =                          .
+                n                                                         10          imin = i + 1;
+Also, since Play(A, v0, θ0) ⊆WinB(Vm), we have Nm(ρ2)̸ = 0. Then      11 return θ∗0 .
+ ∑ni=1 ˆw(vi, vi+1)                                                               Based on the above discussions, we present Algorithm 1 as
+        n                                                       the main algorithm for solving MPBG-PT. Initially, we order all
+ ∑ni=1 w(vi, vi+1) + (n −Nm(ρ2)) · p                                 possible optimal values in Ξ in increasing order, i.e., p1 < p2 <=                   > p,                                                                                         (w)
+       Nm(ρ2) + (n −Nm(ρ2))                                                          · · · <  p|Ξ|. To find the optimal value val PT (v0), it suffices to
+                                                                                                       p holds. In                        ∑ni=1 w(vi,vi+1)                           find the smallest p ∈Ξ such that val(w)PT (v0) ≤which means that PT(w)(ρ) =                       > p. However, this is    order to find such a value, we perform a binary search over                                       Nm(ρ2)
+a contradiction, which means that MP(ˆw)(ρ) ≤p.                   the value space Ξ (the while loop). Specifically, for each value
+
+                                                                   8
+
+P. Lv, Z. Xu, Y. Ji et al.                                                                                                          Automatica 164 (2024) 111634
+
+                                                   Remark 2. Note that Algorithm 1 requires to iteratively construct
+                                                                           p-shift games for different value p and solve the corresponding
+                                                  mean payoff games. In the above example, we see that the opti-
+                                                        mal strategy for each value of Player 0 keeps unchanged during
+                                                                 the iteration process, which is equal to the optimal strategy θ∗0 .
+                                                                     Therefore, one may ask if do we really need to solve mean payoff
+                                                       games over the same graph but for different values iteratively. In
+                                                                 other words, once we obtain the optimal mean payoff strategy
+                                                                          for some value p, is it possible that the mean payoff strategy
+                                                                                       is not optimal for different p. The answer is yes, which justifies
+                                                why iterations are needed. To see this, let us consider another
+                                                             weight game shown in Fig. 5. Obviously, the optimal value is
+                                                                                          (w)
+                                                                         val                                                                                  PT (q0) = 5 and Ξ =  { nd   : d =  1, n =  0, 1, 2, . . . , 56}.
+                                                           However, at the initial stage of the iteration, when p is chosen
+                                                         between 12.5 and 56, the optimal mean payoff strategy over the
+                                                                           p-shift game is to choose vertex q1 at q0. However, once the
+ Fig. 4. The SC game (A, ˆwp) with p = 5, where γ0 = {a, d, e} and γ1 = {d, e}.                                                                 value of p is smaller than 12.5, the optimal mean payoff strategy
+                                                               over the p-shift game changes to choose vertex q2 at q0, which
+                                                                                       is the actual optimal strategy for the optimization problem. This
+                                                                  observation also justifies why we cannot reduce the per task
+                                                    game to the standard mean payoff game directly since we do not
+                                                  know the optimal value p a priori. Therefore, in order to establish
+                                                                 the reduction, we have to fix the decision value p first and then
+                                                            approach the optimal value gradually.
+
+
+                                                                                   5.4. Complexity analysis
+
+                       Fig. 5. Weighted game for Remark 2.
+                                           We conclude this section by discussing the complexity of the
+                                                                        overall synthesis algorithm. Let V and E be the set of vertices and
+                                                              edges in A, respectively, and let W be the largest weight in A.p ∈Ξ to be determined, we construct the corresponding p-
+                                                          The while loop in Algorithm 1 executes at most O(log |Ξ|) times,
+shifted game (A, ˆω) and solve the corresponding mean payoff
+                                                       where Ξ contains at most W · |V|2 elements (very roughly esti-
+value decision problem over the p-shifted game. If the answer to
+                                                                mated). For each iteration of the while loop, the p-shifted game
+the decision problem is positive, then we keep the synthesized
+                                                              has exactly the same numbers of vertices and edges. To solve
+strategy θ as the current optimal strategy, and search for smaller
+                                                                 the mean payoff decision problem and strategy synthesis problem
+p for later iterations; otherwise, we search for larger p for later                                                               over (A, ˆw), one can use the algorithm developed recently (Brim
+iterations. Note that, we need to construct the p-shifted game                                                                        et al., 2011) with the complexity being O(|V|2 ·W ·|E|). Therefore,
+for each p in the iteration. Once we obtain the optimal strategy                                                                 the overall complexity of Algorithm 1 is O(|V|2 · W · |E| · log(W ·
+θ∗to Problem 2, according to Theorem 1, its induced supervisor                                                                                  |V|)). Finally, we recall that the SC game is constructed from the
+Sθ∗is the solution to the optimal supervisory control problem     original DES G and its size is linear in the number of states |Q| and
+as formulated in Problem 1. Since we have shown that θ∗is                                                                 exponential in the number of controllable events |Σc|. In large
+positional, Sθ∗is state-based.                                      systems, where the complexity is an important issue, the number
+  We illustrate the synthesis procedure by the following exam-                                                                        of states is usually much bigger than the number of controllable
+ple.                                                                          actions. In such cases, the size of the state–space is the main
+                                                             parameter in the scalability of the synthesis algorithm.
+Example 4.  Let us still consider the SC game (A, w) in Fig. 3,       Note that, MPBG-PT can also be solved by formulating it as an
+where Ξ has been given in Eq. (5). By running Algorithm 1,    instance of a ratio-game, for which an effective algorithm is pro-
+we  first consider value p =  13 =  0+262   ∈  Ξ. Then we    vided in Bloem et al. (2014). The reader is referred to Bloem et al.
+construct the p-shifted game (A, ˆwp) and compute the optimal    (2014) for more details about ratio-games. In brief, it considers a
+mean payoff strategy θ 0p for Player 0 on (A, ˆwp), which is θ 0p (q0) =     ratio value of two different costs and to capture our requirement,
+(q0, γ0), θ0p (q1) = (q1, γ1), θ0p (q2) = (q2, γ0), θ0p (q3) = (q3, γ0) and   we can assign a unit cost to the denominator and zero otherwise.
+  p                                                                               ( ˆwp)       p
+θ0 (q0) = (q4, γ0). For this strategy, we have val MP (q0; θ 0 ) = 11 <    However, the complexity of using (Bloem et al., 2014) to solve
+13, which means that we should continue the binary search.        our problem is O                                                                ( |V|3 · W · |E| · log (W · |V|) · log |V||E| ). Compared
+   By iteratively repeating the above process,  finally, the bi-                                                                     to our method, the algorithm in Bloem et al. (2014) requires an
+nary     search                                                such that            process terminates with p = 5 ∈Ξ
+                                                                     additional complexity of O     ( ˆwp)              p                                                               p                                                                        (|V| · log |V||E| ). The reason for this is
+valMP (q0; θ 0 ) = 5 ≤5. Therefore, we conclude that θ0 with p = 5                                            (w)                                that the general ratio-game algorithm needs to search the optimal
+is the optimal strategy θ∗0 with val PT (q0; θ∗0 ) = 5. In particular,    value and optimal strategy separately and once the optimal ratio-
+the p-shifted game (A, ˆwp) with p = 5 is shown in Fig. 4. The red                                                                 value has been computed, iterative group-tests are performed to
+arrows in the figure denote the optimal positional strategy θ∗0 for     find the optimal ratio-game strategy, which introduces the ad-
+the mean payoff game w.r.t. ˆwp, which is also the optimal strategy     ditional complexity mentioned above. However, in Proposition 2
+for the per task game. Finally, we obtain optimal supervisor S∗for                                                         and Theorem 3, we have established a key structural property of
+G based on θ∗0 , which works as follows:                      MPBG-PT such that, based on the p-shifted game, when search-
+  • S∗(s) = γ0 = {a, d, e}, when δ(q0, s)̸ = q1;                      ing the possible value space, once this value converges to the
+  • S∗(s) = γ1 = {d, e}, when δ(q0, s) = q1.                     optimum, the corresponding optimal strategy for the reduced
+                                                                      p-shifted game is indeed the optimal strategy for the original
+
+                                                                   9
+
+P. Lv, Z. Xu, Y. Ji et al.                                                                                                          Automatica 164 (2024) 111634
+
+
+Table 1                                                                       Table 3
+Statistics for systems with fixed number of events |Σ| = 10.                            Statistics for comparison between our algorithm and the standard ratio-game
+ |Q|                50                 100                 200         algorithm for solving MPBG-PT.
+                                                                                   |Q|           10            25             50              100
+  t (s)                  3.76                  43.65                 325.52
+                                                                                                                     t (s)           0.037           0.293            4.25              56.23
+                                                                                                                              t′ (s)           2.596           44.376          1252.43      −
+Table 2
+Statistics for systems with fixed number of states |Q| = 100.
+ |Σ|                5                  10                  20
+
+  t (s)                  8.63                 38.31                1005.46     each batch with the same number states, we randomly generate
+                                                        20 DES models and apply both our synthesis algorithm and the
+                                                                algorithm in Bloem et  al. (2014) to solve the MPBG-PT. We
+                                                        compute the average running time of the 20 randomly generated
+per-task game. With the help of this new structural property for
+                                                          models as the statistic result for this batch. For each random
+the per-task game, we are able to combine the value search and                                                                                          |Q|
+                                                        model generation, the parameters are as follows: |Qm| =  10 ,the strategy search in the same iteration loop, which reduces the
+                    (             |E| )                            |Σc| = 10, |Σuc| = 2, the maximal number of transitions defined
+group-test complexity of O |V|·log |V|  that is required in Bloem     at each state is ⌈14|Σ|⌉, ce(σ) is chosen randomly in [1, 5] and
+et al. (2014) after the binary search. In other words, although our     cd(σ) is chosen randomly in [0, 3]. The experimental results are
+problem setting is less expressive than existing works, we achieve    shown in Table 3. We use t and t′ to denote the running time
+better computational performance for this restrictive class.           of our algorithm and that in Bloem et al. (2014) respectively. We
+                                                              use ‘‘−’’ to denote that the running time exceeds 10000 s Clearly,
+6. Experimental results                                         although the ratio-game algorithm is more general, in terms of
+                                                                 the MPBG-PT under investigation, our algorithm is more efficient
+   In this section, we first present a set of numerical experiments    not only theoretically, but also in practice.
+to test the scalability of the proposed method. Then we illustrate
+the proposed optimal supervisory control problem by a case study      6.2. Simulation experiment
+of robot planning. All experiments are implemented by Python
+3.7 and robot simulation platform V-REP 4.2.0 on a PC with        In this part, we illustrate the proposed optimal supervisory
+64 cores with 3.30 GHz processors and 64 GB of RAM. All codes,     control problem by a case study of robot planning.
+the simulation video and other auxiliary materials are available
+                                                        System Model: We consider a scenario where a cargo UGV movesin our project website.1
+                                                                        in a factory as shown in Fig. 6(a). The factory has twelve regions of
+                                                                           interest: a lobby, a logistics, a finance, a canteen, two warehouse6.1. Numerical experiments
+                                                      (Whs 1-2), three laboratories (Lab 1-3) and three workshops (Wsp
+                                                                                 1-3). The UGV can deliver cargoes from one region to another
+                                                          by passing through doors. Depending on the security law of    First, we show the scalability performance of the proposed
+                                                                 the factory, some doors are one-way but some are two-way, asapproach with respect to the size of plant G. Specifically, for each
+                                                                 depicted in the figure. For simplicity, we consider four movingsize of the plant, we randomly generate 20 automata with the
+                                                                     actions for the robot E, S, W and N, which represent advancing tosame numbers of states |Q| and events |Σ|. Then we compute the
+                                                                             east, south, west and north, respectively. The mobility of the UGVaverage running time of our algorithm for solving the 20 different
+                                                                                       is abstracted as a DES shown in Fig. 6(b), where states q0 to q12systems with the same size. For each random plant generation,
+the parameters are chosen as follows: |Qm| =  10|Q|,1     |Σc| =    correspond to regions outside, lobby, logistics, finance, canteen,3                                               Whs 1, Lab 1, Lab 2, Lab 3, Whs 2, Wsp 1, Wsp 2 and Wsp 3,
+5|Σ|, the maximal number of transitions defined at each state     respectively.
+is ⌈14|Σ|⌉, ce(σ) is chosen randomly in [1, 5] and cd(σ) is chosen
+randomly in [0, 3].                                              Control Capabilities: We assume that all doors in the factory can
+   In the first set of experiments, we investigate how the number    be controlled by the building manager. That is, if there is a door
+of states in the plant affects the overall running time. To this end,     in any direction, we can disallow the UGV from moving in that
+we fix the number of events in G as |Σ| = 10. Then we increase     direction by closing the door, which means that the UGV can
+the number of states |Q| from 50 to 200. The averaged statistics    only choose one of the remaining open doors to pass through.
+for the running times are shown in Table 1. In the second set     Therefore, all the moving actions, E, S, W and N, are controllable.
+of experiments, we investigate how the number of events in the    The execution costs for the four actions are all assumed to be
+plant affects the overall running time. Here, we fix the number of    one unit and the cost to close any door (the disable cost for each
+states in G as |Q| = 100 and increase the number of events |Σ|     action) is also assumed to be one unit.
+from 5 to 20. The results are shown in Table 2. Based on the above                                                               Uncontrollable Events: In this example, we consider two differ-
+numerical experiments, clearly, we see that the running time of                                                                 ent sources of uncontrollability. First, we assume that the UGV
+our algorithm is more sensitive to the number of events in the                                                 may break down in canteen due to the wet environment, which
+plant. This result is consistent with our theoretical analysis since                                                                                       is captured as an uncontrollable action B in Fig. 6(b) with its
+the numbers of edges and vertices of the underlying game graph                                                                 executing cost being one unit. Furthermore, we consider another
+grows exponentially in the number of controllable event.                                                UAV that hovers over the factory to monitor the operation of
+   Next, we perform numerical experiments to show the compu-                                                          equipment in the three laboratories, whose mobility can be mod-
+tational efficiency of our approach compared with the standard                                                                   eled as a DES shown in Fig. 6(d). We assume that the aerial space
+ratio-game algorithm (Bloem et al., 2014). Specifically, we con-                                                                        in each region is interconnected, allowing unrestricted movement
+sider four batches of experiments, in which the number of states                                                                        of the UAV without any constraints imposed by doors. At each
+in the DES model is increased from 10 to 25,50 and 100. For                                                                           instant, the UAV can randomly choose to continue monitoring the
+                                                                   current region or go to adjacent regions through three actions H,
+  1 https://github.com/Lv-Peng/Optimal-Supervisory-Control-for-Cyclic-Tasks   W and E. Therefore, the movement of the UAV is not controllable
+
+                                                                   10
+
+P. Lv, Z. Xu, Y. Ji et al.                                                                                                          Automatica 164 (2024) 111634
+
+
+
+
+
+                                                                  Fig. 6.  Illustrative example of a mobile robot.
+
+
+
+
+
+from our point of view. Note that, since we are only interested in     states and the resulting system for synthesis only has 40 states
+controlling the UGV, the execution costs for uncontrollable events    and 3 marked states with the controllable and uncontrollable
+related to the UAV are all assumed to be zero.                     events sets being Σc = {E, S, W, N} and Σuc = {B, H, W, E},
+                                                                         respectively. The DES model of G as well as the optimal supervisor
+Objectives: The objectives of the UGV are threefolds: (1) safety                                                                                       is available on our project website.2
+constraint: to avoid signal interference between each other,  it
+cannot stay with the UAV in the same region at the same time.    Synthesis Result: With our synthesis algorithm, the optimal su-
+(2) specifications: it should achieve the task specification captured     pervisor S∗for this example is found in 2.17 sec and we perform
+by the system shown in Fig. 6(c). Note that, each event in  it    simulations on simulation platform V-REP 4.2.0. In Figs. 6(e)
+means that the UGV moves to some region or not. For example,    and 6(f), we show two different simulation trajectories under S∗
+q10 means that the UGV is in Wsp 1 while !q10 means that it    upon the first time visiting marked states. The reason for the dif-
+is not in Wsp 1. Therefore, this specification essentially requires     ferent trajectories is that, when the UGV begins to continuously
+                                                                       deliver cargoes between Whs 1 and logistics, the UGV needs tothat the UGV first needs to deliver cargoes from Wsp 2 to Wsp 1,
+                                                             adopt different strategies in response to the different behaviorsthen deliver cargoes from Wsp 1 to Wsp 3, next deliver cargoes
+                                                                        of the UAV. Specifically:from Wsp 3 to finance, and then return to logistics to report.
+Finally, it needs to continuously deliver cargoes between Whs 1      • When the UGV arrives at logistics or Whs 1 and the UAV
+and logistics. (3) cost optimization: each time that the UGV returns          arrives at Lab 1 or Lab 2, since the UGV cannot determine
+to logistics is considered as a completion of task and it should        whether the UAV will proceed to Lab 1 next step or not, su-
+optimize the average cost per task.                                       pervisor S∗must disable E and S to avoid potential collisions.
+                                                                         This corresponds to the trajectory shown in Fig. 6(e).DES Construction: In order to solve the optimal supervisory
+                                                            • On the other hand, when the UGV arrives at logistics or Whscontrol problem, we need to build DES G, which is the product
+                                                                                           1, but the UAV arrives at Lab 3, since the UAV will definitely
+of G0, G1 and T. Specifically, since the movements of the UGV
+                                                                    not reach Lab 1 next step, supervisor S∗can enable E and S.and UAV are independent, their synchronization G0 ×G1 is a pure
+                                                                         This corresponds to the trajectory shown in Fig. 6(f).shuffle. Moreover, since properties of interest are on states in G0×
+G1 while properties of interest are on edges in the specification    Note that the first trajectory incurs a larger cost to complete
+model T, states in G0 × G1 need to be synchronized with edges    the task for the first time compared with the second one. Here,
+in T in order to obtain the overall DES G = G0 × G1 × T. We   we only show two trajectories upon the first visit of marked
+refer to Lacerda, Parker, and Hawes (2014) for details of this type
+of product. In particular, since there are many states that are      2 This model essentially captures asynchronous movements between the two
+either unreachable or unrelated to the synthesis of the optimal      agents. In our simulation, to enforce synchronous movements, we further add a
+strategy, we use some pruning methods to remove redundant     binary variable to encode turn-based decision of the two agents.
+
+                                                                   11
+
+P. Lv, Z. Xu, Y. Ji et al.                                                                                                          Automatica 164 (2024) 111634
+
+states. In fact, the two robots work indefinitely, which results in a    Then, we have
+random combination of these two trajectories for different times       CostAveT (s)
+of visiting marked states.                                                                        Sθ0
+                                                    {   1           }
+                                     = lim sup            CostSθ0 (s[1,n])                                                 n→∞    Im(s[1,n])7. Conclusion
+                                                                  lim supn→∞CostSθ0 (s[1,n])    lim supp→∞Cost(ρ[1,p])                                     =              =
+   In this paper, we solve a class of optimal supervisory con-        lim supn→∞Im(s[1,n])      lim supp→∞Nm(ρ[1,p])
+trol problem for discrete-event systems under the average cost          { Costρ[1,p] }
+                                     = lim supper task metric. This setting captures the scenario where tasks,                                                  p→∞    Nm(ρ[1,p])
+modeled by marked states, need to be completed indefinitely
+                                                                =PT(ω)(ρ) = ∞.in a cyclic manner. Although the optimality metric considered
+                                                                                                     (ω)can be treated as a special instance of the ratio value cost, we                                                           As val                                                                                      PT (v0; θ0) =  supθ1∈Θ1 PT(ω)(ρ(v0, θ0, θ1)) < ∞,  it is a
+provide a more efficient new algorithm which achieves the trade-     contradiction.  ■
+off between computational efficiency and expressiveness of the
+optimality metric. In particular, we showed that the optimal    Proposition 4. For any live and non-blocking supervisor S such that
+strategy for this problem is positional and the optimal value is     CostAveTS    (s) < ∞, ∀s ∈Lω(S/G), its induced strategy θS satisfies
+a rational number in a finite set. With the notion of p-shifted    Play(A, v0, θS) ⊆WinB(Vm) and val(ω)PT (v0; θS) < ∞.
+games, we reduce this problem to a set of mean payoff value
+decision problems so that the optimal strategy can be effectively    Proof.  Suppose Play(A, v0, θS) ⊈WinB(Vm), then there exists
+synthesized. Our results extend the theory of optimal supervisory    a play ρ = q0(q0, γ0)q1 . . . qn(qn, γn) · · · ∈Play(A, v0, θS), such
+control of DES. In the future, we plan to further extend our result     that Inf(ρ) ∩Vm = ∅. From the definition of G, there exists a
+to the partial observation setting as well as stochastic systems     string s = σ1 · · · σn · · · ∈Lω(S/G), where σi ∈γi−1. Then, we
+modeled as Markov decision processes.                      know that Im(s) < ∞. However, as S is live and non-blocking
+                                                         and CostAveTS    (s′) < ∞, ∀s′ ∈Lω(S/G), then it must hold that
+                                                                             Im(s) = ∞, which is a contradiction.
+Appendix
+                                                                      Next, we prove the second part. Suppose there exists a play
+                                                     ρ =  q0(q0, γ0) · · ·  qn(qn, γn) · · · ∈  Play(A, q0, θ0), such that
+   In order to prove Theorem 1, we first prove some basic prop-     val(ω)PT (v0; θS) = PT(ω)(ρ) = ∞. From the definition of G, there
+erties of the induced supervisors as well as the induced strategies     exists a string s = σ1 · · · σn · · · ∈Lω(S/G), where σi ∈γi−1. From
+satisfying some given conditions. Then, the proof for Theorem 1    the definition of Im and Nm, we know that
+follows directly.
+                                                                lim sup Im(s[1,n]) = lim sup Nm(ρ[1,k]).
+                                                n→∞          k→∞
+Proposition 3. For any strategy θ0 ∈˜Θ0 such that Play(A, v0, θ0) ⊆                       (ω)                                                      Similarly, from the definition of weight function w for A, we also
+WinB(Vm) and valPT (v0; θ0) < ∞, its induced supervisor Sθ0 is live,    have
+non-blocking and CostAveT (s) < ∞, ∀s ∈Lω(Sθ0/G).                               Sθ0                                          lim sup CostS(s[1,p]) = lim sup Cost(ρ[1,q]).
+                                                p→∞            q→∞
+Proof. Suppose that Sθ0  is not live, then there exists a string    Then, we have
+s = σ1 · · · σn ∈L(Sθ0/G), such that there exists no event σ ∈             (ω)
+Σ   : sσ  ∈L(Sθ0/G). From the definition of A, there exists a       valPT (v0; θS)
+play ρ =  q0(q0, γ0)q1(q1, γ1) · · ·  qn ∈  Play(A, q0, θ0), where                 { Costρ[1,p] }
+                                                                =PT(ω)(ρ) = lim sup
+σi ∈γi−1. As Play(A, v0, θ0) ⊆WinB(Vm), then there exists a play             p→∞    Nm(ρ[1,p])
+ρ′ = (qn, γn)qn+1, ρρ′ ∈Play(A, q0, θ0). Therefore, there exists a      lim supp→∞Cost(ρ[1,p])    lim supn→∞CostS(s[1,n])
+string s = σ1 · · · σnσn+1 ∈L(Sθ0/G), where σn+1 ∈γn, which is a  =             =
+                                                                  lim supp→∞Nm(ρ[1,p])      lim supn→∞Im(s[1,n])contradiction.
+   Suppose that Sθ0  is blocking, then there exists a string s =  = lim sup {   1    CostS(s[1,n]) }
+σ1 · · · σn  ∈  L(Sθ0/G), such that there exists no string  s′  ∈      n→∞    Im(s[1,n])
+Σ∗:  ss′ ∈Lm(Sθ0/G). From the definition of A, there exists    =CostAveTS    (s) = ∞.
+a play ρ =  q0(q0, γ0)q1(q1, γ1) . . . qn ∈Play(A, q0, θ0), where
+σi  ∈γi−1. As Play(A, v0, θ0) ⊆  WinB(Vm), then there exists    However, we have CostAveTS    (s) < ∞, ∀s ∈Lω(S/G), which is a
+a play ρ′ =  (qn, γn)qn+1 (qn+1, γn+1) · · · qm, such that ρρ′ ∈     contradiction.  ■
+Play(A, q0, θ0) and qm ∈  Vm. Therefore, there exists a string       Based on the above two propositions, now we are ready to
+s = σ1 · · · σnσn+1 · · · σm ∈Lm(Sθ0/G), where σi ∈γi−1, which    prove the main theorem.
+is a contradiction.
+   Suppose there exists a string s = σ1 · · · σn · · · ∈Lω(Sθ0/G),    Proof for Theorem 1. We prove the " ⇒" direction here and
+such that CostAveT                      (s) = ∞. From the definition of A, there exists    the other direction is analogous. As θ∗0 solves Problem 2, from                    Sθ0
+a play ρ = q0(q0, γ0) · · · qn(qn, γn) · · · ∈Play(A, q0, θ0), where     Propositions 3 and 4, we know that Sθ∗0 is live and non-blocking.
+σi ∈γi−1. From the definition of Im and Nm, we can easily get that    Suppose Sθ∗0 does not solve Problem 1, which means there exists
+                                                               another live and non-blocking supervisor S⋆, such that
+lim sup Im(s[1,n]) = lim sup Nm(ρ[1,k]).
+ n→∞          k→∞                                                                                                           CostAveT                                                                                 sup                                                                                                                                       (s),                                                             sup   CostAveTS⋆   (s) <                                                                                                                                            Sθ∗0                                                                                s∈Lω(S⋆/G)                                                                                                       s∈Lω(S∗                                                                                                                               /G)From the definition of weight function w for A, we also get that                                                θ0
+
+lim                       sup Cost(ρ[1,q]).                                                             sup   CostAveTS⋆   (s) ≤                                                                                 sup   CostAveTS′   (s)   sup CostSθ0 (s[1,p]) = lim                                                                                s∈Lω(S⋆/G)                                                                                                              s∈Lω(S′/G) p→∞                 q→∞
+
+                                                                   12
+
+P. Lv, Z. Xu, Y. Ji et al.                                                                                                          Automatica 164 (2024) 111634
+
+for any other supervisor S′. Let θ⋆0 be the strategy induced from      Pena,  Patrícia N,  Vilela,  Juliana N,  Alves, Michel RC, &  Rafael, Gustavo C
+S⋆. From the proof of Proposition 3, we also have                             (2021). Abstraction of the supervisory control solution to deal with planning
+                                                                              problems in manufacturing systems. IEEE Transactions on Automatic Control,
+    (ω)
+val   PT (v0; θ⋆0) =   sup   CostAveTS⋆   (s),                                                67(1), 344–350.
+                  s∈Lω(S⋆/G)                                                       Pruekprasert, Sasinee, & Ushio, Toshimitsu (2016). Optimal stabilizing controller
+                                                                                                 for the region of weak attraction under the influence of disturbances. IEICE
+    (ω)                                                                                           Transactions                                                                                       on Information                                                                                                    and Systems,                                                                                                                                            99(6), 1428–1435.val                           CostAveT                sup                                           (s).   PT (v0; θ∗0 ) =
+                                                                                     Pruekprasert,                                                                                                      Sasinee,                                                                                                           Ushio, Toshimitsu,                                                                                       & Kanazawa,                                                                                                                           Takafumi (2015). Quanti-                                       Sθ∗0                  s∈Lω(S∗                             /G)
+                               θ0                                                                   tative supervisory control game for discrete event systems. IEEE Transactions
+                               (ω)                                                 on Automatic Control, 61(10), 2987–3000.
+Therefore, we have val PT (v0; θ⋆0) < valωPT(v0; θ∗0 ), which means      Sakakibara, Ami, Urabe, Natsuki, & Ushio, Toshimitsu (2021). Finite-memory
+that θ⋆0 solves Problem 2, which is a contradiction.  ■                    supervisory control of discrete event systems for LTL [f] specifications. IEEE
+                                                                                           Transactions on Automatic Control.
+References                                                                       Sakakibara, Ami, & Ushio, Toshimitsu (2020). On-line permissive supervisory
+                                                                                          control of discrete event systems for scLTL specifications. IEEE Control Systems
+                                                                                                           Letters, 4(3), 530–535.
+Alves, Lucas V. R., Pena, Patrícia N., & Takahashi, Ricardo H. C. (2021). Planning on     Schmidt, Klaus Werner (2015). Optimal supervisory control of discrete event
+    discrete event systems using parallelism maximization. Control Engineering         systems: cyclicity and interleaving of tasks. SIAM Journal on Control and
+    Practice, 112, Article 104813.                                                          Optimization, 53(3), 1425–1439.
+Bloem, Roderick, Chatterjee, Krishnendu, Greimel, Karin, Henzinger, Thomas A,      Seatzu,  Carla,  Silva,  Manuel, & Van  Schuppen,  Jan  H.  (2013).  Control  of
+    Hofferek, Georg, Jobstmann,  Barbara,  et  al.  (2014). Synthesizing robust          discrete-event systems: vol. 433, Springer.
+    systems. Acta Informatica, 51, 193–220.                                        Sengupta, Raja, & Lafortune, Stéphane (1998). An optimal control theory for
+Brim,  Lubos,  Chaloupka,  Jakub,  Doyen,  Laurent,  Gentilini,   Raffaella,  &          discrete event systems. SIAM Journal on Control and Optimization, 36(2),
+    Raskin,  Jean-François  (2011).  Faster algorithms  for mean-payoff games.        488–541.
+    Formal Methods in System Design, 38(2), 97–118.                                   Su, Rong, Van Schuppen, Jan H., & Rooda, Jacobus E. (2011). The synthesis of time
+Cassandras, Christos G., & Lafortune, Stephane (2009). Introduction to discrete         optimal supervisors by using heaps-of-pieces. IEEE Transactions on Automatic
+    event systems. Springer Science & Business Media.                                       Control, 57(1), 105–118.
+Chatterjee, Krishnendu, Henzinger, Thomas A, & Jurdzinski, Marcin (2005). Mean-      Takai, Shigemasa (2021). Synthesis of maximally permissive supervisors for non-
+    payoff parity games. In 20th annual IEEE symposium on logic in computer          deterministic discrete event systems with nondeterministic specifications.
+    science (pp. 178–187).                                                               IEEE Transactions on Automatic Control, 66(7), 3197–3204.
+Ding, Xuchu, Smith, Stephen  L., Belta, Calin, & Rus, Daniela (2014). Optimal     van der Sanden, Bram (2018). Performance analysis and optimization of supervisory
+    control of Markov decision processes with linear temporal logic constraints.           controllers (Ph.D. thesis), Eindhoven University of Technology.
+    IEEE Transactions on Automatic Control, 59(5), 1244–1257.                     Ware, Simon, & Su, Rong (2016). Time optimal synthesis based upon sequen-
+Ehrenfeucht, Andrzej, & Mycielski, Jan (1979). Positional strategies for mean            tial abstraction and  its application to cluster  tools. IEEE Transactions on
+    payoff games. International Journal of Game Theory, 8, 109–113.                    Automation Science and Engineering, 14(2), 772–784.
+Fu, Jinbo, Ray, Asok, & Lagoa, Constantino M. (2004). Unconstrained optimal    Wonham, W.  Murray, & Cai, Kai (2019). Supervisory control of discrete-event
+    control of regular languages. Automatica, 40(4), 639–646.                             systems. Springer.
+Gimbert, Hugo, & Zielonka, Wiesław (2005). Games where you can play optimally      Yin, Xiang, & Lafortune, Stéphane (2016a). Synthesis of maximally permissive
+   without any memory. In International conference on concurrency theory (pp.         supervisors for partially-observed discrete-event systems. IEEE Transactions
+   428–442). Springer.                                                        on Automatic Control, 61(5), 1239–1254.
+Gradel, Erich, & Thomas, Wolfgang (2002). Automata, kogics, and infinite games:      Yin, Xiang, & Lafortune, Stéphane (2016b). A uniform approach for synthesizing
+   A guide to current research. Springer Science & Business Media.                      property-enforcing supervisors for partially-observed discrete-event systems.
+Grigorov, Lenko, & Rudie, Karen (2006). Near-optimal online control of dynamic         IEEE Transactions on Automatic Control, 61(8), 2140–2154.
+    discrete-event systems. Discrete Event Dynamic Systems, 16(4), 419–449.         Zwick, Uri, & Paterson, Mike (1996). The complexity of mean payoff games on
+Hill, Richard C., & Lafortune, Stéphane (2016). Planning under abstraction within         graphs. Theoretical Computer Science, 158(1–2), 343–359.
+   a supervisory control context. In 55th IEEE conference on decision and control
+    (pp. 4770–4777).
+Ji, Yiding, Yin, Xiang, & Lafortune, Stéphane (2021a). Local mean payoff su-
+                                                                                        Peng Lv was born in Heilongjiang, China, in 1998.    pervisory control for discrete event systems. IEEE Transactions on Automatic
+                                                                                  He  received the B.Eng degree  in automation from    Control, 67(5), 2282–2297.
+                                                                                                    Harbin Engineering University in 2020. He is currentlyJi, Yiding, Yin, Xiang, & Lafortune, Stéphane (2021b). Optimal supervisory control
+                                                                                                     a Doctoral student at Shanghai Jiao Tong University. His   with mean payoff objectives and under partial observation. Automatica, 123,
+                                                                                                           research interests include formal methods, temporal    Article 109359.
+                                                                                                                        logic task planning and game theory in Discrete-Event
+Kumar, Ratnesh, & Garg, Vijay K. (1995). Optimal supervisory control of discrete
+                                                                                                        Systems.
+    event dynamical systems. SIAM Journal on Control and Optimization, 33(2),
+   419–439.
+Lacerda, Bruno, Parker, David, & Hawes, Nick (2014). Optimal and dynamic
+    planning  for Markov decision processes with co-safe LTL  specifications.
+    In IEEE/RSJ international conference on  intelligent robots and systems (pp.     Zhangcong Xu was an undergraduate student at the Department of Automation,
+   1511–1516).                                                              Shanghai Jiao Tong University.
+Li, Jinglun, & Takai, Shigemasa (2022). Synthesis of maximally permissive super-
+    visors for similarity control of partially observed nondeterministic discrete
+    event systems. Automatica, 135, Article 109978.                                                      Yiding  Ji  is an  assistant professor  of Robotics and
+Lv, Peng,  Yin, Xiang,  Ji, Yiding, &  Li, Shaoyuan (2021). A game-theoretical                         Autonomous Systems  Thrust, Hong Kong University
+   approach for optimal supervisory control of discrete event systems for cyclic                                of Science and Technology (Guangzhou), China, also
+    tasks. In 60th IEEE conference on decision and control (pp. 324–330).                                             affiliated with Department  of  Electronic and Com-
+                                                                                                        puter Engineering, Hong Kong University of ScienceMa, Ziyue, & Cai, Kai (2022). On resilient supervisory control against indefinite
+                                                                                           and Technology (HKUST), China. He received bachelor’s    actuator attacks in discrete-event systems. IEEE Control Systems Letters.
+                                                                                                     degree of  Electrical Engineering and  its Automation
+Ma, Ziyue, & Zhang, Jiafeng (2020). Determining optimal control sequences for
+                                                                                              from Tianjin University, China in 2014, then master’s
+    reconfiguration in Petri nets using cost trees. In 59th IEEE conference on
+                                                                                                     degree and doctor’s degree of Electrical and Computer
+    decision and control (pp. 4485–4491).
+                                                                                                        Engineering both from the  University  of Michigan,
+Marchand, Hervé, Boivineau,  Olivier, & Lafortune, Stéphane (2000). On the
+                                                                                                     United States, in 2016 and 2019, respectively. From
+    synthesis of optimal schedulers in discrete event control problems with
+                                                                      2019 to 2021, he was a postdoc researcher at Boston University in United
+    multiple goals. SIAM Journal on Control and Optimization, 39(2), 512–532.
+                                                                                               States, then a research scientist at Siemens Corporation in United States. He
+Marchand, Hervé, Boivineau, Olivier, & Lafortune, Stéphane (2002). On optimal
+                                                                                    joined HKUST in late 2021. His research interests lie in the general field of
+    control of a class of partially observed discrete event systems. Automatica,
+                                                                            systems science, especially automatic control and cyber physical systems. He is
+    38(11), 1935–1943.
+                                                                              a member of Institute of Electrical and Electronics Engineers (IEEE) and IEEE
+Pantelic, Vera, & Lawford, Mark (2011). Optimal supervisory control of proba-
+                                                                                   Control Systems Society Technical Community on Discrete Event Systems. He
+     bilistic discrete event systems. IEEE Transactions on Automatic Control, 57(5),
+                                                                              has served as reviewers for multiple top academic journals and conferences.
+   1110–1124.
+
+                                                                   13
+
+P. Lv, Z. Xu, Y. Ji et al.                                                                                                          Automatica 164 (2024) 111634
+
+
+                    Shaoyuan Li was born in Hebei, China, in 1965. He                          Xiang Yin was born in Anhui, China, in 1991. He
+                        received the B.S. and M.S. degrees in automation from                              received the B.Eng degree from Zhejiang University in
+                        the Hebei University of Technology, Tianjin, China, in                             2012, the M.S. degree from the University of Michigan,
+                    1987 and 1992,  respectively, and the Ph.D. degree                       Ann Arbor, in 2013, and the Ph.D degree from the
+                     from Nankai University, Tianjin, in 1997. Since 1997,                               University  of Michigan, Ann Arbor,  in 2017,  all  in
+                     he has been with the Department  of Automation,                                   electrical engineering. Since 2017, he has been with
+                      Shanghai Jiao Tong University, Shanghai, China, where                             the Department  of Automation, Shanghai  Jiao Tong
+                     he is currently a chair Professor. His current research                                University, where he  is an Associate  Professor. His
+                           interests include model  predictive  control, dynamic                              research interests include formal methods, discrete-
+                      system optimization, and cyber–physical systems. He                            event systems and cyber–physical systems. Dr. Yin is
+                                is the vice-president  of the Chinese Association  of                              serving as the chair of the IEEE CSS Technical Committee
+Automation.                                                               on Discrete Event Systems, Associate Editors for the Journal of Discrete Event
+                                                                        Dynamic Systems: Theory & Applications, the IEEE Control Systems Letters, the IEEE
+                                                                                       Transactions on Intelligent Vehicles, and a member of the IEEE CSS Conference
+                                                                                                 Editorial Board. Dr. Yin received the IEEE Conference on Decision and Control
+                                                                            (CDC) Best Student Paper Award Finalist in 2016.
+
+
+
+
+
+                                                                   14

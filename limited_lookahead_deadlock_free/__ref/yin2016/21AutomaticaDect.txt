@@ -1,0 +1,358 @@
+                                                            Automatica 124 (2021) 109291
+
+
+                                            Contents lists available at ScienceDirect
+
+                              Automatica
+
+
+                                         journal homepage: www.elsevier.com/locate/automatica
+
+
+Technical communique
+
+An improved approach for verifying delayed detectability of
+discrete-event systems✩
+Yang Liu a,b, Zhaocong Liu a, Xiang Yin a,∗, Shaoyuan Li a
+a Department of Automation and Key Laboratory of System Control and Information Processing, Shanghai Jiao Tong
+University, Shanghai 200240, China
+b School of Naval Architecture, Ocean and Civil Engineering, Shanghai Jiao Tong University, Shanghai 200240, China
+
+
+a r t i c l e    i n f o             a b s t r a c t
+
+
+Article history:                                   In this paper, we investigate state estimation and detection problems with information delays in
+Received 10 May 2020                         the context of partially-observed discrete-event systems. Specifically, we study the verification of an
+Received in revised form 21 July 2020            important detectability property called delayed detectability which is related to the state estimation
+Accepted 26 July 2020                       problem with information delayed. Particularly,  it requires that the state of the system after k1
+Available online 3 October 2020
+                                             observations can always be detected within another k2 observation delay; delayed detectability is,
+                                                therefore, referred to as (k1, k2)-detectability. In this paper, we provide a new verification algorithm
+                                                  for checking this property. The idea is to use the reversed dynamic of the system to efficiently estimate
+                                            the delayed-state information. To this end, a new information structure called the two-way verifier is
+                                           proposed. We show that our result improves the complexity of existing verification algorithms for the
+                                              property. We also illustrate our result by simple examples.
+                                                              © 2020 Elsevier Ltd. All rights reserved.
+
+
+
+
+1. Introduction                                                       of DES has also been investigated for different classes of sys-
+                                                     tem models including max-plus automata (Lai, Lahaye, & Giua,
+   Discrete-event systems (DES) are dynamic systems with dis-    2019), timed Petri nets (Ma, Li, & Giua, 2019) and stochastic Petri
+crete state–spaces and event-driven dynamics. DES are widely    nets (Ammour, Leclercq, Sanlaville, & Lefebvre, 2017).
+used for modeling both logic systems that are inherently event-        Recently, the state estimation of DES has been investigated
+driven and symbolic abstractions of continuous/hybrid dynamic     in a more systematic manner in the context of detectability.
+systems. In many problems, e.g., supervisory control and fault                                                          The concept of detectability was first proposed by Shu and Lin
+diagnosis, the state information of the system is usually crucial                                                                        in Shu, Lin, and Ying (2007), where several different notions of de-
+for the purpose of decision making. However, in many real world                                                                               tectability, e.g., strong (periodic) detectability and weak (periodic)
+applications, we do not always have perfect knowledge of the sys-
+                                                                           detectability, are defined. Specifically, the authors of Shu et al.
+tem due to imperfect information or measurement uncertainties.
+                                                                (2007) considered DES modeled as finite-state automata with
+Therefore, state estimation and detection are important issues in
+                                                               unobservable events. Then strong detectability captures whether
+the analysis and design of partially-observed DES.
+                                                                  or not we can always detect the current state of the system
+   In the context of DES, the problem of state estimation dates
+                                                                within a finite delay, while weak detectability captures whetherback to the study of the property of observability; see, e.g., Lin
+                                                                  or not the current state of the system can be detected for someand Wonham (1988), Ramadge (1986) and Özveren and Will-
+sky (1990). In this problem,  it  is assumed that the system’s    path generated by the system. Verification algorithms were also
+behavior is only partially-known and we want to infer the sys-    provided for different notions of detectability in Shu et al. (2007).
+tem’s ‘‘state’’ based on the imperfect information. State estimate     In Shu and Lin (2011), a polynomial-time algorithm was provided
+                                                                          for the verification of strong detectability. However, it has been
+ ✩This work was supported by the National Natural Science Foundation    shown more recently by Masopust (2018) and Zhang (2017) that
+of China (61803259, 61833012) and Shanghai  Jiao Tong  University, China     verifying weak detectability is PSPACE-hard. Therefore, it is un-
+Scientific and Technological Innovation Funds. The material in this paper was     likely that a polynomial-time algorithm exists for the verification
+not presented at any conference. This paper was recommended for publication     of weak detectability.
+in revised form by Associate Editor Christoforos Hadjicostis under the direction       Since the seminal work of Shu and Lin, the concept of de-
+of Editor André L. Tits.
+  ∗Corresponding author.                                                    tectability has been studied more extensively and has been ex-
+     E-mail addresses:  liuyang@nyu.edu (Y. Liu), zhaocongl@sjtu.edu.cn (Z. Liu),    tended to different settings. In Shu and Lin (2013a), the concept
+yinxiang@sjtu.edu.cn (X. Yin), syli@sjtu.edu.cn (S. Li).                           of delayed detectability was proposed by allowing the usage of
+
+
+https://doi.org/10.1016/j.automatica.2020.109291
+0005-1098/© 2020 Elsevier Ltd. All rights reserved.
+
+Y. Liu, Z. Liu, X. Yin et al.                                                                                                       Automatica 124 (2021) 109291
+
+future observation for information smoothing. In Keroglou and     We consider DES modeled as non-deterministic finite-state
+Hadjicostis (2017), Zhao, Shu, Lin, and Zhang (2019), detectability    automaton (NFA)
+was investigated in the stochastic setting by considering the
+                                                 G = (X, Σ, δ, X0)                                                (1)transition probability of the system; corresponding stochastic
+notions of detectability capturing the probability of state detec-    where X is a finite set of states, Σ is a finite set of events, δ  :
+tion were also provided. In Shu and Lin (2013b), Yin and Lafor-    X × Σ →2X is a non-deterministic (partial) transition function
+tune (2016), the detectability enforcement problem was studied,    and X0 ⊆X is a set of initial-states. For any x, x′ ∈X, σ ∈Σ,
+where the goal is to design a maximally-permissive supervisor      x′ ∈δ(x, σ) implies that there exists a transition from x to x′
+such that the controlled system is detectable. Recently, several     labeled with σ. Specifically, we define δ(x, ε) = x (here we also
+new types of detectability are also proposed in the literature for    use ε to denote the silent event for simplicity). Function δ is also
+different detection requirements, e.g., K-detectability (Hadjicostis    extended to δ  : X × Σ∗→2X recursively as follows: for any
+& Seatzu, 2016) and trajectory detectability (Yin,  Li, & Wang,     s ∈Σ∗and σ ∈Σ, we have δ(x, sσ) =  ∪x′∈δ(x,s)δ(x′, σ). For
+2018). Detectability has also been extended to different system    each state x, we denote by L(G, x) the set of strings generated
+models, including nondeterministic systems (Han, Chen, & Zhao,    by G from x, i.e, L(G, x) = {s ∈Σ∗: δ(x, s)!}, where  ‘‘!’’ stands
+2017; Zhang & Zamani, 2017), Petri net systems (Masopust &     for ‘‘is defined’’. Therefore, L(G) = ∪x0∈X0L(G, x0) is the language
+Yin, 2019b; Tong & Lan, 2019; Zhang & Giua, 2018), networked    generated by the system.
+systems (Alves & Basilio, 2019; Sasi & Lin, 2018) and modular        In many applications, the occurrence of event cannot be per-
+systems (Masopust & Yin, 2019a; Yin & Lafortune, 2017b).            fectly observed. To capture the imperfect observation, we assume
+   In some applications, we may not be interested in knowing     that the event set is partitioned as
+the current-state of the system. Instead, we may be interested in
+                                     Σ = Σo ˙∪Σuo,detecting the previous state of the system with some information
+delays such as the initial-state detection problem and the delayed    where Σo is the set of observable events and Σuo is the set of
+detection problem. For example, the concept of I-detectability    unobservable events. The natural projection P  : Σ∗→Σ∗o  is
+was introduced by Shu and Lin (2013c). More recently, the initial-    defined recursively by: ∀s ∈Σ∗, σ ∈Σ
+state detection problem has also been studied in the stochastic
+                                                           { P(s)σ    if σ ∈Σosetting (Yin, 2017). In general, one may be interested in de-     P(ε) = ε,  P(sσ) =
+tecting the state of the system at an arbitrary instant possibly                             P(s)      if σ ∈Σuo
+with information delays. This is referred to as the delayed-state                                                          The natural projection is also extended to P  : 2Σ∗→2Σ∗o by:
+estimation problem in Shu and Lin (2013a), Zhou, Shu, and Lin
+                                                           ∀L ⊆Σ∗: P(L) = {P(s) ∈Σ∗o  : s ∈L}.(2018), where the notion of delayed detectability (or (k1, k2)-
+                                                                                  Finally, we make the following standard assumptions in the
+detectability) was proposed. Specifically, delayed detectability
+                                                                       analysis of partially-observed DES:
+requires that the state of the system after k1 observations can
+always be detected within another k2 observation delay. A ver-     A1 System G is deadlock-free, i.e., ∀x ∈X, ∃σ ∈Σ : δ(x, σ)!;
+ification algorithm for delayed detectability was also provided     A2 System G does not contain unobservable cycle,  i.e., ∀x ∈
+in Shu and Lin (2013a).                                            X, ∀s ∈Σ∗uo such that |s| ≥1 : x /∈δ(x, s).
+   In this paper, we revisit the verification delayed detectability
+as defined in Shu and Lin (2013a). The main contributions of      2.2. Delayed detectability
+this paper are as follows: We propose a new structure called
+the two-way verifier (TW-verifier) for the purpose of verifying        In Shu and Lin (2013a), delayed detectability has been pro-
+delayed detectability. The TW-verifier essentially composes the    posed in order to answer the following question: after observing
+standard verifier (Jiang, Huang, Chandra, & Kumar, 2001; Yoo &    more than k1 observable events, can we always determine the
+Lafortune, 2002) and the proposed reversed verifier (Liu, Yin, & Li,     state of the system within at most k2 steps of delays? To formally
+2019) in an asynchronous manner to capture all possible delayed    define delayed detectability, for any αβ ∈P(L(G)), we define
+information. Based on the TW-verifier, we then also provide an
+improved approach for the verification of delayed detectability,           {          ∃x0 ∈X0, wv ∈L(G, x0) s.t.   }                                                                           ˆX(α | αβ)= x∈X :                                             (2)
+which reduces the complexity from O((k1 + k2)|Σ||X|6) in Shu                   P(w)=α, P(wv)=αβ, x∈δ(x0, w)
+and Lin (2013a) to O(|Σ||X|4).1 Our constructions of the reversed                                                                   as the delayed state estimate of the system at instant α upon the
+verifier and the TW-verifier are novel that combine the advan-
+                                                                occurrence of αβ. Then, (k1, k2)-detectability can be defined as
+tages of both the verifier structure and the reversed dynamics of
+                                                                      follows:
+the system, which yield better verification complexity compared
+with all existing algorithms.
+                                                                  Definition 2.1 ((k1, k2)-detectability). A DES G is said to be (k1, k2)-
+                                                                        detectable if we can determine the state of the system within k2
+2. Preliminaries                                                   steps of delays after observing k1 steps of observable events, that
+                                                                                                   is, for any αβ ∈P(L(G)),
+2.1. System model
+                                                                            [|α| ≥k1 ∧|β| ≥k2] ⇒|ˆX(α | αβ)| = 1.                       (3)
+   Let Σ be a finite set of events. A string s = σ1 . . . σn is a finite     We illustrate (k1, k2)-detectability by the following example.
+sequence of events. We denote by |s| the length of the string s
+with |ε| = 0, where ε is the empty string. We denote by Σ∗the    Example 1.  Let us consider the system G shown in Fig. 1, where
+set of all strings over Σ including the empty string ε. A language   we have X0 =  {0, 1} and Σo =  {a, b}. Note that both states
+L ⊆Σ∗is a set of strings. We define Σε := Σ ∪{ε}.              3 and 4 can be reached after observing a, and for any n ≥1,
+                                                                 observable string bn is also able to occur from both states. So we
+                                                                                               Therefore, by Definition 2.1, we know  1 Similar complexity reductions are also reported by Zhang and Giua (2019)    have {3, 4} ⊆ˆX(a | ab2).
+very recently during the revision of this paper by a different approach.           that system G is not (1, 2)-detectable.
+
+                                                                   2
+
+Y. Liu, Z. Liu, X. Yin et al.                                                                                                       Automatica 124 (2021) 109291
+
+3. Verification of (k1, k2)-detectability                           the original system. This is why we call it ‘‘two-way’’ since the
+                                                                 information tracking directions in the first and the second pair
+   In this section, we investigate the verification of (k1, k2)-    are opposite.
+detectability. In Shu and Lin (2013a), the authors have provided
+                                                                     Before we propose the algorithm for the verification of the
+an algorithm for the verification of (k1, k2)-detectability. The
+                                                                           (k1, k2)-detectability, we first show some properties of the TW-complexity of the algorithm proposed in Shu and Lin (2013a)
+is O((k1 + k2)|Σ||X|6). In this section, we propose an improved     verifier. We observe that in the proposed TW-verifier, the first
+                                                        component is essentially the standard verifier (see,  e.g., Jiang
+algorithm for the verification of (k1, k2)-detectability using a
+                                                                        et al., 2001; Yoo & Lafortune, 2002), while the second component
+more compact information structure called the two-way verifier.
+                                                                                       is the reversed verifier proposed in our recent work (Liu et al.,
+   In Yin and Lafortune (2017a), the authors have proposed the
+                                                                   2019), and these two parts are not synchronized. Therefore, sim-
+notion of Two-Way Observer (TW-observer) for the verification of
+                                                                                     ilar to the propositions of the reversed verifier in Liu et al. (2019),
+infinite-step and K-step opacity. However, the size of the TW-
+                                               we have the following properties of VTW (G) immediately.observer is exponential in the size of the system. Motivated by
+the TW-observer but by incorporating the feature of delayed
+                                                               Proposition 1.  For any sequencedetectability, we define the structure of Two-Way Verifier (TW-
+verifier), which asynchronously composes the standard verifier                          (σ11 ,σ 21 ,σ 31 ,σ-41 )                      (σ12 ,σ22 ,σ 32 ,σ-42 )
+                                                                             (x01, x02, x03, x04)     TW      (x11, x12, x13, x14)     TWand the reversed verifier proposed in Liu et al. (2019), as follows:
+                                                                                                                        (σ 1n ,σ2n ,σ3n ,σ-4n )
+Definition 3.1. The TW-verifier of G is an NFA                                                       · · ·     TW      (xn1, xn2, xn3, xn4)                 (11)
+VTW (G) = (QTW, ETW, fTW, QTW,0)                                (4)     in VTW (G), we have
+where                                                                                          (i) ∀i = 1, 2 : σ i1 σ i2 . . . σin ∈L(G, x0i ); and
+                                                                                                      n                                                                           ∈L(G,                                                                                                     1                                                                     σ 1n−1 . . .                                                                            σ11                                                                                                                 xni ); and
+                                                                                                      n                                                                                                                          n  • QTW ⊆X × X × X × X is a set of states;                                      (ii) ∀i =1 3,2 4 : σ                                                                                                                1                                                                                                                   2
+                                                              σ 1                                                                                                                              . . . σ1 )                                                = P(σ2 σ                                                                                                                   2 .                                                                                                                                                          . . σ2 ); and  • ETW ⊆(Σε×Σε×{ε}×{ε})∪({ε}×{ε}×Σε×Σε)\{(ε, ε, ε, ε)}         (iii) P(σ 1                                                                                 n−1                                                                                                    n−1                                                                                            n                                                                                                                   n                                                                                                        1                                                                                                                               1
+       is a set of events;                                                          (iv) P(σ 3 σ 3     . . . σ3 ) = P(σ 4 σ 4     . . . σ4 ).
+  • QTW,0 = X0 × X0 × X × X is a set of initial-states;
+  • fTW  : QTW × ETW →2QTW is the non-deterministic transition    Proposition 2.  For any two initial states x0,1, x0,2 ∈X0, two states
+     function defined as follows: For any q = (x1, x2, x3, x4) ∈     x3, x4 ∈X, and for strings s1 ∈L(G, x0,1), s2 ∈L(G, x0,2), s3 ∈
+    QTW, σ ∈Σ, the following transitions are defined:            L(G, x3), s4 ∈L(G, x4) such that P(s1) = P(s2) and P(s3) = P(s4),
+                                                                       there must exist a sequence
+        (a) If σ ∈Σo, then
+                                                                                                                   (σ11 ,σ 21 ,ε,ε)-                      (σ 12 ,σ 22 ,ε,ε)-
+                                                                             (x01, x02, x03, x04)    TW     (x11, x12, x03, x04)    TW       · · ·             fTW ((x1, x2, x3, x4), (σ, σ, ε, ε))
+          ={(x′1, x′2, x3, x4)∈QTW  : x′1 ∈δ(x1, σ) ∧x′2 ∈δ(x2, σ)}
+                                                                                                                   (σ1n ,σ                                                                                                                      2                                                                                                                       n ,ε,ε)-                                                                  (5)                                                                                                        (xn1, xn2, x03, x04)                                                                              TW
+             fTW ((x1, x2, x3, x4), (ε, ε, σ, σ))
+                                                                                                                        (ε,ε,σ31 ,σ-41 )                       (ε,ε,σ 32 ,σ-42 )
+          ={(x1, x2, x′3, x′4)∈QTW  : x3 ∈δ(x′3, σ) ∧x4 ∈δ(x′4, σ)}                       TW     (xn1, xn2, x13, x14)    TW       · · ·
+                                                                  (6)                           (ε,ε,σ3m ,σ-4m )
+                                                                                                         (xn1, xn2, xm3 , xm4 )                     (12)                                                                              TW
+       (b) If σ ∈Σuo, then
+                                                                           in VTW (G) such that
+             fTW ((x1, x2, x3, x4), (σ, ε, ε, ε))
+                                                                                                  (i) (x01, x02, xm3 , xm4 ) = (x0,1, x0,2, x3, x4); and
+          ={(x′1, x2, x3, x4) ∈QTW  : x′1 ∈δ(x1, σ)}              (7)          (ii) For any i = 1, 2, si = σ i                                                                                                                  1 σi2 . . . σ in ; and
+                                                                                                        (iii) For any i = 3, 4, si = σ im σ im−1 . . . σ i1 .             fTW ((x1, x2, x3, x4), (ε, σ, ε, ε))
+          ={(x1, x′2, x3, x4) ∈QTW  : x′2 ∈δ(x2, σ)}              (8)       Next, we show that, for any state (x1, x2, x3, x4) reached in
+                                                           VTW (G), if {x1, x2} ∩{x3, x4}̸ = ∅, the first component of strings
+             fTW ((x1, x2, x3, x4), (ε, ε, σ, ε))                      and the second component of strings corresponding to the above
+                                                                         state can be ‘‘connected’’ at a state in {x1, x2} ∩{x3, x4}.
+          ={(x1, x2, x′3, x4) ∈QTW  : x3 ∈δ(x′3, σ)}              (9)
+                                                               Proposition 3.   Let s = (s1, s2, s3, s4) ∈L(VTW (G)) be a string in
+             fTW ((x1, x2, x3, x4), (ε, ε, ε, σ))                            the TW-verifier and (x1, x2, x3, x4) be a state reached by s. Suppose
+          ={(x1, x2, x3, x′4) ∈QTW  : x4 ∈δ(x′4, σ)}            (10)     P(s1) = P(s2) = α and P(sR3) = P(sR4) = β. Then we have:
+                                                                                                  (i)  if {x1, x2} ∩{x3, x4}̸ = ∅, then αβ ∈P(L(G)); and
+Remark 1.
+                                                                                                      (ii) for any x ∈{x1, x2} ∩{x3, x4}, there exist an initial state
+   The TW-verifier is motivated by the standard verifier (or twin-
+                                                                               x0 ∈X0 and a string wv ∈L(G) such that P(w) = α, P(v) =
+machine) construction that has been widely used in the veri-
+                                                                 β, x ∈δ(x0, w) and δ(x, v)!.
+fication of partially-observed DES. In the standard verifier, the
+structure tracks a pair of strings having the same observation.
+                                                                   Proof. By the construction of VTW (G), we know thatHowever, the TW-verifier tracks two pairs of strings,  i.e., we
+consider the first two components as a pair and the last two com-     ∃x0,1 ∈X0 : x1 ∈δ(x0,1, s1)
+ponents as another pair. The common property of the two pairs is     ∃x0,2 ∈X0 : x2 ∈δ(x0,2, s2)
+that strings in each part have the same projection. However, the
+                                                                              ∃x′3 ∈X : x′3 ∈δ(x3, s3)first pair of strings follows the original dynamics of the system
+while the second pair of strings follows the reversed dynamics of       ∃x′4 ∈X : x′4 ∈δ(x4, s4)
+
+                                                                   3
+
+Y. Liu, Z. Liu, X. Yin et al.                                                                                                       Automatica 124 (2021) 109291
+
+Without loss of generality, we suppose that x1 =  x3 so that
+x1 ∈{x1, x2}∩{x3, x4}. Then we have x1 ∈δ(x0,1, s1) and δ(x1, s3)!.
+Therefore, we can know that δ(x0,1, s1s3)! and P(s1s3) = αβ. This
+proves both (i) and (ii). □
+
+   Before we introduce the main result for the verification of
+(k1, k2)-detectability, we  first define some new notations. Let
+VTW (G) be the TW-verifier. We denote by Reachk1,k2(QTW,0) the
+set of states that can be reached by a string whose first part is
+                                                                                                                         Fig. 1. System G with Σo = {a, b}.longer than k1 and second part is longer than k2, that is:
+  Reachk1,k2(QTW,0)
+ {             ∃s = (s1, s2, s3, s4) ∈L(VTW (G)), }
+=  q ∈QTW  :     ∃q0 ∈QTW,0 s.t. q ∈fTW (q0, s)∧      .       (13)
+                        |P(s1)| ≥k1 ∧|P(s3)| ≥k2
+
+   The following theorem provides an approach for the verifica-
+tion of (k1, k2)-detectability.
+
+Theorem 1.   System G  is (k1, k2)-detectable  if and only  if for
+any state (x1, x2, x3, x4) in Reachk1,k2(QTW,0) such that (x1, x2) =
+(x3, x4), we have x1 = x2 and x3 = x4.
+
+Proof. (⇒) By contraposition. Suppose that there exists a state
+(x1, x2, x1, x2) ∈Reachk1,k2(QTW,0) such that (x1, x2) =  (x3, x4)
+but x1̸ = x2. By the construction of Reachk1,k2(QTW,0) and Propo-
+sition 3, we know that there exists a string (s1, s2, s3, s4) ∈
+L(VTW (G)) such that P(s1) = P(s2) = α, P(sR3) = P(sR4) = β,
+|α| ≥k1 and |β| ≥k2, and two initial states x0,1, x0,2 ∈X0 such             Fig. 2. Part of the TW-verifier VTW (G) for system G shown in Fig. 1.
+that x1 ∈δ(x0,1, s1), x2 ∈δ(x0,2, s2), δ(x1, s3)! and δ(x2, s4)!. By
+the definition of delayed state estimate, we know that {x1, x2} ⊆
+ˆX(α | αβ). Therefore, x1̸ = x2 implies that |ˆX(α | αβ)| ≥2, which                                                           VTW (G) which can reach state (3, 4, 3, 4) via event (a, a, ε, ε).
+means that system G is not (k1, k2)-detectable.                                                         Then we see that state (3, 4, 3, 4) can reach  itself via event
+  (⇐) By contraposition. Suppose that system G is not (k1, k2)-                                                                            (ε, ε, b, b). Therefore, we have (3, 4, 3, 4) ∈Reach1,1(VTW (G)).
+detectable, which means that there exists αβ ∈P(L(G)) such                                                                   Since (3, 4) = (3, 4) but 3̸ = 4, by Theorem 1, we can conclude
+that |α| ≥k1, |β| ≥k2 and |ˆX(α | αβ)| > 1. Let x1, x2 ∈X be     that G is not (1,1)-detectable.
+two distinct states in ˆX(α  | αβ). This implies that there exist
+two initial states x0,1, x0,2 ∈X0 and two strings s1, s2 such that   Remark 2. We now discuss the complexity of verifying delayed
+P(s1) = P(s2) = α, x1 ∈δ(x0,1, s1) and x2 ∈δ(x0,2, s2). Also, there     detectability using Theorem 1. First, we need to construct the
+exist another two strings s3 ∈L(G, x1) and s4 ∈L(G, x2) such that     TW-verifier, which contains at most |X|4 states and 4|Σ||X|4
+P(s3) = P(s4) = β. By Proposition 2, we know that there exists a     transitions. Then we need to compute state set Reachk1,k2(QTW,0)
+sequence                                                              in VTW (G). Note that for any string (s1, s2, s3, s4) ∈L(VTW (G)),
+                    (σ 11 ,σ21 ,ε,ε)-                      (σ12 ,σ22 ,ε,ε)-                    the first part (s1, s2) and the second part (s3, s4) are independent.
+(x01, x02, x03, x04)    TW     (x11, x12, x03, x04)    TW       · · ·                  Therefore, we can first perform a k1-level Breadth First Search
+                                                                    (BFS) in the first part (first two state/event components) of VTW (G)
+                    (σ 1n ,σ2n ,ε,ε)-                                                in order to determine states that can be reached via more than
+                           (xn1, xn2, x03, x04)                                k1 observable events in s1 or s2. Similarly, we perform a k2-                TW
+                                                                          level                                                                BFS                                                                                 in                                                                            the second                                                                                           part (last                                                                                two                                                                                                           state/event                                                                                                     components)                                                                                                                                         of
+                     (ε,ε,σ                                                       (ε,ε,σ                         3                                                          3                          1 ,σ-41 )                                                          2 ,σ-42 )                                                                               in                                                                          order                                                                                     to determine                                                                                                        states                                                                                                         that                                                                                                can be reached                                                                                                                                 via more                                                           VTW (G)                                                                         · · ·                           (xn1, xn2, x13, x14)                TW                                     TW
+                                                              than                                                                         observable                                                                                   events                                                                                 and                                                                                         The worst-case                                                                                                               complexity                                                                            k2                                                                                                               s3                                                                                                                                   s4.
+                     (ε,ε,σ                         3                 m ,σ-4m )                                                                        of BFS                                                                                                is                                                                   O(V + E)                                                                       where V                                                                                                                            is                                                                                               the                                                                                 number                                                                                                                       of vertices                                                                                                       and E is                            (xn1, xn2, xm3 , xm4 )                     (14)                TW
+                                                                 the number of edges, which is linear no matter how large k1
+in VTW (G) such that (x01, x02) = (x0,1, x0,2) and (xn1, xn2, xm3 , xm4 ) =    and k2 are. Therefore, the overall complexity of verifying delayed
+(x1, x2, x1, x2). Besides, we have that for any  i =  1, 2,  si =     detectability using Theorem 1 is O(|Σ||X|4), which improves the
+σ i1 σ i2 . . . σ in and for any  i =  3, 4,  si = σim σ im−1 . . . σi1 . Since    algorithm in Shu and Lin (2013a) whose complexity is O((k1 +
+P(s1) = P(s2) = |α| ≥k1 and P(s3) = P(s4) = |β| ≥k2, we     k2)|Σ||X|6).
+know that (x1, x2, x1, x2) ∈Reachk1,k2(QTW,0) and x1̸ = x2. □
+                                                                             4. Conclusion
+   Next, we illustrate how to verify delayed detectability using
+Theorem 1.                                                               In this paper, we revisited the verification of delayed de-
+                                                                            tectability in the context of partially-observed DES. To this end,
+Example 2.  Let us consider system G shown in Fig. 1. We have    a new information structure called the TW-verifier was pro-
+discussed in Example 1 that system G is not (1,1)-detectable; here    posed that handles the delayed information effectively. We then
+we use Theorem 1 to verify this result. First, we construct the    provided an improved approach for the verification of delayed
+TW-verifier VTW (G). For the sake of simplicity, we only consider     detectability by using the TW-verifier. The complexity of the pro-
+part of VTW (G) in Fig. 2, which is enough to disprove delayed    posed algorithm is O(|Σ||X|4) compared with complexity O((k1 +
+detectability. In Fig. 2, the state (0, 1, 3, 4) is an initial state in     k2)|Σ||X|6) of the previous algorithm.
+
+                                                                   4
+
+Y. Liu, Z. Liu, X. Yin et al.                                                                                                       Automatica 124 (2021) 109291
+
+References                                                                     Shu, S., & Lin, F. (2013a). Delayed detectability of discrete event systems. IEEE
+                                                                                           Transactions on Automatic Control, 58(4), 862–875.
+Alves, M.  V.  S., &  Basilio,   J.  C.  (2019).  State estimation and  detectability      Shu,  S., & Lin, F. (2013b). Enforcing detectability in controlled discrete event
+    of networked discrete event systems with multi-channel communication         systems. IEEE Transactions on Automatic Control, 58(8), 2125–2130.
+    networks. In American control conference.                                       Shu,  S., &  Lin,  F.  (2013c).  I-detectability  of  discrete-event  systems.  IEEE
+Ammour, R., Leclercq, E., Sanlaville, E., & Lefebvre, D. (2017). State estimation          Transactions on Automation Science and Engineering, 10(1), 187–196.
+    of discrete event systems for RUL prediction issue. International Journal of     Shu, S., Lin, F., & Ying, H. (2007). Detectability of discrete event systems. IEEE
+    Productions Research, 55(23), 7040–7057.                                              Transactions on Automatic Control, 52(12), 2356–2359.
+Hadjicostis, C. N., & Seatzu, C. (2016). K-Detectability in discrete event systems.     Tong,  Y., & Lan, H. (2019). verification of detectability in labeled Petri nets.
+    In 55th IEEE conf. decision and control (pp. 420–425).                             American control conference.
+Han, X., Chen, Z., & Zhao, J. (2017). Matrix approach to detectability of discrete      Yin, X. (2017). Initial-state detectability of stochastic discrete-event systems with
+    event systems under partial observation. In IEEE conf. automation science and          probabilistic sensor failures. Automatica, 80, 127–134.
+    engineering (pp. 187–192).                                                            Yin, X., & Lafortune, S. (2016). A uniform approach for synthesizing property-
+Jiang,  S., Huang,  Z., Chandra, V., & Kumar, R. (2001). A polynomial algorithm         enforcing supervisors  for partially-observed discrete-event systems. IEEE
+    for testing diagnosability of discrete-event systems. IEEE Transactions on          Transactions on Automatic Control, 61(8), 2140–2154.
+    Automatic Control, 46(8), 1318–1321.                                                 Yin,  X., &  Lafortune,  S.  (2017a). A new approach  for  the  verification  of
+Keroglou,  C., &  Hadjicostis,  C.  N.  (2017).  Verification  of  detectability  in          infinite-step and K-step opacity using two-way observers. Automatica, 80,
+    probabilistic finite automata. Automatica, 86, 192–198.                                                                               162–171.
+Lai, A., Lahaye, S., & Giua, A. (2019). State estimation of max-plus automata with
+                                                                                            Yin, X., & Lafortune, S. (2017b). Verification complexity of a class of observational
+   unobservable events. Automatica, 105, 36–42.
+                                                                                         properties for modular discrete events systems. Automatica, 83, 199–205.
+Lin,  F., & Wonham, W. M. (1988). On observability of discrete-event systems.
+                                                                                            Yin,  X.,  Li,  Z., & Wang, W. (2018). Trajectory detectability of discrete-event
+    Information Sciences, 44(3), 173–198.
+                                                                                      systems. Systems & Control Letters, 119, 101–107.
+Liu, Z., Yin, X., & Li, S. (2019). Improved approaches for verifying I-detectability
+                                                                                  Yoo, T.-S., & Lafortune, S. (2002). Polynomial-time verification of diagnosability
+    of discrete-event systems. In 12th Asian control conference (pp. 248–253.
+                                                                                              of partially observed discrete-event systems. IEEE Transactions on Automatic
+Ma, Z., Li, Z., & Giua, A. (2019). Marking estimation in a class of time labelled
+                                                                                                 Control, 47(9), 1491–1495.    petri nets. IEEE Transactions on Automatic Control.
+Masopust,  T. (2018). Complexity of deciding detectability in discrete event     Zhang, K. (2017). The problem of determining the weak (periodic) detectability
+    systems. Automatica, 93, 257–261.                                                      of discrete event systems is PSPACE-complete. Automatica, 81, 217–220.
+Masopust,  T., &  Yin,  X.  (2019a). Complexity  of  detectability,  opacity and     Zhang, K., & Giua, A. (2018). Weak (approximate) detectability of labeled Petri
+    A-diagnosability  for modular  discrete  event  systems.  Automatica,  101,         net systems with inhibitor arcs. In 14th international workshop on discrete
+   290–295.                                                                           event systems (pp. 167–171).
+Masopust,  T., & Yin, X. (2019b). Deciding detectability for labeled Petri nets.     Zhang,  K., &  Giua,  A.  (2019).  Revisiting  delayed  strong  detectability  of
+    Automatica, 104, 238–241.                                                            discrete-event systems. arXiv:1910.13768.
+Özveren, C. M., & Willsky, A. S. (1990). Observability of discrete event dynamic     Zhang, K., & Zamani, M. (2017). Detectability of nondeterministic finite transition
+    systems. IEEE Transactions on Automatic Control, 35(7), 797–806.                    systems. IFAC-PapersOnLine, 50(1), 9272–9277.
+Ramadge, P. (1986). Observability of discrete event systems. In 25th IEEE conf.     Zhao,  P., Shu,  S., Lin,  F., & Zhang, B. (2019). Detectability measure for state
+    decision and control, no. 25 (pp. 1108–1112).                                       estimation of discrete event systems. IEEE Transactions on Automatic Control,
+Sasi,  Y., & Lin,  F. (2018). Detectability of networked discrete event systems.          64(1), 433–439.
+    Discrete Event Dynamic Systems, 28(3), 449–470.                               Zhou,  L., Shu,  S., &  Lin,  F. (2018). N-(k1, k2)-detectability of discrete event
+Shu,  S., & Lin, F. (2011). Generalized detectability for discrete event systems.         systems under nondeterministic observations. In American control conference
+    Systems & Control Letters, 60(5), 310–317.                                              (pp. 294–299).
+
+
+
+
+
+                                                                   5

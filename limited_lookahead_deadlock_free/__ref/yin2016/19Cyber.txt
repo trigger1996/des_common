@@ -1,0 +1,760 @@
+1302                                                                         IEEE TRANSACTIONS ON CYBERNETICS, VOL. 49, NO. 4, APRIL 2019
+
+  Decentralized Fault Prognosis of Discrete-Event
+  Systems Using State-Estimate-Based Protocols
+
+                      Xiang Yin   , Member, IEEE, and Zhaojian Li, Member, IEEE
+
+
+
+
+  Abstract—We investigate the problem of decentralized fault   recent survey [40]. More recently, the problem of fault progno-
+prognosis  in  the  context  of  discrete-event  systems.  In  this   sis has draw considerable attention in DES literature, see [1],
+problem, the system is monitored by a set of local agents; each                                                                           [2], [4], [5], [7], [10], [11], [15], [16], [18], [21], [23], [24],
+of them sends its local information to a coordinator in order
+                                                                 [28]–[32], [34], [36], [37], [39]. The problem of fault progno-to issue a fault alarm before the occurrence of fault. Two new
+decentralized protocols are proposed by exploiting the  state-   sis of DES was initially studied by [10] and [11], where the
+estimate of each local agent. For each protocol, a necessary   notion of predictability (or uniformly bounded prognosability)
+and sufﬁcient condition for  its correctness  is proposed; they  was introduced. In [18], using the concept of indicator strings,
+are termed as positive state-estimate-prognosability and nega-                                                                 the notion of prognosability was introduced as the necessary
+tive state-estimate prognosability. Veriﬁcation algorithms for the
+                                                       and sufﬁcient condition for the existence of a prognoser thatnecessary and sufﬁcient conditions are also provided. We show
+that the proposed new protocols are incomparable with any of the   can correctly predict the fault occurrences. Later on, in the
+existing protocols in the literature. Therefore, they provide new   context of DES, the fault prognosis problem has been fur-
+opportunities for correctly predicting the fault when all existing   ther studied for stochastic systems [2], [5], [7], [23], [24],
+protocols fail.                                                                    distributed systems [30], [31], timed systems [4], and Petri
+  Index  Terms—Complexity,  decentralized  fault  prognosis,   nets [1], [21]. The problem of enforcing prognosability by
+discrete-event systems (DESs), state-estimate.                      activating/deactivating sensors is studied in [34].
+                                                                  In many large-scale networked systems, the information
+                                                                    structure of the system is naturally decentralized due to the
+                           I. INTRODUCTION                          distributed physical components of the system. It is impossible
+                                                               or very costly to collect all available data at a central station.   AULT  detection and  prediction  are  crucial  tasks  in
+                                                               Therefore, using decentralized architecture to process data is    complex  automated  systems.  In many  safety-criticalF                                                more efﬁcient for large-scale systems. More speciﬁcally, wesystems, when the system is subject to fault, simply detect-
+                                                      assume that the system is monitored by several local agents;ing and isolating the fault may not be enough to guarantee
+                                                          each of them has its own observation and data processing capa-the  safety  of  the system,  since some  critical  functional-
+                                                                                bility. Each local agent ﬁrst processes the data  it observesity of the system can be destroyed before the detection of
+                                                                    locally and then sends the processed and compressed data tofault. Therefore, in some applications,  it  is of  interest to
+                                                           a central fusion site (or coordinator). Then the coordinatorpredict the occurrence of fault in advance such that some
+                                                             uses the local information received to issue a global prognosticprotective  actions can be taken before  fault  occurs. This
+                                                                  decision. Following this decentralized scheme, the problem ofproblem is referred to as the fault prognosis (or prediction)
+                                                                decentralized fault prognosis has been studied by many worksproblem.
+                                                                    in the DES literature; see [16], [18], [29], [36], [37].  In this paper, we consider the fault prognosis problem in
+                                                                  In the decentralized fault prognosis problem, one of thethe context of discrete-event systems (DES). DESs is a class
+                                                        key ingredients is what protocol (or architecture) we adoptof dynamic systems with discrete  state spaces and event-
+                                                                    to handle the decentralized information. Roughly speaking,triggered dynamics [3]. In the past two decades, the theory
+                                                           a  decentralized protocol  consists  of: 1) what informationof model-based fault diagnosis using DES model has been
+                                                          each local agent sends to the coordinator and 2) how theextensively developed and has been successfully applied to
+                                                               coordinator issues a global decision based on the local infor-many applications; see [6], [19], [20], [22], [26], [27] and a
+                                                         mation received. For example, Kumar and Takai [18] assumed
+  Manuscript received February  4, 2017; revised August 17, 2017 and   that each  local  agents can only send a  binary informa-
+November  18,  2017;  accepted  January  22,  2018.  Date  of  publication   tion and use disjunctive rule for the coordinator. Similarly,
+February 12, 2018; date of current version February 22, 2019. This paper
+was recommended by Associate Editor P. Chen. (Corresponding author: Xiang  Khoumsi and Chakib [16] still considered using binary infor-
+Yin.)                                                      mation but with conjunctive fusion rule. Using inference-based
+  X. Yin is with the Department of Automation and Key Laboratory of System   fusion rule for decentralized  fault prognosis  is considered
+Control and Information Processing, Shanghai Jiao Tong University, Shanghai
+200240, China (e-mail: xiangyin@umich.edu).                             in [29].
+  Z. Li is with the Department of Mechanical Engineering, Michigan State     In this paper, we propose two new decentralized protocols
+University, East Lansing, MI 48824 USA (e-mail: lizhaoj1@msu.edu).        for the purpose of fault prognosis; namely, the positive state-
+  Color versions of one or more of the ﬁgures in this paper are available
+online at http://ieeexplore.ieee.org.                                    estimate (PSE) based protocol and the negative state-estimate
+   Digital Object Identiﬁer 10.1109/TCYB.2018.2799961               (NSE) based protocol. In both of these two protocols, each
+
+                    2168-2267 c⃝2018 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                         See http://www.ieee.org/publications_standards/publications/rights/index.html for more information.
+
+YIN AND LI: DECENTRALIZED FAULT PROGNOSIS OF DESs USING STATE-ESTIMATE-BASED PROTOCOLS                                             1303
+
+
+local agent uses a subset of its state-estimate as the information    The remaining part of this paper is organized as follows.
+it sends to the coordinator. More speciﬁcally, in the PSE-based   Section  II provides some necessary preliminaries for  fault
+protocol, each local agent sends the set of states, which is   prognosis of DES. In Section  III, we propose two novel
+believed as the reason why a fault alarm should be issued;   state-estimate-based protocols for the purpose of decentral-
+while in the NSE-based protocol, each local agent sends the   ized fault prognosis. The notion of PSE-prognosability and
+set of states, which  is believed as the reason why a fault   NSE-prognosability are introduced. Veriﬁcation algorithms for
+alarm should not be issued. Then the coordinator takes the   PSE-prognosability and NSE-prognosability are provided in
+intersection of the local state-estimates to calculate a global   Section IV. Section V discusses some complexity issues in the
+prognostic decision.                                            veriﬁcation problems. In Section VI, we compare the proposed
+  The main contributions of this paper are as follows. First,   protocols with the existing ones in the literature. Finally, we
+we formally deﬁne the PSE-based protocol and the NSE-based   conclude this paper in Section VII.
+protocol; the implementation issues of these two protocols are
+discussed. Second, for each protocol, we provide a necessary                              II. PRELIMINARY
+and sufﬁcient condition under which the protocol satisﬁes the                                                             A. Discrete Event Systems
+following two requirements: 1) a fault alarm can be issued K
+                                                              Let   be a ﬁnite set of events. A string s = σ1 · · · σn, σi ∈steps before any fault occurrence and 2) once a fault alarm is
+                                                                               is a ﬁnite sequence of events. We denote by  ∗the set ofissued, a fault is guaranteed to occur within M steps. The nec-
+                                                                     strings over    including the empty string ϵ. For any string s,
+essary and sufﬁcient condition is termed as PSE-prognosability                                                                  ∗                                             we denote by |s| its length with |ϵ| = 0. A language L ⊆(respectively, NSE-prognosability) for the positive (respec-
+                                                                               is a set of strings. We denote by L the preﬁx-closure of L,tively, negative) state-estimate-based protocol. Third, effective
+                                                                                          i.e., L = {s ∈  ∗: ∃t ∈   ∗s.t. st ∈L}. For any s ∈   ∗, wealgorithms for the veriﬁcation of PSE-prognosability and NES-
+                                                           denote by L/s the set of continuations of s in L, i.e., L/s =prognosability are provided, respectively; the former has a
+                                                                                 {t ∈  ∗: st ∈L}.polynomial complexity with respect to the size of the system,
+                                      A DES is modeled by a ﬁnite-state automatonwhile the latter has an exponential complexity with respect
+to the size of the system. Moreover, we show that the veriﬁ-            G = (Q,   , δ, q0, Qm)                   (1)
+cation of both of PSE-prognosability and NSE-prognosability
+                                                      where Q is the ﬁnite set of states, Qm ⊆Q is the set of markedare PSPACE-hard with respect to the number of local agents.
+                                                                           states,    is the ﬁnite set of events, q0 ∈Q is the initial state,Finally, we show that the proposed protocols are incompara-
+                                                       and δ  : Q × →Q is the partial transition function, whereble with any existing decentralized prognosis protocol in the
+                                                                    for any q, q′ ∈Q and σ ∈     , δ(q, σ) = q′ means that thereliterature. This also justiﬁes the usefulness of the proposed
+                                                                      exists a transition from q to q′ labeled with σ. Function δ isprotocols, since they provide new opportunities for predicting
+                                                                  also extended to δ  : Q × ∗→Q recursively by: for anyfault when all existing protocols fail to do so.
+                                                     q ∈Q, s ∈   ∗, σ ∈     , δ(q, sσ) = δ(δ(q, s), σ). For the sake   It  is  worth  remarking  that  state-estimate-based  proto-
+                                                               of simplicity, we also write δ(q, s) as δ(s)  if q = q0. Thecols have been used in the  literature for the purposes of
+                                                           language generated by G from state q ∈Q is L(G, q) = {s ∈decentralized  fault diagnosis  [9], [12], [25] and decentral-
+                                                         ∗: δ(q, s)!}, where “!” means “is deﬁned.” Then the languageized control  [35]. More  generally, the idea of taking the
+                                                             generated by G is L(G) := L(G, q0). The language markedintersection of local (language) information has also been
+                                                     by G is Lm(G) = {s ∈  ∗: δ(s) ∈Qm}. We will omit Qmexplored in [13] and [14] for the purpose of supervisory con-
+                                                       and write an automaton by G = (Q,   , δ, q0) if marking is nottrol. The differences between the results in this paper and the
+                                                               considered. We say that G is live if ∀q ∈Q, ∃σ ∈     : δ(q, σ)!.above works are as follows. First, in this paper, we consider the
+                                                                  Hereafter, we assume without loss of generality (w.l.o.g.) thatdecentralized fault prognosis problem, which is different from
+                                     G is live.the decentralized fault diagnosis problem and the decentral-
+                                                            For any two automata A = (QA,   , δA, q0,A) and B =ized control problem. Although there is a connection between
+                                                      (QB,   , δB, q0,B) such that L(A) ⊆L(B), we say that A isdecentralized fault diagnosis and decentralized control [33],
+                                                           a subautomaton of B, denoted by A ⊑B, if: 1) QA ⊆QB;to the best of our knowledge, there  is no formal relation-
+                                                               2) q0,A = q0,B; and 3) ∀s ∈L(B) : δA(s) = δB(s) if δA(s)!. Weship between the decentralized fault prognosis problem and
+                                                           say that A is a strict subautomaton of B, denoted by A < B,these two problems established in the literature. Therefore, it
+                                                                                         if: 1) A ⊑B and 2) ∀s ∈L(B) \ L(A) : δB(s) ∈QB \ QA. Noteis needed and nontrivial to develop state-estimate-based pro-
+                                                                           that, for any A and B such that L(A) ⊆L(B), we can alwaystocol for the purpose of fault prognosis. Second, the protocols
+                                                          reﬁne their state-spaces in polynomial-time such that A < B;in [9], [12], [25], and [35] are more close to the positive pro-
+                                                              see [8].tocol in our setting. However, we consider both positive and
+negative protocols in this paper. In particular, the necessary and
+                                                             B. Decentralized Fault Prognosissufﬁcient condition of the negative protocol is more difﬁcult
+to verify in the prognosis problem, since we not only need to     In the fault prognosis problem, we want to predict any
+consider the current information, but also need to consider the   fault before its occurrence. To this end, we denote by H =
+previous information along the trajectory. This issue is simi-  (QH,   , δH, q0,H) the speciﬁcation automaton that models the
+lar to that the disjunctive architecture versus the conjunctive  normal behaviors of the system, i.e., any string in L(H) ⊆
+architecture under the binary information setting [38].        L(G)  is considered as a nonfault string and any string in
+
+1304                                                                         IEEE TRANSACTIONS ON CYBERNETICS, VOL. 49, NO. 4, APRIL 2019
+
+
+L(G) \ L(H) is considered as a fault string. Note that we     2) Once a fault alarm is issued, a fault is guaranteed to
+do not consider marking in H and G since the fault prognosis        occur within M steps, i.e., for any string s ∈L(H), we
+problem is studied on the preﬁx-closed language generated        have
+by the system. w.l.o.g, we assume that H < G. With this
+                                                                     {Di}i∈I(s) = 1 ⇒(∀t ∈L(G)/s : |t| ≥M)  st̸ ∈L(H) .assumption, for any string s ∈L(G), s is a nonfault string iff
+δ(s) ∈QH, i.e., QH is the set of nonfault states and Q \ QH is                                                                 (6)
+the set of fault states.                                            Hereafter, we will also refer to (M, K) are the performance
+  In the decentralized fault prognosis problem, the plant G  bound of the prognosis system. Note that these criteria gener-
+is monitored by a set of local agents (or local prognosers).   alize the criteria in [18], which are special cases of the above
+We assume that there are n local agents and denote by I =   ones by taking K = 0 and M = |Q|.
+{1, . . . , n} the index set. For each agent i ∈I, we denote by    Remark 1: The above deﬁnition of {Di}i∈I  is generic;  it
+   o,i the set of events that can be observed locally by i. Then   remains to specify functions Di, C and set A in order to specif-
+Pi : ∗→    o,i∗  is the natural projection deﬁned by              ically deﬁne a decentralized prognoser. In fact, the choice
+                                                               of Di, A and C is referred to as the architecture/protocol of
+                                Pi(s)σ     if σ ∈    o,i    Pi(ϵ) = ϵ  and  Pi(sσ) =                                  the decentralized system. By choosing different Di, C and A,
+                                 Pi(s)      if   σ̸ ∈    o,i.                                                                      different architectures/protocols have been proposed in the lit-
+                                                                      erature. For example, in the disjunctive architecture [18] A isFunction Pi is also extended 2 ∗by ∀L ∈2 ∗: Pi(L) = {s ∈
+  ∗                                                      chosen to be {0, 1} and function C is the disjunction of the   o,i  : ∃t ∈L s.t. Pi(t) = s}. We denote by P−1i   the inverse
+                                                                    local binary values. In the inference-based architecture [29],projection of Pi.
+                                 A is chosen to be {0, 1, φ} × {0, 1, . . . , N}, where the ﬁrst  The basic scheme of the decentralized prognosis  is as
+                                                     component represents local decisions and the second compo-follows. At each instant, each local agent, based its own obser-
+                                                             nent represents ambiguity levels, and C simply selects the localvation, sends a local information to the coordinator. Then the
+                                                               decision with the smallest ambiguity level. In this paper, wecoordinator computes a global decision based on the local
+                                                                    will present a new decentralized protocol, where A is a setinformation received. More speciﬁcally, each local prognoser
+                                                               of states and C is a function that involves set intersection. Wei ∈I is a function
+                                                                    will elaborate on this next.
+                 Di : Pi(L(G)) →A                    (2)
+                                                                                      III. STATE ESTIMATE-BASED PROTOCOL
+where A is the set of symbols  it can send to the coordina-
+                                              When string s ∈L(G) is generated by the system, each
+tor,  i.e., the space of communicating information. Then the
+                                                             agent i ∈I can observe Pi(s). Its state-estimate upon observ-
+coordinator is a (memoryless) function
+                                                              ing Pi(s), denoted by Ei(Pi(s)), is deﬁned as the set of states
+             C : A × · · · × A →{0, 1}                (3)   the system could be in after observing Pi(s), i.e.,
+                                                                   Ei(Pi(s)) = {q ∈Q : ∃t ∈L(G) s.t. Pi(t) = Pi(s) ∧δ(t) = q}.
+where global decision “1” implies that a fault alarm is issued
+and global decision “0” means that no fault alarm is issued.                                                                 (7)
+The memoryless constraint essentially requires that the fusion   In other words, Ei(Pi(s)) essentially summarizes agent  i’s
+site can be easily implemented via simple memoryless devices.  knowledge about the system state. The state-estimate has the
+This also corresponds to the essence of the decentralized   following two features. First, the domain of Ei,  i.e., 2X, is
+decision making problem,  i.e., most of the useful informa-   ﬁnite. Second, Ei(Pi(s)) can be computed recursively upon the
+tion need  to be processed  locally before sending  to  the   occurrence of a new event. Therefore, we may possibly use Ei
+coordinator. With local decision functions Di and the coor-   as the local decision function and use 2X as the set of symbols
+dinator function C, we can also write the overall decentralized   to communicate. This leads to the basic scheme of the state-
+prognosis system as a function {Di}i∈I  : L(G) →{0, 1}   estimate-based protocol: “At each instant, each local agent
+such that                                               computes  its state-estimate and sends  it to the coordinator.
+                                                   Then the coordinator manipulates on the local state-estimates
+∀s ∈L(G) : {Di}i∈I(s) = C(D1(P1(s)), . . . , Dn(Pn(s)))    (4)                                                                    to issue a global decision.”
+we also refer to {Di}i∈I as the decentralized prognoser.         The above basic idea requires to send all states in Ei(Pi(s))
+  In order to make sure that the decentralized prognoser works   at each instant. However, many states in Ei(Pi(s)) are irrel-
+“correctly,” we need to put some requirements for {Di}i∈I. In   evant for the purpose of fault prognosis. To identify which
+this paper, we consider the following two criteria proposed   states are relevant to the prognosis problem, in particular, the
+in [36], in order to evaluate the performance of a decentralized   performance bound (M, K), we deﬁne the followings [36]. For
+prognoser.                                                 each state q ∈QH, we denote by dmin(q) the minimum number
+  1) Any fault can be predicted K steps before it occurs, i.e.,   of steps required such that a fault can occur from q, i.e.,
+      for any fault string s ∈L(G) \ L(H), we have
+                                                                           dmin(q) = s∈L(G,q)\L(H,q)(|s|min       −1).            (8)
+       ∃vu ∈{s} : vu ∈L(H) ∧|u| ≥K  {Di}i∈I(v) = 1 .                                                      Note that dmin(q) is undeﬁned when fault can never happen
+                                                              (5)  from state q, i.e., L(G, q) \ L(H, q) = ∅. Also, for each state
+
+YIN AND LI: DECENTRALIZED FAULT PROGNOSIS OF DESs USING STATE-ESTIMATE-BASED PROTOCOLS                                             1305
+
+
+q ∈QH, we denote by dmax(q) the length of the longest   decision is 0, i.e., no fault alarm. We can also deﬁne a negative
+nonfault string that can occur from q, i.e.,                      protocol with default decision is 1; this will be discussed later.
+                                                          For the sake of simplicity, hereafter, we will also refer to the
+                  dmax(q) =  max   |s|.                   (9)                               s∈L(H,q)                       PSE-based protocol as the positive protocol.
+                                                     To study whether or not {Dposi  }i∈I satisﬁes the criteria in (5)
+Note that dmax(q) = ∞when an arbitrarily long nonfault                                                       and (6), we introduce the notion of PSE-based prognosability.
+string can be executed from state q. Then we deﬁne two sets                                                              Deﬁnition 1: Speciﬁcation H is said to be PSE-based prog-
+of states                                                             nosable (PSE-prognosable) with respect to G,    o,i, i ∈I and
+               ∂K = {q ∈QH  : dmin = K}                (M, K) if
+         ϒ>M = {q ∈QH  : dmax ≥M}.            (10)
+                                                         ∀s ∈L(H) : δ(s) ∈ϒ>M        Ei(Pi(s)) ∩∂K = ∅  .   (14)
+As shown in [36], both sets ∂K and ϒ>M can be computed in                                  i∈I
+polynomial-time in the size of G. Also, we assume hereafter
+                                                                            Intuitively, PSE-prognosability requires that for any string
+that dmin(q0) ≥K; otherwise, no prognoser can achieve the                                                                      that leads to a state in ϒ>M, the state-estimate of each localrequirement in (5). Finally, we note that ϒ>                         = ϒ>M for any                                               |QH|                                                             agent should not contain a common state in ∂K. The following
+M ≥|QH|, since that a nonfault string with length |QH| can                                                                       result reveals that PSE-prognosability  is indeed the neces-
+occur from a state implies that a nonfault cycle can be reached                                                               sary and sufﬁcient condition such that {Dposi  }i∈I satisﬁes (5)from this state.
+                                                       and (6).
+  Based on the above concepts, hereafter, we propose two                                                       Theorem 1: {Dposi  }i∈I satisﬁes (5) and (6) if and only if Hdifferent state-estimate-based protocols.
+                                                                               is PSE-prognosable with respect to G,   o,i, i ∈I and (M, K).
+                                                                Proof: (⇒) If H is not PSE-prognosable with respect to G,
+A. Positive State-Estimate-Based Protocol                                                                                         o,i, i ∈I and (M, K), then we know that there exists a string
+  Suppose that the default global decision of the coordinator   s ∈L(H) such that δ(s) ∈ϒ>M and (  i∈I Ei(Pi(s)))∩∂K̸ = ∅.
+is 0, i.e., no fault alarm is issued. In order to issue a global   Then, by (12), we know that
+fault alarm, each local agent needs to send the coordinator a
+                                                          ∩i∈IDposi  (Pi(s))set of states, which is a subset of the state-estimate, as the
+reason why it wants to issue an alarm. Then the coordinator     = ∩i∈I(Ei(Pi(s)) ∩∂K) = (∩i∈IEi(Pi(s))) ∩∂K̸ = ∅.
+simply takes the intersection of the sets of states it received.
+                                                               Therefore, by (13), we know that {Dposi  }i∈I(s) = 1. However,If the intersection is empty, then  it means that the reasons
+                                                                since δ(s) ∈ϒ>M, we know that there exists t ∈L(G)/s suchfor issuing a global alarm are not consistent; hence, the coor-
+                                                                      that |t| ≥M and st ∈L(H), i.e., a fault is not guaranteed to
+dinator will remain the default decision 0 unchanged. If the
+                                                           occur in M step. This implies that (6) does not hold.
+intersection is not empty, then it means that all agents agree
+                                                (⇐) Suppose that H is PSE-prognosable with respect to G,
+with some common reason for issuing a global alarm; hence,
+                                                                                         o,i, i ∈I and (M, K). First, we show that {Dposi  }i∈I satis-the coordinator will issue 1 globally.
+                                                         ﬁes (5). For any string s ∈L(G) \ L(H), since we assume
+  Based on the above discussion, we propose the PSE-Based
+                                                                      that dmin(q0) ≥K we know that there exists a nonfault preﬁxProtocol {Dposi  }i∈I speciﬁed as follows: each local prognoser                                                           sN ∈{s} ∩L(H) such that δ(sN) ∈∂K. Moreover, for any
+is a function
+                                                                                               i ∈I, we have δ(sN) ∈Ei(Pi(sN)). Therefore, we know
+                                                                             (Pi(sN)) = (∩i∈IEi(Pi(sN))) ∩∂K̸ = ∅,  i.e.,                Dposi     : Pi(L(G)) →2∂K                (11)   that ∩i∈IDposi
+                                                           {Dposi  }i∈I(sN) = 1. Therefore, (5) is satisﬁed. Next, we show
+such that, for any s ∈L(G), we have                                                                      that {Dposi  }i∈I satisﬁes (6) by contradiction. Assume that (6)
+              Dposi  (Pi(s)) = Ei(Pi(s)) ∩∂K.             (12)    is not satisﬁed,  i.e., there exist s ∈L(H) and  t ∈L(G)/s                                                          such that {Dposi  }i∈I(s) = 1, |t| ≥M and st ∈L(H). For the
+Then  the  global  decision  issued  by  the  coordinator  is   above string s, since {Dposi  }i∈I(s) = 1, by (12) and (13), we
+deﬁned by                                        know that (∩i∈IEi(Pi(s))) ∩∂K̸ = ∅. Also, by |t| ≥M and
+                                                                               st ∈L(H), we know that dmax(δ(s)) ≥M, i.e., δ(s) ∈ϒ>M.                       1,    if ∩i∈I Dposi   (Pi(s))̸ = ∅          =                                                       However,                                                                           since                                                                                  the system                                                                                                                  is PSE-prognosable,                                                                                                                    δ(s) ∈ϒ>M      Dposi   i∈I(s)                       0,    if ∩i∈I Dposi  (Pi(s)) = ∅.    (13)                                                               implies                                                                               that                                                   = ∅. This is a contradiction.                                                               ∩∂K                                                                            (∩i∈IEi(Pi(s)))
+   Intuitively, each local prognoser computes Ei(Pi(s)) ∩∂K   Therefore, we know that (6) must be satisﬁed.
+as its reason for issuing a fault alarm. Then the coordinator   We illustrate the positive protocol by the following example.
+takes the intersection of Di(Pi(s)) to see if they have some    Example 1: Let us consider the system automaton G and
+common reason, i.e., ∩i∈IDi(Pi(s))̸ = ∅. If so, then a global   the speciﬁcation automaton H in Fig. 1. Suppose that there
+fault alarm will be issued, i.e., {Dposi  }i∈I(s) = 1; otherwise,   are two local agents,  i.e., I = {1, 2}, where    o,1 = {a, o}
+the coordinator will stay silent,  i.e., {Dposi  }i∈I(s) = 0. The  and    o,2 =  {b, o}. Let us  consider performance bound
+reason why we choose to send states in ∂K  is that, ∂K are  K = 0 and M =  |QH| = 9 and we have ∂K =  {8}
+the set of states at which we must issue a global fault alarm;  and ϒ>M = {1, 2, 3, 4, 6, 7, 9}. Then for  all strings leading
+otherwise, the alarm will be too late, i.e., the condition in (5)   to states 1, 2, 3, 4, 6, 7, and 9,  i.e., ϵ, a, b, ao, bo, aoo, boo,
+may be violated. We call this protocol positive since the default  we have (∩i∈IEi(Pi(ϵ))) ∩∂K = {1, 2} ∩{1, 3} ∩{8} = ∅,
+
+1306                                                                         IEEE TRANSACTIONS ON CYBERNETICS, VOL. 49, NO. 4, APRIL 2019
+
+
+                                                                   issued. Then the coordinator still takes the intersection of these
+                                                                    local reasons to determine a global decision. Note that the
+                                                             reason why we choose to send states in ϒ>M is that, ϒ>M are
+                                                                 the set of states at which we cannot issue a global fault alarm;
+                                                                otherwise, the alarm will be too early, i.e., the condition in (6)
+                                              may be violated. For the sake of simplicity, hereafter, we will
+                                                                  also refer to the NSE-based protocol as the negative protocol.
+                                                                 Similar to PSE-porgnosability, to study whether or not the
+                                                                negative protocol  satisﬁes the  criteria  in  (5) and  (6), we
+                                                               introduce the notion of NSE-based prognosability.
+                   (a)                         (b)                    Deﬁnition 2: Speciﬁcation H is said to be NSE-based prog-
+                                                             nosable (NSE-prognosable) with respect to G,   o,i, i ∈I and
+Fig. 1. H is PSE-prognosable with respect to G,   o,1 = {a, o},  o,2 = {b, o},  (M, K) if
+K = 0, and M = |QH|. (a) G. (b) H.
+                                                                        (∀s ∈L(H) : δ(s) ∈∂K) ∃t ∈{s}
+
+(∩i∈IEi(Pi(a)))∩∂K = {2}∩{1, 2}∩{8} = ∅, (∩i∈IEi(Pi(b)))∩          ×        Ei(Pi(t)) ∩ϒ>M = ∅  .        (18)
+∂K = {3} ∩{1, 3} ∩{8} = ∅, (∩i∈IEi(Pi(ao))) ∩∂K = {4} ∩                           i∈I
+{4, 5}∩{8} = ∅, (∩i∈IEi(Pi(bo)))∩∂K = {6}∩{5, 6}∩{8} = ∅,                                                                            Intuitively, NSE-prognosability requires that, for any string
+(∩i∈IEi(Pi(aoo))) ∩∂K =  {7} ∩{7, 8} ∩{8} =  ∅, and                                                                      that leads to a state in ∂K, there must exist a preﬁx of this string
+(∩i∈IEi(Pi(boo)))∩∂K = {9}∩{8, 9}∩{8} = ∅. Therefore, the                                                                    for which the state-estimate of each local agent should not con-
+system is PSE-prognosable and the positive protocol {Dposi  }i∈I   tain a common state in ϒ>M. Otherwise, a desired fault alarm
+achieves the two criteria in (5) and (6). For example, let us                                                           cannot be issued before reaching the state in ∂K. The following
+consider fault string oof ∈L(G)\L(H). For preﬁx oo ∈{oof}                                                                       result reveals that NSE-prognosability  is indeed the neces-
+                        = E1(P1(oo)) ∩such that δ(oo) = 8 ∈∂K, we have Dpos1  (oo)                                                               sary and sufﬁcient condition such that {Dnegi  }i∈I satisﬁes (5)
+                 = E2(P2(oo)) = {7, 8} ∩{8}.∂K = {8, 9} ∩{8} and Dpos2  (oo)                                                       and (6).
+Since Dpos1  (oo)∩Dpos2  (oo)̸              = ∅, we know that {Dposi  }i∈I(oo) =    Theorem 2: {Dnegi  }i∈I satisﬁes (5) and (6) if and only if H
+1. Therefore, a fault alarm can be issued K step before the                                                                               is NSE-prognosable with respect to G,   o,i, i ∈I and (M, K).
+fault occurs,  i.e., (5) holds. To see that (6) holds,  let us                                                                Proof: (⇒) By contraposition. Suppose that H is not NSE-
+consider string aoo ∈L(H) such that δ(aoo) = 7 ∈ϒ>M.   prognosable with respect to G,   o,i, i ∈I and (M, K). Then
+We have E1(P1(aoo)) =  {7} and E2(P2(aoo)) =  {7, 8}.                                             we know that there exists a string s ∈L(H) : δ(s) ∈∂K such
+Since E1(P1(aoo)) ∩E2(P2(aoo)) ∩∂K = ∅, we know that                                                                      that for any  t ∈{s}, we have (  i∈I Ei(Pi(t))) ∩ϒ>M̸ = ∅.
+{Dposi  }i∈I(aoo) = 0, i.e., no wrong fault alarm will be issued.  By (16), we know that
+Similarly, we can show that for any s ∈L(H) : δ(s) ∈ϒ>M, we
+                                                                                  (Pi(t))have {Dposi  }i∈I(s) = 0. Therefore, the positive protocol also    ∩i∈IDnegi
+satisﬁes (6).                               = ∩i∈I Ei(Pi(t)) ∩ϒ>M = (∩i∈IEi(Pi(t))) ∩ϒ>M̸ = ∅.
+                                                               Therefore, by (17), we know that ∀t ∈{s} : {Dnegi  }i∈I(t) = 0.B. Negative State-Estimate-Based Protocol
+                                                       However, since δ(s) ∈∂K, we know that there exists sf ∈
+  In the above section, we have proposed the PSE-based pro-  L(G) \ L(H) such that |f| = K. Therefore, for the above sf,
+                                                               = 0],tocol, where the default global decision is 0 and each local  we have (∀vu ∈{sf} : vu ∈L(H) ∧|u| ≥K)[Dnegi∈I(v)
+agent needs to tell the coordinator why  it wants to issue a    i.e., (5) does not hold.
+fault alarm. Alternatively, we can also set the default global    (⇐) Suppose that the system is NSE-prognosable. First, we
+decision as 1 and at each instant, each local agent needs to  show that {Dnegi  }i∈I satisﬁes (5). For any string s ∈L(G) \
+tell the coordinator why a fault alarm should not be issued.  L(H), since we assume that dmin(q0) ≥K we know that there
+To this end, we propose the NSE-Based Protocol {Dnegi  }i∈I   exists a nonfault preﬁx sN ∈{s} ∩L(H) such that δ(sN) ∈∂K.
+deﬁned as follows: each local prognoser is a function          Furthermore, since H is NSE-prognosable, we know that there
+                                                                      exists t ∈{sN} such that (∩i∈IEi(Pi(t))) ∩ϒ>M = ∅. By (16)                                 M               (15)               Dnegi     : Pi(L(G)) →2ϒ>                                                       and (17), we know that {Dnegi  }i∈I(t) = 1. Therefore, (5) is
+such that, for any s ∈L(G), we have                            satisﬁed. Next, we show that {Dnegi  }i∈I satisﬁes (6) by con-
+             Dnegi  (Pi(s)) = Ei(Pi(s)) ∩ϒ>M.            (16)   tradiction. Assume that (6) is not satisﬁed,  i.e., there exist                                                                    s ∈L(H) and  t ∈L(H)/s such  that {Dnegi  }i∈I(s) = 1
+Then  the  global  decision  issued  by  the  coordinator  is  and  |t| ≥M. Since {Dnegi  }i∈I(s) =  1, by (16) and (17),
+deﬁned by                                                     (∩i∈IEi(Pi(s))) ∩ϒ>M = ∅. Also, by |t| ≥M and st ∈L(H),
+                                             we know  that dmax(δ(s)) ≥M,  i.e.,  δ(s) ∈ϒ>M. Note                       1,    if ∩i∈I Dnegi  (Pi(s)) = ∅                                                                                 ∈          =                                                                                         δ(s)                                                                                                                        δ(s)                                                                           that, for any  i                                              ∈I,                                                                                                         Therefore,                                                                                   ∈Ei(Pi(s)).      Dnegi    i∈I(s)                       0,    if ∩i∈I Dnegi   (Pi(s))̸ = ∅.    (17)                                          ∩ϒ>                                              =                                                                                            ∅. This                                                                                                                         is a contradiction                                                                                                            with                                                                                                                            the                                                                (∩i∈IEi(Pi(s)))                                                                                                             M̸
+   Intuitively, each local prognoser uses Ei(Pi(s)) ∩ϒ>M as the   emptiness of ∩i∈IEi(Pi(s)))∩ϒ>M. Therefore, we know that (6)
+reason why it thinks that a global fault alarm should not be  must be satisﬁed.
+
+YIN AND LI: DECENTRALIZED FAULT PROGNOSIS OF DESs USING STATE-ESTIMATE-BASED PROTOCOLS                                             1307
+
+
+
+
+
+                     (a)                           (b)
+                                                                                          (a)                (b)              (c)
+Fig. 2.  H is NSE-prognosable with respect to G,   o,1 = {a, o},  o,2 =
+{b, o}, K = 0, and M = |QH|. (a) G. (b) H.                                      Fig. 3.  Examples showing that PSE-prognosability and NSE-prognosability
+                                                                                 are incomparable. Let K = 0, M = 5,  o,1 = {a, o}, and   o,2 = {b, o}. Then
+                                                                     Hpos is PSE-prognosable but not NSE-prognosable with respect to G, while
+                                                                    Hneg is NSE-prognosable but not PSE-prognosable with respect to G. (a) G.
+                                                                                     (b) Hpos. (c) Hneg.
+  The following example illustrates the negative protocol.
+  Example 2: Consider the system automaton G and the spec-
+iﬁcation automaton H in Fig. 2. Suppose that there are two
+local agents 1 and 2, where   o,1 = {a, o} and   o,2 = {b, o}.
+We consider performance bound K = 0 and M = |QH| = 8.
+Then we have ∂K = {8} and ϒ>M = {1, 2, 3, 4, 6, 7}. Since
+for the unique string leading to state 8, i.e., oo, there exists
+o ∈{oo} such that (∩i∈IEi(Pi(o))) ∩ϒ>M = {5} ∩ϒ>M = ∅,
+we know that H is NSE-prognosable with respect to G and
+(M, K) and the negative protocol {Dnegi  }i∈I achieves the two
+criteria in (5) and (6). To see this, let us  still consider the                                                                                                (a)                   (b)
+unique string oo ∈L(H) such that δ(oo) = 8 ∈∂K, where
+we have (∩i∈IEi(Pi(oo))) ∩ϒ>M = {7}̸ = ∅. However, for its    Fig. 4.  Observer automata for system G shown in Fig. 2 where   o,1 = {a, o}
+                                                                                              o,2 = {b, o}. (a) Obs1(G). (b) Obs2(G).preﬁx o ∈{oo}, we have (∩i∈IEi(Pi(o)))∩ϒ>M = ∅. Therefore,   and
+{Dnegi  }i∈I(o) = 1, i.e., a fault alarm will be issued K steps
+                                                          C. Implementations of State-Estimate-Based Protocolsbefore the fault occurs.
+  Remark 2: So far, we have developed two different decen-   We conclude this section by discussing the implementation
+tralized prognositic protocols,  i.e., the positive protocol and   issues of the state-estimate-based protocols. According to (12)
+the negative protocol. One may ask which protocol is more  and (16), in both the positive and the negative protocols, the
+powerful in the sense that the corresponding necessary and   key of implementing each local prognoser is to effectively
+sufﬁcient condition  is weaker. In fact, these two protocols  compute the state-estimate Ei(Pi(s)) for any observation Pi(s).
+are incomparable,  i.e., there may exist a system which  is   This can be done simply by constructing the standard observer
+PSE-prognosable but is not NSE-prognosable; and vice versa.   automaton [3]. Speciﬁcally, for each i ∈I, its observer is
+To see  this,  let us consider  the system automaton G  in                                               obs                                                                   Obsi(G) =  Xobsi   ,   o,i, f i   , xobs0,i            (19)Fig. 3(a), where we have I = {1, 2},    o,1 = {a, o}, and
+  o,2 = {b, o}. Let K = 0 and M =  5. For speciﬁcation                                                      where Xobsi  ⊆2Q is the set of states,    o,i is the set of events,
+automaton Hpos shown in Fig. 3(b), we have ∂K = {4} and                                                                                               f iobs : Xobsi ×   o,i →Xobsi    is the transition function deﬁned by:
+ϒ>M = {1, 2, 3, 5} and for all strings leading to states 1, 2, 3,   for any x ∈Xobsi   and σ ∈    o,i, we have
+and 5, i.e., ϵ, a, b, ao, bo, aoo, boo, we have (∩i∈IEi(Pi(ϵ)))∩
+∂K =  (∩i∈IEi(Pi(a))) ∩∂K =  (∩i∈IEi(Pi(b))) ∩∂K =            f iobs (x, σ) =  q′ ∈Q:∃q ∈x, ∃w ∈    \    o,i ∗s.t. q′
+(∩i∈IEi(Pi(ao))) ∩∂K  =   (∩i∈IEi(Pi(bo))) ∩∂K  =            = δ(q, σw)}
+(∩i∈IEi(Pi(aoo))) ∩∂K =  (∩i∈IEi(Pi(boo))) ∩∂K =  ∅.
+                                                       and xobs0,i ∈Xobsi    is the initial state deﬁned byTherefore, it is PSE-prognosable with respect to G. However, it
+is not NSE-prognosable, since for string o ∈L(Hpos) : δ(o) ∈         xobs0,i :=  q ∈Q : ∃w ∈    \    o,i ∗s.t. q = δ(w)  .
+∂K, we have (∩i∈IEi(Pi(o))) ∩ϒ>M =  {3}̸ = ∅and for its
+preﬁx ϵ ∈L(Hpos), we also have (∩i∈IEi(Pi(ϵ))) ∩ϒ>M =  Note that the state space Xobsi    is deﬁned recursively by xobs0,i
+{2}̸ =  ∅. On the other hand,  if we consider the speciﬁ-   and  f iobs , and hence, we only consider the reachable part of
+cation automaton Hneg shown in Fig.  3(c), then we have   the observer automaton.
+∂K = {3} and ϒ>M = {1, 4, 5} and  it  is NSE-prognosable    Example 3: Again, consider the system automaton G shown
+with  respect  to G. However,  it  is  not PSE-prognosable,   in Fig. 2, where    o,1 = {a, o} and    o,2 = {b, o}. Then the
+since  for  string o ∈  L(Hneg)  :  δ(o) ∈ ϒ>M, we have   observer automaton Obs1(G) for agent 1 is shown in Fig. 4(a).
+(∩i∈IEi(Pi(o))) ∩∂K =  {3}̸ = ∅. Therefore, we conclude  The initial state is {1, 3} since event b could occur unobserv-
+that the positive and the negative protocols are incompara-   ably. Then, upon the occurrence of event o, we move to state
+ble and we may need to apply different protocols to different   {5, 6} and so forth. Similarly, the observer automaton Obs2(G)
+systems.                                                           for agent 2 is shown in Fig. 4(b).
+
+1308                                                                         IEEE TRANSACTIONS ON CYBERNETICS, VOL. 49, NO. 4, APRIL 2019
+
+
+  Although computing the entire observer requires 2|Q| states
+in the worst case, updating the current observer state can be
+done in polynomial-time since each observer state only con-
+tains at most Q states; see [3]. Therefore, for the purpose of
+online implementation, each local agent just need to store the
+current state-estimate Ei(Pi(s)) and update it upon the occur-
+rence of a new local observable event. The implementation
+of the coordinator simply requires to take the intersection    Fig. 5.   Part of automaton V for system G and speciﬁcation Hneg shown in
+                                                                                   Fig. 3.
+of each state-estimate; the intersection operation can easily
+be implemented by either hardware or software. Moreover,
+the intersection operation at the coordinator  is memoryless                                                                 represents the string in the real system and the (i + 1)th com-
+and model-unaware. In other words, most of the information                                                          ponent represents a string that looks the same as the string in
+are processed locally, which also meets the purpose of using                                                                 the real system for agent i.
+decentralized architecture, and the fusion site can be simply                                                     The following theorem reveals how to use automaton V to
+implemented by simple memoryless devices.                                                                   verify PSE-prognosability.
+                                                       Theorem 3: H  is  not PSE-prognosable with  respect  to
+ IV. VERIFICATION OF PSE-AND NSE-PROGNOSABILITY   G,   o,i, i ∈I and (M, K), if and only if, there exists a state
+                                                                  (q, q1, . . . , qn) ∈QV in automaton V such that  In this section, we propose algorithms for the veriﬁcations of
+PSE-prognosability and NSE-prognosability, respectively. The          q ∈ϒ>M(G) ∧ q1 = q2 = · · · = qn ∈∂K  .      (22)
+veriﬁcation algorithm for PSE-prognosability is based on the
+construction of the veriﬁer automaton, while the veriﬁcation     Proof: (⇒) Suppose that H is not PSE-prognosable. Then
+algorithm for NSE-prognosability requires the construction of  we know that there exists s ∈L(H) such that δ(s) ∈ϒ>M(G)
+the observer automaton.                                  and (  i∈I Ei(Pi(s))) ∩∂K̸ = ∅. Let q ∈(  i∈I Ei(Pi(s))) ∩∂K.
+                                                          For each i ∈I, since q ∈Ei(Pi(s)), we know that there exists a
+                                                                      string si ∈L(H) such that Pi(s) = Pi(si) and q = δ(si). By the
+A. Veriﬁcation of PSE-Prognosability
+                                                              deﬁnition of V, we know that there exists a string sV ∈L(V)
+  In order to verify PSE-prognosability, we use the veriﬁer   such that its ﬁrst component is s and its (i+1)th-component is
+automaton that was introduced in the literature for the veri-    si. Therefore, we know that state (δ(s), δ(s1), . . . , δ(sn)) ∈QV
+ﬁcation of codiagnosability [22], [26], [33]. Speciﬁcally, the    is reachable in V. Since δ(s) ∈ϒ>M(G) and q = δ(s1) = · · · =
+veriﬁer automaton is a ﬁnite-state automaton                    δ(sn) ∈∂K, we know that the condition in (22) holds.
+                                                (⇐) Suppose that there exists a state qV = (q, q1, . . . , qn) ∈
+            V = QV,  V, δV, q0,V                 (20)                                             QV  in V such that (22) holds. Let sV ∈L(V) be a string
+                                                                    in V such that δV(sV) = qV. Note that string sV  is a tuplewhere
+                                                       and we write sV = (s, s1, . . . , sn). By the deﬁnition of V, we  1) QV ⊆QH × · · · × QH is the set of states;
+                                                know that for each i ∈I, Pi(s) = Pi(si). Therefore, we have
+                 (n+1) times                                          {δ(s), δ(si)} ⊆Ei(Pi(s)). Moreover, since q1 = · · · = qn ∈∂K,  2)  ⊆(  ∪{ϵ}) × · · · × (  ∪{ϵ}) \{(ϵ, . . . , ϵ)} is the set
+                                             we know that
+                      (n+1) times
+      of events;                                                         δ(s1) = · · · = δ(sn) ∈(∩i∈IEi(Pi(s))) ∩∂K.      (23)
+  3)  q0,V = (q0, . . . , q0) is the initial state;
+  4) δV  : QV ×  V →QV is the transition function deﬁned   Therefore, we know that ∃s ∈L(H) such that δ(s) ∈ϒ>M and
+      as follows: for any qV =  (q, q1, . . . , qn) and σV =   (∩i∈IEi(Pi(s))) ∩∂K̸ = ∅, i.e., H is not PSE-prognosable.
+      (σ, σ1, . . . , σn), δV(qV, σV)! if and only if the following   We illustrate Theorem 3 by the following example.
+      conditions holds simultaneously:                       Example 4: Let us consider again the system G shown
+        a)  σ̸ = ϵ ⇒δH(q, σ)!                                    in Fig. 3(a) and the speciﬁcation Hneg shown in Fig. 3(c),
+        b) ∀i ∈I  : σi̸ = ϵ ⇒δH(qi, σi)!                    where    o,1 = {a, o} and    o,2 = {b, o}. We  still consider
+        c) ∀i ∈I  : Pi(σ) = Pi(σi).                  K = 0, M = 5 and we have ∂K = {3} and ϒ>M = {1, 4, 5}.
+       If δV(qV, σV)!, then we have                      As discussed in Remark 2, Hneg is not PSE-prognosable with
+                                                                 respect to G. Here, we show this by Theorem 3. Part of the
+      δV(qV, σV) = (δH(q, σ), δH(q1, σ1), . . . , δH(qn, σn)).     veriﬁer automaton V for G and Hneg is shown in Fig. 5. For
+                                                         (21)   reachable state (q, q1, q2) = (4, 3, 3), we have q = 4 ∈ϒ>M
+                                                       and q1 = q2 = 3 ∈∂K. Since state (4, 3, 3) satisﬁes the condi-
+  Note that, each string in L(V)  is a tuple and we write   tion in (22), we know that Hneg is not PSE-prognosable with
+sV = (s, s1, . . . , sn) ∈L(V), where s, si ∈L(H). Note that,   respect to G.
+we only consider strings in L(H), since prognosability analysis    Remark 3: Let us discuss the complexity of the above
+does not consider what happens after the occurrence of fault.   proposed  veriﬁcation  procedure. As shown  in  [36], both
+Intuitively, V tracks and only tracks all tuples (s, s1, . . . , sn),   sets ∂K and ϒ>M can be computed  in O(|   | · |QH|2). In
+such that ∀i ∈I  : Pi(s) = Pi(si). That is, the ﬁrst component   the worst case, automaton V  contains |QH|n+1  states and
+
+YIN AND LI: DECENTRALIZED FAULT PROGNOSIS OF DESs USING STATE-ESTIMATE-BASED PROTOCOLS                                             1309
+
+(n + 1) · |   | · |QH|n+1 transitions [22], [26], [33]. Moreover,
+determining whether or not V contains a state satisfying (22)
+is simply a reachability problem, which can be done linearly
+in the size of V. Therefore, the entire complexity for verify-
+ing PSE-prognosability using Theorem 3 is O((n + 1) · |   | ·
+|QH|n+1).
+
+B. Veriﬁcation of NSE-Prognosability
+  Recall  that, for each  i ∈I, Obsi(G)  is deﬁned as the
+observer automaton with respect to    o,i. Then we deﬁned a    Fig. 6.  Automaton ˜G for system G and speciﬁcation H shown in Fig. 2.
+new automaton ˜G by
+      ˜G =  ˜Q,   , ˜δ, ˜q0  := G∥Obs1(G)∥· · · ∥Obsn(G)   (24)
+                                          We illustrate Theorem 4 by the following example.where “∥” denotes the usual parallel composition operation of
+                                                       Example 5: Let us consider again the system G and theautomata; see [3, p. 80]. Then we have L(G) = L(˜G) and each
+                                                               speciﬁcation H shown  in  Fig.  2, where    o,1 =  {a, o}state in ˜G is in the form of ˜q = (q, x1, . . . , xn), where q ∈Q
+                        σ 1     σ 2      σ k                    and    o,2 =  {b, o}. We  still consider performance bound
+and xi ∈2Q. We call ˜q1 −→˜q2 −→. . . −→˜qm a path in ˜G if ˜q1  K =  0 and M =  5; we have ∂K =  {8} and ϒ>M =
+is the initial state ˜q0 and ∀k = 1, . . . , m−1 : ˜δ(˜qk, ˜σ k) = ˜qk+1.   {1, 2, 3, 4, 6, 7}. We have discussed in Example 2 that H is
+  Next, we show how to use ˜G to verify NSE-prognosability.   NSE-prognosable with respect to G. Here, we show this by
+  Theorem 4: H is not NSE-prognosable with respect to G,  Theorem 4. First, we construct automaton ˜G, which is shown
+  o,i, i ∈I and (M, K), if and only if, there exists a path        in Fig. 6. Note that the only string that leads to a  state,
+                          σ 1                   σ 2             whose ﬁrst component is in ∂K, is oo. However, for the sec-
+         q0, x01, . . . , x0n −→  q1, x11, . . . , x1n −→· · ·                                                     ond state in path (1, {1, 3}, {1, 2}) o−→(5, {5, 6}, {4, 5})  o−→
+                          σ m                                                                           M = {5} ∩             −→                          qm, xm1 , . . . , xmn             (25)   (8, {7, 8, 9}, {7, 8, 9}), we have {5, 6} ∩{4, 5} ∩ϒ>
+                                     ϒ>M = ∅. Therefore, there does not exist a path in ˜G satisfy-in ˜G such that:                                                              ing the two conditions in Theorem 4 and we know that H is
+  1) qm ∈∂K;                                            NSE-prognosable.
+  2) ∀k ∈{0, 1 . . . , m} : (  i∈I xki ) ∩ϒ>M̸ = ∅.                Remark 4: Let us explain why we propose the observer-
+  Proof: (⇒) Suppose that H is not NSE-prognosable, i.e.,                                                          based approach to verify NSE-prognosability instead of using
+there exists a string s ∈L(H) such that δ(s) ∈∂K and (∀t ∈   the veriﬁer-based approach. Note that PSE-prognosability is
+{s})[(  i∈I Ei(Pi(s))) ∩ϒ>M̸ = ∅]. Let s = σ 1 . . . σ |s|, where   a pure always-type property that should be satisﬁed for all
+σ i ∈    , and let                                                                     strings leading to ϒ>M, while for NSE-prognosability, we need
+                     σ 1     σ 2      σ |s|                            to check the satisfaction of the condition for some preﬁx of                 x0 −→x1 −→. . . −−→x|s|
+                                                       any string leading to ∂K. However, automaton V only tracks
+be the path induced by s from x0 =  ˜x0. For each k ∈   state pairs that cannot be distinguished by each agent. For
+{0, 1, . . . , m}, we write xk = (qk, xk1, . . . , xkn). We claim that   an always-type property, we can look at each pair, since one
+this path satisﬁes the two conditions in the theorem. First,                                                                    pair that violates the condition will lead to the violation of
+since q|s| = δ(s) ∈∂K, we know that the ﬁrst condition holds.   the entire condition. However, to determine the existence of
+Second, for any k ∈{0, 1, . . . , |s|} and i ∈I, by the property                                                  some preﬁx that satisﬁes the condition, we cannot make such a
+of observer, we have that                                                             conclusion as the violation of the condition does not necessary
+      xki = f iobs Pi σ 1 . . . σ k  = Ei Pi σ 1 . . . σ k    .         imply that it does not has a preﬁx that can “save” it. Therefore,
+                                             we need to use the observer automaton to track how each state
+Since σ 1 . . . σ k ∈{s}, we know that (  i∈I Ei(Pi(σ 1 . . . σ k)))∩    is visited in order to determine whether or not it has a preﬁx
+ϒ>  M̸   =  ∅. Therefore, (  i∈I xki ) ∩ϒ>M̸ = ∅for any k ∈   that can save it.
+{0, 1, . . . , |s|}, i.e., the second condition holds.                Remark 5: We conclude this section by analyzing the com-
+  (⇐) Suppose that there exists a path in (25) such that the   plexity of the above proposed procedure for the veriﬁcation of
+two conditions in the theorem hold. Let us consider string   NSE-prognosability. For states in ˜G, we deﬁne
+s = σ 1 . . . σ m, where σ i ∈    are events in (25). Still, we
+know that δ(s) = qm ∈∂K. Also, for any t ∈{s}, it can be       XA :=  (q, x1, . . . , xn) ∈˜X : (∩i∈Ixi) ∩ϒ>M̸ = ∅
+written by t = σ 1 . . . σ |t|. Since
+                                                      XB :=  (q, x1, . . . , xn) ∈˜X : q ∈∂K  .
+           Ei(Pi(t)) = f iobs Pi σ 1 . . . σ |t|  = x|t|i
+                                                               Therefore, to check the condition in Theorem 4,  it sufﬁces
+we have                                                                    to check whether there exists a state in XA ∩XB that can
+                                                        be reached from the initial state only via states in XA. This
+             Ei(Pi(t)) ∩ϒ>M =         x|t|i  ∩ϒ>M̸ = ∅.    (26)   problem equals to whether or not a state in XB can be reached
+         i∈I                       i∈I                                      if we remove all states in ˜X \ XA, which is simply a reacha-
+This implies that H is not NSE-prognosable.                       bility problem that can be solved linearly with respect to the
+
+1310                                                                         IEEE TRANSACTIONS ON CYBERNETICS, VOL. 49, NO. 4, APRIL 2019
+
+number of transitions in ˜G via a depth-ﬁrst search. Note that
+automaton ˜G contains at most |Q|·2n·|Q| states. Therefore, the
+entire complexity for checking NSE-prognosability using the
+proposed approach is O(|   | · |Q| · 2n·|Q|).
+
+
+    V. COMPLEXITY OF THE VERIFICATION PROBLEM
+
+  In  the  above  section,  procedures  for  the  veriﬁcations
+of  PSE-prognosability and  NSE-prognosability have been
+proposed, respectively. The veriﬁcation of NSE-prognosability
+is exponential in the size of G, while veriﬁcation of PSE-
+prognosability is polynomial in the size of G. However, both    Fig. 7.  Conceptual illustration of how to construct Gred from {G1, . . . , Gn}.
+procedures are exponential with respect to the number of
+local agents,  i.e., n. In this section, we show that the ver-
+iﬁcations of PSE-prognosability and NSE-prognosability are  and Hred can be done in polynomial-time with respect to the
+both PSPACE-hard with respect to n. Therefore, this expo-   instance of DFA-Int.
+nential complexity as the number of agents increases seems to      Hereafter, we show  that Hred  is PSE-prognosable with
+be unavoidable.                                                 respect  to  Gred,     o,i, i ∈I and (M, K)  if and only  if
+  To show a decision problem  is PSPACE-hard, we need  ∩i∈ILm(Gi) = ∅.
+to reduce  it to a known PSPACE-hard/complete problem in    (⇒) By contraposition. Suppose that ∩i∈ILm(Gi)̸ = ∅and
+polynomial-time. One well-known PSPACE-hard problem is    let s ∈∩i∈ILm(Gi). By the construction of Hred, we know
+the deterministic ﬁnite-state automata intersection problem   that for each i ∈I, eisσ ∈L(Hred) and δred(eisσ) = A ∈∂0.
+DFA intersection (DFA-Int) [17] stated as follows.             Also, we have that esσ ∈L(Hred) and δred(esσ) = D ∈ϒ>1 .
+  DFA Intersection Problem.                                 Since Pi(eisσ) = Pi(esσ), we know that {A, D} ⊆Ei(Pi(esσ)),
+  1) Instance: A set of automata {G1, G2, . . . , Gn}.          which further implies that A ∈(∩i∈IEi(Pi(esσ))) ∩∂0̸ = ∅.
+  2) Question: Whether or not ∩i∈{1,...,n}Lm(Gi) = ∅.          Therefore, Hred is not PSE-prognosable with respect to Gred.
+Hereafter, we will use DFA-Int to show the PSPACE-hardness    (⇐) Still by contraposition. Suppose that Hred is not PSE-
+of PSE-prognosability and NSE-prognosability.                prognosable with respect to Gred, i.e.,
+   First, we show that the veriﬁcation of PSE-prognosability
+is PSPACE-hard.                                             ∃s ∈L(Hred) : δred(s) ∈ϒ>1   (∩i∈IEi(Pi(s))) ∩∂0̸ = ∅ .
+  Theorem 5: The  veriﬁcation  of  PSE-prognosability   is
+PSPACE-hard with respect to the number of local agents.                                                          For the above s that violates PSE-prognosability, it must con-
+  Proof:  In order  to prove  this  result, we reduce DFA-                                                                      tain a preﬁx in the form of s′ = ewσ; if s does not contain
+Int  to  the  PSE-prognosability  veriﬁcation  problem.  Let                                                          σ, then each agent knows for sure that the system is not in A,
+{G1, G2, . . . , Gn} be the instance of DFA-Int, where Gi =                                                      which is the unique state in ∂0, i.e., (∩i∈IEi(Pi(s))) ∩∂0 = ∅.
+(Qi,   , δi, q0,i, Qm,i).1 Then we construct a new automaton                                                               Therefore, we know  that A  ∈∩i∈IEi(Pi(ewσ)),  i.e.,  for
+                                                          each agent  i ∈I,  there  exists  si ∈L(Hred) such  that              Gred =  Qred,   red, δred, q0,red             (27)
+                                                       Pi(ewσ) = Pi(si) and δred(si) = A. By the construction of
+where                                                            Gred, si can only be eiwσ. Therefore, ∀i ∈I : eiwσ ∈L(Gred),
+  1) Qred = Q1 ˙∪. . . ˙∪Qn ˙∪{q0,red, A, B, C, D, E} is the set of  which further implies that ∀i ∈I  : w ∈Lm(Gi). Therefore,
+       states;                                w ∈∩i∈ILm(Gi)̸ = ∅.
+  2)    red =   ˙∪{f1, f2, σ, e, e1, . . . , en} is the set of events;      Next, we show that the veriﬁcation of NSE-prognosability
+  3)  q0,red is a new initial state;                                       is also PSPACE-hard.
+  4) The transition function δred  : Qred ×   red →Qred  is    Theorem 6: The  veriﬁcation  of  NSE-prognosability   is
+     deﬁned as follows: a) for each i ∈{1, . . . , n}, the transi-  PSPACE-hard with respect to the number of local agents.
+      tions between states in Qi are consistent with Gi; b) for     Proof: In order to prove this result, we still reduce DFA-
+     each  i ∈{1, . . . , n}, δred(q0,red, ei) =  q0,i  is deﬁned;   Int to the NSE-prognosability veriﬁcation problem. (Another
+      c) for each q ∈Qm,1 ∪· · · ∪Qm,n, δred(q, σ) = A   possible way  is to reduce the PSE-prognosability veriﬁca-
+       is deﬁned; and d) the remaining transitions to states   tion problem to the NSE-prognosability veriﬁcation problem.)
+     B, C, D, E are speciﬁed by Fig. 7.                      Let {G1, G2, . . . , Gn} the instance of DFA-Int, where Gi =
+Based on system automaton Gred, we deﬁne a speciﬁcation   (Qi,   , δi, q0,i, Qm,i). We construct a new system automaton
+automaton Hred by removing state B and its associated tran-   Gred = (Qred,   red, δred, q0,red) following the same construc-
+sitions. Let K = 0 and M = 1. Then we have ∂0 = {A}   tion in the proof of Theorem 5. However, the speciﬁcation
+and ϒ>1 = Q1 ∪· · · ∪Qn ∪{q0,red, C, D, E}. Also, we   automaton Hred  is constructed by removing state E and  its
+consider n local agents; each of them can observe events   associated transitions. Let K = 0 and M = 1. Then we have
+   o,i =   ∪{σ, e1, . . . , en} \ {ei}. Clearly, constructing Gred   ∂0 = {B, D} and ϒ>1 = Q1 ∪· · · ∪Qn ∪{q0,red, A, C}. Still,
+                                             we consider n local agents; each of them can observe events
+  1We assume w.l.o.g. that all automata have the same event set     .                 o,i =  ∪{σ, f1, e1, . . . , en} \ {ei}. Clearly, constructing Gred
+
+YIN AND LI: DECENTRALIZED FAULT PROGNOSIS OF DESs USING STATE-ESTIMATE-BASED PROTOCOLS                                             1311
+
+
+and Hred can still be done in polynomial-time with respect to
+the instance of DFA-Int.
+   Hereafter, we show  that Hred  is NSE-prognosable with
+respect  to  Gred,     o,i, i ∈I and (M, K)  if and only  if
+∩i∈ILm(Gi) = ∅.
+  (⇒) By contrapositive. Suppose that ∩i∈ILm(Gi)̸ = ∅and
+let s ∈∩i∈ILm(Gi). Then we know that for each i ∈I, eisσ ∈
+L(Hred) and δred(eisσ) = A ∈ϒ>1 . Since Pi(eisσ) = Pi(esσ)                     (a)                              (b)
+we know that {A, D} ⊆Ei(Pi(esσ)). Note that δred(esσ) =
+D ∈∂0. Then for each string in                                           Fig. 8.   System is both PSE-prognosable and NSE-prognosable, but  it is
+                                                                                   neither N-inference prognosable nor conjunctively prognosable, where   o,1 =
+                                             2                            {a, o} and   o,2 = {b, o}. (a) G. (b) H.    {esσ} =  ϵ, e, eσ 1, eσ 1σ 2, . . . , eσ 1σ   · · · σ |s|, esσ   (28)
+
+where s = σ 1σ 2 . . . σ |s|, we have
+                                                  Now, we are ready to recall N-inference prognosability.
+        q0,red ∈∩i∈IEi(Pi(ϵ)) ∩ϒ>1 (G)                          Deﬁnition 3: Speciﬁcation H  is  said  to be N-inference
+       = ∩i∈IEi(Pi(e)) ∩ϒ>1 (G)̸ = ∅                   prognosable with respect to G and    o,i, i ∈I if
+      C ∈  ∩i∈IEi(Pi(eσ 1 · · · σ i)) ∩ϒ>1 (G)̸ = ∅                       ∂L ⊆ℑL \ ℑL[N + 1]                (29)
+                       i = 1, . . . , |s|                              where ℑL[N + 1] is deﬁned inductively as follows.
+       A ∈(∩i∈IEi(Pi(esσ))) ∩ϒ>1 (G)̸ = ∅.                  1) ℑL[0] := ℑL and ϒL[0] = ϒL.
+                                                                  2) For any k ≥0, we have
+Therefore, Hred is not NSE-prognosable with respect to Gred.     ⎧
+  (⇐) Since ∂0 = {B, D}, any string leading to ∂0 must be     ⎨ ℑL[k + 1] := ℑL[k] ∩    i∈I P−1i  (Pi(ϒL[k]))
+                                                                                                                        (30)either       in         the form                        where                                               or in                                                     the                                                form                                     s ∈Lm(Gi),                  of eisσf1,
+                                     ⎩ ϒL[k + 1] := ϒL[k] ∩    i∈I P−1i  (Pi(ℑL[k]))  .                s ∈                         ∗. For                        any string                                         in the form                                                   ofof   esσ,       where                                                          eisσf1,
+since the only state that can be reached in Gred after observing     Also, we recall the notion of conjunctive coprognosabil-
+f1 is B, we know that Ei(Pi(eisσf1)) = {B, E}. Since B /∈ϒ>1 ,   ity from [16], which is the necessary and sufﬁcient condition
+we have immediately that (  i∈I Ei(Pi(eisσf1))) ∩ϒ>1 = ∅.   under which the conjunctive protocol satisﬁes (5) and (6) with
+For string in the form of esσ, we know  that there must  K = 0 and M = |QH|.
+exists k ∈I such  that eksσ  /∈L(Gred); otherwise, we     Deﬁnition 4: H is said to be conjunctively coprognosable
+know that s ∈∩i∈ILm(Gi), which violates the assumption   with respect  to G and    o,i, i ∈I  if, ∩i∈I[P−1i  Pi(∂L)]∩
+that ∩i∈ILm(Gi) = ∅. Therefore, for the above k ∈I, we  ϒL = ∅.
+have Ek(Pk(eksσ)) = {D}. Since D /∈ϒ>1 , we know that    Remark 6: Note  that,  in conjunctive  prognosability and
+(  i∈I Ei(Pi(esσσ))) ∩ϒ>1 = ∅. Overall, we know that         N-inference prognosability, the performance bound is consid-
+                                                             ered implicitly as K = 0 and M = |QH|. Therefore, to compare
+ (∀s ∈L(Hred) : δred(s) ∈∂0)       Ei(Pi(s)) ∩ϒ>1 = ∅       PSE-prognosability and NSE-prognosability with these two
+                                   i∈I                              notions, hereafter, we will also ﬁx the performance bound as
+                                        K = 0 and M = |QH|.that is Hred is NSE-coprognosable with respect to Gred.
+                                                     The following example shows that the positive and the nega-
+                                                                        tive protocols may predict the fault correctly when the existing            VI. COMPARISON WITH OTHER
+                                                                protocols fail.            DECENTRALIZED PROTOCOL
+                                                       Example 6: Let us consider the system G shown in Fig. 8(a)
+  In this section, we compare the proposed two protocols with                                                       and the speciﬁcation H shown in Fig. 8(b), where    o,1 =
+existing decentralized prognostic protocols in the literature.                                                                  {a, o} and    o,2 = {b, o}. We have ∂L = {o, bao}, ℑL =
+Speciﬁcally, we compare the positive and negative protocols                                                                  {o, ba, bao}, and ϒL = {ϵ} ∪{a, b}{o}∗. Then we have
+with the inference-based protocol [29] and the conjunctive pro-
+tocol [16]. We do not consider the disjunctive protocol [18]      ℑL[0] = {o, ba, bao}, ϒL[0] = {ϵ, a, b} ∪{ao, bo}{o}∗
+since  it  is subsumed by the inference-based protocol [29].      ℑL[1] = {o, ba, bao}, ϒL[1] = {ao, bo}
+Hereafter, we show that each of the proposed protocols  is
+                                                          ℑL[k] = {o, bao}, ϒL[k] = {ao, bo}, ∀k ≥2.
+incomparable with any of the existing protocols.
+   First, we recall the notion of N-inference prognosability   Therefore, ∂L̸ ⊆ℑL\ℑL[N+1] for any N ≥0, i.e., the system
+from  [29], which  is  the  necessary and  sufﬁcient  condi-    is not N-inference prognosable for any N and the fault cannot
+tion under which the N-inference-based protocol satisﬁes (5)   be correctly predicted by using the inference-based protocol.
+and (6) with K = 0 and M = |QH|. First, we deﬁne            Also, we have
+            ∂L := {s ∈L(H) : δ(s) ∈∂0}                           ∩i∈I P−1i  Pi(∂L) ∩ϒL = {ao, bo}̸ = ∅.
+         ϒL :=  s ∈L(H) : δ(s) ∈ϒ>|Q|                  Therefore, the system  is not conjunctively coprognosable,
+          ℑL := L(H) \ ϒL.                                           i.e., the  fault  still cannot be correctly predicted by using
+
+1312                                                                         IEEE TRANSACTIONS ON CYBERNETICS, VOL. 49, NO. 4, APRIL 2019
+
+
+the conjunctive protocol. However, one can verify, by the
+proposed algorithms, that H  is both PSE-prognosable and
+NSE-prognosable for K = 0 and M = |QH|. Therefore, either
+of the propose protocols can correctly predict the fault when
+all existing protocols fail.
+  On the other hand, the proposed protocols may  fail to
+predict fault correctly when the existing protocols can do so.
+This is illustrated by the following example.
+  Example 7: As shown in Remark 2, speciﬁcation Hpos in                        (a)                      (b)
+Fig. 3(b) is not NSE-prognosable with respect to G in Fig. 3(a).
+                                                                                                                                                                    o,1 =However, we have ∂L = {o}, ϒL = {ϵ} ∪{a, b}{o}∗and           Fig.  9.     H′pos  is NSE-prognosable with respect to G′, where
+                                                                                  {a, o},  o,2 = {b, o}, K = 0, and M = 5. (a) G′. (b) H′pos.
+   ∩i∈I P−1i  Pi(∂L) ∩ϒL = {o, ao} ∩{o, bo} ∩ϒL = ∅.
+
+Therefore, Hpos is conjunctively coprognosable with respect                      VII. CONCLUSION
+to G.                                                             In  this  paper, two  novel  decentralized  protocols were
+  Also, as shown in Remark 2, speciﬁcation Hneg in Fig. 3(c)   proposed for the purpose of fault prognosis. The notions of
+is  not PSE-prognosable  with  respect  to G  in  Fig.  3(a).   PSE-prognosability and NSE-prognosability were introduced,
+However, we have ∂L = {ao, bo}, ℑL = {a, b, ao, bo}, ϒL =   respectively, as the necessary and sufﬁcient conditions under
+{o}∗and                                               which the positive protocol and negative protocol achieve the
+                                                               required performance bound, respectively. Algorithms were
+     ℑL[1] = ℑL ∩  ∩i∈IP−1i  (Pi(ϒL)) = ∅                provided to verify the proposed notions. We showed that the
+        ∂L = {ao, bo} ⊆ℑL \ ℑL[1] = {a, b, ao, bo}.         veriﬁcations of PSE-prognosability and NSE-prognosability
+                                                                 are both PSPACE-hard with respect to the number of local
+Therefore, Hneg is 0-inference prognosable with respect to G.   agents. Finally, we showed that the two proposed protocols
+  Recall  that we have shown  in  Section  III  that PSE-   are incomparable with existing protocols in the literature.
+prognosability  and  NSE-prognosability  are  incomparable.    The proposed algorithms are exponential in the number of
+Moreover, as shown in [16], conjunctive coprognosability and   local agents, which has been shown to be unavoidable. Note
+N-inference prognosability are also incomparable. Therefore,   that the veriﬁcation algorithm for PSE-prognosability requires
+we conclude that all of these four notions are incomparable in   polynomial-time with respect to the size of the system model,
+general; each of them may apply to different systems.         while the algorithm for the veriﬁcation NSE-prognosability
+   Finally, it is worth remarking that, in this paper, we adopt a   requires exponential-time with respect to the size of the system
+state-based approach, while the results in [16], [18], and [29]   model. Investigating whether or not there exists a polynomial-
+use  language-based  frameworks. As  a  consequence,  the   time algorithm for the veriﬁcation of NSE-prognosability is
+proposed protocols strictly depend on the state-space of the   an interesting future direction.
+system that generates the language. In other words, it is possi-
+ble that we can reﬁne the state-space of a non-PSE-(or NSE-)
+                                                                 REFERENCESprognosable system such that the reﬁned system is PSE-(or
+NSE-) prognosable. This issue is illustrated by the following     [1] R. Ammour, E. Leclercq, E. Sanlaville, and D. Lefebvre, “Fault progno-
+example.                                                                                       sis of timed stochastic discrete event systems with bounded estimation
+                                                                                                  error,” Automatica, vol. 82, pp. 35–41, Aug. 2017.
+  Example 8: Let us consider the system automaton G′ in     [2] N. Bertrand, S. Haddad, and E. Lefaucheux, “Foundation of diagnosis
+Fig. 9(a), where we have I =  {1, 2},    o,1 =  {a, o} and        and predictability in probabilistic systems,” in Proc. 34th IARCS Annu.
+  o,2 = {b, o}. Let K = 0 and M =  5. For speciﬁcation         Conf. FSTTCS, 2014, pp. 417–429.
+                                                                                      [3] C. G. Cassandras and S. Lafortune, Introduction to Discrete Event
+automaton H′pos shown in Fig. 9(b), we have ∂K = {4} and         Systems, 2nd ed. New York, NY, USA: Springer, 2008.
+ϒ>M = {1, 2, 3, 5, 7, 8, 9}.  It is NSE-prognosable, since for     [4]  F. Cassez and A. Grastien,  “Predictability of event occurrences  in
+string o ∈L(H′pos)  : δ(o) ∈∂K, we have (∩i∈IEi(Pi(o))) ∩        timed systems,” in Formal Modeling and Analysis of Timed Systems.
+ϒ>M = ∅. However, as we have shown in Remark 2, that Hpos     [5] M.Heidelberg,Chang, W.Germany:Dong, Springer,Y.  Ji, and2013,L. Tong,pp. 62–76.“On fault predictability in
+in Fig. 3(b) is not NSE-prognosable with respect to Gpos in          stochastic discrete event systems,” Asian  J. Control, vol. 15, no. 5,
+Fig. 3(a) under the same problem parameters. Interestingly,         pp. 1458–1467, 2013.
+we see that L(G′) = L(G) and L(H′pos) = L(Hpos), i.e., G′     [6]  J.creteCheneventandsystemsR. Kumar,with“Failureguaranteeddetectionerror bounds,”frameworkIEEEfor stochasticTrans. Autom.dis-
+and Hpos′ are just reﬁnements of G and Hpos, respectively.         Control, vol. 60, no. 6, pp. 1542–1553, Jun. 2015.
+This justiﬁes our early assertion that, even the languages of     [7]  J. Chen and R. Kumar,  “Stochastic  failure  prognosability  of  dis-
+the automata are the same, using different state-spaces of the          crete event systems,” IEEE Trans. Autom. Control,  vol. 60, no.  6,
+                                                                                     pp. 1570–1581, Jun. 2015.
+system may affect the results of the protocols. Intuitively, this     [8] H. Cho and  S.  I. Marcus, “On supremal languages of  classes of
+can be explained as follows. By splitting states of the system,        sublanguages that arise in supervisor synthesis problems with partial
+each state can carry more information. However, as a tradeoff,         observation,” Math. Control Signals Syst., vol. 2, no. 1, pp. 47–69, 1989.
+                                                                                      [9] R. Debouk, S. Lafortune, and D. Teneketzis, “Coordinated decentralized
+more communication capacity is needed between each local         protocols for failure diagnosis of discrete event systems,” Discr. Event
+site and the coordinator.                                                Dyn. Syst. Theory Appl., vol. 10, nos. 1–2, pp. 33–86, 2000.
+
+YIN AND LI: DECENTRALIZED FAULT PROGNOSIS OF DESs USING STATE-ESTIMATE-BASED PROTOCOLS                                             1313
+
+
+
+[10]  S. Genc and  S. Lafortune,  “Predictability of event occurrences  in    [34] X. Yin and S. Lafortune, “A general approach for solving dynamic sensor
+      partially-observed discrete-event systems,” Automatica, vol. 45, no. 2,          activation problems for a class of properties,” in Proc. 54th IEEE Conf.
+     pp. 301–311, 2009.                                                           Decis. Control, Osaka, Japan, 2015, pp. 3610–3615.
+[11]  T. Jéron, H. Marchand, S. Genc, and S. Lafortune, “Predictability of    [35] X. Yin and  S.  Lafortune, “Decentralized supervisory  control with
+     sequence patterns in discrete event systems,” in Proc. 17th IFAC World         intersection-based architecture,” IEEE Trans. Autom. Control, vol. 61,
+     Congr., Seoul, South Korea, 2008, pp. 537–543.                                no. 11, pp. 3644–3650, Nov. 2016.
+[12] C. Keroglou and C. N. Hadjicostis, “Distributed diagnosis using prede-    [36] X. Yin and Z.-J. Li, “Decentralized fault prognosis of discrete event
+     termined synchronization strategies in the presence of communication        systems with guaranteed performance bound,” Automatica,  vol. 69,
+      constraints,” in Proc. IEEE CASE, 2015, pp. 831–836.                         pp. 375–379, Jul. 2016.
+[13] A. Khoumsi and H. Chakib, “Decentralized supervisory control of dis-    [37] X. Yin and Z.-J. Li, “Reliable decentralized fault prognosis of discrete-
+      crete event systems: Involving the fusion system in the decision-making,”         event systems,” IEEE Trans. Syst., Man, Cybern., Syst., vol. 46, no. 11,
+      in Proc. Int. Conf. Intell. Syst. Control (IASTED), Cambridge, MA, USA,         pp. 1598–1603, Nov. 2016.
+     2007, pp. 44–49.                                                         [38]  S. Yokota, T. Yamamoto, and S. Takai, “Computation of the delay
+[14] A. Khoumsi and H. Chakib, “A new architecture for decentralized con-        bounds and synthesis of diagnosers for decentralized diagnosis with
+       trol of discrete event systems: Decidability and synthesis issues,” in Proc.         conditional decisions,” Discr. Event Dyn. Syst. Theory Appl., vol. 27,
+     Conf. Francophone de Modélisation et Simulat., Paris, France, 2008.           no. 1, pp. 45–84, 2017.
+[15] A. Khoumsi and H. Chakib, “Multi-decision decentralized prognosis    [39] M. Yokotani, T. Kondo, and S. Takai, “Abstraction-based veriﬁcation
+      of failures in discrete event systems,” in Proc. Amer. Control Conf.,        and synthesis for prognosis of discrete event systems,” Asian J. Control,
+      St. Louis, MO, USA, 2009, pp. 4974–4981.                                        vol. 18, no. 4, pp. 1279–1288, 2016.
+[16] A. Khoumsi and H. Chakib, “Conjunctive and disjunctive architectures    [40]  J. Zaytoon and S. Lafortune, “Overview of fault diagnosis methods for
+      for decentralized prognosis of failures in discrete-event systems,” IEEE          discrete event systems,” Annu. Rev. Control, vol. 37, no. 2, pp. 308–320,
+     Trans. Autom. Sci. Eng., vol. 9, no. 2, pp. 412–417, Apr. 2012.               2013.
+[17] D. Kozen, “Lower bounds for natural proof systems,” in Proc. 18th
+     Symp. Found. Comput. Sci., Providence, RI, USA, 1977, pp. 254–266.
+[18] R. Kumar and S. Takai, “Decentralized prognosis of failures in discrete
+     event systems,” IEEE Trans. Autom. Control, vol. 55, no. 1, pp. 48–59,
+      Jan. 2010.
+[19] R. H. Kwong and D. L. Yonge-Mallo, “Fault diagnosis in discrete-event
+     systems: Incomplete models and learning,” IEEE Trans. Syst., Man,
+     Cybern. B, Cybern., vol. 41, no. 1, pp. 118–130, Feb. 2011.                                Xiang Yin (S’14–M’17) was born in Anhui, China,
+[20] R. H. Kwong and D. L. Yonge-Mallo, “Fault diagnosis in discrete-event                              in  1991. He  received  the  B.Eng.  degree from
+     systems with incomplete models: Learnability and diagnosability,” IEEE                           Zhejiang  University, Hangzhou, China,  in 2012,
+     Trans. Cybern., vol. 45, no. 7, pp. 1236–1249, Jul. 2015.                                           the M.S. and Ph.D. degrees from the University of
+[21] D. Lefebvre, “Fault diagnosis and prognosis with partially observed                          Michigan, Ann Arbor, MI, USA, in 2013 and 2017,
+      Petri nets,” IEEE Trans. Syst., Man, Cybern., Syst., vol. 44, no. 10,                               respectively, all in electrical engineering.
+     pp. 1413–1424, Oct. 2014.                                                     He   is   currently  with   the  Department  of
+[22] M. V. Moreira, T. C. Jesus, and J. C. Basilio, “Polynomial time veriﬁ-                          Automation,  Shanghai   Jiao  Tong   University,
+      cation of decentralized diagnosability of discrete event systems,” IEEE                           Shanghai,  China.  His  current  research  interests
+     Trans. Autom. Control, vol. 56, no. 7, pp. 1679–1684, Jul. 2011.                                  include   supervisory   control   of   discrete-event
+[23]  F. Nouioua, P. Dague, and L. Ye, “Probabilistic analysis of predictabil-                            systems, and model-based fault diagnosis, formal
+       ity in discrete event systems,” in Proc. 25th Int. Workshop Principles   methods,  security  and  their  applications  to  cyber  and  cyber-physical
+     Diagnosis, 2014.                                                        systems.
+[24]  F. Nouioua, P. Dague, and L. Ye, “Predictability in probabilistic discrete      Dr. Yin was  a  recipient  of  the  Outstanding Reviewer Award from
+     event systems,” in Soft Methods for Data Science. Cham, Switzerland:   Automatica  in 2016,  the Outstanding Reviewer Award from  the IEEE
+      Springer, 2017, pp. 381–389.                                 TRANSACTIONS ON AUTOMATIC CONTROL  in  2017  and  the  IEEE
+[25] M. Panteli and C. N. Hadjicostis, “Intersection based decentralized diag-   Conference on Decision and Control Best Student Paper Award Finalist in
+      nosis: Implementation and veriﬁcation,” in Proc. 52nd IEEE Conf. Decis.   2016. He is the Co-Chair of the IEEE CSS Technical Committee on Discrete
+      Control, Florence, Italy, 2013, pp. 6311–6316.                         Event Systems.
+[26] W. Qiu and R. Kumar, “Decentralized failure diagnosis of discrete event
+     systems,” IEEE Trans. Syst., Man, Cybern. A, Syst., Humans, vol. 36,
+     no. 2, pp. 384–395, Mar. 2006.
+[27] M. Sampath,  R.  Sengupta,  S.  Lafortune, K. Sinnamohideen, and
+     D. Teneketzis, “Diagnosability of discrete-event systems,” IEEE Trans.
+     Autom. Control, vol. 40, no. 9, pp. 1555–1575, Sep. 1995.
+[28]  S. Takai, “Robust prognosability for a set of partially observed discrete
+     event systems,” Automatica, vol. 51, pp. 123–130, Jan. 2015.                                 Zhaojian Li (S’15–M’16) received the B.S. degree
+[29]  S. Takai and R. Kumar, “Inference-based decentralized prognosis in                              in  civil aviation from the Nanjing University of
+      discrete event systems,” IEEE Trans. Autom. Control, vol. 56, no. 1,                           Aeronautics and Astronautics, Nanjing, China, in
+     pp. 165–171, Jan. 2011.                                                                     2010, and the M.S. and Ph.D. degrees from the
+[30]  S. Takai and R. Kumar, “Distributed failure prognosis of discrete event                         Department of Aerospace Engineering, University of
+     systems with bounded-delay communications,” IEEE Trans. Autom.                          Michigan, Ann Arbor, MI, USA, in 2014 and 2016,
+      Control, vol. 57, no. 5, pp. 1259–1265, May 2012.                                                    respectively.
+[31] L. Ye, P. Dague, and F. Nouioua, “Predictability analysis of distributed                        From 2010  to  2012, he was an  Air  Trafﬁc
+      discrete event systems,” in Proc. 52nd Conf. Decis. Control, Florence,                             Controller with the Shanghai Area Control Center,
+       Italy, 2013, pp. 5009–5015.                                                                   Shanghai, China. From 2014 and 2015, he was an
+[32] X.   Yin,   “Veriﬁcation   of   prognosability   for   labeled   Petri                              Intern with Ford Motor Company, Dearborn, MI,
+      nets,”   IEEE    Trans.   Autom.    Control,    to   be    published,   USA. Since 2013, he has been a Graduate Research Assistant with the
+      doi: 10.1109/TAC.2017.2756096.                                    Department of Aerospace Engineering, University of Michigan. His current
+[33] X. Yin and S. Lafortune, “Codiagnosability and coobservability under    research interests include optimal control, system modeling, estimation, and
+     dynamic observations: Transformation and veriﬁcation,” Automatica,    intelligent transportation systems.
+      vol. 61, pp. 241–252, Nov. 2015.                                           Dr. Li was a recipient of the National Scholarship from China.

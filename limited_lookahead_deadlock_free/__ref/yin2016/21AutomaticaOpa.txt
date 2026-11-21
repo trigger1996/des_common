@@ -1,0 +1,617 @@
+                                                            Automatica 133 (2021) 109838
+
+
+                                            Contents lists available at ScienceDirect
+
+                              Automatica
+
+
+                                         journal homepage: www.elsevier.com/locate/automatica
+
+
+Brief paper
+
+Verification and enforcement of strong infinite- and k-step opacity
+using state recognizers✩
+Ziyue Ma a,∗, Xiang Yin b, Zhiwu Li a,c
+a School of Electro-Mechanical Engineering, Xidian University, Xi’an 710071, China
+b Department of Automation and the Key Laboratory of System Control and Information Processing, Shanghai Jiao Tong
+University, Shanghai 201108, China
+c Institute of Systems Engineering, Macau University of Science and Technology, Taipa, Macau, China
+
+
+a r t i c l e    i n f o             a b s t r a c t
+
+
+Article history:                                   In this paper, we study the verification and enforcement problems of strong infinite-step opacity and
+Received 3 May 2020                             k-step opacity for partially observed discrete-event systems modeled by finite state automata. Strong
+Received in revised form 2 June 2021              infinite-step opacity is a property such that the visit of a secret state cannot be inferred by an
+Accepted 14 June 2021                          intruder at any instance along the entire observation trajectory, while strong k-step opacity is a
+Available online xxxx
+                                           property such that the visit of a secret state cannot be inferred within k steps after the visit. We
+Keywords:                                 propose two information structures called an ∞-step recognizer and a k-step recognizer to verify
+Discrete event system                          these two properties. The complexities of our algorithms to verify strong infinite- and k-step opacity
+Infinite-step opacity                            are O(22·|X| · |Eo|) and O(2(k+2)·|X| · |Eo|), respectively, which are lower than that of existing methods in
+k-step opacity                                the literature (|X| and |Eo| are the numbers of states and observable events in a plant, respectively).
+State recognizer                   We also derive an upper bound for the value of k in strong k-step opacity, and propose an effective
+                                           algorithm to determine the maximal value of k for a given plant. Finally, we note that enforcement
+                                                 of strong infinite- and k-step opacity can be transformed into a language specification enforcement
+                                       problem and hence be solved using supervisory control.
+                                                              © 2021 Elsevier Ltd. All rights reserved.
+
+
+
+
+1. Introduction                                                         reachability graphs (Ma, Tong,  Li, & Giua, 2017) that improve
+                                                                 the computational efficiency. Moreover, for a non-opaque plant,
+   Opacity (Lafortune, Lin, & Hadjicostis, 2018) is a property that     additional measures must be made to guarantee that the secret
+characterizes the situation whether some key information of a      is not leaked, which is called opacity enforcement. These methods
+system can be inferred by an external intruder or not. In the    include supervisory control (Lan, Tong, & Seatzu, 2020; Tong, Li,
+last decades, abundant results have been done on the issue of     Seatzu, & Giua, 2018) and event edition (Barcelos & Basilio, 2018;
+opacity in discrete event dynamic models. In automata models,    Behinaein, Lin, & Rudie, 2019; Ji, Wu, & Lafortune, 2018; Ji, Yin,
+various notions of opacity have been proposed and analyzed,   & Lafortune, 2019;  Ji, Yin, & Lafortune, 2019; Mohajerani,  Ji, &
+including current state opacity, initial-state opacity (Saboori & Had-     Lafortune, 2019; Wu & Lafortune, 2014; Yin & Li, 2020).
+jicostis, 2008), language-based opacity (Lin, 2011), infinite-step     Among various notions of opacity, infinite-step opacity and
+opacity and k-step opacity (Falcone & Marchand, 2015; Saboori     k-step opacity have drawn much attention  in recent  years.
+& Hadjicostis, 2011, 2012). These works are later extended to                                                                          Infinite-step opacity is a property such that the visit of a secret
+coordinated architectures (Wu & Lafortune, 2013) and modular                                                                         state cannot be inferred by an intruder at any instance along
+systems (Tong & Lan, 2019). Opacity problems are also studied                                                                 the entire observation trajectory. Similarly, k-step opacity is a
+in the framework of Petri nets (Bryans, Koutny, Mazaré, & Ryan,                                                                property such that the visit of a secret state cannot be inferred
+2008) by checking language containment/equivalence. Recently,                                                                within k steps after leaving the secret state. In Saboori and
+the work in Tong, Li, Seatzu, and Giua (2017) studies the veri-
+                                                                      Hadjicostis (2011, 2012), the notions of weak infinite- and k-step
+fication of current-state and the initial-state opacity using basis
+                                                                   opacity are first proposed, and two algorithms based on k-delay
+                                                                            state estimators are developed to verify them. The complexity
+ ✩The material in this paper was not presented at any conference. This     of verifying weak infinite- and k-step opacity using delay state
+paper was recommended for publication in revised form by Associate Editor                                                                  estimators is O(2|X|·2|X|2 ·|Eo|), where |X| and |Eo| are the numbersChristoforos Hadjicostis under the direction of Editor Christos G. Cassandras.
+  ∗Corresponding author.                                                 of states and observable events in a plant, respectively. In Yin
+     E-mail addresses:  maziyue@xidian.edu.cn (Z. Ma), yinxiang@sjtu.edu.cn      and Lafortune (2017), a more efficient method to verify weak
+(X. Yin), zhwli@xidian.edu.cn (Z. Li).                                             infinite- and k-step opacity using a two-way observer is developed
+
+
+https://doi.org/10.1016/j.automatica.2021.109838
+0005-1098/© 2021 Elsevier Ltd. All rights reserved.
+
+Z. Ma, X. Yin and Z. Li                                                                                                          Automatica 133 (2021) 109838
+
+whose structural complexity is O(22|X|  · |Eo|). Since the weak   A sequence ¯s ∈E∗is a prefix of a sequence s ∈E∗if s = ¯ss′ where
+version of opacity has some limitations in practice, in Falcone       s′ ∈E∗, which is denoted by  ¯s ⪯s. The prefix closure of s ∈E∗is
+and Marchand (2015) a new notion of opacity called strong    defined as Pr(s) = {¯s ∈E∗|  ¯s ⪯s}.
+k-step opacity is introduced. An algorithm is also proposed to ver-     A plant G is partially observable in general. Hence, the event
+ify strong k-step opacity in Falcone and Marchand (2015) using     set E is partitioned into the set of observable events Eo and the set
+k-delay trajectory estimators and R-verifiers whose complexity is     of unobservable events Euo. Given a sequence s ∈E∗, its observable
+O(2|X| · 2|X|2 · |Eo|).                                                   projection σ = P(s) is the output of the natural projection P  :
+   In this paper, we are interested in the verification problem   E∗→E∗o recursively defined as (1) P(ε) = ε, (2) P(e) = e if e ∈Eo
+for strong infinite-step opacity (∞-SSO) and strong k-step opacity    and P(e) = ε if e ∈Euo, (3) P(se) = P(s)P(e), where s ∈E∗and e ∈
+(k-SSO) in partially observed finite state automata.1 These two     E. The inverse projection P−1 : E∗o →2E∗is defined as:P−1(σ) =
+                                                                               {s ∈L(G) | P(s) = σ}, i.e., P−1(σ) consists of all sequences s in L(G)notions of opacity are first proposed in Falcone and Marchand
+                                                      whose observations are σ. The observed language of G, denoted by(2015) and Saboori and Hadjicostis (2011). However, in the lit-
+                                                                          P[L(G)], is defined as P[L(G)] = {σ ∈E∗o | (∃s ∈L(G)) σ = P(s)}.erature there is no method to verify ∞-SSO as far as we know.
+On the other hand, for k-SSO, the work in Falcone and Marchand
+                                                                             3. Strong infinite-step and k-step opacity
+(2015) proposes a method to determine k-SSO of a plant for a
+given value of k. However, such a method cannot determine the                                                               Given a plant G = (X, E, δ, x0), part of its state set is the set
+maximal value of k for a given plant. Besides, other contributions                                                                        of secret states that is denoted by XS with XS ⊂X. There is an
+of this paper are summarized as follows.                                                                    intruder who knows the structure of G but only observes the
+  • For ∞-SSO, we propose a novel information structure called    observable events (i.e., the events in Eo) generated by G. Hence,
+    an ∞-Step Recognizer in which the information of passing     for each observation s ∈E∗o , the intruder tries to infer if G has
+                                                                          visited x ∈XS some time before, by using the knowledge of the     the secret states is encoded. This approach results in a new
+     algorithm that has complexity of O(22·|X| · |Eo|).                 structure of G and observation s. This motivates the notion of
+  • We show that the ∞-step recognizer is not suitable for    strong opacity that will be studied in this work.
+     the verification of k-SSO. Hence, we propose another in-
+                                                                  Definition 3.1 (Strong k-Step Opacity Falcone & Marchand, 2015).     formation structure called a k-Step Recognizer and develop
+                                                             Given a plant G = (X, E, δ, x0), a set of observable events Eo, and    an algorithm to verify k-SSO of a plant for a certain value
+     of k. This algorithm has complexity of O(2(k+2)·|X|  · |Eo|).    a set of secret states XS, G is strongly k-step opaque (k-SSO) with
+                                                                    respect to XS (where k ∈N) if for all sequences st ∈L(G) such    The previous algorithm reported in Falcone and Marchand
+                                                                     that δ(x0, s) ∈XS and |P(t)| ≤k, there exists a sequence w ∈L(G)     (2015) for verifying k-SSO has complexity of O(2|X| · 2|X|2 ·
+                                                             such that:
+       |Eo|). Therefore, our new algorithm leads to considerable
+                                                                       (∀¯w ⪯w, |P(w)| −|P( ¯w)| ≤k) δ(x0, ¯w) /∈XS    improvements in verification complexity when the size of                                                                                                                                            (1)
+     a plant is relatively large.                                                   ∧P(w) = P(st).
+  • We propose an upper bound for the value of k in k-SSO.                                                            The physical interpretation of k-SSO is that for any string that
+     Precisely speaking, we prove that a system is ∞-SSO  if                                                                    leads to a secret state, an intruder cannot necessarily determine
+    and only if it is (22|X|)-SSO. Then we propose an iterative                                                                     that the system is/was in a secret state at that point using up to k
+     algorithm to determine the maximal value of k for a given                                                                  observations thereafter. According to its definition, k-SSO reduces
+      plant, whose complexity is O(2(k+2)·|X| · |Eo|).                    to the current-state opacity (Saboori & Hadjicostis, 2008) when
+  • Finally, we develop an algorithm  that  enforces strong    k = 0. On the other hand, by letting k →∞such that conditions
+      infinite- and k-step opacity by supervisory control.                 ‘‘|P(t)| ≤k’’ and ‘‘|P(w)| −|P( ¯w)| ≤k’’ in Eq. (1) are trivially
+                                                                                satisfied, the notion of k-SSO is extended to strong infinite-step   This paper is organized in seven sections. Basic notions of au-
+                                                                      opacity (∞-SSO) below. Such a notion of opacity is first proposed
+tomata, partial observation, and notions of opacity are recalled in
+                                                                        in this work.Sections 2 and 3. In Section 4, the notion of ∞-step recognizer is
+proposed, based on which a new approach for the verification of
+                                                                  Definition 3.2 (Strong Infinite-Step Opacity). Given a plant G =∞-SSO is developed. In Section 5, the notion of k-step recognizer
+                                                                   (X, E, δ, x0), a set of observable events Eo, and a set of secret states
+is proposed, as well as an iterative algorithm to determine the
+                                                                            XS, G is strongly infinite-step opaque (∞-SSO) with respect to XS
+maximal value of k for a given plant. In Section 6, the enforcement
+                                                                                                       if for all sequence st ∈L(G) such that δ(x0, s) ∈XS, there exists aof ∞-SSO and k-SSO are studied. Section 7 draws the conclusion.                                                            sequence w ∈L(G) such that:
+
+2. Preliminaries                                                      (∀¯w ⪯w) δ(x0, ¯w) /∈XS ∧P(w) = P(st).                       (2)
+                                                                          In plain words, ∞-SSO requires that for any secret sequence
+  We consider infinite-step and k-step opacity problems in a
+                                                                     that passes a secret state, there should exist another sequence
+deterministic finite state automaton (automaton for short)
+                                                                     that looks like the former and does not pass any secret state,
+G = (X, E, δ, x0),                                           which implies that an intruder can never determine that the
+                                                            system is/was in a secret state using further observations.
+where X is a set of states; E is a set of events; δ  : X × E →X
+is the partial transition function; and x0 ∈X is the initial state.    Proposition 3.1.  The following statements are true:
+We use E∗to denote the Kleene closure of E, consisting of all finite
+sequences composed of the events in E and the empty sequence ε.         1. the fact that G is k-SSO with respect to XS implies that G is
+The language of G, denoted by L(G), is defined as L(G) = {s ∈E∗|           k′-SSO with respect to XS for any 0 ≤k′ < k;
+δ(x0, s) ∈X}. Given a sequence s ∈E∗, |s| denotes the length of s.         2. the fact that G is ∞-SSO with respect to XS implies that G is
+                                                                    k-SSO with respect to XS for any k ∈N.
+
+  1 To simplify the presentation, the term ‘‘∞-SSO’’ (resp. k-SSO) is used as
+the abbreviation of both ‘‘strong infinite-step opacity’’ (resp. ‘‘strong k-step    Proof. By Eq. (1), if G is not k′-SSO, then for any k >  k′, G is
+opacity’’) and ‘‘strongly infinite-step opaque’’ (resp. ‘‘strongly k-step opaque’’),    not k′-SSO. By contrapositive, statement 1 is true. Since ∞-SSO is
+which depends on the context.                                      k-SSO for k →∞, statement 2 is also true. □
+
+                                                                   2
+
+Z. Ma, X. Yin and Z. Li                                                                                                          Automatica 133 (2021) 109838
+
+    It is worth noting that strong opacity (Definitions 3.1 and 3.2)    Proposition 4.1. Given a plant G = (X, E, δ, x0), a set of observable
+and weak opacity (see Saboori & Hadjicostis, 2011, 2012; Yin     events Eo, and a set of secret states XS, for an observation σ ∈
+& Lafortune, 2017) are incomparable,  i.e., ∞- or k-step strong     P[L(G)] and event e ∈Eo such that σ, σe ∈P[L(G)], it holds:
+opacity does not imply ∞- or k-step weak opacity, and vice versa.
+                                                              E(σe, XS, ∞) =  ⋃     UR(Next((x, γ ), e))Hence, the approaches for the verification of one type of opacity
+                                                                                                                              (x,γ )∈E(σ,XS,∞)verification cannot be applied to the verification of the other.
+
+                                                                   Proof. This result is directly from the definition of functions Next
+4. Verification of strong infinite-step opacity using infinite-                                                         and UR. □
+step recognizers
+                                                           By the definition of E(σ, XS, ∞), it is not difficult to under-
+                                                                stand that an intruder can infer that a plant necessarily has   In this section we focus on the verification problem of ∞-SSO
+                                                                reached/passed some secret state by observing σ ∈P[L(G)] if andin Definition 3.1. We first define an XS-secret language and then
+                                                                only if the flags of all pairs (x, γ ) in his/her estimation E(σ, XS, ∞)define an (XS, ∞)-estimation that characterize the knowledge of
+                                                                   are ∞. Now we are ready to introduce an information structure
+the intruder.
+                                                                        called an ∞-step recognizer (∞-SR) in which all E(σ, XS, ∞) of all
+                                                      σ ∈P[L(G)] are encoded. In plain words, each state of an ∞-SR
+Definition 4.1.  Given a plant G = (X, E, δ, x0) and a set of secret
+                                                                                       is a macro-state d that consists of one or more pairs:
+states XS, we define the XS-secret language of state x as:
+LS(G, x) = {s ∈E∗| [δ(x, s) ∈X]∧                              d = {(xi1, γ1), (xi2, γ2), . . . , (xin, γn)},
+                                                                  (3)
+                                   [(∃¯s ⪯s) δ(x, ¯s) ∈XS]}.                where each xij ∈X is a plant state and γj ∈{0, ∞} is a flag that
+                                                                  records if a secret state has been reached (γ = ∞) or not (γ = 0).
+The ∞-step test function S∞(x, s) : X ×E∗→{0, ∞} is defined as:    The formal definition of the ∞-SR is the following.
+       {0,  if s /∈LS(G, x)
+S∞(x, s) =                                                        Definition 4.3. Given a plant G = (X, E, δ, x0), a set of observable        ∞,  if s ∈LS(G, x)                                                                events Eo, and a set of secret states XS, the ∞-step recognizer (∞-
+                                                                SR) of G is a deterministic automaton GD = (D, Eo, δ∞, d0) such
+Remark 1. We denote the codomain of function S∞as {0, ∞}     that: (i) the state set is D ⊆2X×{0,∞}; (ii) the event set is Eo; (iii)
+(instead of {0, 1}) to avoid possible confusions for later de-    the transition function δ∞: D× Eo →D is recursively defined as:
+velopments. In Section 5, the flag set in k-SSO is denoted as
+{0, 1, . . . , k + 1}. The interpretation of the ‘‘∞’’ flag in an ∞-SR    δ∞(d, e) = ⋃  UR(Next((x, γ ), e));
+is completely different with that of the ‘‘1’’ flag in a k-SR.                                  (x,γ )∈d
+                                                                                  (iv) the initial state is d0 = UR(x0, 0).
+Definition 4.2. Given a plant G = (X, E, δ, x0), a set of observable
+events Eo, and a set of secret states XS, for an observation σ ∈    Proposition 4.2. Given a plant G = (X, E, δ, x0), a set of observable
+P[L(G)], the (XS, ∞)-estimation of σ is defined as:                    events Eo, and a set of secret states XS, let GD = (D, Eo, δ∞, d0) be
+                                                                      the ∞-SR of G. It holds:E(σ, XS, ∞) = {(x, γ ) | (∃s ∈P−1(σ))
+                                                                  (4)
+                       δ(x0, s) = x, γ = S∞(x0, s)}.                σ ∈P[L(G)] ⇒  E(σ, XS, ∞) = δ∞(d0, σ).
+   Given an observation σ ∈P[L(G)], the (XS, ∞)-estimation of σ                                                                   Proof. Directly from the definition of ∞-SR and Proposition 4.1.
+(i.e., E(σ, XS, ∞)) is a compact representation that characterizes    □
+the knowledge of an intruder who observes σ. Precisely speaking,
+each pair (x, γ ) in E(σ, XS, ∞) represents a trajectory from initial       Given a plant G and its ∞-SR GD, we classify the states in GD
+state x0 such that (i) the plant is currently at state x by executing     into two types: (i) leaking states: for all (xij, γj) ∈d, γj = ∞
+a sequence s ∈E∗that looks like σ, and (ii) during the execution     holds; (ii) non-leaking states: there exists at least one (xij, γj) ∈d
+of s from x0 to x, some secret state has been reached/passed (if    with γj =  0. Now we are ready to introduce the first main
+γ = ∞) or no secret state has been reached/passed (if γ = 0).     result of this work that is: a plant is ∞-SSO if and only if its
+                                                               corresponding ∞-SR does not contain any leaking state.In other words, the second component γ in (x, γ ) is a flag that
+denotes if a secret has passed (γ = ∞) or not (γ = 0).
+   The (XS, ∞)-estimation of empty observation ε, i.e., E(ε, XS,   Theorem 4.1.  Given a plant G = (X, E, δ, x0), a set of observable
+                                                                     events Eo, and a set of secret states XS, let GD = (D, Eo, δ∞, d0) be∞), can be computed according to Definition 4.2. On the other
+                                                                      the corresponding ∞-SR. Plant G is ∞-SSO with respect to XS if andhand, if E(σ, XS, ∞) is known for some σ  ∈P[L(G)], then for
+                                                                    only if there is no leaking state in its ∞-SR.
+any event e such that σe ∈P[L(G)], a set E(σe, XS, ∞) can be
+computed from set E(σ, XS, ∞). Now we introduce some useful                                                                   Proof. (⇒) By contrapositive, suppose that there exists a leaking
+notations before showing how it can be done. The unobservable
+                                                                         state d in GD. Thus, there exists an observation σ ∈  P[L(G)]reach of a pair (x, γ ), where x ∈X and γ ∈{0, 1}, is defined as:
+                                                             such that δ∞(d0, σ) =  d. By Proposition 4.2, E(σ, XS, ∞) = d
+UR(x, γ ) = {(x′, γ ′) | (∃s ∈E∗uo)                                       holds. Since all pairs (x, γ ) ∈E(σ, XS, ∞) satisfy γ = ∞, the
+             δ(x, s) = x′, γ ′ = max{γ , S∞(x, s)}}.                    execution of any sequence s ∈P−1(σ) from x0 necessarily passes
+                                                     some secret state in XS. Let s0 be an arbitrary sequence in P−1(σ)
+We also denote by Next((x, γ ), e) the set of pairs that can be     that passes XS. Sequence s0 can be written as s0 = st such that
+reached immediately upon the occurrence of observable event     δ(x0, s) ∈XS. Then, since all sequences in P−1(σ) necessarily pass
+e ∈Eo, i.e.,                                                     a secret states, we can conclude that for all sequences w ∈L(G)
+Next((x, γ ), e) = {(x′, γ ′) |δ(x, e) = x′,                            such that P(w) = P(st), none of them satisfies δ(x0, ¯w) /∈XS for
+                                                             ′                                                    all ¯w ⪯w. Hence, by Definition 3.1, G is not ∞-SSO with respect
+                      γ = max{γ , S∞(x, e)}}.                   to XS.
+
+                                                                   3
+
+Z. Ma, X. Yin and Z. Li                                                                                                          Automatica 133 (2021) 109838
+
+                                                                  Definition 5.1. Given a plant G = (X, E, δ, x0), a set of observable
+                                                                events Eo, and a set of secret states XS, for a sequence s ∈LS(G, x),
+                                                                 the maximal non-secret suffix index of s is defined as
+
+                                                                N(x, s) = |P(s)| −max {i | (¯s ⪯s,|P(¯s)| = i)
+                                                                                                            δ(x, ¯s) ∈XS}.
+                                                                       In particular, we define N(x, s) = +∞for s ∈L(G, x) \ LS(G, x).
+                                                          The k-step test function Sk : X × E∗→{0, 1, . . . , k} is defined as:
+
+                                                                            Sk(x, s) = max{k −N(x, s) + 1, 0}.
+
+                                                                  Definition 5.2. Given a plant G = (X, E, δ, x0), a set of observable
+                                                                events Eo, a set of secret states XS, and an integer k ∈N, for an
+                                                                  observation σ ∈P[L(G)], the (XS, k)-estimation of σ is defined as:
+                     Fig. 1. The automaton for in Example 4.1.                  E(σ, XS, k) = {(x, γ ) |(∃s ∈P−1(σ))
+                                                                                                                                            (5)
+                                                                                               δ(x0, s) = x, γ = Sk(x0, s)}.
+
+                                                      An (XS, k)-estimation is a compact representation that char-  (⇐) By contrapositive, suppose that G  is not ∞-SSO. By
+                                                                        acterizes the knowledge of an intruder who memorizes the visit
+Definition 3.1, there necessarily exists a sequence st such that                                                                        of secret states for at most k steps afterwards. In a pair (x, γ ) ∈
+(1) δ(x0, s) ∈XS, and (2) there does not exist a sequence w ∈L(G)                                                             E(σ, XS, k), if state x is a secret state, the value of flag γ is set to
+such that P(w) =  P(st) and δ(x0, ¯w)  /∈  XS for all ¯w ⪯w.                                                      k+1. Moreover, such a flag has a lifespan k+1: for each observed
+The second condition implies that all sequences that look like                                                               event thereafter, the value of γ is decreased by 1 until it reaches
+st necessarily pass XS,  i.e., all pairs (x, γ ) ∈E(σ, XS, ∞) have                                                                         zero. Hence, after observing k + 1 events thereafter,  if during
+γ = ∞. By the construction of GD and Proposition 4.2, all pairs                                                                           this period the trajectory does not pass another secret state, γ
+(x, γ ) in state d = δ∞(d0, P(s)) = E(σ, XS, ∞) have γ = ∞.                                                                                       is reduced to zero, i.e., the intruder ‘‘forgets’’ that the plant has
+Hence, d is a leaking state in GD. □                                   visited secret state x.
+                                                                        Similar to the result in Section 3, for an observation σ ∈
+                                                                          P[L(G)], set E(σ, XS, k) can be obtained by iteratively computingExample 4.1.   Consider the automaton G in Fig. 1 in which
+Eo = {a, b, c}, Euo = {u}, and the secret set is XS = {x1}. The    the prefix of σ, starting from E(ε, XS, k) (which can be computed
+                                                                 according to its definition). We define the k-unobservable reach ofcorresponding ∞-SR GD is depicted in the same figure. In GD there
+                                                               a pair (x, γ ), where x ∈X and γ ∈{0, 1, . . . , k}, as:exist two leaking states d5 =  {(x3, ∞)} and d6 =  {(x2, ∞)}.
+By Theorem 4.1, G is not ∞-SSO with respect to XS. In fact, if     URk(x, γ ) = {(x′,γ ′) | (∃s ∈E∗uo)
+the plant executes sequence s =  uabb whose observation is                                                                                           δ(x, s) = x′, γ ′ = max{γ , Sk(x, s)}}.
+P(s) = abb, the intruder can infer that secret state x1 is necessarily
+passed.                                     We denote by Nextk((x, γ ), e) the set of states that can be reached
+                                                             immediately upon the occurrence of observable event e ∈Eo, i.e.,
+   Since the state set D in an ∞-SR satisfies D ⊆2X×{0,∞}, the
+                                                                        Nextk((x, γ ), e) = {(x′, γ ′) |δ(x, e) = x′,
+structural complexity of GD is O(22|X| · |Eo|). Hence, our approach                                                                         ′
+has the same complexity of the verification of the weak ∞-step                          γ = max{γ , Sk(x, e)}}.
+opacity using two-way observers (Yin & Lafortune, 2017).
+                                                               Proposition 5.1. Given a plant G = (X, E, δ, x0), a set of observable
+                                                                     events Eo, a set of secret states XS, and an integer k ∈N, for an
+5. Verification of strong k-step opacity using k-step recogniz-
+                                                                     observation σ ∈P[L(G)] and event e ∈Eo such that σ, σe ∈P[L(G)],ers
+                                                                                                     it holds:
+   Since for ∞-SSO the passage of secret states is leaked when    E(σe, XS, k) =  ⋃     URk(Nextk((x, γ ), e))
+an ∞-SR reaches a leaking state, one may intuitively conjecture                            (x,γ )∈E(σ,XS,k)
+that the property of k-SSO can also be determined by inspecting
+the length of ambiguous paths (i.e., a path on which all states    Proof.  This result directly follows from the definition of Nextk
+have both 0 and ∞flags) in the ∞-SR. Unfortunately, such a    and URk functions. □
+conjecture is false, since the ambiguous path in ∞-SR does not
+                                                           By the definition of (XS, ∞)-estimation, it is not difficult tocontain essential information of trajectories of the plant states
+                                                              understand that an intruder can infer that the plant necessarilyon the path. Hence, in this section we first solve the verification
+                                                              has reached/passed some secret state in the last k steps by ob-problem of k-SSO in Definition 3.2 using a different information
+                                                                   serving σ ∈P[L(G)] if and only if the flags of all pairs (x, γ ) instructure called k-SR.
+                                                                      his/her estimation E(σ, XS, k) are nonzero. Now we introduce an
+                                                                 information structure called a k-Step Recognizer (k-SR) in which
+5.1. Verification of k-SSO for a given k                                         all E(w, XS, k) of all σ ∈P[L(G)] are encoded.
+
+  We introduce some useful notions that will be used to design    Definition 5.3. Given a plant G = (X, E, δ, x0), a set of observable
+an information structure called a k-step recognizer. We propose    events Eo, and a set of secret states XS, the k-step recognizer
+(XS, k)-estimation that characterizes the knowledge of an intruder     (k-SR) of G is a deterministic automaton GD,k = (Dk, Eo, δk, d0)
+if a secret state has reached/passed during the last k observations    such that: (i) the state set is Dk ⊆2X×{0,1,...,k}; (ii) the event set is
+in σ.                                                                    Eo;
+
+                                                                   4
+
+Z. Ma, X. Yin and Z. Li                                                                                                          Automatica 133 (2021) 109838
+
+(iii) the transition function δk : Dk×Eo →Dk is recursively defined      5.2. Determining the maximal k for k-SSO
+as:
+                                                                          In this subsection, we propose an iterative algorithm to deter-
+δk(d, e) = ⋃  URk(Nextk((x, γ ), e));                          mine the maximal value of k such that G is k-SSO. The integrated
+               (x,γ )∈d                                                  algorithm is sketched in Algorithm 1. First, we check if G is ∞-
+                                                       SSO using ∞-SR. If G is ∞-SSO then it is k-SSO for all k ∈N,
+(iv) the initial state is d0 = URk(x0, 0).                                                         and hence Algorithm 1 outputs ‘‘∞’’. Otherwise, we sequentially
+                                                                         verify 0-SO, 1-SO, . . . until encounter a ¯k such that the plant G is
+Proposition 5.2. Given a plant G = (X, E, δ, x0), a set of observable                                                               not ¯k-SSO. If  ¯k ≥1, Algorithm 1 outputs  ‘‘¯k −1’’, which means
+events Eo, and a set of secret states XS, let GD,k = (D, Eo, δk, d0) be     that the maximal value of k such that G is k-SSO with respect to
+the k-SR of G. For any sequence σ ∈P[L(G)], it holds:                                                                    XS is k =  ¯k −1. On the other hand, if  ¯k = 0, then Algorithm 1
+E(σ, XS, k) = δk(d0, σ).                                           outputs ‘‘NA’’, which means that k does not exist.
+
+Proof.  Directly from the definition of k-SR and Proposition 4.1.    Algorithm 1 Determining maximal k for k-SSO
+ □                                                                  Input: A plant G = (X, E, δ, x0), a set of observable events Eo, and
+                                                                  a set of secret states XS
+   Given a plant G and its k-SR GD,k, we classify the states in GD,k                                                                                        1: compute ∞-SR GD;
+into two types: (i) leaking states: for all (xij, γj) ∈d, γj > 0 holds;       2: if in GD there does not exist any leaking state, then
+(ii) non-leaking states: there exists at least one (xij, γj) ∈d with       3:    output ‘‘∞’’ and exit;
+γj = 0. Similar to the result in Section 4, the following theorem       4: end if
+indicates that a plant is k-SSO if and only if its corresponding k-SR       5: let i = 0;
+does not contain any leaking state.                                             6: while true, do
+                                                                                        7:   compute i-SR GD,k;
+Theorem 5.1.  Given a plant G = (X, E, δ, x0), a set of observable       8:      if in GD,i there exists any leaking state, then
+events Eo, and a set of secret states XS, let GD,k = (D, Eo, δk, d0) be       9:          if k̸ = 0, then
+the corresponding k-SR. Plant G is k-SSO with respect to XS  if and     10:          output ‘‘i −1’’ and exit;
+only if there is no leaking state in GD,k.                                     11:        else
+                                                                                 12:          output ‘‘NA’’ and exit;
+Proof. (⇒) By contrapositive, suppose that there exists a leaking     13:      end if
+secret state d in GD, i.e., there exists an observation σ ∈P[L(G)]     14:   end if
+such that δ∞(d0, σ) = d. By Proposition 5.1, E(σ, XS, k) = d holds.     15:     let i = i + 1;
+Since all pairs (x, γ ) ∈E(σ, XS, k) satisfy γ ≥1, the execution of     16: end while
+any sequence s ∈P−1(σ) from x0 necessarily passes some secret
+state in XS in the last k observed events. Let s0 be an arbitrary    Proposition 5.3. Algorithm 1 is correct, i.e., it outputs the maximal
+sequence in P−1(σ). Sequence s0 can be written as s0 = st such     value of k such that G is k-SSO with respect to XS.
+that δ(x0, s) ∈XS and |t| ≤k. Then we can conclude that for all
+sequences s′ ∈L(G) such that P(s′) = P(st), none of them satisfies    Proof.  First, if G is ∞-SSO, by Proposition 3.1, G is k-SSO for
+δ(x0, ¯s′) /∈XS for all  ¯s′ ⪯s′, |P(s′)| −|P(¯s′)| ≤k. Hence, G is not      all k ∈N,  i.e., the maximal value of k is ∞. Otherwise, there
+                                                                      necessarily exists an integer ¯k such that G is k-SSO for all k <  ˆkk-SSO with respect to XS.
+                                                         and not k-SSO for all k ≥ˆk. Then by testing the existence of  (⇐) By contrapositive, suppose that G is not k-SSO. By Def-
+                                                                    leaking states in each GD,i with i = 0, 1, . . . sequentially we willinition 3.2, there necessarily exists a sequence st such that (1)
+                                                                   eventually reach the condition i =  ¯k. If ¯k ≥1, G is (¯k −1)-SSOδ(x0, s) ∈XS, and (2) there does not exist a sequence w ∈L(G)                                                                                                     ≥ˆk. On the other hand, ¯k = 0such that P(w) = P(st) and δ(x0, ¯w) /∈XS for all ¯w ⪯w, |P(w)| −    with XS and is not k-SSO for any k                                                                      indicates that G is not k-SSO for any k ∈N. □
+|P( ¯w)| ≤k. The second condition implies that all sequences w
+that look like st must have passed XS during the last k observed       Although Algorithm 1 seems enumerating all k’s starting from
+events in w. By the construction of GD,k and Proposition 5.1, all    k = 0 in a brute-force way, we point out that the gross computa-
+pairs (x, γ ) in state d = δ(d0, P(s)) have γ ≥1. Hence, d is a     tional load of Algorithm 1 falls into the same class of that of k-SR.
+leaking state in GD,k. □                                              In fact:
+                                                            •  if G is ∞-SSO (and hence is k-SSO for any k >  0), Algo-
+Example 5.1.   Consider the automaton G in Fig. 2 in which         rithm 1 is of complexity O(22·|X| · |Eo|) (since only ∞-SR is
+Eo = {a, b, c} and Euo =  {u}. Suppose that we want to verify          constructed);
+if G is 1-SSO with respect to XS = {x5, x7}. The corresponding      •  if G is not 0-SSO (and hence is not k-SSO for any k > 0),
+1-SR GD,1 is depicted in the same figure. Since in GD,1 there is         Algorithm 1 is of complexity O([22·|X|+2|X|]·|Eo|) (since only
+no leaking state, by Theorem 5.1, G is 1-SSO with respect to XS,       ∞-SR and 0-SR are constructed);
+i.e., an intruder can never infer that G was at a secret state one      •  if G is k-SSO for some maximal k > 0, the complexity of
+step before.                                                         Algorithm 1 is:
+                                                                   O(Algorithm 1) = O([2|X| + 22·|X| + · · · + 2(k+2)·|X|] · |Eo|)   By the state set Dk  ⊆2X×{0,1,...,k+1}, for a given k ∈N, the
+structural complexity of GD,k is O(2|X| · 2k+2 · |Eo|). In comparison,                                                k
+                                                = O(|Eo| · ∑ 2(|X|·(i+2)))the existing algorithm proposed in Falcone and Marchand (2015)
+to verify k-SSO has complexity O(2|X|  · 2|X|2  · |Eo|). Hence, the                                          i=0
+complexity of our k-SR-based verification algorithm is smaller                                                           · 2|X| −2|X|                                                = O(2(k+2)·|X|               )
+than that in Falcone and Marchand (2015) when the size of the                                             2|X| −1
+plant is large (i.e., |X|2 ≫k + 2).                                                            ≈O(2(k+2)·|X| · |Eo|)  (assume 2|X| ≫1).
+
+                                                                   5
+
+Z. Ma, X. Yin and Z. Li                                                                                                          Automatica 133 (2021) 109838
+
+
+
+
+
+                       Fig. 2. (Left) The automaton in Example 5.1, and (right) the corresponding 1-SR with XS = {x5, x7}, Eo = {a, b, c}, Euo = {u}.
+
+     In other words, the computation on 0-SR, 1-SR, . . ., (k−1)-SR    where d1 = δk(d0,k, P(s)) and dn+1 is a leaking state, i.e., all pairs
+     are negligible comparing with the computation of k-SR.          (x, γ ) in dn+1 are with γ > 0.
+                                                        From Eq. (6) we can extract a sequence:
+Example 5.2.  Again consider the automaton G in Fig. 2 in which                  e1             e2       en−1
+Eo = {a, b, c}, Euo = {u}, and secret XS = {x5, x7}. By applying      (x1, γ1) −→(x2, γ2) −→· · · −−→(xn, γn)                         (7)
+Algorithm 1, the corresponding ∞-SR GD is depicted in Fig. 3(a).                               −→(xn+1,en        γn+1).
+Since there exists a leaking state d4 = {(x5, ∞), (x8, ∞)} in GD,
+by Theorem 4.1, G is not ∞-SSO with respect to XS.              where γ1 = n and 1 ≤γi ≤n for i = 2, . . . , n + 1. On the other
+                                                               hand, from Eq. (6) we can extract another sequence:   Since G is not ∞-SSO, we construct and examine i-SR for
+i = 0, 1, . . . sequentially. The structure of 0-SR, 1-SR, and 2-SR              e1          e2       en−1          en
+                                                                             dNS,1 −→dNS,2 −→· · · −−→dNS,n −→dNS,n+1.                    (8)
+is shown in Fig. 3(b–d). In both 0-SR and 1-SR there is no leaking
+state, while in 2-SR there is a leaking state d6 = {(x5, 3), (x8, 1)}.    where dNS,i denotes the set of pairs with zero flags in di, i.e., dNS,i
+Hence, by Theorem 5.1, G is not 2-SSO with respect to XS. In fact,  = {(x, γ ) ∈di  | γ = 0}. Note that dNS,n+1 = ∅since G is not
+for trajectory                                                     n-SSO. Since the lengths of the sequences in Eqs. (7) and (8) are
+                                                             both n + 1 that is greater than |X| · (2|X| −1) + 1, and G does not
+x0 a−→x3 u−→x4 b−→x5 c−→x5                                    have any unobservable cycle, there necessarily exist two indices
+                                                                                      j1, j2 ∈{1, . . . , n}, j1̸ = j2, such that xj1 = xj2 and dNS,j1 = dNS,j2.whose observation is abc, the intruder knows that the plant must
+                                                           As a result, sequence t can be partitioned as t = uvz, where
+have been visited a secret state (x5 in this case) one step before. In                                                                                |u| = j1−1 and |v| = j2−j1 ≥1. By removing the parts associated
+other words, the maximal k that makes G be k-SSO with respect
+                                                             with subsequence v from Eqs. (7) and (8):
+to XS is k = 1.
+                                                            • from Eq. (7), we have (x1, γ1) −→(xn+1,uz       γ ′). Since γ1 = n
+    It is worth noting that the ‘‘while’’ loop in Algorithm 1 (Step 6)                                                                                                         ′                                                             and |P(uz)| ≤|P(uvz)| = |P(t)| = n, γ ≥1 holds;
+always terminates in finite iterations, although the complexity of                                                   P(uz)
+Algorithm 1 has a factor k. Moreover, in the next subsection, we      • from Eq. (8), we have dNS,1 −−→d′NS,n+1 where d′NS,n+1 = ∅.
+derive an upper bound for k by showing that a system is ∞-SSO                                                              Hence, for sequence suz ∈L(G), we have |P(uz)| ≤n−1, σ(x0, s) ∈
+if and only if it is (|X| · (2|X| −1))-SSO. Hence, the ‘‘while’’ loop in                                                                            XS, and for all sequences w ∈L(G) that satisfy P(w) = P(suz),
+Algorithm 1 will terminate in at most |X| · (2|X| −1) iterations.                                                                  there exists ¯w ⪯w with |w|−| ¯w| ≤n−1 such that σ(x0, ¯w) ∈XS.
+                                                                     Therefore, G is not (n −1)-SSO, which concludes the proof. □
+5.3. An upper bound of k in k-SSO
+                                                                 Corollary 5.1. Given a plant G = (X, E, δ, x0), a set of observable
+   In this subsection we show that for any k′ > k ≥|X|·(2|X|−1),     events Eo, and a set of secret states XS, G is ∞-SSO if and only if G
+k-SSO and k′-SSO are equivalent, which indicates that |X|·(2|X|−1)      is (|X| · (2|X| −1))-SSO.
+is an upper bound of delay k for k-SSO.
+                                                                   Proof. Directly from Theorem 5.2 and Proposition 3.1. □
+Theorem 5.2.  Given a plant G = (X, E, δ, x0), a set of observable
+events Eo, and a set of secret states XS, for k′ > k ≥|X| · (2|X| −1),   Remark 2.  At the end of this section we make the following
+plant G is k-SSO if and only if G is k′-SSO.                        comments. First, one may have noticed that the propagation rule
+                                                                        of flag ‘‘∞’’ in an ∞-SR is similar to the propagation rule of the
+Proof. By Proposition 3.1, G is k-SSO if G is k′-SSO. Hence, we     fault flag in a diagnoser automaton (Cassandras & Lafortune, 2008).
+only need to prove that G is k′-SSO if G is k-SSO. Without loss     In fact, since in ∞-SSO an intruder never forgets the visit of a
+of generality, we assume k′ = k + 1, since the proof can be     secret state, the secret states in an ∞-SSO problem can be viewed
+straightforwardly generalized to k′ > k + 1. In the following,    as state faults. The modeling power of state faults and event faults
+we prove that if G is not n-SSO, then G is not (n −1)-SSO by    are proved to be equivalent in automata (Kumar & Takai, 2010).
+contrapositive, where n ≥|X| · (2|X| −1) + 1. The roadmap is    However, the necessary and sufficient conditions of fault diagnos-
+illustrated in Fig. 4.                                                        ability (which is related to the existence of indeterminate cycles in
+   Suppose that G is not n-SSO. There necessarily exists a se-    diagnosers) and ∞-SSO property (the condition in Theorem 4.1)
+quence st ∈L(G) such that |P(t)| =  n, σ(x0, s) ∈XS and for    are completely different.
+all sequences w ∈L(G) that satisfy P(w) = P(st), there exists       Second, we note that the k-SR designed in Section 5 can be
+¯w ⪯w with |w|−|¯w| ≤n such that σ(x0, ¯w) ∈XS. Now consider    viewed as the conventional observer automaton (Cassandras &
+Gd,n = (D, E0, δn, d0,n) that is the n-SR of G. Let sequence t be     Lafortune, 2008) when k = 0. In fact, for all pairs (x, γ ) in all
+denoted as t = e1e2 · · · en where ei ∈E for i = 1, . . . , n. In Gd,n    macro-states in GD,0, flag γ = 0 (resp., γ = 1) if and only if x /∈XS
+there necessarily exists the following trajectory                         (resp., x ∈XS). Thus, a plant is current-state opacity if and only if
+                                                                  there exists a macro-state d in GD,0 such that all plant states in d
+     e1       e2       en−1       en
+d1 −→d2 −→· · · −−→dn −→dn+1                               (6)    are secret states.
+
+                                                                   6
+
+Z. Ma, X. Yin and Z. Li                                                                                                          Automatica 133 (2021) 109838
+
+
+
+
+
+                                       Fig. 3. The SRs for the automaton in Example 5.1: (a) ∞-SR, (b) 0-SR, (c) 1-SR, and (d) 2-SR.
+
+
+
+
+
+                                                                  Fig. 4. Illustration of the proof of Theorem 5.2.
+
+
+
+6. Strong opacity enforcement using supervisory control         Definition 6.2. Given a k-SR GD,k = (Dk, Eo, δk, d0), the k-leaking
+                                                                 language of Gd,k is defined as:
+   In this section we study the ∞-SSO and k-SSO enforcing prob-     LL(GD,k) = {σ ∈E∗o | δk(d0, σ) is a leaking state}.
+lem using supervisory control theory (Cassandras & Lafortune,
+2008; Ramadge & Wonham, 1989). We briefly recall some notions   Theorem 6.1.  Given a plant G = (X, E, δ, x0), a set of observable
+on supervisory control in automata. For a plant automaton G =     events Eo, a set of secret states XS, and a set of controllable events
+(X, E, δ, x0), the event set E is partitioned into two disjoint sub-     Ec ⊆  E, let GD  (resp., GD,k) be the corresponding ∞-SR (resp.,
+sets E = Ec∪Euc where Ec is the set of controllable events and Euc is    k-SR for a given k ∈N). A supervisor Sup that enforces a maximal
+the set of uncontrollable events. In Ramadge and Wonham (1989),     controllable and observable sublanguage of L(G)\ P−1[LL(GD)] (resp.
+the control objective, called a (language) specification, is defined     L(G) \ P−1[LL(GD,k)]) enforces ∞-SSO (resp. k-SSO).
+by a regular language K ⊆E∗. In partially observed systems
+(Eo ⊂E), a supervisor Sup can be viewed as a function Sup  :    Proof. We only prove the case for ∞-SSO by contrapositive. The
+P[L(G)] →2Ec such that the closed-loop language of Sup over    case for k-SSO can be analogously proved.
+                                           We prove by contrapositive that for any supervisor Sup such
+G (denoted as L(Sup/G)) is restricted within K. In plain words,
+                                                                     that L(Sup/G) ⊆L(G) \ P−1[LL(GD)], Sup/G is ∞-SSO. Suppose
+Sup runs in parallel with the plant such that for each observed                                                                     that Sup/G is not ∞-SSO. Following the argument ‘‘⇐’’ part of
+sequence w = P(s) ∈P[L(G)], Sup disables some controllable                                                                 the proof of Theorem 4.1, there necessarily exists a sequence
+events accordingly.                                                                                s ∈  L(Sup/G) such that P(s) ∈  P[LL(GD)], which indicates
+  Now we define the ∞-leaking language and the k-leaking lan-     that L(Sup/G) ⊈L(G) \ P−1[LL(GD)]. Hence, L(Sup/G) ⊆L(G) \
+guage as the following.                                             P−1[LL(GD)] implies that Sup/G is ∞-SSO. Then we can conclude
+                                                                     that a supervisor Sup that enforces a maximal controllable and
+Definition  6.1.  Given an ∞-SR GD =  (D, Eo, δ∞, d0), the    observable sublanguage of L(G)\P−1[LL(GD)] enforces ∞-SSO. □
+∞-leaking language of Gd is defined as:
+                                                                 Corollary  6.1.    Both the ∞-SSO enforcing problem and the
+LL(GD) = {σ ∈E∗o | δ∞(d0, σ) is a leaking state}.                    k-SSO enforcing problem can be reduced to the supervisory control
+
+                                                                   7
+
+Z. Ma, X. Yin and Z. Li                                                                                                          Automatica 133 (2021) 109838
+
+                                                      Acknowledgments
+
+
+                                                                       This work was supported in part  by  the National Natu-
+                                                                               ral Science Foundation of China under Grant Nos. 61873342,
+                                                           62061136004, 61803259, 61703321, Shaanxi Provincial Natu-
+                                                                               ral Science Foundation, China under Grant No. 2019JQ-022, the
+                                                           Fundamental Research Funds for the Central Universities, China
+                                                           under Grant Nos. JB210413, JB190407, and the Science and
+                    Fig. 5. The supervisor Sup∞in Example 6.1.                 Technology Development Fund, MSAR, China, under Grant No.
+                                                              0012/2019/A1.
+
+problem of G with language specification K = E∗\ P−1[LL(GD)] and    References
+K = E∗\ P−1[LL(GD,k)].
+                                                                                         Barcelos, R.  J., & Basilio,  J. C. (2018). Enforcing current-state opacity through
+Proof. This corollary directly follows from Theorem 6.1. □                shuffle in event observations. IFAC-PapersOnLine, 51(7), 100–105, 14th IFAC
+                                                                       Workshop on Discrete Event Systems WODES 2018.
+   As a result, we can enforce ∞-SSO and/or k-SSO for a plant      Behinaein, B., Lin, F., & Rudie, K. (2019). Optimal information release for mixed
+G by enforcing a specification K∞ = E∗\ P−1[LL(GD)] (for         opacity in discrete-event systems. IEEE Transactions on Automation Science
+∞-SSO) or Kk = E∗\ P−1[LL(GD,k)] (for k-SSO). Such languages        and Engineering, 16(4), 1960–1970.
+                                                                                    Bryans, J. W., Koutny, M., Mazaré, L., & Ryan, P. Y. (2008). Opacity generalised to
+K∞and Kk can be obtained by manipulating the ∞-SR or k-SR in          transition systems. International Journal of Information Security, 7(6), 421–435.
+polynomial complexity (Cassandras & Lafortune, 2008), since both      Cassandras, C. G., & Lafortune, S. (2008). Introduction to discrete event systems.
+∞-SR and k-SR are deterministic automata. Note that in partially          Springer.
+observed systems, there may not exist a unique maximally per-      Falcone, Y., & Marchand, H. (2015). Enforcement and validation (at runtime) of
+missive supervisor but several incomparable locally maximally         various notions of opacity. Discrete Event Dynamic Systems, 25, 531–570.
+solutions. Such locally maximally solutions can be obtained by     Hadj-Alouane, N. B., Lafortune, S., & Lin, F. (1996). Centralized and distributed
+using synthesis techniques in Hadj-Alouane, Lafortune, and Lin         algorithms for on-line synthesis of maximal control policies under partial
+                                                                                          observation. Discrete Event Dynamic Systems, 6(4), 379–427.
+(1996), Takai (2020), Ushio (1999) and Yin and Lafortune (2016).
+                                                                             Hu, Y., Ma, Z., & Li, Z. (2020). Design of supervisors for active diagnosis in discrete
+For the limit of space, we do not address this in detail.                                                                                  event systems. IEEE Transactions on Automatic Control, 65(12), 5159–5172.
+  On the other hand, if Ec ⊆Eo holds, then for both ∞-SSO          Ji, Y., Wu, Y.-C., & Lafortune, S. (2018). Enforcement of opacity by public and
+and k-SSO there exists a unique maximally permissive supervisor          private insertion functions. Automatica, 93(7), 369–378.
+Sup: it recognizes the supremal normal sublanguage of K∞or Kk          Ji, Y., Yin, X., & Lafortune, S. (2019). Enforcing opacity by insertion functions
+with respect to L(G) (Cassandras & Lafortune, 2008). Therefore, a        under multiple energy constraints. Automatica, 108, Article 108476.
+supervisor can be easily obtained by removing from GD or GD,k all          Ji, Y., Yin, X., & Lafortune, S. (2019). Opacity enforcement using nondeterministic
+leaking states and those states from which there exists a path to          publicly known edit functions. IEEE Transactions on Automatic Control, 64(10),
+                                                                              4369–4376.
+some leaking state(s) labeled by uncontrollable events.
+                                                                         Kumar, R., & Takai, S. (2010). Decentralized prognosis of failures in discrete event
+                                                                                      systems. IEEE Transactions on Automatic Control, 55(1), 48–59.
+Example 6.1.  Again consider the automaton G and the corre-      Lafortune, S., Lin, F., & Hadjicostis, C. N. (2018). On the history of diagnosabil-
+sponding ∞-SR GD in Fig. 1 in which Eo = {a, b, c}, Euo = {u},           ity and opacity in discrete event systems. Annual Reviews in Control, 45,
+and the secret set XS = {x1}. Now, let us assume Ec = {a, b}.        257–266.
+Since Ec ⊂Eo, a maximally permissive supervisor can be obtained      Lan,  H., Tong,  Y., &  Seatzu,  C. (2020).  Verification  of  infinite-step opacity
+by introducing state specification DF =  {d5, d6}. By applying         using labeled Petri nets. In Proceedings  of the 21st IFAC World Congress
+                                                                                              (pp. 1729–1734).
+a standard trimming procedure we obtain the supervisor Sup∞       Lin, F. (2011). Opacity of discrete event systems and its applications. Automatica,
+depicted in Fig. 5. This supervisor disables event b whenever          47(3), 496–503.
+observing ab(ab)n such that the closed-loop system is ∞-SSO     Ma, Z., Tong, Y., Li, Z., & Giua, A. (2017). Basis marking representation of Petri
+with respect to XS.                                                               net reachability spaces and its application to the reachability problem. IEEE
+                                                                                           Transactions on Automatic Control, 62(3), 1078–1093.
+Remark 3.  Besides supervisory control, other opacity enforce-     Mohajerani,  S.,  Ji,  Y., & Lafortune,  S. (2019). Compositional and abstraction-
+ment approaches such as event edition (Ji et al., 2018, 2019; Ji        based approach for synthesis of edit functions for opacity enforcement. IEEE
+                                                                                           Transactions on Automatic Control, 65(8), 3349–3364.
+et al., 2019; Mohajerani et al., 2019; Wu & Lafortune, 2014; Yin                                                                        Ramadge, P. J., & Wonham, W. M. (1989). The control of discrete event systems.
+& Li, 2020) may also be applied to enforce ∞-SSO and k-SSO.         Proceedings of IEEE, 77(1), 81–98.
+However, event edition requires to intrusively revise the plant      Saboori, A., & Hadjicostis, C. N. (2008). Verification of initial-state opacity in
+structure by physically modifying the observation structure or          security applications of DES. In Proceedings of the 9th international workshop
+the output information (by implementing new sensors and/or        on discrete event systems (pp. 328–333).
+communication protocols), which may not be possible in some      Saboori, A., & Hadjicostis, C. N. (2011). Verification of K-step opacity and analysis
+cases.                                                                                       of its complexity. IEEE Transactions on Automation Science and Engineering,
+                                                                                                     8(3), 549–559.
+                                                                                        Saboori, A., & Hadjicostis, C. N. (2012). Opacity-enforcing supervisory strategies
+7. Conclusions
+                                                                                             via state estimator constructions. IEEE Transactions on Automatic Control,
+                                                                                                57(5), 1155–1165.
+   In this paper, we have developed a method to verify strong      Takai, S. (2020). Synthesis of maximally permissive supervisors for nondeter-
+infinite-step opacity and k-step opacity using ∞-step recognizer          ministic discrete event systems with nondeterministic specifications. IEEE
+and k-step recognizer, respectively. The complexities of our algo-          Transactions on Automatic Control, 66(7), 3197–3204.
+rithms are O(22·|X|·|Eo|) and O(2(k+2)·|X|·|Eo|), respectively, that are     Tong, Y., & Lan, H. (2019). Current-state opacity verification in modular discrete
+lower than that of previously-proposed methods in the literature.         event systems. In Proceedings of the 2019 IEEE international conference on
+We have also proposed an upper bound for the value of k in          decision and control (pp. 7665–7670).
+                                                                                 Tong, Y., Li, Z. W., Seatzu, C., & Giua, A. (2017). Verification of state-based opacity
+strong k-step opacity. The enforcement of both strong infinite-                                                                                     using Petri nets. IEEE Transactions on Automatic Control, 62(6), 2823–2837.
+and k-step opacity can be solved using supervisory control. In the     Tong, Y., Li, Z. W., Seatzu, C., & Giua, A. (2018). Current-state opacity enforcement
+future, we will combine this approach with Hu, Ma, and Li (2020)          in discrete event systems under incomparable observations. Discrete Event
+to explore the synthesis of SSO enforcing live supervisors.               Dynamic Systems, 28(2), 161–182.
+
+                                                                   8
+
+Z. Ma, X. Yin and Z. Li                                                                                                          Automatica 133 (2021) 109838
+
+
+Ushio, T. (1999). On-line control of discrete event systems with a maximally                          Xiang Yin was born in Anhui, China, in 1991. He
+    controllable and observable sublanguage. IEICE Transactions on Fundamentals                              received the B.Eng. degree from Zhejiang University in
+    of Electronics, Communications and Computer Sciences, 82(9), 1965–1970.                                2012, the M.S. degree from the University of Michigan,
+Wu, Y.-C., & Lafortune, S. (2013). Comparative analysis of related notions of                       Ann Arbor, in 2013, and the Ph.D. degree from the
+    opacity in centralized and coordinated architectures. Discrete Event Dynamic                               University  of Michigan, Ann Arbor,  in 2017,  all  in
+    Systems, 23(3), 307–339.                                                                                             electrical engineering. Since 2017, he has been with
+Wu, Y.-C., & Lafortune, S. (2014). Synthesis of insertion functions for enforcement                             the Department  of Automation, Shanghai  Jiao Tong
+    of opacity security properties. Automatica, 50(5), 1336–1348.                                                University, where he  is an Associate  Professor. His
+Yin, X., & Lafortune, S. (2016). A uniform approach for synthesizing property-                              research interests include formal methods, discrete-
+    enforcing supervisors  for partially-observed discrete-event systems. IEEE                            event systems, and cyber–physical systems.
+                                                                                                                       Dr. Yin is serving as the co-chair of the IEEE CSS    Transactions on Automatic Control, 61(8), 2140–2154.
+                                                                                        Technical Committee on Discrete Event Systems, an Associate Editor for the Journal
+Yin, X., & Lafortune, S. (2017). A new approach for the verification of infinite-step
+                                                                                                 of Discrete Event Dynamic Systems: Theory & Applications, and a member of the
+   and K-step opacity using two-way observers. Automatica, 80, 162–171.
+                                                                                     IEEE CSS Conference Editorial Board. Dr. Yin received the IEEE Conference on
+Yin, X., & Li, S. (2020). Synthesis of dynamic masks for infinite-step opacity. IEEE
+                                                                                  Decision and Control (CDC) Best Student Paper Award Finalist in 2016. He is
+    Transactions on Automatic Control, 65(4), 1429–1441.
+                                                                                 the co-chair of the IEEE CSS Technical Committee on Discrete Event Systems.
+
+
+
+                      Ziyue Ma received the B.S. degree and the M.S. de-                        Zhiwu Li received the  B.S., M.S., and Ph.D. degrees
+                        gree from Peking University, China, in 2007 and 2011,                          from Xidian University in 1989, 1992, and 1995, re-
+                           respectively. In 2017 he got the Ph.D degree in co-                                 spectively. He joined Xidian University in 1992. His
+                         tutorship between the School  of Electro-Mechanical                                 interests include discrete event systems and Petri nets.
+                        Engineering of Xidian University, China (in Mechatronic                       He published two monographs in Springer and CRC
+                         Engineering), and the Department  of  Electrical and                              Press and 150+ papers in Automatica and IEEE Trans-
+                          Electronic Engineering of University of Cagliari, Italy                               actions (mostly regular). He was a Visiting Professor
+                            (in Electronics and Computer Engineering). He joined                                 at the University of Toronto, Technion (Israel Institute
+                        Xidian University in 2011, where he  is currently an                                of Technology), Martin-Luther University, Conservatoire
+                         Associate Professor in the School of Electro-Mechanical                              National des Arts et Métiers (Cnam), Meliksah Univer-
+                         Engineering.  His  research  interests  include  control                                       sitesi, and King Saud University. His work was cited by
+theory  in  discrete event systems, automaton and  Petri net  theories,  fault     engineers and researchers from more than 50 countries and areas, including
+diagnosis/prognosis, resource optimization, and information security.                 prestigious R&D institutes such as IBM, Volvo, HP, GE, GM, ABB, and Huawei.
+    Dr. Ma is a member of Technical Committee Member of IEEE Control System     Now, he is also with the Institute of Systems Engineering, Macau University of
+Society (IEEE-CSS) on Discrete Event Systems. He is serving/has served as the      Science and Technology, Taipa, Macau.
+Associate Editor of the IEEE Conference on Automation Science and Engineering          Dr. Li serves (served) an Associate Editor of the IEEE Trans. Automation
+(CASE’17-’21), European Control Conference (ECC’19–’21), and IEEE International      Science and Engineering, IEEE Trans. Systems, Man, and Cybernetics, Part A:
+Conference on Systems, Man, and Cybernetics (SMC’19–’21). He is/was the Track     Systems and Human Beings, IEEE Trans. Systems, Man, and Cybernetics: Systems,
+Committee Member of the International Conference on Emerging Technologies     IEEE Access (also a Senior Editor), Scientific Reports, and Information Sciences
+and Factory Automation (ETFA’17–’21).                                                     (Elsevier). He  is a recipient of Alexander von Humboldt Research Grant and
+                                                                               Research in Paris.
+
+
+
+
+
+                                                                   9

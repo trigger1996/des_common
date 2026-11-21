@@ -1,0 +1,619 @@
+5116                                          IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 12, DECEMBER 2019
+
+
+    Opacity of Nondeterministic Transition Systems: A (Bi)Simulation
+                          Relation Approach
+
+                 Kuize Zhang    , Senior Member, IEEE, Xiang Yin    , Member, IEEE,
+                         and Majid Zamani    , Senior Member, IEEE
+
+
+  Abstract—In this paper, we propose several opacity-preserving    (resp., the current state, each state within K steps prior to the current
+(bi)simulation relations for nondeterministic transition systems    state for some positive integer K, each state prior to the current state)
+(NTSs)  in terms of  initial-state  opacity,  current-state  opacity,                                                                      of the system is secret, i.e., the so-called initial-state [13] (resp. current-
+K-step opacity, and inﬁnite-step opacity. We also show how one
+                                                                                state [10], K-step [11], and inﬁnite-step [12]) opacity. It is known thatcan leverage quotient constructions to compute such relations. As
+a result, although the opacity veriﬁcation problem for inﬁnite NTSs   the existing algorithms for verifying these types of opacity have expo-
+is generally undecidable, if one can ﬁnd such an opacity-preserving   nential time complexity (cf., the above-mentioned references and [19]).
+relation from an inﬁnite NTS to a ﬁnite one, the (lack of) opacity of   Unfortunately, it is unlikely that there exist polynomial time algorithms
+the inﬁnite NTS can be easily veriﬁed over the ﬁnite one, which is   for verifying them since the problems of determining initial-state opac-
+decidable.                                                                                 ity, K-step opacity, and inﬁnite-step opacity of DESs are all PSPACE
+  Index Terms—(Bi)simulation relation, nondeterministic transi-   complete [10]–[13]. When the original system is not opaque, several
+tion system, opacity.                                                      different approaches have also been proposed to enforce opacity (see,
+                                                                                       e.g., [5], [15], [16], [18], [21]).
+                                                                      Nondeterministic transition systems (NTSs), particularly nondeter-
+                                     I. INTRODUCTION                             ministic ﬁnite transition systems (NFTSs), play a fundamental role as
+                                                                  a uniﬁed modeling framework in the veriﬁcation and controller syn-
+  The notion of opacity is introduced in the analysis of cryptographic
+                                                                             thesis of hybrid systems [6], [14], and model checking [1]. Note that
+protocols [9], and describes the ability that a system forbids leaking
+                                                                           for general inﬁnite-state NTSs, the opacity veriﬁcation problem is un-
+secret information. Given a system, we assume that an intruder (outside
+                                                                     decidable [2], e.g., the initial-state opacity and current-state opacity
+the system) can only observe the external behaviors of the system, i.e.,
+                                                                           for labeled Petri nets are undecidable [17]. Recently, opacity has also
+the outputs of the system, but cannot see the states of the system
+                                                              been investigated for other inﬁnite-state systems, e.g., pushdown sys-
+directly. Then, intuitively the system is called opaque if the intruder
+                                                              tems [7] and recursive tile systems [3], where classes of inﬁnite-state
+cannot determine whether some states of the system prior to the current
+                                                                 systems are identiﬁed for which opacity is decidable. However, for
+time step are secret via observing the outputs prior to the current time
+                                                                            ﬁnite-state systems, e.g., ﬁnite automata, though PSPACE-hard, the
+step.
+                                                                      opacity veriﬁcation problem is always decidable [10]–[13].
+  For discrete-event systems (DESs) in the framework of ﬁnite au-
+                                                                    Since the opacity veriﬁcation problem for general NTSs is undecid-
+tomata, the opacity problem has been widely investigated. In different
+                                                                      able and even for NFTSs is PSPACE-hard, in this paper we develop
+practical situations, opacity of DESs can be formulated as whether a
+                                                                  a theory based on (bi)simulation relations to verify opacity using (po-
+system can prevent an intruder from observing whether the initial state
+                                                                                 tentially simpler) NFTSs. Since the classical notions of (bi)simulation
+                                                                             relations [14] do not necessarily preserve opacity, in this framework
+  Manuscript received February 9, 2018; revised February 12, 2018,  we ﬁrst introduce stronger versions of (bi)simulation relations that pre-
+August 26, 2018, and December 4, 2018; accepted March 24, 2019.   serve opacity. As a result, if one can ﬁnd an NFTS (bi)simulating an
+Date of publication April 2, 2019; date of current version December 3,   inﬁnite-state NTS in the sense of the stronger version, then the opacity
+2019. This work was supported in part by the German Research Foun-                                                                      of the NTS (undecidable in general) can be veriﬁed over the NFTS
+dation through Grant ZA 873/1-1, the National Natural Science Foun-
+                                                                          (decidable). In addition, if one can ﬁnd a smaller NFTS (bi)simulatingdation of China under Grant 61803259, Grant 61833012, and Grant
+61603109, and the Natural Science Foundation of Heilongjiang Province   a larger NFTS in the sense of the stronger version, then the opacity
+of China under Grant LC2016023. This paper (results in sections III-D   of the larger NFTS can be efﬁciently veriﬁed over the smaller one.
+and III-E) was presented in part at the 56th IEEE Conference on De-    Particularly, we modify the existing quotient-based construction [14]
+cision and Control, Melbourne, Australia, December 12–15, 2017. Rec-   to synthesize quotient systems of NTSs (resp. NFTSs) in terms of the
+ommended by Associate Editor Carla Seatzu. (Corresponding author:   proposed opacity-preserving (bi)simulation relations to implement the
+Kuize Zhang.)                                                                above-mentioned idea.
+  K. Zhang is with the ACCESS Linnaeus Center, School of Electri-
+                                                                                     Intuitively, for two NTSs Σ1 and Σ2, Σ2 simulates Σ1 if each outputcal Engineering, KTH Royal Institute of Technology, Stockholm 10044,
+Sweden, and also with the College of Automation, Harbin Engineering   sequence generated by Σ1 can also be generated by Σ2; Σ2 bisimulates
+University, Harbin 150001, China (e-mail:,kuzhan@kth.se).           Σ1 if Σ2 simulates Σ1 and vice versa (cf., [14]). Usually, (bi)simulation
+  X. Yin is with the Department of Automation and Key Laboratory of   relation can be used to abstract a large-scale system to a smaller one.
+System Control and Information Processing, Shanghai Jiao Tong Uni-   Then, in some sense the smaller system can take place of the larger
+versity, Shanghai 200240, China (e-mail:,yinxiang@sjtu.edu.cn).        one in analysis and synthesis (cf., [4], [14], [20]). In this paper, we
+  M. Zamani is with the Computer Science Department, University of                                                                           ﬁrst deﬁne new notions of opacity-preserving (bi)simulation relations,
+Colorado Boulder, Boulder, CO 80309, USA, and also with the Depart-
+                                                                    then we use the proposed notions to give some necessary and sufﬁ-ment of Computer Science, Ludwig Maximilian University of Munich,
+Munich 80539, Germany (e-mail:,majid.zamani@colorado.edu).           cient conditions for the opacity of NTSs. Hence, if one can ﬁnd an
+  Color versions of one or more of the ﬁgures in this paper are available   appropriate opacity-preserving (bi)simulation relation from the origi-
+online at http://ieeexplore.ieee.org.                                       nal inﬁnite-state NTS Σ1 to an NFTS Σ2 (resp. from the original NFTS
+   Digital Object Identiﬁer 10.1109/TAC.2019.2908726               Σ1 to an NFTS Σ2 with remarkably smaller size than that of Σ1), then
+
+
+
+               0018-9286 © 2019 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                  See http://www.ieee.org/publications standards/publications/rights/index.html for more information.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 12, DECEMBER 2019                                                         5117
+
+
+
+the opacity of Σ1 can be checked (resp. much faster) by verifying that
+of Σ2. In details, we ﬁrst deﬁne a new notion of initial-state opacity-
+preserving (InitSOP) simulation relation from one NTS to another NTS,
+which is actually not the classical simulation relation [14]. Second,
+because the InitSOP simulation relation does not sufﬁce to preserve
+the other three types of opacity, we deﬁne also a notion of inﬁnite-
+step opacity-preserving (InfSOP) bisimulation relation that preserves
+the other three types of opacity and is actually a stronger version of
+the classical bisimulation relation [14]. In addition, we show that un-
+der some mild assumptions, the simulation/bisimulation relation from
+an NTS to its quotient system becomes InitSOP simulation/InfSOP    Fig. 1.   State transition diagram of the NFTS in Example 2.1.
+bisimulation relation, which provides a constructive scheme for com-
+puting opacity-preserving abstractions of NTSs or large NFTSs. A
+preliminary investigation of our results on only InfSOP bisimulation
+relation appeared in [23]. In this paper, we present a detailed and                                                                        the termination of running can be observed, and use a new state
+mature description of the results announced in [23], including investi-                                                 φ to denote  it. In order to describe this phenomenon, we extend a
+gating other notions of opacity (initial-state, current-state, and K-step                                                                        nontotal NTS Σ = (X, X0, S, U, →, Y, h) to a total NTS Σaug :=
+opacity).                                                (X ∪{φ}, X0, S, U, →aug, Y ∪{φ}, haug) as its augmented system,
+  The  remainder  of  this  paper  is  organized  as  follows.  In                                                            where φ /∈X ∪U ∪Y , →⊆→aug, →aug \ →= {(φ, u, φ)|u ∈U} ∪
+Section II, the basic notions of NTSs/NFTSs and (bi)simulation re-                                                                   {(x, u, φ)|(x, u, x′) /∈→for any x′ ∈X}, haug|X = h (i.e., the re-
+lation are introduced. In Section III, we show the main results of the                                                                                 striction of haug to X equals h), and haug(φ) = φ. Particularly, for a
+paper, i.e, the notions of opacity-preserving (bi)simulation relations,                                                                                  total NTS, its augmented system, also denoted by Σaug, is the NTS
+and their implementation based on quotient systems. Section IV shows                                                                                           itself.
+how to use a two-way observer technique [19] to verify the opacity of                                                  An NTS can be represented by its state transition diagram, i.e.,
+NFTSs. Section V concludes the paper.                                                                  a directed graph whose vertices correspond to the states and their
+                                                                       associated outputs of the NTS and whose edges correspond to state
+                                    II. PRELIMINARIES                               transitions. Each edge is labeled with the inputs associated with the
+                                                                                transition, a state directly connected from “start” means an initial state,  We use the following notations throughout the paper:
+                                                             and a double circle (or rectangle) denotes a secret state. We give an 1) ∅: the empty set;
+                                                             example to depict these concepts. 2) N: the set of natural numbers;
+                                                             Example 2.1: Consider NFTS (X, X0, S, U, →, Y, h), where X =
+ 3) R: the set of real numbers;
+                                                                   {a, b, c},  X0 = X, S = {b}, U = Y = {0, 1}, →= {(a, 1, a),
+ 4) [a, b] := {a, a + 1, . . . , b}, where a, b ∈N, a ≤b;                                                                        (a, 0, b), (a, 0, c), (b, 0, b), (b, 1, b), (c, 0, c), (c, 1, b)}, h(a) = 0,
+ 5) |X|: the cardinality of set X.                                                                h(b) = h(c) = 1 (see Fig. 1).
+  NTSs are deﬁned as in [8] and[14] with some modiﬁcations to ac-                                                                     Here, we recall the classical notions of (bi)simulation relations (see
+commodate for secret states.                                                                           for example, [14]).
+   Deﬁnition 1: An NTS Σ is a septuple (X, X0, S, U, →, Y, h) con-                                                                     Deﬁnition 2 (Simulation): Consider two NTSs Σi = (Xi, Xi,0,
+sisting of the following:                                                                      Si, Ui, →i, Y, hi), i = 1, 2. A relation ∼⊆X1 × X2 is called a simu-
+ 1) a (potentially inﬁnite) set X of states;                                 lation relation from Σ1 to Σ2 if the following condition holds:
+ 2) a (potentially inﬁnite) subset X0 ⊆X of initial states;               1) for  every  x1,0 ∈X1,0,  there  exists  x2,0 ∈X2,0  such  that
+ 3) a (potentially inﬁnite) subset S ⊆X of secret states;                     (x1,0, x2,0) ∈∼;
+ 4) a (potentially inﬁnite) set U of inputs;                               2) for every (x1, x2) ∈∼, h1(x1) = h2(x2);
+ 5) a transition relation →⊆X × U × X;                                                                                      u 1                                                                       3) for every (x1, x2) ∈∼, if there is a transition x1 −→1 x′1 in Σ1 then
+ 6) a set Y of outputs;                                                                                      u 2
+                                                                              there exists a transition x2 −→2 x′2 in Σ2 satisfying (x′1, x′2) ∈∼. 7) an output map h : X →Y .
+                                                             Under a simulation relation ∼⊆X1 × X2 from Σ1 to Σ2, we say
+  In an NTS, for a state x ∈X, the output h(x) also means the observa-
+                                                       Σ2 simulates Σ1, and denote it by Σ1 ⪯S Σ2.
+tion at x. An NTS is called an NFTS if X and U are ﬁnite sets. Elements
+                                                                     Deﬁnition 3 (Bisimulation): Consider two NTSs Σi = (Xi, Xi,0,
+of →are called transitions. Let X∗be the set of strings of ﬁnite length
+                                                                      Si, Ui, →i, Y, hi), i = 1, 2. A relation ∼⊆X1 × X2 is called a bisim-
+over X including the string ϵ of length 0 and X+ be X∗\ {ϵ}. For each
+                                                                          ulation relation between Σ1 and Σ2 if the following condition holds:
+ξ ∈X∗, |ξ| denotes the length of ξ. For each ξ ∈X∗, for all integers
+                                                                       1) for every,
+0 ≤i ≤j ≤|ξ| −1, we use ξ[i, j] to denote ξ(i)ξ(i + 1) . . . ξ(j) for
+             +         +                                                   a) x1,0 ∈X1,0, there  exists x2,0 ∈X2,0  such  that (x1,0,short. Sets U ∗, U   , Y ∗, and Y   are deﬁned analogously. Given an in-
+put sequence α ∈U ∗, a string ξ ∈X∗is called a run over α if |ξ| −1 ≤              x2,0) ∈∼;
+|α|, ξ(0) ∈X0, and for all i ∈[0, |ξ| −2], (ξ(i), α(i), ξ(i + 1)) ∈→.           b) x2,0 ∈X2,0, there  exists x1,0 ∈X1,0  such  that (x1,0,
+Particularly, a run ξ ∈X∗over input sequence α ∈U ∗is said to be              x2,0) ∈∼;
+maximal if either |ξ| −1 = |α| or (ξ(|ξ| −1), α(|ξ| −1), x′) /∈→for    2) for every (x1, x2) ∈∼, h1(x1) = h2(x2);
+any x′ ∈X. For a run ξ, h(ξ(0)) . . . h(ξ(|ξ| −1)) is called an out-    3) for every (x1, x2) ∈∼,
+put sequence generated by the system. Transitions generated by α and            a)  if there exists a transition x1 −→1u 1   x′1 in Σ1 then there exists
+                         α (0)                                    α (1)                                            α (|ξ |−2)
+                      −−→·                                                                · · −−−−−→ξ(|ξ|                                       −1) (or             a transition x2 −→2ξ can be denoted as ξ(0) −−→ξ(1)                                                                                                         u 2   x′2 in Σ2 satisfying (x′1, x′2) ∈∼;
+ξ(0) α−→ξ(|ξ| −1) for short). A state x ∈X is called reachable from           b)  if there exists a transition x2 −→2u 2   x′2 in Σ2 then there exists
+                                                                                                         u 1
+an initial state x0 ∈X0 if there exists α ∈U ∗such that x0 α−→x. An             a transition x1 −→1 x′1 in Σ1 satisfying (x′1, x′2) ∈∼.
+NTS is called total if for all x ∈X and u ∈U, there exists x′ ∈X     Under a bisimulation relation ∼⊆X1 × X2 between Σ1 and Σ2,
+such that (x, u, x′) ∈→. Hence, after a total NTS starts running, it  we say Σ2 bisimulates Σ1 and vice versa, and denote it by Σ1 ∼=S Σ2.
+never stops. However, for a nontotal NTS, after it starts running, it    From Deﬁnitions 2 and 3, one can readily see that if Σ2 simulates
+may stop; and once  it stops,  it never starts again. We assume that  Σ1 then each output sequence generated by Σ1 can be generated by
+
+5118                                                       IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 12, DECEMBER 2019
+
+
+
+Σ2 as well; and if Σ2 bisimulates Σ1 then the set of output sequences
+generated by Σ1 coincides with that generated by Σ2.
+  Here, we recall notions of quotient relations and quotient systems
+[14] with some modiﬁcations, which will be used later to show one of
+the main results of the paper.
+   Deﬁnition 4 (Quotient system): Let Σ = (X, X0, S, U, →, Y, h)
+be an NTS and ∼⊆X × X an equivalence relation on X satisfy-
+ing h(x) = h(x′) for all (x, x′) ∈∼. The quotient system of Σ by ∼,
+denoted by Σ∼, is deﬁned as the system Σ∼=(X∼, X∼,0, S∼, U, →∼,
+Y, h∼) satisfying the following:
+ 1) X∼= X/ ∼= {[x]|x ∈X};
+ 2) X∼,0 = {[x]|x ∈X, [x] ∩X0̸ = ∅} = {[x]|x ∈X0};                Fig. 2.   State transition diagrams of two NFTSs in the proof of Proposi-
+ 3) S∼= {[x]|x ∈X, [x] ∩S̸ = ∅} = {[x]|x ∈S};                       tion 3.1.
+ 4) for all [x], [x′] ∈X∼and u ∈U, there exists transition [x] u−→∼[x′]
+    in Σ∼if and only if there exists transition ¯x u−→¯x′ in Σ for some
+      ¯x ∈[x] and ¯x′ ∈[x′];
+ 5) h∼([x]) = h(¯x) for every ¯x ∈[x];                                  Deﬁnition 8 (InfSO): Let Σ = (X, X0, S, U, →, Y, h) be an NTS.
+  where for every x ∈X, [x] denotes the equivalence class generated   System Σ is said to be inﬁnite-step opaque if for every x0 ∈X0,
+by x, i.e., [x] := {x′ ∈X|(x′, x) ∈∼}.                               every α ∈U ∗, every maximal run x0 . . . xk ∈X∗over α with k ≤
+   It can be seen that for all x, x′ ∈X, 1) either [x] = [x′] or [x] ∩    |α|, and every i ∈[0, k], if xi ∈S then there exists a maximal run
+[x′] = ∅; 2) x ∈[x′] if and only if [x] = [x′]. Then, the set of all distinct   x′0 . . . x′k ∈X∗also over α such that x′i /∈S, and h(xj ) = h(x′j ) for
+equivalence classes corresponding to ∼partitions X. Note that in [14],   every j ∈[0, k].
+there is no item for S∼, since the system Σ considered in [14] does       Intuitively, if a system Σ is inﬁnite (resp. K)-step opaque, then the
+not have secret states. From Deﬁnition 4, one can easily verify that the   intruder cannot make sure whether any state (within K steps) prior to
+number of states in the quotient system Σ∼is less than or equal to that   the current state is secret.
+in Σ.                                                                                             It is readily seen that an NTS Σ is initial-state (resp. current-state, K-
+  Consider an NTS Σ = (X, X0, S, U, →, Y, h) and its quotient sys-    step, inﬁnite-step) opaque if and only if its augmented system Σaug is
+tem Σ∼= (X∼, X∼,0, S∼, U, →∼, Y, h∼) deﬁned by an equivalence    initial-state (resp. current-state, K-step, inﬁnite-step) opaque. Hence,
+relation ∼⊆X × X satisfying h(x) = h(x′) for all (x, x′) ∈∼. By   without loss of generality, we can consider only total NTSs in what
+deﬁning a quotient relation                                              follows.
+
+           ∼Q:= {(x, [x])|x ∈X} ⊆X × X∼              (1)
+                                                               B. InitSOP (bi)Simulation Relations
+the following result, borrowed from [14], holds.
+   Proposition 2.2: Consider an NTS Σ = (X, X0, S, U, →, Y, h)      In this section, we characterize the InitSOP simulation relation.
+and its quotient system Σ∼= (X∼, X∼,0, S∼, U, →∼, Y, h∼) deﬁned    One of the main goals of this section is to provide a simulation-based
+by an equivalence relation ∼⊆X × X satisfying h(x) = h(x′) for all   method for verifying the initial-state opacity of NTSs. Particularly, for
+(x, x′) ∈∼. Under quotient relation ∼Q deﬁned in (1), Σ∼simulates   two NTSs Σ1 and Σ2, we are interested in providing a new notion of
+Σ. Moreover, Σ∼bisimulates Σ under ∼Q if and only if Σ bisimulates   simulation relation such that Σ2 simulating Σ1 implies that if Σ1 is
+Σ under ∼.                                                                        initial-state opaque then Σ2 is also initial-state opaque. In other words,
+                                                                      lack of opacity in Σ2 implies lack of opacity in Σ1. Hence, the central  In the sequel, with these preliminaries, we present our main results.
+                                                              problem is whether the classical simulation relation preserves initial-
+                                                                                state opacity. We next show that generally the classical simulation
+          III. OPACITY-PRESERVING (BI)SIMULATION RELATIONS
+                                                                             relation does not preserve initial-state opacity.
+A. Concepts of Opacity                                               Proposition 3.1: The simulation relation (cf., Deﬁnition 2) does not
+                                                                      preserve initial-state opacity.
+  In this section, we formulate the notions of opacity of NTSs.                                                                        Proof: We provide a counterexample to prove the statement. Con-
+   Deﬁnition 5 (InitSO): Let Σ = (X, X0, S, U, →, Y, h) be an NTS.   sider two NFTSs Σi = (Xi, Xi,0, Si, U, →i, Y, hi), i = 1, 2, shown in
+System Σ is said to be initial-state opaque if for every x0 ∈X0 ∩S,   Fig. 2, where X1 = {1′, 2′, 3′, 4′} = X1,0, S1 = {1′}, X2 = {1, 2} =
+every α ∈U ∗, and every maximal run x0 . . . xk ∈X∗over α with                                                                  X2,0, S2 = {1} = U, Y = {1, 2}.
+k ≤|α|, there exists a maximal run x′0 . . . x′k ∈X∗also over α such    By Deﬁnition 5, system Σ1 is initial-state opaque, because for input
+that x′0 /∈S, and h(xj ) = h(x′j ) for every j ∈[0, k].                  sequence α := 1 . . . 1 ∈U ∗, for run x1 := 1′2′3′ . . . over α, there is
+   Intuitively, if a system Σ is initial-state opaque, then the intruder                                                                  a unique run x2 := 3′4′1′ . . . over α such that they produce the same
+cannot make sure whether the initial state is secret or not.                                                                     output sequence 121 . . . , where 1′ ∈X1,0 ∩S1 and 3′ ∈X1,0 \ S1
+   Deﬁnition 6 (CSO): Let Σ = (X, X0, S, U, →, Y, h) be an NTS.   are initial states. Again by Deﬁnition 5, system Σ2  is not initial-
+System Σ is said to be current-state opaque if for every x0 ∈X0,    state opaque, because for secret state 1, there exists no other state
+every α ∈U ∗, and every run x0 . . . x|α | ∈X∗over α, if x|α | ∈S then   producing the same output as 1. On the other hand, it can be read-
+there exists a run x′0 . . . x′|α | ∈X∗also over α such that x′|α | /∈S, and    ily veriﬁed that under relation ∼= {(1′, 1), (2′, 2), (3′, 1), (4′, 2)}, Σ2
+h(xj ) = h(x′j ) for every j ∈[0, |α|].                                  simulates Σ1. Hence, simulation relation does not preserve initial-
+   Intuitively, if a system Σ is current-state opaque, then the intruder    state opacity. Similarly, one can readily show that relation ∼−1=
+cannot make sure whether the current state is secret.                    {(1, 1′), (2, 2′), (1, 3′), (2, 4′)} is a simulation relation from Σ2 to Σ1.
+   Deﬁnition 7 (KSO): Let Σ = (X, X0, S, U, →, Y, h) be an NTS.   Hence, the simulation relation does not preserve the lack of initial-state
+System Σ is said to be K-step opaque for a given positive integer K if   opacity either.                            ■
+for every x0 ∈X0, every α ∈U ∗, every run x0 . . . x|α | ∈X∗over α,     Since the simulation relation does not preserve (lack of) initial-state
+and every i ∈[K′, |α|], if xi ∈S then there exists a run x′0 . . . x′|α | ∈   opacity, we propose a variant of this notion to make it InitSOP.
+X∗also over α such that x′i /∈S, and h(xj ) = h(x′j ) for every j ∈      Deﬁnition 9 (InitSOP simulation relation): Consider  two  NTSs
+[0, |α|], where K′ = max{0, |α| −K}.                           Σi = (Xi, Xi,0, Si, U, →i, Y, hi), i = 1, 2. A relation ∼⊆X1 × X2
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 12, DECEMBER 2019                                                         5119
+
+
+
+is called an IntiSOP simulation relation from Σ1 to Σ2 if the following
+condition holds:
+ 1) for all,
+        a) x1,0 ∈X1,0 \ S1, there exists x2,0 ∈X2,0 \ S2 such that
+           (x1,0, x2,0) ∈∼;
+        b) x2,0 ∈X2,0 ∩S2, there exists x1,0 ∈X1,0 ∩S1 such that
+           (x1,0, x2,0) ∈∼;
+ 2) for every (x1, x2) ∈∼, h1(x1) = h2(x2);
+ 3) for every (x1, x2) ∈∼,
+        a) for every transition x1 u−→1 x′1, there exists transition x2 u−→2
+            x′2 such that (x′1, x′2) ∈∼;
+        b) for every transition x2 u−→2 x′2, there exists transition x1 u−→1
+            x′1 such that (x′1, x′2) ∈∼.
+  Note that 1) of Deﬁnition 9 and 1) of Deﬁnition 2 are not comparable.
+Hence, Deﬁnition 9 is not the classical simulation relation. Note also
+that 3) of Deﬁnition 9 is stronger than 3) of Deﬁnition 2. Though
+stronger, 3) of Deﬁnition 9 is somehow necessary for preserving initial-
+state opacity.
+   Theorem 3.2: Consider  two  NTSs  Σi = (Xi, Xi,0, Si, U, →i
+, Y, hi), i = 1, 2. Assume that there exists an InitSOP simulation re-
+lation ∼⊆X1 × X2 from Σ1 to Σ2. If Σ1 is initial-state opaque then
+Σ2 is also initial-state opaque.                                                                               Fig. 3.   State transition diagrams of two NFTSs in Example 3.4.
+   Proof: Assume there exists an InitSOP simulation relation ∼⊆
+X1 × X2 from Σ1 to Σ2 and system Σ1 is initial-state opaque. Next,
+we prove that Σ2 is also initial-state opaque.
+  For system Σ2, we arbitrarily choose input sequence α ∈U ∗, states
+x2,0, x2,1, . . . , x2,|α | ∈X2 such that
+
+
+                 α (0)        α (1)      α (|α |−1)
+             x2,0 −−→2 x2,1 −−→2 · · · −−−−−→2 x2,|α |           (2)
+
+and x2,0 ∈X2,0 ∩S2.
+  By 1b), 2), and 3b) of Deﬁnition 9, there exist x1,0 ∈X1,0 ∩S1,
+x1,j ∈X1, j ∈[1, |α|] such that h1(x1,k ) = h2(x2,k ) for all k in
+[0, |α|], and
+
+
+                 α (0)        α (1)      α (|α |−1)
+             x1,0 −−→1 x1,1 −−→1 · · · −−−−−→1 x1,|α |.          (3)
+
+  Since Σ1 is initial-state opaque, there exist x′1,0 ∈X1,0 \ S1, x′1,j ∈
+X1, j ∈[1, |α|] such that h1(x1,k ) = h1(x′1,k ) for all k in [0, |α|], and    Fig. 4.   State transition diagrams of two NFTSs in Example 3.5.
+x′1,0 −−→1α (0)   x′1,1 −−→1α (1)    · · · −−−−−→1α (|α |−1)   x′1,|α |.
+  By 1a), 2), and 3a) of Deﬁnition 9, there exist x′2,0 ∈X2,0 \ S2
+and x′2,1, . . . , x′2,|α | ∈X2 such that h1(x′1,k ) = h2(x′2,k ), for all k ∈   ulation relation between Σ1 and itself, then for each run starting from
+                 α (0)        α (1)      α (|α |−1)                            state 1, there is a run starting from state 3 such that these two runs pro-
+[0, |α|], and x′2,0 −−→2 x′2,1 −−→2 · · · −−−−−→2 x′2,|α |. Hence, ∀j ∈   duce the same output sequence, i.e., Σ1 is initial-state opaque. It is evi-
+[0, |α|] : h2(x2,j ) = h2(x′2,j ), and Σ2 is initial-state opaque.    ■   dent that system Σ2 is not initial-state opaque, since if the initial output
+  In Deﬁnition 9, in addition to requiring equivalent observation at two    is three then one knows that the initial states of Σ2 are secret. Now, con-
+related states, i.e., condition 2), we also have four conditions 1a), 1b),   sider relation ∼= {(1, 1′), (2, 2′), (3, 3′), (4, 4′), (5, 5′), (6, 6′)}. One
+3a), and 3b). In particular, conditions 3a) and 3b) are similar to those   can verify that ∼satisﬁes all items of Deﬁnition 9 other than 1b).
+in the standard bisimulation relation. The question then arises as why   Hence, 1b) in Deﬁnition 9 is also necessary to make it InitSOP.
+we need such strong conditions for InitSOP simulation relation. In the     Example 3.5: Consider two NFTSs Σi = (Xi, Xi,0, Si, U, →i
+next four examples, we show that these conditions are all necessary to     , Y, hi), i = 1, 2, shown in Fig. 4, where X1 = {1, 2, 3, 4} = X1,0,
+make it InitSOP even for one direction.                            S1 = {1}; X2 = {1′, 2′, 3′, 4′} = X2,0, S2 = {1′}, U = {1, 2}, Y =
+   Example 3.3: Recall the NFTSs shown in Fig. 2. We showed that   {1, 2}. For system Σ1, it is directly obtained that for each input se-
+Σ2 simulates Σ1, Σ1 is initial-state opaque, but Σ2 not. We directly   quence α ∈U ∗, and each run starting from state 1 over α, there is a
+see that the simulation relation ∼= {(1′, 1), (2′, 2), (3′, 1), (4′, 2)} in   run starting from state 3 also over α, i.e., Σ1 is initial-state opaque.
+the proof of Proposition 3.1 from Σ1 to Σ2 does not satisfy 1a) of   For system Σ2, consider input sequence 2 and run 1′2′ over input se-
+Deﬁnition 9, since for state 3′ ∈X1,0 \ S1, the unique state 1 satisfying   quence 2. However, there is no run starting from 3′ over input sequence
+(3′, 1) ∈∼does not belong to X2,0 \ S2. We also see that relation ∼    2, impling that Σ2 is not initial-state opaque. Now, consider relation
+satisﬁes all other items of Deﬁnition 9. Hence, 1a) in Deﬁnition 9 is  ∼= {(1, 1′), (2, 2′), (3, 3′), (4, 4′)}. One can show that ∼satisﬁes all
+necessary to make it InitSOP.                                         items of Deﬁnition 9 other than 3a). Therefore, 3a) in Deﬁnition 9 is
+   Example 3.4: Consider two NFTSs Σi = (Xi, Xi,0, Si, U, →i,   also necessary to make it InitSOP.
+Y, hi),  i = 1, 2, shown  in  Fig.  3, where X1 = {1, 2, 3, 4, 5, 6},     Example 3.6: Consider two NFTSs Σi = (Xi, Xi,0, Si, U, →i
+X1,0 = {1, 2, 3, 4},  S1 = {1}; X2 = {1′, 2′, 3′, 4′, 5′, 6′} = X2,0,     , Y, hi), i = 1, 2, shown in Fig. 5, where X1 = {1, 2, 3, 4} = X1,0,
+S2 = {5′, 6′}, U = {1}, Y = {1, 2, 3}. For system Σ1, it can be veri-   S1 = {1}; X2 = {1′, 2′, 3′, 4′} = X2,0, S2 = {1′}, U = {1, 2}, Y =
+ﬁed that relation {(1, 3), (3, 1), (2, 4), (4, 2), (5, 6), (6, 5)} is a bisim-   {1, 2}. We already showed that system Σ1 is initial-state opaque in the
+
+5120                                                       IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 12, DECEMBER 2019
+
+
+
+                                                                        Proof: Since Σ1 simulates Σ2 and vice versa as in Deﬁnition 9, the
+                                                                    proof is a simple consequence of the proof of Theorem 3.2.     ■
+
+
+                                                             C. InitSOP Quotient Relations
+
+                                                        From the results in the aforementioned section, one can verify initial-
+                                                                                state opacity of system Σ2 by verifying it over system Σ1 (resp. verify
+                                                                      lack of initial-state opacity of system Σ1 by verifying it over system
+                                                         Σ2) provided that there exists an InitSOP simulation relation from Σ1
+                                                                           to Σ2. In this section, we show that the quotient relation deﬁned in (1)
+                                                            from an NTS to its quotient system is an InitSOP bisimulation relation
+                                                                under certain mild assumptions. Hence, one can leverage the existing
+                                                                      bisimulation algorithms provided in [14] with some modiﬁcations to
+                                                                        construct InitSOP abstractions (if existing).
+Fig. 5.   State transition diagrams of two NFTSs in Example 3.6.           Theorem 3.8: Let Σ = (X, X0, S, U, →, Y, h) be an NTS and ∼⊆
+                                   X × X be an equivalence relation on X satisfying h(x) = h(x′) for
+                                                                                        all (x, x′) ∈∼. Assume that
+
+proof of Proposition 3.1, and system Σ2 is not initial-state opaque in Ex-                                                                                    for all x ∈S and x′ ∈X, if (x, x′) ∈∼then x′ ∈S.     (4)
+ample 3.5. Now, consider relation ∼= {(1, 1′), (2, 2′), (3, 3′), (4, 4′)}.
+One can verify that ∼satisﬁes all items of Deﬁnition 9 other than 3b).                                                         Then ∼Q is an InitSOP bisimulation relation between Σ and Σ∼if and
+Hence, 3b) in Deﬁnition 9 is also necessary to make it InitSOP.                                                                  only if relation ∼satisﬁes
+  One can conclude from Examples 3.3, 3.4, 3.6, and 3.5 that in order
+to make Deﬁnition 9 InitSOP, all items 1a), 1b), 3a), and 3b) are                                                                       ∀(x, x′) ∈∼, ∀x u−→x′′, ∃˜x′ u−→x′′′ with (x′′, x′′′) ∈∼.    (5)
+necessary. Therefore, the simulation relation introduced in Deﬁnition 9
+is a weak relation in terms of requiring minimal conditions preserving
+                                                                        Proof: By assumption (4), we have for all x ∈X, either [x] ⊆S
+initial-state opacity of NTSs.
+                                                                      or [x] ∩S = ∅.
+   It is easy to see that Deﬁnition 9 can only guarantee unidirectional
+                                                                                                  (if:) Assume ∼satisﬁes (5). We next prove that ∼Q is an InitSOPpreservation of initial-state opacity. Analogously, we can deﬁne an
+                                                                      bisimulation relation between Σ and Σ∼.InitSOP bisimulation relation that ensures the bidirectional preserva-
+                                                                  For each x0 ∈X0 ∩S, we have [x0] ∈X∼,0 ∩S∼, i.e., 1a) of Def-tion of initial-state opacity as in Deﬁnition 10, a stronger version of
+                                                                               inition 10 holds. For each x′0 ∈X0 \ S, by (4), x′0 ∈X∼,0 \ S∼, i.e.,bisimulation relation.
+                                                                  1b) of Deﬁnition 10 holds.
+   Deﬁnition 10 (InitSOP bisimulation relation): Consider two NTSs
+                                                                  For each [x0] ∈X∼,0 ∩S∼, there exists x′ ∈X0 satisfying x0 ∼x′;
+Σi = (Xi, Xi,0, Si, U, →i, Y, hi), i = 1, 2. A relation ∼⊆X1 × X2
+                                                           by (4), x0 ∈S, then we also have x′ ∈S, i.e., 1c) of Deﬁnition 10 holds.
+is called an InitSOP bisimulation relation between Σ1 and Σ2  if the
+                                                                       Similarly 1d) of Deﬁnition 10 holds.
+following condition holds:
+                                                                    Condition 2) in Deﬁnition 10 naturally holds.
+ 1) for all,
+                                                                  For each x ∈X, we have (x, [x]) ∈∼Q.
+        a) x1,0 ∈X1,0 ∩S1, there exists x2,0 ∈X2,0 ∩S2 such that                                                                                           If there exists transition x u−→x′ in Σ, then there exists transition
+           (x1,0, x2,0) ∈∼;                                                                             [x] u−→∼[x′] in Σ∼, and (x′, [x′]) ∈∼Q, i.e., 3a) in Deﬁnition 10 holds.
+        b) x1,0 ∈X1,0 \ S1, there exists x2,0 ∈X2,0 \ S2 such that                                                                                           If there exists transition [x] u−→∼[x′] in Σ∼, then there exists tran-
+           (x1,0, x2,0) ∈∼;
+                                                                               sition x′′ u−→x′′′ in Σ satisfying that x ∼x′′ and x′ ∼x′′′. By (5),        c) x2,0 ∈X2,0 ∩S2, there exists x1,0 ∈X1,0 ∩S1 such that
+                                                                         there exists transition x u−→x′′′′ such that x′′′ ∼x′′′′, then x′ ∼x′′′′ and           (x1,0, x2,0) ∈∼;
+                                                                                                    (x′′′′, [x′]) ∈∼Q, i.e., 3b) in Deﬁnition 10 holds, which completes the        d) x2,0 ∈X2,0 \ S2, there exists x1,0 ∈X1,0 \ S1 such that
+                                                                           “if” part.
+           (x1,0, x2,0) ∈∼;
+                                                                        (only if:) Assume that ∼Q is an InitSOP bisimulation relation be-
+ 2) for every (x1, x2) ∈∼, h1(x1) = h2(x2);                                                             tween Σ and Σ∼. Next, we prove (5) holds. For each (x, x′) ∈∼and
+ 3) for every (x1, x2) ∈∼,                                                                each transition x u−→x′′ in Σ, we have (x, [x′]) ∈∼Q, and there ex-        a) for every transition x1 u−→1 x′1, there exists transition x2 u−→2                                                                                        ists transition [x′] u−→∼[x′′′] in Σ∼satisfying (x′′, [x′′′]) ∈∼Q. Then,            x′2 such that (x′1, x′2) ∈∼;                                                                                       (x′′, x′′′) ∈∼, i.e., (5) holds.                     ■        b) for every transition x2 u−→2 x′2, there exists transition x1 u−→1
+            x′1 such that (x′1, x′2) ∈∼.
+   Remark 1: Consider two NTSs Σi = (Xi, Xi,0, Si, U, →i, Y, hi),   D. InfSOP Bisimulation Relations
+i = 1, 2. One can readily verify from Deﬁnition 10 that a relation
+                                              We have given InitSOP (bi)simulation relation. Next, we study
+∼⊆X1 × X2 is called an InitSOP bisimulation relation between Σ1
+                                                                whether InitSOP (bi)simulation relation preserves the other three typesand Σ2 if ∼is an InitSOP simulation relation from Σ1 to Σ2 and1 ∼−1
+                                                                      of opacity; and if not, we propose new (bi)simulation relations that
+is an InitSOP simulation relation from Σ2 to Σ1.
+                                                                      preserve the other three types of opacity.
+  Similar to Theorem 3.2, the following theorem follows from Deﬁni-
+                                                                         Similarly to initial-state opacity, the classical bisimulation relation
+tion 10.
+                                                                does not preserve the other three types of opacity. See the NFTSs
+   Theorem 3.7: Consider  two  NTSs  Σi = (Xi, Xi,0, Si, U, →i
+                                                         shown in the proof of Proposition 3.1 (cf., Fig. 2). One can eas-
+, Y, hi), i = 1, 2. Assume that there exists an InitSOP bisimulation
+                                                                                   ily verify that Σ2 in Fig. 2 is not current-state opaque, or K-steprelation ∼⊆X1 × X2 between Σ1 and Σ2. Then, Σ1 is initial-state
+                                                             opaque for any positive integer K, or inﬁnite-step opaque. However,
+opaque if and only if Σ2 is also initial-state opaque.
+                                                       Σ1 in Fig. 2 is current-state opaque, K-step opaque for any positive
+                                                                          integer K, and inﬁnite-step opaque. In addition, under the relation
+  1Given a relation ∼⊆X1 × X2, ∼−1 denotes the inverse relation deﬁned by  ∼= {(1, 1′), (2, 2′), (1, 3′), (2, 4′)}, Σ2 bisimulates Σ1. Hence, the
+∼−1= {(x2, x1) ∈X2 × X1  | (x1, x2) ∈∼}.                             following result holds.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 12, DECEMBER 2019                                                         5121
+
+
+   Proposition 3.9: The bisimulation relation (cf., Deﬁnition 3) does    By 1a), 1b), 2), 3a), and 3b) of Deﬁnition 11, there exist x′2,0 ∈X2,0
+not preserve current-state opacity, K-step opacity, or inﬁnite-step   and x′2,1, . . . , x′2,|α | ∈X2 such that
+opacity.
+  Since all these three types of opacity require that the intruder cannot                    α (0)        α (1)      α (|α |−1)
+                                                                                          x′2,0 −−→2 x′2,1 −−→2 · · · −−−−−→2 x′2,|α |make sure whether the current state is secret, the previous InitSOP
+(bi)simulation relation does not sufﬁce to preserve them either. In this
+                                                             and x′2,i ∈X2 \ S2 and h1(x′1,k ) = h2(x′2,k ), k ∈[0, |α|]. Hence,section, we strengthen the InitSOP bisimulation relation to make it
+preserve these three types of opacity.                                  h2(x2,j ) = h2(x′2,j ), j ∈[0, |α|], and Σ2 is inﬁnite-step opaque.
+   Deﬁnition 11 (InfSOP bisimulation relation): Consider two NTSs     Symmetrically, assume that there exists an InfSOP bisimulation re-
+Σi = (Xi, Xi,0, Si, U, →i, Y, hi), i = 1, 2. A relation ∼⊆X1 × X2    lation ∼⊆X1 × X2 between Σ1 and Σ2 and system Σ2 is inﬁnite-step
+is called an InfSOP bisimulation relation between Σ1 and Σ2  if the   opaque, we can prove that Σ1 is also inﬁnite-step opaque.     ■
+                                                    By the similarity of Deﬁnitions 6, 7, and 8, the following corollaryfollowing condition holds:
+                                                                         follows. 1) for all,
+                                                                       Corollary 3.11: Consider two NTSs Σi = (Xi, Xi,0, Si, U, →i        a) x1,0 ∈S1 ∩X1,0, there exists x2,0 ∈S2 ∩X2,0 such that
+                                                                                                          , Y, hi),  i = 1, 2.  If there exists an InfSOP bisimulation relation
+           (x1,0, x2,0) ∈∼;
+                                       ∼⊆X1 × X2 between Σ1 and Σ2, then Σ1 is current-state (resp. K-
+        b) x1,0 ∈X1,0 \ S1, there exists x2,0 ∈X2,0 \ S2 such that                                                                           step) opaque if and only if Σ2 is current-state (resp. K-step) opaque.
+           (x1,0, x2,0) ∈∼;                                                           Remark 2: Note that although we add several additional conditions
+        c) x2,0 ∈S2 ∩X2,0, there exists x1,0 ∈S1 ∩X1,0 such that   in Deﬁnition 11 to make the bisimulation relation preserving these
+           (x1,0, x2,0) ∈∼;                                             three types of opacity, these conditions are somehow necessary. That is,
+        d) x2,0 ∈X2,0 \ S2, there exists x1,0 ∈X1,0 \ S1 such that   without some of them, the bisimulation relation may not preserve those
+           (x1,0, x2,0) ∈∼;                                           notions of opacity any more. Taking the two NFTSs shown in Fig. 2
+ 2) for every (x1, x2) ∈∼, h1(x1) = h2(x2);                            for example, bisimulation relation ∼= {(1′, 1), (2′, 2), (3′, 1), (4′, 2)}
+ 3) for every (x1, x2) ∈∼,                                               satisﬁes 1a), 1c), 1d), 2), 3a), and 3d), but does not satisfy 1b), 3b),
+        a) for every transition x1 u−→1 x′1 ∈S1, there exists transition   or 3c).
+          x2 u−→2 x′2 ∈S2 such that (x′1, x′2) ∈∼;                    Remark 3: Note that since the preservation of inﬁnite-step opac-
+        b) for every transition x1 u−→1 x′1 ∈X1 \ S1, there exists tran-    ity always requires a bidirectional relation, so we directly study the
+            sition x2 u−→2 x′2 ∈X2 \ S2 such that (x′1, x′2) ∈∼;        InfSOP bisimulation relation. A detailed study of relevant notions of
+                                                                        (bi)simulation relations for preserving current-state and K-step opacity        c) for every transition x2 u−→2 x′2 ∈S2, there exists transition
+                                                                        are left for future investigations.          x1 u−→1 x′1 ∈S1 such that (x′1, x′2) ∈∼;
+        d) for every transition x2 u−→2 x′2 ∈X2 \ S2, there exists tran-
+            sition x1 u−→1 x′1 ∈X1 \ S1 such that (x′1, x′2) ∈∼.         E. InfSOP Quotient Relations
+   Intuitively, condition 1) ensures that each initial secret (nonsecret)
+                                                                         In this section, we again use the quotient relation from an NTS to its
+state in Σ1 has a corresponding initial secret (nonsecret) state in Σ2 such
+                                                                        quotient system to implement the InfSOP bisimulation relation.
+that they are in the relation, and vice versa; condition 3) guarantees that
+                                                             Theorem 3.12: Let Σ = (X, X0, S, U, →, Y, h) be an NTS and
+each transition to a secret (nonsecret) state in Σ1 has a corresponding                                 ∼⊆X × X be an equivalence relation on X satisfying h(x) = h(x′)
+transition to a secret (nonsecret) state in Σ2, and vice versa. Conditions                                                                           for all (x, x′) ∈∼. Assume that for all x ∈S and x′ ∈X, if (x, x′) ∈∼
+1) and 3) make bisimulation relation preserve inﬁnite-step opacity,
+                                                                    then x′ ∈S. Then, ∼Q is an InfSOP bisimulation relation between Σ
+which is shown in the following theorem.
+                                                             and Σ∼if and only if ∼is an InfSOP bisimulation relation between Σ
+   Theorem 3.10: Consider two NTSs  Σi = (Xi, Xi,0, Si, U, →i
+                                                             and itself.
+, Y, hi),  i = 1, 2.  If there exists an InfSOP bisimulation relation                                                                        Proof: Similar to Theorem 3.8, by assumption we have for all
+∼⊆X1 × X2 between Σ1 and Σ2, then Σ1  is inﬁnite-step opaque                                                   x ∈X, either [x] ⊆S or [x] ∩S = ∅.
+if and only if Σ2 is inﬁnite-step opaque.                                                                                                  (if:) Assume that ∼is an InfSOP bisimulation relation between Σ
+   Proof: Assume there exists an InfSOP bisimulation relation ∼⊆
+                                                             and itself. Next, we prove that ∼Q is also an InfSOP bisimulation
+X1 × X2 between Σ1 and Σ2 and system Σ1 is inﬁnite-step opaque.
+                                                                             relation between Σ and Σ∼according to Deﬁnition 11.
+Now, we show that Σ2 is also inﬁnite-step opaque.
+                                                                  For all x ∈X0 ∩S, we have [x] ∈X∼,0 ∩S∼, and (x, [x]) ∈∼Q,  For system Σ2, we arbitrarily choose input sequence α ∈U ∗, states
+                                                                                                    i.e., 1a) in Deﬁnition 11 holds.
+x2,0 ∈X2,0 and x2,1, . . . , x2,|α | ∈X2 such that
+                                                                  For all x ∈X0 \ S, by assumption we have [x] ∈X∼,0 \ S∼, and
+                                                                      (x, [x]) ∈∼Q, i.e., 1b) in Deﬁnition 11 holds.
+                 α (0)                             α (1)                                       α (|α |−1)
+             x2,0 −−→2                         x2,1 −−→2                                                     · · · −−−−−→2                                                        x2,|α |                 For all [x] ∈X∼,0 ∩S∼, we have [x] ∩X0̸ = ∅, and [x] ⊆S, then
+                                                                         there exists ¯x ∈[x] such that ¯x ∈X0 ∩S, and (¯x, [x]) ∈∼Q, i.e., 1c)
+and x2,l ∈S2 for some l ∈[0, |α|]. Consider an arbitrary x2,i ∈S2 in   in Deﬁnition 11 holds.
+the above-mentioned sequence, where i ∈[0, |α|].                      For all [x] ∈X∼,0 \ S∼, we have [x] ∩X0̸ = ∅, and [x] ∩S = ∅,
+  By 1c), 1d), 2), 3c), and 3d) of Deﬁnition 11, there exist x1,0 ∈X1,0,   then there exists ¯x ∈[x] such that ¯x ∈X0 \ S, and (¯x, [x]) ∈∼Q, i.e.,
+x1,j ∈X1, j ∈[1, |α|] such that x1,i ∈S1, h1(x1,k ) = h2(x2,k ), k ∈   1d) in Deﬁnition 11 holds.
+[0, |α|], and                                                 Now, consider an arbitrary pair (¯x, [x]) ∈∼Q, i.e., ¯x ∼x. By deﬁni-
+                                                                           tion we have h(¯x) = h(x) = h∼([x]), i.e., 2) of Deﬁnition 11 holds.
+                 α (0)        α (1)      α (|α |−1)                     Now, consider an arbitrary pair (¯x, [x]) ∈∼Q, i.e., ¯x ∈[x].
+             x1,0 −−→1 x1,1 −−→1 · · · −−−−−→1 x1,|α |.                                                                  For every transition ¯x u−→¯x′ ∈S, where u ∈U, we have [x] u−→∼
+                                                                                                          [¯x′] ∈S∼, and (¯x′, [¯x′]) ∈∼Q, i.e., 3a) in Deﬁnition 11 holds.
+  Since Σ1  is inﬁnite-step opaque, there exist x′1,0 ∈X1,0, x′1,j ∈                                                                  For every transition ¯x u−→¯x′ ∈X \ S, where u ∈U, we have [x] u−→∼
+X1, j ∈[1, |α|] such that x′1,i ∈X1 \ S1, h1(x1,k ) = h1(x′1,k ), k ∈     [¯x′] ∈X∼\ S∼by assumption, and (¯x′, [¯x′]) ∈∼Q, i.e., 3b) in Deﬁni-
+[0, |α|], and                                                                           tion 11 holds.
+                                                                  For every transition [x] u−→∼[x′] ∈S∼, where u ∈U, there ex-
+             x′1,0 −−→1α (0)   x′1,1 −−→1α (1)    · · · −−−−−→1α (|α |−1)   x′1,|α |.                   ists transition  ˆx u−→ˆx′ ∈S such that  ˆx ∈[x] and  ˆx′ ∈[x′]. Since
+
+5122                                                       IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 12, DECEMBER 2019
+
+
+
+
+
+                                                                               Fig. 7.   State transition diagram of the quotient system of the NFTS in
+                                                           Example 3.13 shown in Fig. 6.
+Fig. 6.   State transition diagram of the NFTS in Example 3.13.
+
+(¯x, ˆx) ∈∼, and ∼is InfSOP, there exists transition ¯x u−→¯x′ ∈S such
+                                                  Xy := {x ∈X|h(x) = y} the set of states producing output y and de-that (ˆx′, ¯x′) ∈∼, hence (¯x′, [x′]) ∈∼Q, i.e., 3c) in Deﬁnition 11 holds.
+                                                                    note by X0,y := {x ∈X0|h(x) = y} the set of initial states producing  For every transition [x] u−→∼[x′] ∈X∼\ S∼, where u ∈U, there                                                                     output y.
+exists transition ˆx u−→ˆx′ ∈X \ S such that ˆx ∈[x] and ˆx′ ∈[x′]. Since     Let q ∈2X be a set of states and u ∈U be an input. We denote by
+(¯x, ˆx) ∈∼, and ∼is InfSOP, there exists transition ¯x u−→¯x′ ∈X \ S   Succ(q, u) the set of states that can be reached from q under input u
+such that (ˆx′, ¯x′) ∈∼, hence (¯x′, [x′]) ∈∼Q, i.e., 3d) in Deﬁnition 11   and by Pre(q, u) the set of states that can reach q under input u, i.e.,
+holds. Hence, ∼Q is InfSOP.
+  (only if:) Assume that ∼Q is an InfSOP bisimulation relation between        Succ(q, u) := {x ∈X|∃x′ ∈q such that (x′, u, x) ∈→}
+Σ and Σ∼. Now, we show that ∼is also an InfSOP bisimulation         Pre(q, u) := {x ∈X|∃x′ ∈q such that (x, u, x′) ∈→}.   (6)
+relation between Σ and itself according to Deﬁnition 11. Since ∼is an
+equivalence relation, we have (x, x) ∈∼for all x ∈X.                 In order to verify different notions of opacity, we need to compute the
+  For all x ∈X0 ∩S, we have (x, x) ∈∼, i.e., 1a) in Deﬁnition 11    set of all possible current-state estimates and the set of all possible
+holds. Similarly, 1b), 1c), and 1d) in Deﬁnition 11 hold.                    initial-state estimates from each current-state estimate. This can be
+  By the deﬁnition of ∼, we have h(x1) = h(x2) for all (x1, x2) ∈∼.   implemented by constructing the product of the observer of the original
+Hence, 2) in Deﬁnition 11 holds.                                   system (using both state and input information) with the observer of
+  Now, consider an arbitrary pair (x1, x2) ∈∼.                         the reversed system.
+  For every transition x1 u−→x′1 ∈S, where u ∈U, we have [x1] u−→∼      Formally, for an NFTS (X, X0, S, U, →, Y, h), we deﬁne a new
+[x′1] ∈S∼. Since ∼Q is InfSOP, and (x2, [x1]) ∈∼Q, there exists tran-   so-called veriﬁcation NFTS (without secret states)
+sition x2 u−→x′2 ∈S such that (x′2, [x′1]) ∈∼Q , then (x′1, x′2) ∈∼, i.e.,                                                               ΣV = (XV , XV ,0, UV , →V , YV , hV )             (7)
+3a) in Deﬁnition 11 holds.
+  For every transition x1 u−→x′1 ∈X \ S, where u ∈U, we have   where
+[x1] u−→∼[x′1] ∈X∼\ S∼by assumption. Since ∼Q  is InfSOP, and    1) XV ⊆{(q1, q2) ∈2X × 2X |∃y1, y2 ∈Y such that q1 ⊆
+(x2, [x1]) ∈∼Q, there exists transition x2 u−→x′2 ∈X \ S such that     Xy 1 and q2 ⊆Xy 2 } is the set of states;
+(x′2, [x′1]) ∈∼Q , then (x′1, x′2) ∈∼, i.e., 3b) in Deﬁnition 11 holds.       2) XV ,0 = {X0,y 1 ∈2X |y1 ∈Y } × {Xy 2 ∈2X |y2 ∈Y } is the set
+  Symmetrically, 3c) and 3d) in Deﬁnition 11 hold. Hence, ∼is an       of initial states;
+InfSOP bisimulation relation between Σ and itself.         ■    3) UV = (U × {ϵ}) ∪({ϵ} × U) is the set of inputs;
+   Example 3.13: Consider  NFTS  Σ = (X, X0, S, U, →, Y, h)    4) →V ⊆XV × UV × XV  is the transition relation deﬁned as fol-
+shown in Fig. 6, where X = {1, 2, 3, 4, 5, 6, 7, 8} = X0, S = {1, 5},       lows: For any (q1, q2), (q′1, q′2) ∈XV and u ∈U,
+U = {1}, Y = {1, 2}.  It can be readily seen that the equivalence                                                                                    a) ((q1, q2), (u, ϵ), (q′1, q′2)) ∈→V   if  q′2 = q2 and ∃y ∈Y
+relation ∼= {(1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (8, 8),                                                                          such that q′1 = Succ(q1, u) ∩Xy̸ = ∅, and
+(1, 5), (5, 1), (2, 6), (6, 2), (3, 7), (7, 3), (4, 8), (8, 4)} ⊆X × X   is
+                                                                              b) ((q1, q2), (ϵ, u), (q′1, q′2)) ∈→V   if  q′1 = q1 and ∃y ∈Yan InfSOP bisimulation relation between Σ and itself. Under this rela-
+                                                                          such that q′2 = Pre(q2, u) ∩Xy̸ = ∅;tion, the quotient system of Σ is Σ∼= (X∼, X∼,0, S∼, U, →∼, Y, h∼),
+                                                                       5) YV = Y × Y is the set of outputs;where X∼= X/ ∼= X∼,0, X/ ∼= {{1, 5}, {2, 6}, {3, 7}, {4, 8}},
+                                                                       6) hV  : XV →YV    is  deﬁned   for  each   (q1, q2) ∈XV   asS∼= {{1, 5}}, which is shown in Fig. 7. It can be easily seen that
+Σ∼is inﬁnite-step opaque. Therefore, the original NFTS Σ is also      hV ((q1, q2)) = (y1, y2),  where  (y1, y2)  is  the  unique  pair
+inﬁnite-step opaque due to the results in Theorem 3.12.                   such  that  q1 ⊆Xy 1  and  q2 ⊆Xy 2 .  Particularly, we denote
+                                                               hV ,1((q1, q2)) := y1 and hV ,2(q1, q2)) := y2.
+                                                                  For any given NFTS Σ as in Deﬁnition 1, we construct the corre-          IV. VERIFICATION OF OPACITY OF NFTSS USING
+                                                                sponding NFTS ΣV as in (7). For any given initial state (q10 , q20 ) of ΣV               TWO-WAY OBSERVERS
+                                                                           in XV ,0, an input sequence α = (u10, u20) . . . (u1|α |−1, u2|α |−1) in (UV )∗,
+  In Section III, we propose several opacity-preserving (bi)simulation   and states (q11 , q21 ), . . . , (q1|α |, q2|α |) ∈XV such that
+relations, which could be used potentially to verify opacity for a class of
+
+                                                                                                                                            2inﬁnite NTSs over their ﬁnite abstractions. In this section, we show how                          (u 10 ,u                                                                                                                                            0 )         (u 1|α |−1 ,u 2|α |−1 )
+to verify various notions of opacity for NFTSs by adopting the idea of             (q10 , q20 ) −−−−−→V  · · · −−−−−−−−−→V (q1|α |, q2|α |)       (8)
+two-way observer, which was originally proposed in the framework of
+ﬁnite automata [19]. Due to space constraints, all proofs in this section                                          u 10        u 1|α |−1
+                                                  we have that the left component q10 −→V  · · · −−−−→V q1|α | aggregateshave been omitted and they are available in [22].
+  Note that the output function h : X →Y partitions X into at most    all runs of Σ starting from some initial state of q10 over u10 . . . u1|α |−1
+|Y | observational equivalence classes. For each y ∈Y , we denote by   and producing the output sequence hV ,1((q10 , q20 )) . . . hV ,1((q1|α |, q2|α |))
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 12, DECEMBER 2019                                                         5123
+
+
+(note that repetition of states of the form x ϵ−→x may exist), and the right     it is not easy to check the existence of appropriate quotient relations
+                u 20        u 2|α |−1                                     implementing them. So in order to make these opacity-preserving
+component q20 −→V  · · · −−−−→V q2|α | aggregates the mirror images of   (bi)simulation relations applicable to more classes of NTSs,  e.g.,
+all runs of Σ ending at some state of q20 over u2|α |−1 . . . u20 and producing   nonlinear control systems, further works on different algorithms on
+the output sequence hV ,2((q1|α |, q2|α |)) . . . hV ,2((q10 , q20 )) (note that rep-   the construction of NFTSs for NTSs deserve more attention.
+etition of states of the form x ϵ−→x may also exist). Hence, q1|α | ∩q2|α |                                                                          REFERENCES
+is the set of all states of maximal runs in the original NFTS over in-
+put sequence u10 . . . u1|α |−1u2|α |−1 . . . u20 between u1|α |−1 and u2|α |−1 with     [1] C. Baier and J. P. Katoen, Principles of Model Checking. Cambridge, MA,
+the same observation sequence. Based on this direct observation and       USA: MIT Press, 2008.
+preliminary deﬁnitions, the following proposition holds.                     [2]  J. W. Bryans, M. Koutny, L. Mazar´e, and P. Y. A. Ryan, “Opacity gener-
+                                                                                           alised to transition systems,” Int. J. Inf. Secur., vol. 7, no. 6, pp. 421–435,
+   Proposition 4.1: For NFTS  (7),  for any  input sequence α =
+                                       ∗                                           Nov. 2008.
+(u10, u20) . . . (u1|α |−1, u2|α |−1) ∈U V , and any transitions                       [3]  S. Ch´edor, C. Morvan, S. Pinchinat, and H. Marchand, “Diagnosis and
+                                                                                    opacity problems for inﬁnite state systems modeled by recursive tile sys-
+                      (u 10 ,u 20 )         (u 1|α |−1 ,u 2|α |−1 )                                  tems,” Discrete Event Dyn. Syst., vol. 25, no. 1/2, pp. 271–294, 2014.
+          (q10 , q20 ) −−−−−→V  · · · −−−−−−−−−→V (q1|α |, q2|α |)                 [4] A. Girard and G. J. Pappas, “Approximation metrics for discrete and
+                                                                                continuous systems,” IEEE Trans. Autom. Control,  vol. 52, no.  5,
+where (q10 , q20 ) ∈XV ,0, we have                                                  pp. 782–798, May 2007.
+                                                u 10      u 1|α |−1                  [5] Y. Ji, X. Yin, and S. Lafortune, “Opacity enforcement using nondetermin-
+ 1) q1|α | = {x|α | ∈X|∃x0 ∈q10 such that x0 −→· · · −−−−→                         istic publicly-known edit functions,” IEEE Trans. Autom. Control, 2019.
+                                                                                      [6] M. Kloetzer and C. Belta, “A fully automated framework for control of
+                                                 ))};    x|α | and ∀i ∈[0, |α|], h(xi) = hV ,1((q1i , q2                                                                                 i                                                                                                        IEEE Trans. Autom.                                                                                             linear                                                                                    systems                                                                                     from                                                                                                  temporal                                                                                                                       logic speciﬁcations,”
+                                                                    2                                                u
+                                                                          |α                                                                                     Control,                                                                                                       vol. 53,                                                                                                     no. 1,                                                                                                           pp. 287–297,                                                                                                                     Feb. 2008.                                                                    |−1      u 20
+ 2) q2|α | = {x0 ∈X|∃x|α | ∈q20 such that x0 −−−−→· · · −→                 [7] K. Kobayashi and K. Hiraishi, “Veriﬁcation of opacity and diagnosability
+    x|α | and ∀i ∈[0, |α|], h(x|α |−i) = hV ,2((q1i , q2i ))}.                           for pushdown systems,” J. Appl. Math., vol. 2013, 2013, Art. no. 654059.
+  By Proposition 4.1, we obtain the following four theorems used for     [8] H. Lin and P. J. Antsaklis, “Hybrid dynamical systems: An introduction
+verifying the four types of opacity for NFTSs.                                     to control and veriﬁcation,” Found. Trends Syst. Control, vol. 1, no. 1,
+   Theorem 4.2: NFTS Σ = (X, X0, S, U, →, Y, h) is current-state         pp. 1–172, 2014.
+                                                                                      [9] L. Mazar´e, “Using uniﬁcation for opacity properties,” in Proc. Workshop
+opaque if and only if ∀(q1, q2) ∈XV , q1̸ ⊆S.                                   Issues Theory Secur., 2004, pp. 165–176.
+   Theorem 4.3: NFTS Σ = (X, X0, S, U, →, Y, h)  is  initial-state    [10] A. Saboori and C. N. Hadjicostis, “Notions of security and opacity
+opaque if and only if ∀(q1, q2) ∈XV , q2 ∩X0̸ = ∅⇒q2 ∩X0̸ ⊆S.          in discrete event systems,” in Proc. 46th IEEE Conf. Decis. Control,
+   Theorem 4.4: NFTS Σ = (X, X0, S, U, →, Y, h)  is inﬁnite-step        Dec. 2007, pp. 5056–5061.
+opaque if and only if ∀(q1, q2) ∈XV , q1 ∩q2̸ = ∅⇒q1 ∩q2̸ ⊆S.      [11] A. Saboori and C. N. Hadjicostis, “Veriﬁcation of K-step opacity and
+   Theorem 4.5: NFTS  Σ = (X, X0, S, U, →, Y, h)   is  K-step         analysis of its complexity,” IEEE Trans. Autom. Sci. Eng., vol. 8, no. 3,
+                                                                                     pp. 549–559, Jul. 2011.opaque  if and only  if,  for any xV ,0 ∈XV ,0  and any sequence
+                                                                               [12] A.                                                                                  Saboori and                                                                                          C. N. Hadjicostis,                                                                                                                  “Veriﬁcation                                                                                                                                 of inﬁnite-step                                                                                                                                               opacity                                                                                                                                   and
+       (u 10 ,u 20 )...(u 1n −1 ,u 2n −1 )                                                                                      IEEE                                                                                                                      Trans. Autom.                                                                               complexity                                                                                                    considerations,”                                                                                                                                     Control, vol.                                                                                                                                                 57, no.xV ,0 −−−−−−−−−−−−−−→V (q1, q2) such that |u20 . . . u2n −1| ≤K, we                                                                                      5,
+have q1 ∩q2̸ = ∅⇒q1 ∩q2̸ ⊆S.                                               pp. 1265–1269, May 2012.                                                                               [13] A. Saboori and C. N. Hadjicostis, “Veriﬁcation of initial-state opacity
+   Remark 4: Let us discuss the complexity for the veriﬁcations of          in security applications of discrete event systems,” Inf. Sci., vol. 246,
+notions of opacity using the above-mentioned theorems. In the worst         pp. 115–132, 2013.
+case, ΣV contains at most 4|X | states and 2|Y ||U|4|X | transitions. Also,    [14]  P. Tabuada, Veriﬁcation and Control of Hybrid Systems: A Symbolic Ap-
+we note that ΣV  is a pure shufﬂe in the sense that its ﬁrst and its second         proach, 1st ed. New York, NY, USA: Springer, 2009.
+components are independent. Therefore, to verify current-state opac-    [15]  S. Takai and Y. Oka, “A formula for the supremal controllable and opaque
+ity (respectively, initial-state opacity), we just need to construct the        sublanguage arising in supervisory control,” SICE J. Control, Measu. Syst.
+                                                                                          Integration, vol. 1, no. 4, pp. 307–311, 2008.
+ﬁrst component (respectively, the second component) of ΣV . Hence,                                                                               [16] Y. Tong, Z. Li, C. Seatzu, and A. Giua, “Current-state opacity enforce-
+the time complexity for the veriﬁcations of current-state opacity and        ment in discrete event systems under incomparable observations,” Discrete
+initial-state opacity are both O(|Y ||U|2|X |). To verify inﬁnite-step        Event Dyn. Syst., Theory Apl., vol. 28, pp. 161–182, Jun. 2018.
+opacity, however, we need to construct automaton ΣV  completely    [17] Y. Tong, Z. Li, C. Seatzu, and A. Giua, “Decidability of opacity veriﬁcation
+for both components. Hence, the complexity is O(|Y ||U|4|X |). To        problems in labeled Petri net systems,” Automatica, vol. 80, pp. 48–53,
+verify K-step opacity, we need to construct parts of ΣV  that can        2017.
+be reached from initial states within K-steps in the second com-    [18] X. Yin and S. Lafortune, “A uniform approach for synthesizing property-
+                                                                                   enforcing supervisors  for  partially-observed  discrete-event systems,”
+ponent. Therefore, the complexity for verifying K-step opacity is                                                                 IEEE Trans. Autom. Control, vol. 61, no. 8, pp. 2140–2154, Aug. 2016.
+O(min{2|X |, (|U||Y |)K }|U||Y |2|X |).                                      [19] X. Yin and S. Lafortune, “A new approach for the veriﬁcation of inﬁnite-
+                                                                                        step and K-step opacity using two-way observers,” Automatica, vol. 80,
+                                                                                     pp. 162–171, 2017.
+                          V. CONCLUSION
+                                                                               [20] M. Zamani, G. Pola, M. Mazo, and P. Tabuada, “Symbolic models for
+  In this paper, we proposed new notions of initial-state and inﬁnite-         nonlinear control systems without stability assumptions,” IEEE Trans.
+step opacity-preserving (bi)simulation relations from an NTS to another        Autom. Control, vol. 57, no. 7, pp. 1804–1809, Jul. 2012.
+                                                                               [21] B. Zhang, S. Shu, and F. Lin, “Maximum information release while
+NTS, and used the quotient system construction to potentially compute
+                                                                                  ensuring opacity in discrete event systems,” IEEE Trans. Autom. Sci. Eng.,
+such relations. Hence, although the veriﬁcation of opacity of NTSs is                                                                                              vol. 12, no. 4, pp. 1067–1079, Jul. 2015.
+generally undecidable, if we ﬁnd such a relation between an NTS and    [22] K. Zhang, X. Yin, and M. Zamani, “Opacity of nondeterministic transition
+an NFTS, we can verify the opacity (or lack of opacity) of the NTS over         systems: A (bi)simulation relation approach,” 2018. [Online]. Available:
+the NFTS, which is decidable. A detailed study of relevant notions of         https://arxiv.org/abs/1802.03321
+(bi)simulation relations for preserving current-state and K-step opacity    [23] K. Zhang and M. Zamani, “Inﬁnite-step opacity of nondeterministic ﬁnite
+are left for future investigations.                                                       transition systems: A bisimulation relation approach,” in Proc. 56th IEEE
+                                                                                 Conf. Decis. Control, Dec. 2017, pp. 5615–5619.
+  Although the construction of proposed relations here based on quo-
+tient systems can be used to deal with some classes of NTSs, generally

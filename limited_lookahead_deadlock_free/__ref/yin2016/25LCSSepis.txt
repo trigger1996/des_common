@@ -1,0 +1,403 @@
+           1832                                                            IEEE CONTROL SYSTEMS LETTERS, VOL. 9, 2025
+
+      Protect Your Knowledge: Epistemic Property
+       Enforcement of Discrete-Event Systems
+            With Asymmetric Information
+
+         Shaowen Miao   , Graduate Student Member, IEEE, Bohan Cui   , Graduate Student Member, IEEE,
+                               Yiding Ji   , Member, IEEE, and Xiang Yin   , Member, IEEE
+
+
+
+
+          Abstract—Many property veriﬁcation and enforcement                                 I. INTRODUCTION
+        problems of  partially observed discrete event systems
+                                                      ARTIALLY observed discrete event systems (DES) are
+        (DES) are  typically addressed solely from the outside
+                                                                             ubiquitous in modeling high-level decision structures in         observer’s perspective. However, systems may be mon- P
+          itored not only by a designated observer but also by   cyber-physical systems, including computer and communica-
+        a potentially malicious intruder when deployed in com-   tion networks, automated manufacturing systems, and software
+         plex and open environments. The observer  infers the   systems. A substantial body of research has focused on various
+         information of the system based on its observation, which   observational properties within DESs, encompassing topics
+           is referred to as knowledge.  In addition, the intruder
+                                                                   such as observability [1], detectability [2], diagnosability [3],
+         not only eavesdrops on the system’s behaviors but also
+         attempts to infer the observer’s knowledge from its own  and opacity [4], among others [5], [6], [7], [8], [9], [10].
+         observation. Notably, the information ﬂow from the system   However, these studies typically investigate problems from a
+          to the observer and the intruder is asymmetric, result-   single agent, either a neutral observer or a malicious intruder.
+         ing in incomparable observable events for each agent.     Take opacity  for example, supervisory  control  is com-
+        Such an inference scenario is formalized as the epistemic  monly employed to address the opacity enforcement problem,
+         property. This letter addresses the enforcement of the
+                                                               where the intruder and supervisor/observer have incomparable         epistemic property in a partially observed DES through
+         supervisory  control. Speciﬁcally, we propose a game-   observations, and  the  intruder  is unaware  of  the  super-
+          theoretic framework to reﬂect the interaction between the   visor’s existence  [11]. In  contrast, [12] assumes  that  the
+         observer/supervisor, the intruder, and the environment.   intruder knows the existence of supervisors and introduces
+      A bipartite structure named all-protect structure is con-   a nondeterministic  control mechanism  to enforce  opacity,
+         structed as the game area, from which we solve the game                                                               which enhances the system’s plausible deniability. A uniform
+        and synthesize maximally permissive  controllable and
+                                                                   approach is proposed in [13] for the enforcement of various         observable supervisors to provably enforce the properties.
+                                                                            properties by supervisory control. The works [14], [15] design
+           Index  Terms—Discrete  event  systems,  supervisory   distinct obfuscation strategies based on insertion and edit func-
+          control,  epistemic  properties, asymmetric  information,                                                                               tions to tackle the challenge of opacity enforcement. Recently,
+         algorithmic games.
+                                                                        they have been extended to a modiﬁcation function [16] to
+                                                                     reduce synthesis complexity.
+                                                                  Meanwhile, recent works have studied decision making [17]
+                                                               and controller synthesis [18] in cooperative settings where
+            Received 17 March 2025; revised 12 May 2025; accepted 2 June   multiple observational agents engage in knowledge reasoning.
+          2025. Date  of publication 12 June 2025; date  of current version  One critical challenge is that the systems are vulnerable to
+         23 July 2025. This work was supported in part by the National Natural   hostile environments where malicious intruders attempt to
+          Science Foundation of China under Grant 62303389, Grant 62373289,
+         and Grant 62173226; in part by the Guangdong Basic and Applied   infer secrets and launch attacks [19], [20], [21], [22].
+           Basic Research Funding under Grant 2022A151511076 and Grant     This  letter considers a scenario in which the system  is
+          2024A1515012586;  in part by the Guangdong Scientiﬁc Research   observed by both an observer and an intruder, characterized
+           Platform and Project Scheme under Grant 2024KTSCX039; and in part
+                                                             by asymmetric observation capabilities. The observer focuses          by the Guangzhou-HKUST(GZ) Joint Funding Program under Grant
+         2024A03J0618 and Grant 024A03J0680. Recommended by Senior  on the system’s direct behavior, inferring certain conclusions
+            Editor A. P. Aguiar. (Corresponding authors: Yiding Ji; Xiang Yin.)        as its knowledge based on these observations. Conversely, the
+          Shaowen  Miao  and  Yiding   Ji  are  with  the  Robotics  and   intruder endeavors to infer the observer’s knowledge and the
+         Autonomous Systems  Thrust, Hong Kong  University  of  Science
+         and Technology (Guangzhou), Guangzhou 511453, China  (e-mail:   inference capacity is formally deﬁned as epistemic properties
+          smiao585@connect.hkust-gz.edu.cn; jiyiding@hkust-gz.edu.cn).         in [23], which also proposes several approaches for veriﬁcation
+           Bohan Cui and Xiang Yin are with the School of Automation and   of the properties. We extend the framework of [23] to study
+           Sensing, Shanghai Jiao Tong  University, Shanghai 200240, China
+            (e-mail: bohan_cui@sjtu.edu.cn; yinxiang@sjtu.edu.cn).                supervisory control for the enforcement of epistemic properties
+                Digital Object Identiﬁer 10.1109/LCSYS.2025.3578993                in a game-theoretic setting, which involves the supervisor,
+
+                    2475-1456 c⃝2025 IEEE. All rights reserved, including rights for text and data mining, and training of artiﬁcial intelligence
+                        and similar technologies. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                                   See https://www.ieee.org/publications/rights/index.html for more information.
+Authorized licensed use limited to: The Hong Kong University of Science and Technology (Guangzhou). Downloaded on August 03,2025 at 02:18:16 UTC from IEEE Xplore. Restrictions apply.
+
+         MIAO et al.: PROTECT YOUR KNOWLEDGE: EPISTEMIC PROPERTY ENFORCEMENT OF DESs                                                 1833
+
+
+          the intruder, and the environment. A specialized game arena,
+         termed the all-protect structure (APS), is constructed to derive
+         maximally permissive controllable and observable supervisors.
+          The  remainder  of  this  letter  is  organized  as  follows.
+          Section II reviews necessary preliminaries of the DES model
+         and supervisory control. Section III formally deﬁnes the epis-
+         temic property and the corresponding enforcement problem.
+          In Section IV, we propose algorithms to construct the game
+          arena, then solve the game to synthesize maximally permissive
+          supervisors that enforce the properties. Finally, Section V
+         concludes this letter and discusses potential extensions.
+
+
+
+                                                                                            Fig. 1.  Conceptual illustration of knowledge reasoning.
+                                        II. PRELIMINARIES
+           Notations and Automata Theory [24]. Let N denote the set   events   uo =   \   o, as well as the set of controllable events
+          of non-negative integers. For a set S, |S| denotes its cardinality,                                                                                             c and the set of uncontrollable events   uc =  \  c.
+         and 2S denotes its power set. An alphabet     is a ﬁnite, non-                                                                       Let  = {γ ⊆     |   uc ⊆γ } be the set of control decisions
+        empty set of events. A string over     is a sequence of events                                                                and Po : ∗→   o∗ be the supervisor’s observation mapping
+         from     , with the empty string denoted by ε. The set of all                                                                         of G. The supervisor of G with respect to     is deﬁned by
+          ﬁnite strings over     is denoted by   ∗. A language L over                                                                    S: Po(L(G)) →    . Given G and S, the closed-loop system is
+            is a subset of   ∗. For two strings u, v ∈   ∗, the concatenation                                                                    denoted by S/G. The language generated by S/G is inductively
+          of u and v is denoted by uv.                                                              deﬁned by (i) ε ∈L(S/G) and (ii) s ∈L(S/G)∧sa ∈L(G)∧a ∈
+       A projection R: ∗→    ′∗, with      ′ ⊆     , is a morphism                                                                       S(Po(s)) =⇒sa ∈L(S/G).
+           for concatenation deﬁned as follows: R(a) =  ε  for a ∈                                            A language K ⊆L(G) is controllable w.r.t. L(G) and   uc
+           \     ′, R(a) =  a  for a ∈      ′, and R(a1a2 · · · an) =    if K  uc ∩L(G) ⊆K. A language K is observable w.r.t. L(G),
+                                                                                            ∗ and   c if ∀s ∈K, ∀a ∈    c, sa /∈K ∧sa ∈         R(a1)R(a2) · · · R(an) for a1a2 · · · an ∈    ∗. The inverse pro-  Po : ∗→   o,
+           jection R−1 :  ′∗→2 ∗is deﬁned as R−1(t) = {s ∈  ∗|  L(G) =⇒P−1o  [Po(s)]a ∩K = ∅.
+          R(s) = t}. The deﬁnitions of the projection and its inverse can
+         be extended to languages in the usual way.                                                                                                                    III. PROBLEM FORMULATION
+       A deterministic ﬁnite automaton (DFA) is a quadruple G =
+                                                                            In  this  section, we  extend  the  framework  developed         (Q,   , δ, q0), where Q is a ﬁnite set of states,    is an alphabet,
+                                                                               in [23] and formulate a property enforcing supervisory control         q0 ∈Q is the initial state, and δ : Q × →Q is the partial
+                                                                    problem, cf. Fig. 1. Speciﬁcally, we refer to the conclusion           transition function that can be extended to Q× ∗by recursion.
+                                                              drawn by an observer based on its own observation as “knowl-        The language generated by G is L(G) = {s ∈  ∗| δ(q0, s) ∈
+                                                                       edge”, such as the statement “the observer knows that the         Q}. We denote   G(q) = {e ∈      | δ(q, e) !} by the set of
+                                                                  system is opaque”. In this scenario, there is a passive intruder          active events of G at state q, where ! means “is deﬁned”.
+                                                     who can not only observe the system independently but also            In DFA G = (Q,   , δ, q0), for any subset Q′ ⊆Q,  its
+                                                                                                                               ′           infer the observer’s knowledge from its own observations.         unobservable reach with respect to the alphabet   ⊆      ,
+         denoted by UR  ′(Q′), is deﬁned as UR  ′(Q′) = {q ∈Q  |   We denote the observable events of the observer by   o and
+          ∃q′ ∈Q′, ∃s ∈    ′∗: q = δ(q′, s)}. The observer [24] of a   the unobservable events by   uo =  \  o, while the observable
+      DFA G, with respect to the alphabet      ′ ⊆      ,  is deﬁned  and unobservable events of the intruder are denoted by   a and
+          as Obs ′(G) = (X,   ′, f, x0) = Ac(2Q,   ′, f, UR  ′({q0})),     ua =   \   a, respectively. The partial observation properties∗
+         where Ac(·) denotes the accessible part and f : X ×     ′ →X   of the observer and the intruder are modeled by Po : ∗→   o
+                                                                and Pa : ∗→   a,∗  respectively.            is the deterministic transition function deﬁned as f(x, e) =
+      UR  ′(  q′∈x{δ(q′, e)}), which can be extended to X ×  ′∗by     Formally, the knowledge of the observer can be deﬁned as a
+          recursion. For any observation w ∈R(L(G)), we denote by   predicate: Kwo : Po(L(G)) →{T, F}. For any w ∈Po(L(G)),
+          ˆQ(w) the current state estimate based on w, deﬁned as ˆQ(w) =  Kwo(w) = T indicates that some knowledge of interest holds
+          {δ(s) ∈Q | ∃s ∈L(G): R(s) = w}.                           based on the observation w. The concrete expression of Kwo
+          The parallel composition of DFAs Gi = (Qi,   i, δi, q0i ) for   depends on the context of the problem being studied and will
+               i = 1, 2, denoted by G1∥G2, is the DFA Ac(Q1 × Q2,  1 ∪   be speciﬁed later. In addition, the knowledge estimate of the
+             2, δ1,2, (q01, q02)), where δ1,2((q1, q2), e) =                      intruder is deﬁned as: Kwao : Pa(L(G)) →{Y, N, U} such that        ⎧                                                                               for any s ∈Pa(L(G)),                                ∩                          e),                                    e)),                                     e                                                  if                           δ(q2,                           ∈  G1(q1)                                                       G2(q2);            ⎧                        ⎪⎪⎨ (δ(q1,                                              ⎨ Y, if ∀w ∈Po P−1a  (s) ∩L(G)  [Kwo(w) = T];                           ∈                          e),                                     e                                                  if                  (δ(q1,                            q2),                                             \   2;                                           G1(q1)
+                                                                                                                      a  (s) ∩L(G)  [Kwo(w) = F];                  (q1, δ(q2, e)),        if e ∈  G2(q2) \   1;               Kwao(s) = ⎩ N, if ∀w ∈Po P−1                        ⎪⎪⎩               undeﬁned,         otherwise.                                 U, otherwise.
+           Supervisory Control [24]. For a partially observed and                                                                 (1)
+           partially controlled DFA G, the alphabet    is partitioned into     In words, the knowledge estimate returns Y (resp. N) if the
+          the set of observable events   o and the set of unobservable   intruder can deduce that the observer has determined that some
+
+
+Authorized licensed use limited to: The Hong Kong University of Science and Technology (Guangzhou). Downloaded on August 03,2025 at 02:18:16 UTC from IEEE Xplore. Restrictions apply.
+
+           1834                                                                                    IEEE CONTROL SYSTEMS LETTERS, VOL. 9, 2025
+
+
+
+
+
+                                                                                            Fig. 4. Game arena construction ﬂow chart.
+
+            Fig. 2. DFA G with  o = {b, d},  a = {a, b}, and  c = {b}.                   If the system does not satisfy a given epistemic property, a
+                                                                         supervisor is synthesized to restrict the system’s behaviors to
+                                                                       enforce this property, and the supervisor should be as permis-
+                                                                              sive as possible. Then we formulate the key problem of this
+                                                                                               letter.
+                                                                 Problem 1: Given a system G, a projection of the observer
+                                                                       Po, and an epistemic property ⟨Q, Kwo, Ko, Kao⟩, synthesis a
+            Fig. 3.  Knowledge recognizer ˜G.                                   supervisor S: Po(L(G)) →   such that:
+                                                                            1) S/G |= ⟨Q, Kwo, Ko, Kao⟩;
+                                                                            2) L(S/G) is controllable w.r.t. L(G) and   uc and observ-
+                                                                               able w.r.t. L(G), Po : ∗→   o,∗ and   c;
+         knowledge is true (resp. false), and returns U if the intruder     3) For any other supervisor S′ satisfying the above two
+            is uncertain about  it. Then we recall the epistemic property         conditions, L(S/G)̸ ⊂L(S′/G) holds.
+          introduced in [23], which is a general deﬁnition that will be     In this letter, we assume that the intruder does not know
+         speciﬁed later, depending on the expression of Kwo.            the existence of supervisors. Consequently, when substituting
+            Deﬁnition 1 (Epistemic Property): Given a system G, the  S/G in Condition 1) into Deﬁnition 1, the formula for Kwao
+          projection of the observer Po, the projection of the intruder    is exactly in the form of Eq. (1). However,  if the intruder
+          Pa, the knowledge Kwo, and the knowledge estimate Kwao,  knows the supervisor, the intersection with L(G) in Eq. (1)
+          the epistemic property is deﬁned as:                          should be replaced by the intersection with L(S/G) instead.
+          (Qs ∈L(G): Kwo(Po(s)) = Ko) Kwao(Pa(s)) = Kao ,       This means that the intruder can update its observations based
+                                                             on the supervisor’s decisions, which raises a more complex
+         where Q ∈{∃, ∀}, Ko ∈{T, F}, and Kao ∈{Y, N, U}.
+                                                                         scenario  to be explored  in our  future work. For a more
+         By deﬁnition, a tuple ⟨Q, Kwo, Ko, Kao⟩indicates a speciﬁc
+                                                                             detailed discussion on the differences between scenarios where
+          epistemic property. We write G |= ⟨Q, Kwo, Ko, Kao⟩if G
+                                                                           the intruder knows or does not know the supervisor (control          satisﬁes the epistemic property deﬁned by these parameters.
+                                                                                policy), please refer to the works [11], [14].            In  [23],  eight  types  of epistemic  properties  are  speci-
+         ﬁed, including high-order opacity, intrusion undetectability,
+          epistemic diagnosability, and others. For simplicity, we use         IV. SUPERVISORY CONTROL FOR EPISTEMIC
+          high-order opacity as a typical example for the remainder                   PROPERTIES
+          of  this  letter. However, we  will demonstrate  in  the next
+                                                                 A. General Game Arena
+          section that the proposed enforcement approach in this letter
+            is generally applicable to all eight epistemic properties.           In this subsection, we ﬁrst construct the knowledge recog-
+            Deﬁnition 2 (High-Order Opacity): Let the speciﬁcation be   nizer, followed by the double estimator, and then proceed to
+           Tspec = {(q, q′) ∈Q × Q |  q̸ = q′}, representing the set of  deﬁne the game arena for supervisor synthesis. The overall
+           state pairs to be distinguished, and the knowledge be deﬁned   construction ﬂow chart of the game arena is shown in Fig. 4.
+          as Kwo(w) = T ⇐⇒   [ ˆQ(w) × ˆQ(w)] ∩Tspec = ∅for    The knowledge recognizer is used for estimating the system
+      w ∈Po(L(G)). A system G is high-order opaque w.r.t. the   state, which essentially captures the knowledge of the observer.
+          projections Po, Pa, and the knowledge Kwo, if                  Deﬁnition 3 (Knowledge Recognizer): Given a DFA G and
+                                                                 an alphabet   o of the observer, the knowledge recognizer of                 (∀s ∈L(G)) Kwo(Po(s)) = T =⇒                                          G is deﬁned as ˜G = G∥Obs o(G) = ( ˜Q,   , ˜δ, ˜q0).
+                   (∃t ∈L(G))[Kwo(Po(t)) = F ∧Pa(s) = Pa(t)] .          Within the knowledge recognizer  ˜G, we deﬁne the  set
+                 It is straightforward to see that a system G is high-order   of known  states as ˜QT =  {˜q =  (q, x)  ∈  ˜Q  | ∃w ∈
+         opaque if and only if G |= ⟨∀, Kwo, T, U⟩with Kwo(w) =   Po(L(G)): f(x0, w) = x ∧Kwo(w) = T}.
+       T ⇐⇒[ ˆQ(w) × ˆQ(w)] ∩Tspec = ∅for w ∈Po(L(G)). By     Next, we deﬁne the double estimator for the knowledge
+          specifying different Tspec, the high-order opacity can also have   estimation on the observer from the intruder’s perspective.
+           different physical meanings, see [23] for details.                 Deﬁnition 4 (Double Estimator): Given  a DFA  G,  an
+          Example 1: Consider the system G depicted in Fig. 2,  it   alphabet   o of the observer, an alphabet   a of the intruder,
+            is not high-order opaque by Deﬁnition  2. Since for s =   the double estimator of G is the observer of ˜G with respect to
+         abbbdn with Po(s) = bbbdn, n ∈N, ˆQ(bbbdn) = {7} and      a, denoted by Obs a( ˜G) = ( ˜X,  a, ˜f, ˜x0).
+        Kwo(bbbdn) = T, there are no string t such that Kwo(Po(t)) =   We now repeat two of the eight criteria in [23, Th. 1] to
+       F and Pa(t) =  Pa(s) =  abbb. This means  that  for the   verify the epistemic properties.
+           string s, the observer observes bbbdn and concludes that “the    Lemma 1 (Criterion for Checking Epistemic Property):
+          system’s current state is unique”, while the intruder infers this     1) G |= ⟨∀, Kwo, T, U⟩⇐⇒∀˜x ∈˜X :  ˜x̸ ⊆˜QT;
+         knowledge based on its own observation of abbb.                 2) G |= ⟨∃, Kwo, T, Y⟩⇐⇒∃˜x ∈˜X :  ˜x ⊆˜QT;
+
+
+Authorized licensed use limited to: The Hong Kong University of Science and Technology (Guangzhou). Downloaded on August 03,2025 at 02:18:16 UTC from IEEE Xplore. Restrictions apply.
+
+         MIAO et al.: PROTECT YOUR KNOWLEDGE: EPISTEMIC PROPERTY ENFORCEMENT OF DESs                                                 1835
+
+
+                                                               Algorithm 1: Construct the APS
+                                                                       Input: G,    , and EP = ⟨Q, Kwo, Ko, Kao⟩
+                                                                 Output: APS(G)
+                                                                                        1 YD ←{y0d} and YE ←∅;
+                                                                                        2 DoDFS(G, y0d, APS(G), EP);
+                                                                                        3 while there are D-states without successors do
+                                                                                        4    Remove such D-states and their predecessor E-states;            Fig. 5.  Double estimator Obs a(˜G).
+                                                                                        5 APS(G) ←Ac(APS(G));
+                                                                   Procedure: DoDFS(G, yd, APS(G), EP)
+                                                                                        6 for γ ∈  do
+                                                                                        7     ye ←ξDE(yd, γ );
+                                                                                        8       if Qxp = (q, ˜x) ∈S(ye):  (EP) then
+                                                                                        9      Add transition yd γ−→ye to  DE;
+                                                                                       10            if ye /∈YE then
+            Fig. 6.  Parallel automaton G∥Obs a( ˜G).                                 11        YE ←YE ∪{ye};
+                                                                                       12            for e ∈γ ∩   o do
+                                                                                       13                     y′d ←ξED(ye, e);           For an epistemic property ⟨Q, Kwo, Ko, Kao⟩, we denote the                                                                                       14                      if y′ = ∅then                                                                                                                                                                                                              d̸         second part (after the colon) of its establishment condition by
+                                                                                                                   e−→y′d to  ED;           (⟨Q, Kwo, Ko, Kao⟩), e.g.,   (⟨∀, Kwo, T, U⟩) =  ˜x̸ ⊆˜QT.      15              Add transition ye
+          Example 2: Reconsider the system G depicted in Fig. 2;   16                           if y′d /∈YD then
+             its knowledge recognizer ˜G is illustrated in Fig. 3; and  its   17               YD ←YD ∪{y′d};
+         double estimator Obs a( ˜G) is shown in Fig. 5. Taking high-   18                 DoDFS(G, y′d, APS(G), EP);
+          order opacity as an example, we let Tspec = {(q, q′) ∈Q ×
+      Q  |  q̸ =  q′}, and deﬁne Kwo(w) = T ⇐⇒    [ ˆQ(w) ×
+          ˆQ(w)] ∩Tspec = ∅for w ∈Po(L(G)). We then derive that
+                                                                           the intruder. At this point, the supervisor updates the current          the set of known states is ˜QT = {(4, {4}), (6, {6}), (7, {7})}.
+         Furthermore, since the state {(7, {7})} in Obs a( ˜G) satisﬁes   possible states in G∥Obs a( ˜G) at the next E-state ye,  i.e.,
+                                                                    S(ye) = UR(  uo∩γ )({yd}). The environment plays at E-states           {(7, {7})} ⊆˜QT, by condition 1) of Lemma 1, we conclude
+                                                             by choosing to ﬁre events from the set of latest enabled events
+           that G̸ |= ⟨∀, Kwo, T, U⟩, which indicates that the system is
+                                                             γ , recorded in the right component of the E-state ye,  i.e.,          not high-order opaque.
+                                                                               (ye) = γ . A transition from ye to yd represents the observable        We then construct G∥Obs a( ˜G) = (Xp,   , fp, (q0, ˜x0)) to
+                                                                       reach in one step. Thus, it holds that yd =   xp∈S(ye){fp(xp, e) |          track both the system’s behaviors and the knowledge  esti-
+                                                                                fp(xp, e)!}, where e ∈  (ye) ∩   o.          mation. Based on G∥Obs a( ˜G), we deﬁne the game arena,
+                                                We also deﬁne the set of control decisions at a D-state        which incorporates the supervisor’s decisions, the intruder’s
+                                                                          yd ∈YD as CA(yd) = {γ ∈     | ξDE(yd, γ )!}. The following         knowledge estimation, and the environmental confrontation.
+                                                                      requirements are imposed to induce feasible supervisors:            Deﬁnition 5 (Game Arena): A game arena  w.r.t. system
+                                                                                                   (i)  for any yd ∈YD, CA(yd)̸ = ∅;      G = (Q,   , δ, q0) and control decisions  = {γ ⊆     |   uc ⊆
+                                                                                                    (ii)  for  any  ye  ∈  YE,  ∀e  ∈    (ye) ∩   o : (∃xp  ∈        γ }, is deﬁned as A = (YD, YE, ξDE, ξED,   ,  , y0d), where                                                                          S(ye): fp(xp, e)!) =⇒ξED(ye, e)!.              • YD ⊆2Xp is the set of decision states (D-states);
+                                                             The ﬁrst condition requires that there always exists a control              • YE ⊆2Xp ×    is the set of environment states (E-states),
+                                                                         decision  at any D-state, and the second requires that any
+             and for any ye ∈YE, we write ye = (S(ye),  (ye)), where
+                                                                     enabled active observable events should be allowed to occur.
+              S(ye) and   (ye) denote the state and control decision
+                                          A game arena is called complete if it satisﬁes both conditions.
+             components of ye, respectively;
+              • ξDE : YD × →YE is the partial transition function from
+               D-states to E-states, satisfying the condition:                                                                  B. All-Protect Structure
+                     ξDE(yd, γ ) = ye =⇒                                                                            In this subsection, we ﬁrst construct a special game arena
+                     S(ye) = UR(  uo∩γ )({yd}) ∧   (ye) = γ  ;    (2)   to include all supervisors protecting the observer’s knowledge,
+              • ξED : YE × →YD is the partial transition function from   namely, all-protect structure (APS). Then, we show how to
+               E-states to D-states, satisfying the condition:              synthesize a maximally permissive supervisor from the APS.
+                                                                       Deﬁnition 6 (All-Protect Structure): The APS w.r.t. system                      ξED(ye, e) = yd =⇒  e ∈  (ye) ∩   o ∧
+                                          G and epistemic property ⟨Q, Kwo, Ko, Kao⟩, denoted by
+                        yd = ∪xp∈S(ye){fp xp, e  | fp xp, e !} ;        (3)  APS(G) = (YD, YE,  DE,  ED,   ,  , y0d), is deﬁned as the
+              • y0d = {(q0, ˜x0)} ∈YD is the initial D-state;                   largest and complete game arena w.r.t. G and    , such that:
+            In  a game  arena  A,  the  supervisor  plays  against  the   1)  it is complete; 2) for any ye ∈YE,  it holds that Qxp =
+          intruder and the environment. A transition from a D-state yd   (q, ˜x) ∈S(ye):   (⟨Q, Kwo, Ko, Kao⟩).
+           to an E-state ye represents the control decisions issued by     Being the “largest” implies that the APS will violate at least
+          the supervisor. The supervisor plays at D-states by issuing  one condition if additional D- or E-states are included to the
+          control decisions following the knowledge estimation from   structure. Condition 2) corresponds to the veriﬁcation criterion
+
+Authorized licensed use limited to: The Hong Kong University of Science and Technology (Guangzhou). Downloaded on August 03,2025 at 02:18:16 UTC from IEEE Xplore. Restrictions apply.
+
+           1836                                                                                    IEEE CONTROL SYSTEMS LETTERS, VOL. 9, 2025
+
+
+
+
+
+            Fig. 7.  APS(G) constructed by Algorithm 1, where dashed boxes, dashed lines, boxes with crosses, and lines with crosses are excluded. The
+          rounded rectangle represents the D-state, and the right-angled rectangle represents the E-state. Each dashed line with a slash points to an empty
+            set D-state.
+
+
+           in Lemma 1, which ensures that the APS satisﬁes the given   Algorithm 2: Synthesis Supervisor
+          epistemic property.                                            Input: APS(G)
+           Algorithm 1 constructs the APS in two steps.  First, we     Output: S
+         develop the game arena by performing a depth-ﬁrst search    1 Mark y0d as “visited”;
+        (DFS) in Lines 6–18, which enumerates all possible control    2 w ←ε;
+          decisions for each state and includes all states satisfying the    3 Traverse(APS(G), w, y0d);
+          given epistemic property. Then, we iteratively prune the states    4 return S
+           that violate the completeness condition from the remaining
+                                                                   Procedure: Traverse(APS(G), w, yd)           part of the arena (Lines 3–4) until the structure converges.
+                                                                                        5 Choose a locally maximal control decision
+          Example 3: Let us continue  to consider  the high-order                                                          ′                                                               γ ∈CAPS(G)(yd) s.t. ∀γ ∈CAPS(G)(yd): γ̸ ⊂γ ′;          opacity and let the knowledge be G |= ⟨∀, Kwo, T, U⟩with
+                                                                                        6 S(w) ←γ ; ye ←  DE(yd, γ );        Kwo(w) = T ⇐⇒   [ ˆQ(w) × ˆQ(w)] ∩Tspec = ∅. The all-
+                                                                                        7  if ye is not marked as “visited” then          protect structure APS(G)  is illustrated in Fig. 7, which  is
+                                                                                        8    Mark ye as “visited”;          constructed based on the parallel automaton G∥Obs a( ˜G), as                                                                                        9     for e ∈γ ∩   o do
+        shown in Fig. 6. At the  initial D-state y0d = {(0, α)}, the   10     w ←we;
+          supervisor can choose either the control decisions {a, c, d} or
+                                                                                                           y′d ←  ED(ye, e);          {b, a, c, d}. The DFS procedure stops at the D-state {(7, κ)},   11
+                                                                                       12            if y′d is not marked as “visited” then         which will be removed in Lines 3–4. This is because, both
+          E-states ({(7, κ)}, {b, a, c, d}) and ({(7, κ)}, {a, c, d}) will not   13         Mark y′d as “visited”;
+         be included in APS(G) according to Line 8, as they violate   14           Traverse(APS(G), w, y′d);
+          the high-order opacity by Lemma 1. This results in the D-state
+           {(7, κ)} having no successor E-states. Notably, in addition to
+           {(7, κ)}, its predecessor E-state ({(5, θ)}, {b, a, c, d}) will also
+         be removed in Lines 3–4. This means that the control decision   traverses all feasible control decisions, and Line 11 ensures
+          {b, a, c, d} at state 5 of G is not allowed.                         that the DFS explores all enabled and active observable events
+           Algorithm 2 synthesizes a maximally permissive supervisor  which are included through ξDE deﬁned in Eq. (2). Thus, no
+         from APS(G), which enforces the given epistemic property.   additional states are to be included, and the APS is the largest.
+         This algorithm performs a DFS (Lines 5–14) and chooses one   Then, the completeness of the APS is assured by Lines 3–4
+           locally maximal control decision at each D-state (Line 5).     and 12. Furthermore, the APS enforces the given epistemic
+          Theorem 2: Given a system G and an epistemic property   property, as guaranteed by Lemma 1 and Line 8. Given that
+        ⟨Q, Kwo, Ko, Kao⟩, the closed-loop system S/G satisﬁes the   = {γ ⊆      |   uc ⊆γ }, the controllability of L(S/G) is
+          epistemic property, where the supervisor S is designed using   ensured by Line 6. Observability is ensured by Line 11 and
+         Algorithm 2, which corresponds to the solution to Problem 1.   Eq. (2). Finally, Algorithm 2 traverses the constructed APS
+            Proof: First, the game arena in Deﬁnition 5 is constructed  and selects a locally maximal control decision at each D-state,
+         from G∥Obs a( ˜G), which simultaneously  tracks both  the   thereby ensuring the maximal permissiveness of L(S/G).
+          behavior  of  the system G and  the  estimation  of knowl-    When    c ⊆    o,  it is well known that observability and
+         edge from the perspective of the intruder. By the deﬁnition   controllability jointly imply normality [24], thus there exists a
+          of Obs a( ˜G) and the property of parallel composition, we   unique controllable and observable supervisor that enforces the
+         have L(G) = L(G∥Obs a( ˜G)). Next, Algorithm 1 correctly   epistemic property. This result leads to the following corollary
+          constructs the APS. Speciﬁcally, Line 6 ensures that the DFS   of supervisor synthesis.
+
+Authorized licensed use limited to: The Hong Kong University of Science and Technology (Guangzhou). Downloaded on August 03,2025 at 02:18:16 UTC from IEEE Xplore. Restrictions apply.
+
+         MIAO et al.: PROTECT YOUR KNOWLEDGE: EPISTEMIC PROPERTY ENFORCEMENT OF DESs                                                 1837
+
+
+            Corollary 3: Given a system G and an epistemic property   system-environment interaction, we propose a game-theoretic
+        ⟨Q, Kwo, Ko, Kao⟩, assume that    c ⊆    o  (  uo ⊆    uc),  method to synthesize property-enforcing and maximally per-
+         Algorithm 2 returns a unique supervisor S such that the closed-   missive supervisors. Future work will extend the framework
+         loop system S/G satisﬁes the epistemic property.                to more complicated settings where intruders update  their
+            Proof: We  ﬁrst prove the uniqueness of the output of   observations when events are dynamically disabled.
+         Algorithm 2. By substituting   uo ⊆   uc and  = {γ ⊆     |
+              uc ⊆γ } into Eq. (2), we can rewrite Eq. (2) as ξDE(yd, γ ) =                  REFERENCES
+           ye ⇒[S(ye) = UR  uo({yd})] ∧[  (ye) = γ ]. This implies     [1] Y. Hou, Q. Li, Y. Ji, G. Wang, and C.-Y. Weng, “A new approach for
+           that the state component S(ye), also known as the current         veriﬁcation of delay co-observability of discrete-event systems,” IEEE
+                                                                                                 Trans. Control Netw. Syst., vol. 10, no. 3, pp. 1542–1554, Sep. 2023.
+           state estimate, of the reached E-state ye does not depend on     [2] L. Zhou, S. Shu, and F. Lin, “Detectability of discrete-event systems
+          the selected control decision. From Eq. (3), we know that        under nondeterministic observations,” IEEE Trans. Autom. Sci. Eng.,
+         e ∈   (ye) ∩   o. Given that    c ⊆   o and  = {γ ⊆      |          vol. 18, no. 3, pp. 1315–1327, Jul. 2021.                                                                                                    [3]  F. Lin, S. Lafortune, and C. Wang, “Diagnosability and attack detection
+              uc ⊆γ }, we deduce that   (ye) =   uc ∪   o′ for some   o′ ⊆          for discrete event systems under sensor attacks,” Discr. Event Dyn. Syst.,
+            (S(ye)), where   (S(ye)) =     x∥∈S(ye)  G∥Obs a( ˜G)(x∥).     [4]  S.vol.Miao,34, no.A. Lai,3, pp.and465–495,J. Komenda,2024.“Always guarding you: Strong initial-
+         Since the control decision does not affect S(ye),   (S(ye))         and-ﬁnal-state opacity of discrete-event systems,” Automatica, vol. 173,
+         remains unchanged. This means that the larger the control        Mar. 2025, Art. no. 112085.
+                                                                                                    [5] M. V. Alves, A. E. da Cunha, L. K. Carvalho, M. V. Moreira, and
+          decision   (ye) we choose, the more the system’s subsequent            J. C. Basilio, “Robust supervisory control of discrete event systems
+          behavior will be. Therefore, within APS(G), we can always         against intermittent loss of observations,” Int. J. Control, vol. 94, no. 7,
+                                                                                                 pp. 2008–2020, 2021.
+         choose   (ye) =   uc ∪   (S(ye)). Theorem 2 guarantees that     [6] R. Tai, L. Lin, and R. Su, “Synthesis of optimal covert sensor–actuator
+            all supervisors induced from APS(G) can correctly enforce the          attackers for discrete-event systems,” Automatica, vol. 151, May 2023,
+                                                                                                      Art. no. 110910.
+          given epistemic property, which completes the proof.                                                                                                    [7] W. Fokkink and M. Goorden, “Ofﬂine supervisory control synthesis:
+          Example 4: Consider again APS(G) depicted in Fig. 7. The       Taxonomy and recent developments,” Discr. Event Dyna. Syst., vol. 34,
+          traversed paths are highlighted in red, which indicates the         pp. 605–657, Nov. 2024.                                                                                                    [8] R. Oura, T. Ushio, and A. Sakakibara, “Bounded synthesis and rein-
+          supervisor S. Speciﬁcally, S(ε) = S(b) = S(bdn) = {b, a, c, d}        forcement learning of supervisors for stochastic discrete event systems
+         and S(bb) = {a, c, d}. Therefore, the closed-loop system S/G         with LTL speciﬁcations,” IEEE Trans. Autom. Control, vol. 69, no. 10,
+                                                                                                 pp. 6668–6683, Oct. 2024.
+            is obtained from G shown in Fig. 2 by removing the state 7     [9] R. Malik, S. Mohajerani, and M. Fabian, “A survey on compositional
+          as well as transitions 5 b−→7 and 7 d−→7.                                  algorithmsEvent Dyn. forSyst.,veriﬁcationvol. 33, no.and3,synthesispp. 279–340,in supervisory2023.    control,” Discr.
+           Note that since liveness is not involved in the deﬁnition of    [10] W. Deng, D. Qiu, and J. Yang, “Intersection-based decentralized supervi-
+          epistemic property for the original system G, we do not require         sory control of probabilistic discrete event systems,” IEEE Trans. Autom.                                                                                                  Control, vol. 66, no. 12, pp. 6171–6178, Dec. 2021.
+          the closed-loop system to be live. As a result, the supervisor    [11] Y. Tong, Z. Li, C. Seatzu, and A. Giua, “Current-state opacity enforce-
+         designed using our approach may result in a blocking closed-        ment in discrete event systems under incomparable observations,” Discr.
+                                                                                         Event Dyn. Syst., vol. 28, pp. 161–182, Jun. 2018.
+         loop system. This issue  is easily mitigated by leveraging    [12] Y. Xie, X. Yin, and S. Li, “Opacity enforcing supervisory control using
+           existing approaches such as [13], [25] to enforce liveness.             nondeterministic supervisors,” IEEE Trans. Autom. Control, vol. 67,
+                                                                                                 no. 12, pp. 6567–6582, Dec. 2022.
+          Remark 4: The DFS procedure of Algorithm 1 constructs    [13] X. Yin and S. Lafortune, “A uniform approach for synthesizing property-
+         a game arena with  2|Xp|+|  c|  states, where |Xp|  is doubly         enforcing supervisors  for  partially-observed  discrete-event systems,”
+                                                                           IEEE Trans. Autom. Control, vol. 61, no. 8, pp. 2140–2154, Aug. 2016.
+          exponential in the size of G. The complexity of Lines 3–4 is    [14] R. Liu, J. Lu, Y. Liu, X. Yin, and C. N. Hadjicostis, “Opacity enforce-
+          quadratic in the size of the constructed game arena. Finally,        ment via greedy privately-and-publicly known insertion functions,” IEEE
+         Algorithm 2 operates with linear complexity in the size of         Trans. Autom. Control, vol. 69, no. 4, pp. 2500–2506, Apr. 2024.                                                                                            [15] C. Keroglou and  S. Lafortune, “Embedded  insertion  functions  for
+        APS(G). As a  result, the  overall synthesis procedure has         opacity enforcement,” IEEE Trans. Autom. Control, vol. 66, no. 9,
+            triply exponential complexity in the size of G. We argue         pp. 4184–4191, Sep. 2021.
+                                                                                            [16] X. Li, C. N. Hadjicostis, and Z. Li, “Opacity enforcement in discrete
+            that, although some  related works  [11], [12], [13]  exhibit         event systems using modiﬁcation functions,” IEEE Trans. Autom. Sci.
+         lower synthesis complexity, they address relatively tractable         Eng., vol. 22, pp. 3252–3264, 2024.
+                                                                                            [17] K. Ritsuka and K. Rudie, “Do what you know: Coupling knowledge
+           properties. Speciﬁcally, the synthesis procedure in [13] has a         with action in discrete-event systems,” Discr. Event Dyn. Syst., vol. 33,
+          singly exponential complexity; however,  it does not account         no. 3, pp. 257–277, 2023.
+                                                                                            [18]  S. Takai and R. Kumar, “Nonexistence of upper bound to inferencing
+           for the intruder’s perspective. Subsequent works [11], [12],          level  in  decentralized  discrete event  control,” IEEE Trans. Autom.
+        do incorporate the intruder’s perspective, but their synthesis         Control, vol. 69, no. 11, pp. 7964–7971, Nov. 2024.
+         complexity remains doubly exponential. Nonetheless, these    [19] Y. Wang and M. Pajic, “Supervisory control of discrete event systems in                                                                                                   the presence of sensor and actuator attacks,” in Proc. 58th IEEE Conf.
+        two works do not consider the scenario that the intruder may         Decis. Control, 2019, pp. 5350–5355.
+         be interested in inferring the observer’s knowledge. On the    [20] R. Meira-Góes, S. Lafortune, and H. Marchand, “Synthesis of super-
+                                                                                                      visors robust against sensor deception attacks,” IEEE Trans. Autom.
+          other hand, following a similar synthesis procedure as in this         Control, vol. 66, no. 10, pp. 4990–4997, Oct. 2021.
+             letter, the twin estimator and state pair estimator in [23] can    [21] Y. Ji, X. Yin, and S. Lafortune, “Enforcing opacity by insertion functions
+                                                                                         under multiple energy constraints,” Automatica, vol. 108, Oct. 2019,
+         be readily adapted to address some of the eight epistemic          Art. no. 108476.
+           properties, with a predictably doubly exponential complexity.    [22] Y. Ji, X. Yin, and S. Lafortune, “Opacity enforcement using nondeter-
+                                                                                                    ministic publicly known edit functions,” IEEE Trans. Autom. Control,
+                                                                                                           vol. 64, no. 10, pp. 4369–4376, Oct. 2019.
+                                                                                            [23] B. Cui, Z. Ma, S. Li, and X. Yin, “On epistemic properties in discrete-
+                              V. CONCLUSION                                   event  systems: A uniform framework and  its  applications,” 2024,
+                                                                                           arXiv:2409.06588.
+            This  letter  studies  the enforcement  of  epistemic prop-    [24] C. G. Cassandras and S. Lafortune, Introduction to Discrete Event
+            erties in DES, which aims to prevent malicious intruders         Systems, 3rd ed. Cham, Switzerland: Springer, 2021.
+         from  inferring  the  observer’s  knowledge. By  integrating    [25] Y. Hu, Z. Ma, and Z. Li, “Design of supervisors for active diagnosis in                                                                                                        discrete event systems,” IEEE Trans. Autom. Control, vol. 65, no. 12,
+          observer state estimation, intruder knowledge estimation, and         pp. 5159–5172, Dec. 2020.
+
+Authorized licensed use limited to: The Hong Kong University of Science and Technology (Guangzhou). Downloaded on August 03,2025 at 02:18:16 UTC from IEEE Xplore. Restrictions apply.

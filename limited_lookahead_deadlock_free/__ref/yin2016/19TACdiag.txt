@@ -1,0 +1,520 @@
+              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 10, OCTOBER 2019                                            4237
+
+
+     Robust Fault Diagnosis of Stochastic Discrete Event Systems
+
+        Xiang Yin    , Member, IEEE, Jun Chen    , Member, IEEE, Zhaojian Li    , Member, IEEE,
+                         and Shaoyuan Li    , Senior Member, IEEE
+
+
+  Abstract—We investigate the problem of robust fault diagnosis   attention in the DES literature; see, e.g., [6], [11], [16], [21], [27], [30],
+of stochastic discrete-event systems against model uncertainty. In   [39], and a recent survey [42] for extensive references.
+this problem, we assume that the actual behavior of the system is
+                                                                         In many real-world DES, the dynamics of the systems are inherentlyunknown a priori and the true model of the system belongs to a set
+of possible models described by probabilistic automata. The goal   stochastic, i.e., each event occurrence has its associated probability.
+of this problem is to almost successfully detect the occurrence   Therefore, stochastic DES provides a more realistic way for the analysis
+of fault in the sense that, ﬁrst, no false alarm can be made, and   of system’s behavior. Consequently, state estimation and fault diagnosis
+second, the misdetection rate is smaller than a given threshold ϵ
+                                                                      of stochastic DES have been widely studied in recent literature (see,
+after some delay K even without knowing the true model a priori.
+A condition termed as robust (ϵ, K)-diagnosability is proposed to    e.g., [1]–[4], [12], [13], [18], [23]–[25], [34], [38], [40]). Particularly,
+capture the existence of such a robust diagnoser that satisﬁes the   in [34], the condition of A-diagnosability was proposed to capture
+above-mentioned requirements. We also propose the notions of   the existence of a stochastic diagnoser that produces no false alarm
+robust ϵ-diagnosability and robust A-diagnosability, which require                                                             and arbitrarily small misdetection. This condition is very useful in
+that a given misdetection rate ϵ can be achieved with some delay
+                                                                          practice since diagnosability may be too strong in many applications;and any arbitrarily small misdetection rate can be achieved, respec-
+tively. For each condition, an effective veriﬁcation algorithm is also   A-diagnosability does not require a bounded delay but guarantees that
+proposed. Our results generalize previous works on fault diagnosis   the probability of detecting the fault for sure converges to one as the
+of stochastic discrete-event systems by taking model uncertainty   length of observation increases. The condition of A-diagnosability is
+and speciﬁc misdetection rate into account.
+                                                                         also termed as SS-diagnosability in [13] and it has been shown in [4]
+  Index Terms—Discrete-event systems, fault diagnosis, model un-   and [12] that verifying A-diagnosability is PSPACE complete. Since the
+certainty, robustness, stochastic systems.                      work of [34], several variations of A-diagnosability have also proposed.
+                                                                For example, in [23], the authors generalize  it to the case of safe
+                                                                      diagnosis and in [24], the condition A-co-diagnosability was proposed
+                                     I. INTRODUCTION                                                                           to study the decentralized diagnosis problem.
+  In large-scale complex automated systems, one important task is to    On the other hand, since uncertainties are generally unavoidable
+detect and isolate faults in the systems. This leads to the fault diagnosis   in real-world systems, robustness is also an important aspect in the
+problem, which has drawn considerable attention in the general systems   analysis of DES. In the context of fault diagnosis, the problem of robust
+literature. In this technical note, we are concerned with the problem of    fault diagnosis has been studied by many works in the literature (see,
+fault diagnosis of discrete-event systems (DES).                              e.g., [7]–[9], [17], [31], [33], [35]). For example, in [7], [9], [17], [33],
+  In [29], a language-based approach for fault diagnosis was devel-   and [35], the authors have studied the robust fault diagnosis problem
+oped by using DES models. Speciﬁcally, the condition of diagnosability   under permanent or intermittent sensor failures. In [8], [19], [20], and
+was proposed to capture a priori whether or not a fault can always be   [31], the authors investigate the robust fault diagnosis problem with
+detected within a ﬁnite delay. One signiﬁcant advantage of the DES   model uncertainties. The effect of model uncertainties has also been
+approach to fault diagnosis is that it is a model-based approach. There-   considered in fault prognosis problem [32] and supervisory control
+fore, we can formally analyze and infer the system’s behavior based   problem [5], [22], [28], [37].
+on limited observations. Since the seminal work of [29], online fault     However, all of the above-mentioned works are still based on the
+diagnosis as well as diagnosability analysis have drawn considerable   logical DES. In this paper, we study the robust fault diagnosis problem
+                                                                      of stochastic discrete-event systems. Speciﬁcally, we assume that we
+                                                           do not know the system’s model a priori and the true model belongs to
+                                                                  a set of possible models described by probabilistic automata. The con-  Manuscript received April 14, 2018; revised November 19, 2018; ac-
+cepted January 11, 2019. Date of publication January 18, 2019; date of   tributions of this paper are as follows. First, we propose the condition
+current version September 25, 2019. This work was supported by the   of robust (ϵ, K)-diagnosability as a necessary and sufﬁcient condition
+National Natural Science Foundation of China (61803259, 61833012).   under which, ﬁrst, a fault can always be detected with a misdetection
+Recommended by Associate Editor C. N. Hadjicostis. (Corresponding                                                                              rate smaller than ϵ within K steps, and second, no false alarm can be
+author: Xiang Yin.)
+  X. Yin and S. Li are with the Department of Automation, Key Lab-   made, even we do not know the true model a priori. This condition
+oratory of System Control and Information Processing, Shanghai Jiao   also generalizes the well known K-diagnosability condition [42] to
+Tong University, Shanghai 200240, China (e-mail:,yinxiang@sjtu.edu.cn;   the stochastic and robust setting by considering the misdetection rate
+syli@sjtu.edu.cn).                                                             after K steps. Then, we deﬁne the condition of robust ϵ-diagnosability
+   J. Chen is with the General Motors, Milford, MI 48381 USA (e-mail:,
+                                                           by requiring that the system is robust (ϵ, K)-diagnosability for somejchenee2015@gmail.com).
+  Z. Li is with the Department of Mechanical Engineering, Michigan State  K. Finally, we say that the system is robustly A-diagnosable if it is
+University, East Lansing, MI 48824 USA (e-mail:,lizhaoj1@egr.msu.edu).   robustly ϵ-diagnosable for an arbitrarily small misdetection rate ϵ. Ro-
+  Color versions of one or more of the ﬁgures in this paper are available   bust A-diagnosability essentially requires that the misdetection rate will
+online at http://ieeexplore.ieee.org.
+                                                                 converge to zero as more events are executed after the occurrence of
+   Digital Object Identiﬁer 10.1109/TAC.2019.2893873
+
+
+
+
+               0018-9286 © 2019 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                  See http://www.ieee.org/publications standards/publications/rights/index.html for more information.
+
+4238                                                         IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 10, OCTOBER 2019
+
+
+
+fault. This condition is stronger than A-diagnosability [34] since we
+consider also model uncertainty, but it is weaker than robust diagnos-
+ability [33] as we allow an arbitrarily small misdetection rate. We pro-
+vide effective approaches for verifying these conditions. In particular,
+the complexity of the veriﬁcation algorithm for robust A-diagnosability
+is exponential in the number of states but polynomial in the number of
+possible models. To the best of our knowledge, this is the ﬁrst work
+that investigates robustness in the context of stochastic DES.
+  The rest of the paper is organized as follows. In Section II, we present
+necessary preliminaries. In Section III, the problem of robust fault    Fig. 1.  Two possible models of a simple job processing plant, where
+diagnosis of stochastic DES is formulated and three different conditions   Σo = {a, o1, o2}. The number associated with each transition denotes
+                                                                                                   its transition probability. (a) (G1, p1). (b) (G2, p2).for robust diagnosability in the stochastic setting are proposed. For
+each notion of robust diagnosability, an effective veriﬁcation algorithm
+is presented in Section IV. Finally, we conclude the paper in Section V.   function is also extended to p : X × Σ∗→[0, 1] recursively by: for
+                                                              any x ∈X, s ∈Σ∗, σ ∈Σ, we have
+                                      II. PRELIMINARY
+                                                                          p(sσ | x) = p(σ | δ(x, s))p(s | x).
+  Let Σ be a ﬁnite set of events. A string is a ﬁnite sequence of events.
+We denote by Σ∗the set of strings over Σ with empty string ϵ. For  We write p(s | x) as p(s) when x = x0.
+any string s ∈Σ∗, we denote by |s| its length with |ϵ| = 0. A language     Let x ∈X be a state and L ⊆L(G, x) be a set of strings deﬁned from
+                                                                      x. Then, we deﬁne Prob(L | x) =   s∈L p(s | x). Let Ln (G, x) :=L ⊆Σ∗is a set of strings; we denote by L the preﬁx closure of L.
+                                                             {s ∈L(G, x) : |s| = n} be the set of all strings in L(G, x) with length A DES is modeled by a ﬁnite-state automaton (FSA)
+                                                                   n. It can be shown easily by induction that, for any x ∈X, n ≥1, we
+             G = (X, Σ, δ, x0)                        (1)   have Prob(Ln (G, x) | x) = 1.
+                                                                         In the fault diagnosis problem, the system (G, p) is subject to fault.
+where X is the ﬁnite set of states, Σ is the ﬁnite set of events, δ :                                             We assume that the normal behavior is modeled by a (nonstochastic)
+X × Σ →X  is the partial transition function and x0  is the initial                                                FSA GN = (XN , Σ, δN , xN0 ) such that L(GN ) ⊆L(G). Without loss
+state. Function δ is also extended to X × Σ∗in the usual manner [10].                                                                      of generality, we assume that GN is a subautomaton of G such that ∀s ∈
+Then, δ(x, s) is the state reached via string s from state x; we write                                                   L(G) \ L(GN ) : δ(s) ∈X \ XN , where “\” denotes “set difference”.
+δ(x, s) by δ(s) if x = x0. We deﬁne L(G, x) = {s ∈Σ∗: δ(x, s)!}                                                                      Therefore, XN  is the set of nonfaulty states and XF := X \ XN  is
+as the language generated by G from state x ∈X, where “!” means “is                                                                        the set of faulty state. A string is fault if and only if it goes to a faulty
+deﬁned”. We write L(G, x) by L(G) if x = x0. Given an FSA G, a                                                                                     state. We deﬁne
+strongly connected component (SCC) is a maximal set of states C ⊆X
+such that ∀x1, x2 ∈C, ∃s ∈Σ∗: δ(x1, s) = x2. An SCC C ⊆X is     Ψ(G) := {s ∈L(G) \ L(GN ) : ∀t ∈{s} \ {s}, δ(t) ∈XN }
+said to be terminal if ∀x ∈C, ∀s ∈L(G, x) : δ(x, s) ∈C.
+  We assume that Σo ⊆Σ is the set of observable events. Then, P  :     i.e., the set of strings in which fault occurs for the ﬁrst time.
+Σ∗→Σ∗o is the natural projection deﬁned by
+                                                                                                                     III. ROBUST DIAGNOSABILITY OF STOCHASTIC DES
+                        P (s)σ     if σ ∈Σo
+       P (ϵ) = ϵ and P (sσ) =                                       In the fault diagnosis problem, the goal is to infer the occurrence of
+                        P (s)      if σ̸ ∈Σo              a fault based on the observation. However, in many applications, we
+                                                   may not precisely know the model of the system. Instead, we may only
+i.e., for any string s ∈Σ∗, P (s) ∈Σ∗o only keeps the observable                                                     know that the actual model belongs to a set of possible models. As a
+events of s. Projection P is also extended to 2Σ ∗by: for any L ⊆Σ∗,                                                                    motivating example, let us consider a simple plant processing a job,
+P (L) = {α ∈Σ∗o  : ∃s ∈L s.t. P (s) = α}. We denote by P −1 the in-                                                            which is adopted from [41] with some modiﬁcations. In this system,
+verse projection.                                                                     event a denotes “arrival of a job”, event d denotes “departure of a job”,
+  The  observer  automaton  for G  is  a new FSA Obs(G) =                                                             and o1 and o2 denote two kinds of plant operations. We assume that
+(Q, Σo, f, q0), where Q ⊆2X and f : Q × Σo →Q is the transition                                                                        the plant has two possible operation modes modeled by (G1, p1) and
+function such that: for any q ∈Q, σ ∈Σo                                                            (G2, p2) in Fig. 1, respectively. We require that event d should not
+   f(q, σ) = {x ∈X : ∃x′ ∈q, ∃w ∈Σ∗u o s.t. δ(x′, σw) = x}.   (2)   occur before the occurrence of event o2; otherwise, we consider it as a
+                                                                                     fault. Therefore, state 3 is a faulty state in G1 and states 3, 6, and 7 are
+The initial state is deﬁned by q0 = {x ∈X : ∃w ∈Σ∗u o s.t. δ(w) =   faulty states in G2. Since we do not know the precise operating mode
+x}. Note that, here we also consider ∅as a state in the observer.   of the system, the question then arises of how to detect the fault with
+Therefore, f is a total function over Q × Σo. Then, f(q, σ) = ∅implies   model uncertainty.
+that the observation is not consistent with the system model.            To formalize this problem, we assume that the actual system belongs
+ A stochastic discrete event system is then a pair (G, p), where G   to a set of possible models
+is an FSA and p : X × Σ →[0, 1] is the transition probability func-
+                                                                          {(G1, p1), (G2, p2), . . . , (Gn , pn )}              (3)tion. For any x ∈X, σ ∈Σ, we write p(σ | x) as the probability that
+event σ occurs from state x. We assume that p satisﬁes the following                                                            where Gi = (Xi, Σ, δi, x0,i). We denote by I = {1, 2, . . . , n} the
+requirements:                                                                  index set. Each (Gi, pi) is associated with a normal model GNi =
+                                                                                        I ⊆I be a set of indices. We deﬁne 1) ∀x ∈X, σ ∈Σ : δ(x, σ)! ⇔p(σ | x) > 0;                (XNi  , Σ, δNi  , xN0,i). Let
+ 2) ∀x ∈X :    σ ∈Σ p(σ | x) = 1.
+  The above-mentioned two conditions also imply that the system     UI = {s ∈∪i∈I L(Gi) : ∃i ∈I, ∃t ∈L(GNi ) s.t. P (s) = P (t)}
+is  live,  i.e., ∀x ∈X, ∃σ ∈Σ : δ(x, σ)!. The transition probability                                                                        (4)
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 10, OCTOBER 2019                                                          4239
+
+
+as the set of strings that can be confused with some nonfaulty strings     Theorem 3.1: Given ϵ > 0 and K ∈N, there exists a diagnoser
+in a model that belongs to set I ⊆I. Note that we assume that all   satisfying conditions (C1) and (C2) if and only if {(Gi, pi) : i ∈I} is
+possible models have the same event set Σ. This setting is without loss   robustly ϵ-diagnosable.
+of generality since we can always extend the domain of the event set      Proof: (⇒) We prove the necessity by contradiction. Suppose that
+without changing the transition function.                                 there exists a diagnoser D satisfying conditions (C1) and (C2) and
+ A (robust) diagnoser is a function                              assume that {(Gi, pi) : i ∈I}  is not robustly (ϵ, K)-diagnosable.
+                                                                Then, there exist  i ∈I and a faulty string s ∈Ψ(Gi) such that
+          D : ∪i∈IP (L(Gi)) →{0, 1}                  (5)                                                              Prob ({t ∈LK (Gi, δi(s)) : st ∈UI} | δi(s)) ≥ϵ. Since diagnoser D
+that assigns each possible observation a diagnostic decision, where   satisﬁes condition (C2), we know that for any st ∈UI, D(P (st)) =
+“0” means that “no fault is detected” while “1” means that “a fault   0; otherwise,  if D(P (st)) = 1, then we know  that D(P (w)) =
+is detected”. In the stochastic setting, the diagnoser may not detect  D(P (st)) = 1 for some w ∈L(GNj  ), which violates (C2). Therefore,
+the occurrence of fault within a ﬁnite number of steps. Instead, it may  we know that
+guarantee that the probability of misdetection is smaller than a threshold
+                                                                    {t ∈LK (Gi, δi(s)) : st ∈UI}⊆{t ∈LK (Gi, δi(s)) : D(P (st)=0}within a given number of steps. Formally, let ϵ > 0 be a misdetection
+rate and K ∈N be a detection delay. We require that a robust diagnoser   which means Prob ({t ∈LK (Gi, δi(s)) : D(P (st)) = 0} | δi(s)) ≥
+should satisfy the following conditions:                                         ϵ. Therefore, for the above chosen i and s, condition (C1) does not
+ C1) (∀i ∈I)(∀s ∈Ψ(Gi)) s.t.                                    hold for diagnoser D, which is a contradiction.
+     Prob ({t ∈LK (Gi, δi(s)) : D(P (st)) = 0} | δi(s)) < ϵ         (⇐) Suppose that {(Gi, pi) : i ∈I} is robustly (ϵ, K)-diagnosable.
+ C2) (∀i ∈I)(∀s ∈L(GNi ))[D(P (s)) = 0].                 We construct a diagnoser D by: for any w ∈∪i∈IL(Gi)
+   Intuitively, the ﬁrst condition requires that, no matter what the true
+model is, for any faulty string, the misdetection rate is smaller than ϵ in                                   1,    if P (w) /∈P (UI)                                                       D(P (w)) =                                      .             (6)
+K steps after the occurrence of fault. The second condition requires that                                   0,   otherwise
+a false alarm should never be generated when the system is operating
+normally.                                                           Next, we claim  that  the above-mentioned constructed diagnoser
+  Next, we investigate under what condition there exists a robust diag-   satisﬁes conditions (C1) and (C2). To see that D satisﬁes (C2),
+noser satisfying (C1) and (C2). First, we propose the notion of robust    let us consider an arbitrary model  i ∈I and arbitrary nonfaulty
+(ϵ, K)-diagnosability.                                                      string s ∈L(GNi  ). Since s ∈UI, we know  that P (s) ∈P (UI).
+   Deﬁnition 3.1: Given a misdetection rate ϵ > 0 and a delay K ∈  By (6), we know that D(P (s)) = 0,  i.e., (C2) holds. To see that
+N, the set of possible models {(Gi, pi) : i ∈I} is said to be ro-   (C1) holds, let us consider arbitrary i ∈I and s ∈Ψ(Gi). Since
+bustly  (ϵ, K)-diagnosable  if  for any  i ∈I, s ∈Ψ(Gi), we have   {(Gi, pi) : i ∈I}  is  robustly  (ϵ, K)-diagnosable, we know  that
+Prob ({t ∈LK (Gi, δi(s)) : st ∈UI} | δi(s)) < ϵ.                   Prob ({t ∈LK (Gi, δi(s)) : st ∈UI} | δi(s)) < ϵ. Then, for any string
+   Intuitively, robust (ϵ, K)-diagnosability says that, no matter what   v ∈LK (Gi, δi(s)) such that D(P (sv)) = 0, by (6), we know that
+                                              P (sv) ∈P (UI), which further implies that sv ∈UI. Therefore, wethe true model is, we can make sure that, for any faulty string, the prob-
+ability that the observation can be confused with a nonfaulty string in a  know that
+possible model is smaller than ϵ in K steps after the occurrence of fault.                                                 {t∈LK (Gi, δi(s)) : D(P (st))=0}⊆{t∈LK (Gi, δi(s)) : st∈UI}.
+Recall that, for any K ∈N, Prob ({t ∈LK (Gi, δi(s))} | δi(s)) = 1.
+Therefore, robust (ϵ, K)-diagnosability essentially evaluates the prob-   Since Prob ({t ∈LK (Gi, δi(s)) : st ∈UI} | δi(s)) < ϵ, we know that
+ability of detection in a step-based fashion.                          Prob ({t ∈LK (Gi, δi(s)) : D(P (st)) = 0} | δi(s)) < ϵ,  i.e., condi-
+  In some cases, one is interested in achieving a given misdetection   tion (C1) also holds.                        ■
+rate ϵ with some delay K. This leads to the deﬁnition of robust ϵ-     Remark 3.2:  It is worth remarking that the “⇐” part of the above-
+diagnosability, which characterizes whether or not there exists a delay   mentioned proof is actually constructive. That is, (6) also tells us how
+K such that the system is robustly (ϵ, K)-diagnosabale.                  to construct a robust diagnoser satisfying (C1) and (C2) for a robustly
+   Deﬁnition 3.2: Given a misdetection rate ϵ > 0, the set of possible   ϵ-diagnosable system.
+models {(Gi, pi) : i ∈I} is said to be robustly ϵ-diagnosable if there     Remark 3.3: In the context of logical DES, the condition of K-
+exists a delay K ∈N such that {(Gi, pi) : i ∈I} is robustly (ϵ, K)-   diagnosability [42] has been proposed in the literature to capture
+diagnosable.                                                     whether or not any fault can be detected for sure within K steps after
+   Remark 3.1: The   proposed   notions   of   robustly   (ϵ, K)-   the occurrence of fault. Our deﬁnition of robust (ϵ, K)-diagnosability
+diagnosability  and  robustly  ϵ-diagnosability  are  closely  related   generalizes K-diagnosability to the stochastic setting by specifying
+to the concept of diagnosability degree studied in [2], where the   a misdetection rate after K steps. Also, in [34], the condition of A-
+average detection time of faults is investigated. However, our notions   diagnosability was proposed in order to capture whether or not any
+focus on how fast the probability of detection converges to a given    fault can be detected with probability one by knowing the system
+threshold and we provide matrix-based approaches for verifying these   model precisely; the reader is referred to [34] for its deﬁnition. By
+conditions.                                                    comparing robust A-diagnosability with A-diagnosability, we see that
+   Finally, in some applications, we may want the diagnoser to achieve    if the set of possible models is a singleton, i.e., I = {1}, then robust
+an arbitrarily small misdetection rate ϵ. This leads to the deﬁnition of   A-diagnosability reduces to A-diagnosability. Therefore, our condition
+robust A-diagnosability as follows.                                     generalizes the condition of A-diagnosability in [34] by considering
+   Deﬁnition 3.3: The set of possible models {(Gi, pi) : i ∈I} is   the issue of model uncertainty. This is also why we term our condition
+said to be robustly A-diagnosable if for any ϵ > 0, {(Gi, pi) : i ∈I}   as robust A-diagnosability. However, our general case is more compli-
+is robustly ϵ-diagnosable.                                             cated to handle, as we do not know the true model a priori and a model
+  The following theorem reveals that robust (ϵ, K)-diagnosability is   identiﬁcation problem is hidden in the robust diagnosis problem.
+indeed a necessary and sufﬁcient condition for the existence of a robust      In the remainder of this paper, we will focus on the veriﬁcation
+diagnoser satisfying conditions (C1) and (C2) simultaneously.           of robust (ϵ, K)-diagnosability, robust ϵ-diagnosability, and robust
+
+4240                                                         IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 10, OCTOBER 2019
+
+
+A-diagnosability. Before, we formally present the algorithms, we ﬁrst      Proof: Suppose that s ∈UI and denote δV i (s) = (x, q1, . . . , qn ).
+illustrate Deﬁnitions 3.1–3.3 by the following example.                Then, we know  that x = δ(s) ∈XFi  and ∃j ∈I, ∃t ∈L(GNj ) :
+   Example 3.1: Let us still consider the motivating example and sup-  P (s) = P (t). This implies that δj (t) ∈fj (P (t)) = qj and δj (t) ∈
+pose we know that (G1, p1) and (G2, p2) shown in Fig. 1(a) and (b),  XNj  . Therefore, δV i (s) ∈Xunci     . Similarly, suppose that δV i (s) ∈
+respectively, are two possible models of the system. We assume that   Xunci     . Then, we know that ∃j ∈I : qj ∩XNj̸ = ∅, i.e., {x ∈XNj   :
+XN   1 = {1, 2, 4, 5}, XN2 = {1, 2, 4, 5} and Σo = {a, o1, o2}, i.e., d is   ∃t ∈L(Gj ) s.t. x = δj (t) ∧P (s) = P (t)}̸ = ∅. Therefore, we know
+the only unobservable event.                                                that ∃j ∈I, ∃t ∈L(GNj ) : P (s) = P (t), i.e., s ∈UI.       ■
+  Then, we know that {(G1, p1), (G2, p2)} is not robustly (ϵ, 1)-     The next result shows that once we enter a robustly certain state in
+diagnosable for any ϵ < 1. To see this, ﬁrst, we have I = {1, 2} and     Vi, we will stay in it forever.
+                                                    Lemma 4.2: For any i ∈I and faulty string s ∈L(Gi) \ L(GNi  ),
+ UI = L(GN1 ) ∪L(GN2 ) ∪{a}{o1}∗{d, do2} ∪{ad}{ϵ, o2}{o1}∗.      if δV i (s) ∈Xceri    , then for any of its continuation st ∈L(Gi), we have
+                                                                                                                                                      i    .If (G1, p1) is the true mode, then for any faulty string s ∈Ψ(G1), we   δV i (st) ∈Xcer
+                                                                                                                                                                                                                  i    , we know that ∀j ∈have L1(G1, δ1(s)) = {o2} and                                         Proof: Since (x, q1, . . . , qn ) = δV i (s) ∈Xcer
+                                                      I : fj (P (s)) ⊆XFj  . Since for any model j ∈I, once it enters XFj  ,
+       Prob ({t ∈L1(G1, δ1(s)) : st ∈UI} | δ1(s)) = 1.                  it will stay in XFj   for  ever. Therefore, we know  that ∀j ∈I :
+                                                                            fj (P (st)) ⊆XFj  , i.e., δV i (st) = (δi(st), f1(P (st)), . . . , fn (P (st)))Similarly, if (G2, p2) is the true mode, then for any faulty string s ∈
+                                                                                        is also robustly certain.                       ■
+Ψ(G2), we have L1(G2, δ2(s)) = {o1, o2} and                                                    By Lemma 4.2, we know that, ﬁrst, for any SCC in Vi, if it contains
+       Prob ({t ∈L1(G2, δ2(s)) : st ∈UI} | δ2(s)) = 1.           one robustly uncertain state, then all states in it are robustly uncertain,
+                                                             and second, once we reach a robustly certain state, we will stay in
+Therefore, it is not robustly (ϵ, 1)-diagnosable for any ϵ < 1.            robustly certain states forever. Therefore, we simplify the veriﬁcation
+  However, it is robustly (0.2,5)-diagnosable. To see this, if (G1, p1)   automaton Vi as follows.
+is the true mode, then for any faulty string s ∈Ψ(G1) and K ≥2, we    1) All robustly certain states in Vi are aggregated as a new single state
+have                                                                                    xcer from which no transition is deﬁned.
+                                                                       2) All robustly uncertain states in terminal SCCs are aggregated as a       Prob ({t ∈LK (G1, δ1(s)) : st ∈UI} | δ1(s)) = 0.
+                                                         new single state xunc from which no transition is deﬁned.
+If (G2, p2) is the true mode, then for any faulty string s ∈Ψ(G2) and    We denote the modiﬁed automaton by ˜Vi = ( ˜XVi  , Σ, ˜δV i , qV0,i).
+K ≥2, we have
+
+Prob ({t ∈LK (G1, δ1(s)) : st ∈UI} | δ1(s)) = 0.1 + 0.9 × 0.5K −1.   A. Veriﬁcation of Robust (ϵ, K)-Diagnosability
+                                                                     (7)
+                                                          Now, we discuss how to verify robust (ϵ, K)-diagnosability whenMoreover, according to (7), we see that any misdetection rate smaller
+                                                                        ϵ and K are given. According to Deﬁnition 3.1, it sufﬁces to com-than 0.1 cannot be achieved even when the delay goes to inﬁnity.
+                                                                    pute probability Prob ({t ∈LK (Gi, δi(s)) : st ∈UI} | δi(s)) for allTherefore, this system is not robustly 0.1-diagnosable and hence, it is
+                                                                        possible s ∈Ψ(Gi) and test whether or not it is smaller than ϵ. Bynot robustly A-diagnosable.
+                                                Lemma 4.1, this probability is in fact the probability of staying at
+                                                                               states Xunci    in K steps from string s, which can be computed as
+            IV. VERIFICATION OF ROBUST DIAGNOSABILITY
+                                                                         follows.
+  In this section, we investigate how to verify different notions of     Let ΨX ( ˜Vi) := {x ∈˜XVi   : ∃s ∈Ψ(Gi) s.t. x = ˜δV i (s)} be  the
+robust diagnosability in stochastic DES.                                    set  of  states  reached  by  strings  in  Ψ(Gi). We  denote  by
+   First, for any i ∈I, we deﬁne a new automaton                  Reachi(ΨX ( ˜Vi)) ⊆XVi   the set of states reachable from ΨX ( ˜Vi)
+                                                                           in  ˜Vi and suppose that states in Reachi(ΨX ( ˜Vi)) are ordered as
+                                                                                                                                              , . . . , xVm }, where each state xVk  is in the form Vi = (XVi  , Σ, δV i , qV0,i) := Gi∥Obs(G1)∥Obs(G2)∥. . . ∥Obs(Gn )   Reachi(ΨX ( ˜Vi)) = {xV1
+                                                                     (8)                                                                      of xVk = (xk , q1k , . . . , qnk ).
+where “∥” denotes the standard parallel composition (see, e.g., [10])                                                                  Then, we deﬁne a Markov chain (MC) Mi whose state space is
+and Obs(Gi) = (Qi, Σo, fi, q0,i) is the observer automaton for model                                                         Reachi(ΨX ( ˜Vi)) = {xV1 , . . . , xVm } with a m × m transition probabil-
+Gi. Recall that the transition function of each observer is total, i.e.,                                                                                   ity matrix Pi, whose k, j entry is
+L(Obs(Gi)) = Σ∗o. Therefore, by the property of parallel composition,
+we know that L(Vi) = L(Gi). Moreover, for any s ∈L(Vi), we know     ⎧
+                                                                                           pi(σ | xk )   if xVk  /∈{xcer, xunc}                                                                                                                                                                                                 i (x Vk ,σ )= x Vjthat δV i (s) = (δi(s), f1(P (s)), . . . , fn (P (s))). Automaton Vi is also     ⎪⎪⎨  σ ∈Σ:˜δV
+                                                                                                                    [xVk =xVj = xcer] or .referred to as the veriﬁcation automaton hereafter. Note that we do   pk ,j :=  1                                            if                                                                                                                                              k = xVj = xunc]not assume liveness of the system or the absence of unobservable cycle                                     ⎪⎪⎩                                    [xV
+since Vi tracks the original behavior of the system. Similar construction           0                               otherwise
+has also used in the literature for different purposes, e.g., [14], [36].
+   Deﬁnition 4.1: A state (x, q1, q2 . . . , qn ) ∈XVi  in Vi is said to be   Note  that pi(σ | xk ) corresponds to the probability of transition
+ 1) robustly certain if x ∈XFi  and ∀j ∈I : qj ⊆XFj  ;                δi(xk , σ) in the plant model. Therefore, pk ,j  is the one-step transi-
+ 2) robustly uncertain if x ∈XFi  and ∃j ∈I : qj ∩XNj̸ = ∅.           tion probability from state xVk to xVj  if the true model is Gi; and hence,
+  We denote by Xceri  and Xunci   the set of robustly certain and robustly   the k, j entry in (Pi)K  is the K-step transition probability from state
+uncertain states in Vi, respectively.                                xVk  to xVj  .
+  The following lemma establishes the relationship between robustly     For each state x ∈ΨX ( ˜Vi), we deﬁne an m-dimensional vector
+uncertain states and set UI.                                       π0i,x : Reachi(ΨX ( ˜Vi)) →{0, 1}, where only the value of state x is 1.
+  Lemma 4.1: For any i ∈I and faulty string s ∈L(Gi) \ L(GNi  ),     The  following  theorem  states how  to  verify  robust  (ϵ, K)-
+we have s ∈UI if and only if δV i (s) ∈Xunci     .                           diagnosability using MCs Mi, i ∈I.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 10, OCTOBER 2019                                                          4241
+
+
+
+
+
+                                                                               Fig. 3.  Associated Markov chains. (a) M1. (b) M2.
+
+                                                                           in V2, state (6, {2, 3}, {6}), which is a robustly uncertain state, forms
+                                                                  a terminal SCC by itself. Therefore, state (6, {2, 3}, {6}) is renamed
+                                                                      as xunc in V2.
+                                                           The associated MCs M1 and M2 are shown in Fig. 3 (a) and (b), re-
+                                                                             spectively. Their transition probability matrices (assuming states in M1
+                                                             and M2 are ordered as x1, . . . , x4, xcer and x1, . . . , x3, xcer , xunc, re-
+                                                                          spectively) are as follows:
+                                                  ⎡          ⎤    ⎡               ⎤
+                                                                    0  0  1  0  0         0  0.9   0    0   0.1
+                                                                    0  0  0  1  0         0   0   0.5  0.5   0
+                                                                P1 =  0  0  0  0  1   , P2 =  0   0   0.5  0.5   0     .                                                                                                                                                                                                                                                                                                                                                           ⎢⎢⎢⎢⎢⎢⎣ 0  0  0  0  1  ⎥⎥⎥⎥⎥⎥⎦                               ⎢⎢⎢⎢⎢⎢⎣ 0   0    0    1    0      ⎥⎥⎥⎥⎥⎥⎦
+
+                                                                    0  0  0  0  1         0   0    0    0    1
+
+                                                                Then, for M1 and x1, x2 ∈ΨX1 ( ˜V1), we have
+
+                                                                    π5                                                                                                1,x 1 1⊤unc = [1 0 0 0 0](P1)5[1 1 1 1 0]⊤= 0 < 0.2Fig. 2.   In the ﬁgures, states highlighted by bold lines are robustly
+certain states, states highlighted by dashes lines are robustly un-          π5                                                                                                1,x 2 1⊤unc = [0 1 0 0 0](P1)5[1 1 1 1 0]⊤= 0 < 0.2.certain states and the blue dash  circle denotes a terminal SCC.
+(a) V1 = G1∥Obs(G1)∥Obs(G2). (b) V2 = G2∥Obs(G1)∥Obs(G2).                                                                           Similarly, for M2 and x1 ∈ΨX ( ˜V2), we have
+
+                                                                 π5                                                                                            2,x 1 1⊤unc = [1 0 0 0 0](P2)5[1 1 1 0 1]⊤= 0.15625 < 0.2.   Theorem 4.1: Given ϵ > 0 and K ∈N, {(Gi, pi) : i ∈I} is ro-
+bustly (ϵ, K)-diagnosable if and only if                                                                      Therefore, by Theorem 4.1, we know that the system is robustly (0.2,5)-
+        πKi,x1⊤u n c < ϵ, for any i ∈I and x ∈ΨX ( ˜Vi)               diagnosable.
+
+where πKi,x = π0i,x(Pi)K and 1⊤u n c  : Reachi(ΨX ( ˜Vi)) →{0, 1} is a   B. Veriﬁcation of Robust ϵ-Diagnosability
+m-dimensional vector in which only the value of state xcer is 0, i.e.,
+the values of states in Xunci   ∪{xunc} are 1.                               In this section, we show how to check robust ϵ-diagnosability, i.e.,
+   Proof: For any i ∈I, s ∈Ψ(Gi), each element in πKi, ˜δV i (s) is prob-   whethersome delay.or notThisweproblemcan achievecan stilla givenbe solvedmisdetectionusing therateaboveϵ >deﬁned0 with
+ability of reaching each state of Reachi(ΨX ( ˜Vi)) in K steps given the   veriﬁcation automata and their associated MCs.
+                                  unc is the probability that the system    We observe that, in each MC Mi, state xcer is absorbing in the senseoccurrence of s. Hence, πKi, ˜δV i (s)1⊤
+is in Xunci    after executing K steps from s. Therefore, by Lemma 4.1,    that once we reach state xcer, we will stay in it forever. Therefore, we
+we have                                               know that, for each x ∈ΨX ( ˜Vi), π0i,x(Pi)K 1⊤unc is nonincreasing as
+                                   K increases. Moreover, in the construction of ˜Vi, we only aggregate
+   Prob ({t ∈LK (Gi, δi(s)) : st ∈UI} | δi(s)) = πKi, ˜δV i (s)1⊤unc.       uncertain states in a terminal SCC. Therefore, all uncertain states are not
+                                                                   absorbing except xunc and the limit of π0i,x(Pi)K 1⊤unc is the absorbingNote that, the above-mentioned probability only depends on the state
+reached by s ∈Ψ(Gi). Therefore, the system  is robustly (ϵ, K)-   probability of state xunc when the initial distribution vector is π0i,x.
+                                 < ϵ.■   This absorbing probability can be computed by [26]                                                            uncdiagnosable if and only if ∀i ∈I, ∀x ∈ΨX ( ˜Vi), πKi, ˜δV i (s)1⊤
+  We  illustrate  the above-mentioned theorem by  the  following                                                                                                              unc = π0i,xv⊤i                                                                  K                                                                                lim→∞π0i,x(Pi)K 1⊤
+example.
+   Example 4.1: Again, let us consider {(G1, p1), (G2, p2)} shown   where  vi : Reachi(ΨX ( ˜Vi)) →R  is  the minimal m-dimensional
+in  Fig. 1 with XN1 = {1, 2, 4, 5}, XN2 = {1, 2, 4, 5}, and Σo =   nonnegative vector  that solves  the following equations:  for any
+{a, o1, o2}. We have discussed in Example 3.1 that the system is ro-   xk ∈{x1, . . . , xm }  (recall  that we  assume Reachi(ΨX ( ˜Vi)) =
+bustly (0.2,5)-diagnosable. Here, we verify this result by Theorem 4.1.   {x1, . . . , xm }), we have
+   First,  we  construct  the  veriﬁcation  automata  V1  and  V2       ⎧
+shown in Fig. 2. For V1, we have ΨX1 ( ˜V1) = {(3, {2, 3}, {2, 3}),       ⎪⎨ 1                                             if xk = xunc
+(3, {2, 3}, {6})}; states (3, {3}, {7}) and (3, {3}, ∅) are robustly cer-     vi(xk ) =   0                                             if xk = xcer  .  (9)
+tain states. For the sake of simplicity, states in Reachi(ΨX ( ˜Vi)) are       ⎪⎩                                                                                               x j ∈Reachi (Ψ X ( ˜V i )) v(xj ) × pk ,j   otherwise
+renamed by x1, . . . , x4, xcer as denoted in the ﬁgure. Note that V1 does
+not contains a terminal SCC in which all states are uncertain. However,   To sum up, we have the following theorem immediately.
+
+4242                                                         IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 10, OCTOBER 2019
+
+
+   Theorem 4.2: Given  ϵ > 0,  {(Gi, pi) : i ∈I}  is  robustly  ϵ-  know that it is not robustly A-diagnosable. However, the complexity of
+diagnosable if and only if                                                     this approach is exponential in both the size of each automaton and the
+                                                          number of possible models. In particular, the exponential complexity
+           π0i,xv⊤i < ϵ, for any i ∈I and x ∈ΨX ( ˜Vi).
+                                                                           in the number of possible models comes from the fact that Theorem 4.3
+  We illustrate Theorem 4.2 by the following example.                  requires the parallel composition of all observer automata. In fact, we
+   Example 4.2:  Still, we  consider  {(G1, p1), (G2, p2)}  shown   note that, in contrast to veriﬁcation of robust (ϵ, K)-diagnosability and
+in  Fig. 1 with XN1 = {1, 2, 4, 5}, XN2 = {1, 2, 4, 5}, and Σo =   robust ϵ-diagnosability, whose satisfactions depend on the transition
+{a, o1, o2}. For M1, the minimal nonnegative solution to the following   probability matrix, robust A-diagnosability is a purely structural prop-
+equations:                                                                         erty. This value independency can actually help us to further improve
+                                                                        the veriﬁcation complexity. Speciﬁcally, the following theorem shows
+       v1(x1) = v1(x3) = v1(xcer ) = v1(x2) = v1(x4)                                                               (10)    that, to verify robust A-diagnosability for all possible models, it sufﬁces
+        v1(xcer ) = 0                                                                           to verify robust A-diagnosability for each pair of models.
+is v1 = [0 0 0 0 0]. For M2, the minimal nonnegative solution to the     Theorem 4.4: The  set of  all models {(Gi, pi) : i ∈I}  is  ro-
+following equations:                                                    bustly  A-diagnosable  if and  only  if any  pair  of two models
+  ⎧                                                        {(Gi, pi), (Gj , pj )}, i, j ∈I is robustly A-diagnosable.
+        =                 +                                0.1       v2(x1)                 0.9 × v2(x2)                    × v2(xunc)                                                                                                                                                                            i, j ∈I                                                                        Proof:                                                             (⇒)                                                             By                                                                                              contraposition.                                                                                          Suppose                                                                                                                               that there exist  ⎪⎪⎪⎨             = 0.9                 ×                                                                                            pi),                                                                            (Gj                                                                                                                                            , pj )} is not                                                                                                            robustly A-diagnosable,                                                                                                                                                                                i.e.                                                                                    that {(Gi,       v2(x2)        = v2(x3)                              v2(x3)                      + 0.5 × v1(xcer)            such
+                                                               (11)
+                                         > 0)(∀K > 0)(∃i′ ∈{i, j})(∃s ∈Ψ(Gi′))  ⎪⎪⎪⎩ v2(xunc) = 1                                                 (∃ϵ
+        v1(xcer) = 0
+                                                                                                          s.t. Prob {t ∈LK (Gi′, δi′(s)) : st ∈U{i,j }} | δi′(s) ≥ϵ.   (12)
+is v2 = [0.1 0 0 0 1]. Then, for x1, x2 ∈ΨX ( ˜V1), we have π01,x 1 v⊤1 =                                                                  Since U{i,j } ⊆UI, we know that    v⊤π0
+  1,x 2        2 = 0 and, for x1 ∈ΨX ( ˜V2), we have π02,x 1 v⊤1 = 0.1. There-
+fore, we know that we can achieve any misdetection rate ϵ > 0.1 with       Prob ({t ∈LK (Gi′, δi′(s)) : st ∈UI} | δi′(s))
+a sufﬁciently large K.
+                                                       ≥Prob {t ∈LK (Gi′, δi′(s)) : st ∈U{i,j }} | δi′(s) ≥ϵ.   Remark 4.1: Let us discuss the complexity of verifying robust
+(ϵ, K)-diagnosability and  the complexity  of  verifying  robust  ϵ-   Therefore, we know that
+diagnosability using Theorems 4.1 and 4.2, respectively. For each
+i ∈I, x ∈ΨX ( ˜Vi), it takes O(K · (mi)3) to compute πK0,x and takes        (∃ϵ > 0)(∀K > 0)(∃i′ ∈I)(∃s ∈Ψ(Gi′))
+O((mi)3) to solve (9), where mi denotes the number of states in                                                                                                             s.t. Prob ({t ∈LK (Gi′, δi′(s)) : st ∈UI} | δi′(s)) ≥ϵ     (13)
+Reachi(ΨX ( ˜Vi)). Moreover, we need to repeat them for all i ∈I and
+x ∈ΨX ( ˜Vi). Therefore, the complexity for verifying robust (ϵ, K)-     i.e., {(Gi, pi) : i ∈I} is not robustly A-diagnosable.
+diagnosability is O(   i∈I K · (mi)4) and the complexity for verifying    (⇐) For any two possible models i, j ∈I, since {(Gi, pi), (Gj , pj )}
+robust ϵ-diagnosability is O(   i∈I(mi)4). In the worst case, mi is ex-    is robustly A-diagnosable, we know that, for any ϵ > 0, there exists an
+ponential in the number of possible models and the number of states   integer Ki,j , such that for any i′ ∈{i, j}, s ∈Ψ(Gi′), we have
+in each model. Therefore, the overall complexity for verifying robust                                                              ϵ
+(ϵ, K)-diagnosability and robust ϵ-diagnosability are both exponential     Prob {t ∈LK i , j (Gi′, δi′(s)) : st ∈U{i,j }} | δi′(s) < n2 .   (14)
+in the number of possible models and the number of states in each
+model.                                                            Let K := maxi,j ∈I Ki,j . By the deﬁnition of U, we have that
+
+                                                                                 UI =      U{i,j }.
+C. Veriﬁcation of Robust A-Diagnosability                                                                                      i,j ∈I
+   Finally, we discuss how to verify robust A-diagnosability,  i.e.,                                                                      Therefore, for the above chosen K, (14) implies that, for any i′ ∈I, s ∈
+whether or not the system is robustly ϵ-diagnosable for an arbitrarily                                                                Ψ(Gi′), we have
+small misdetection rate ϵ. This problem is addressed by the following
+theorem.                                                          Prob ({t ∈LK (Gi′, δi′(s)) : st ∈UI} | δi′(s))
+   Theorem 4.3: {(Gi, pi) : i ∈I} is robustly A-diagnosable if and
+only if for any i ∈I, xunc /∈˜XVi  , i.e., Vi does not contain a SCC in     ≤     Prob {t ∈LK (Gi′, δi′(s)) : st ∈U{i,j }} | δi′(s)
+which all states are robustly uncertain.                                                                i,j ∈I
+   Proof: For  any  i ∈I  and x ∈ΨX ( ˜Vi),  since  only  states
+                                         ≤     Prob {t ∈LK i , j (Gi′, δi′(s)) : st ∈U{i,j }} | δi′(s)xcer  and  xunc  are  absorbing  states  in Mi, we know  that
+limK →∞π0i,x(Pi)K 1⊤unc = π0i,xv⊤i = 0 if and only if xunc is not reach-                  i,j ∈I                                                                                   ϵ
+able from x. Therefore,  if xunc /∈˜XVi  , then we know that ∀x ∈     <  × |I|2 = ϵ.                                                                      n2
+ΨX ( ˜Vi) : π0i,xv⊤i = 0. By Theorem 4.2, we know that the system is
+robustly ϵ-diagnosable for any ϵ > 0, i.e., it is robustly A-diagnosable.   Since ϵ > 0 is chosen arbitrarily, we know that {(Gi, pi) : i ∈I} is
+If xunc ∈˜XVi  , then let x ∈ΨX ( ˜Vi) be a state such that xunc is reach-   robustly A-diagnosable.                       ■
+able from x. Then, we have π0i,xv⊤i̸ = 0. Therefore, by Theorem 4.2,     Theorem 4.4 suggests immediately an improved approach for the
+the system is not robustly ϵ-diagnosable for any ϵ < π0i,xv⊤i  , i.e., it is   veriﬁcation of robust A-diagnosability. Speciﬁcally, for each possible
+not robustly A-diagnosable.                     ■   model i ∈I, instead of constructing Gi∥Obs(G1)∥. . . ∥Obs(Gn ), we
+  Theorem 4.3 provides a direct approach for the veriﬁcation of robust   can simply construct Gi∥Obs(Gi)∥Obs(Gj ), which contains at most
+A-diagnosability. To this end, we just need to construct automaton Vi   |Xi| · 2|X i | · 2|X j | number of states and |Σ| · |Xi| · 2|X i | · 2|X j | number
+for each i ∈I and then check whether or not it contains a terminal SCC   of transitions, for all j ∈I, and then use Theorem 4.3 to test whether or
+in which all states are robustly uncertain. For example, in the running   not each pair of models is robustly A-diagnosable, where the complex-
+example {(G1, p1), (G2, p2)} shown in Fig. 1, since xunc ∈˜XV2  , we    ity of detecting all SCCs is linear in the size of Gi∥Obs(Gi)∥Obs(Gj ).
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 10, OCTOBER 2019                                                          4243
+
+
+Therefore, the overall complexity of testing robust A-diagnosability us-   to construct a new automaton such that,1 ﬁrst, it starts from a new
+ing Theorem 4.4 is O(|Σ| ·     i,j ∈I  |Xi| · 2|X i |+ |X j |  ), which is poly-   single initial state from which the initial state of each possible model
+nomial in the number of all possible models. Similarly, one can show   can be reached unobservably, and second, the dynamic of the new
+that both robust ϵ-diagnosability and robust (ϵ, K)-diagnosability can   system follows the dynamic of each possible model from its original
+also be veriﬁed in such a pairwise manner. However, the veriﬁca-    initial state. One can show that the set of possible models is robust A-
+tion complexity is still exponential w.r.t. the number of states in each   diagnosable if and only if the new system is A-diagnosable. Note that
+model. It is natural to ask whether or not this complexity can also be   the new system contains 1 +    i∈I |Xi| states and we can further use
+improved. In fact, it has been shown in [4] and [12] that veriﬁcation of   Theorem 4.4 to reduce the complexity of veriﬁcation procedure. The
+A-diagnosability, which is the special case of robust A-diagnosability   idea of this machinery may also be applied to other robust problems
+with a unique model, is already PSPACE hard w.r.t. the number of   against model uncertainties, e.g., robust prognosis problem [32] and ro-
+states in the system model. Therefore, this exponential complexity for   bust control problem [5], [22], [28], [37], to “de-robustify” the problem
+robust A-diagnosability also seems to be unavoidable, which essen-    settings.
+tially comes from the subset construction in the observer automata.
+One special case, where polynomial-time solution is possible, is that                                                                                                 V. CONCLUSION
+each possible model satisﬁes a property called natural observer prop-
+erty [15]. In this case, the number of states in the observer automaton is    We studied the robust fault diagnosis problem in the context of
+smaller than the number of states in the original system. Therefore, for   stochastic DES. A condition termed as robust (ϵ, K)-diagnosability
+this special case, the complexity for verifying robust A-diagnosability   was proposed to capture whether or not a fault can always be detected
+becomes polynomial in both the size of each automaton and the number   with misdetection rate smaller ϵ in K steps even though we do not
+of possible models.                                       know the true model a priori. We also proposed the conditions of
+   Finally, recall that robust A-diagnosability guarantees that, for any   robust ϵ-diagnosability and robust A-diagnosability to capture whether
+given misdetection rate ϵ, there exists a delay K such that the misdetec-   or not a misdetection rate ϵ can be achieved and the misdetection rate
+tion rate ϵ can be achieved in K steps. However, ﬁnding the smallest K   converges to zero, respectively. Effective algorithms were also provided
+achieving ϵ requires us to compute the smallest K such that, for each   to verify these conditions. Our results generalize existing works on fault
+i ∈I, x ∈Ψi( ˜Vi), π0i,x(Pi)K 1⊤unc < ϵ, which is computationally very   diagnosis of stochastic DES by handling the robustness issue regarding
+challenging. Here, we provide an upper bound for estimating the delay   model uncertainties.
+that achieves a given misdetection rate ϵ.
+   Proposition 4.1: Suppose that {(Gi, pi) : i ∈I} is robustly A-                        REFERENCES
+diagnosable  and  let  ϵ > 0  be  an  arbitrary  misdetection  rate.
+Then,  for any  i ∈I and s ∈Ψ(Gi), P rob({t ∈LK (Gi, δi(s)) :     [1] E. Athanasopoulou, L. Li, and C. N. Hadjicostis, “Maximum likelihood                                                                                               failure diagnosis in ﬁnite state machines under unreliable observations,”
+st ∈UI} | δi(s)) < ϵ if                                              IEEE Trans. Autom. Control, vol. 55, no. 3, pp. 579–593, Mar. 2010.
+                                                                                      [2] H. Bazille, E. Fabre, and B. Genes, “Diagnosability degree of stochastic
+                                     log ϵ                                       discrete event systems,” in Proc. 56th IEEE Conf. Decis. Control, 2017,
+        K > nm ax ×                               log (1 −pnminm a x )                              pp. 5726–5731.
+                                                                                      [3] N. Bertrand, E. Fabre, S. Haar, S. Haddad, and L. H´elou¨et, “Active di-
+                                                                                  agnosis for probabilistic systems,” in Proc. Int. Conf. Found. Softw. Sci.where ⌈k⌉denotes the smallest integer greater than or equal to k,
+nm ax := maxi∈I |Reachi(ΨX ( ˜Vi))| is the maximum number of states     [4] N.Comput.Bertrand,Struct.,S. Haddad,2014, pp.and29–42.E. Lefaucheux, “Foundation of diagnosis and
+in each MC Mi and pmin is the minimum entry in P1, . . . , Pn .                   predictability in probabilistic systems,” in Proc. 34th IARCS Conf. Found.
+   Proof: Let i ∈I be an arbitrary model and s ∈Ψ(Gi) be a faulty         Softw. Technol. Theor. Comput. Sci., 2014, pp. 417–429.
+string. Since the system is robustly A-diagnosable, we know that xunc /∈     [5]  S. E. Bourdon, M. Lawford, and W. M. Wonham, “Robust nonblock-
+˜XVi  . Therefore, from any state reachable from ˜δV i (s), we can reach         ing supervisory control of discrete-event systems,” IEEE Trans. Automat.                                                                                     Control, vol. 50, no. 12, pp. 2015–2021, Dec. 2005.
+xcer in at most nm ax steps. Moreover, the probability of reaching xcer     [6] M. P. Cabasino, A. Giua, S. Lafortune, and C. Seatzu, “A new approach
+in nm ax steps is greater than pnminm a x . Therefore, for any k ∈N, we have          for diagnosability analysis of petri nets using veriﬁer nets,” IEEE Trans.
+                                                                           Autom. Control, vol. 57, no. 12, pp. 3104–3117, Dec. 2012.
+        Prob ({t ∈Lk ×n m a x (Gi, δi(s)) : st ∈UI} | δi(s))                [7] L. K. Carvalho, J. C. Basilio, and M. V. Moreira, “Robust diagnosis of dis-
+                                                                                           crete event systems against intermittent loss of observations,” Automatica,
+        ≤(1 −pnminm a x )k .                                                          vol. 48, no. 9, pp. 2068–2078, 2012.
+                                                                                      [8] L. K. Carvalho, M. V. Moreira, and J. C. Basilio, “Generalized robust di-
+                                           ϵ                                                                                       agnosability                                                                                                 of discrete event systems,” in Proc. 18th IFAC World Congr.,
+                                   n                          mSince K > nm ax × ⌈ log (1−plog                                              a x ) ⌉, we have                                                                              2011, pp. 8737–8742.                         m                                              in
+                                                                                      [9] L. K. Carvalho, M. V. Moreira, J. C. Basilio, and S. Lafortune, “Robust di-
+Prob ({t ∈LK (Gi, δ1(s)) : st ∈UI} | δi(s))                                   agnosis of discrete-event systems against permanent loss of observations,”
+                                                                                Automatica, vol. 49, no. 1, pp. 223–231, 2013.
+                                                                               [10] C. Cassandras and S. Lafortune, Introduction to Discrete Event Systems,
+                                                           ϵ                                                 lo                                              g                                    ⌉(Gi, δ1(s)) : st ∈UI} | δi(s)        2nd ed. New York, NY, USA: Springer, 2008.                                       n  ≤Prob  {t ∈Ln m a x ×⌈ lo g ( 1                                   −p                             m a x )
+                            m in                                         [11]  F. Cassez, “The complexity of codiagnosability for discrete event and
+                                               ϵ                                      lo                                     g                                                                             timed                                                                                          systems,”                                                                             IEEE Trans. Automat. Control, vol. 57, no. 7, pp. 1752–                               n                        m                               lo g ( 1                           −p                                         a x ) ⌉
+                       m                                         in                                                                              1764, Jul.                                                                                        2012.  ≤(1 −pnmmina x ) ⌈
+                                     lo g ϵ                                                   [12]  J. Chen, C. Keroglou, C. N. Hadjicostis, and R. Kumar, “Revised test for
+                       m                                                                                                       IEEE Trans. Automat.                                        a x )                                                      stochastic                                                                                                 diagnosability                                                                                                             of discrete-event                                                                                                                           systems,”
+                      m                                        in  ≤(1 −pnmmina x ) lo g ( 1 −p n                                                                                                Sci. Eng., vol.                                                                                                   15, no. 1, pp.                                                                                                   404–408, Jan.                                                                                                                     2018.
+  = ϵ.                                                                       [13]  J. Chen and R. Kumar, “Failure detection framework for stochastic discrete
+                                                                                   event systems with guaranteed error bounds,” IEEE Trans. Autom. Control,
+                                   ■          vol. 60, no. 6, pp. 1542–1553, Jun. 2015.
+   Remark 4.2: In this paper, we provide direct approaches for verify-
+ing different notions of robust diagnosability against model uncertainty.
+An alternative approach for addressing the model uncertainty issue is      1This observation belongs to an anonymous reviewer of this paper.
+
+4244                                                         IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 10, OCTOBER 2019
+
+
+
+[14] E. Fabre, L. H´elou¨et, E. Lefaucheux, and H. Marchand, “Diagnosability    [29] M. Sampath, R. Sengupta, S. Lafortune, K. Sinnamohideen, and D.
+      of repairable faults,” in Proc. 13th Int. Workshop Discrete Event Syst.,         Teneketzis, “Diagnosability of discrete-event systems,” IEEE Trans. Au-
+     2016, pp. 230–236.                                                          tom. Control, vol. 40, no. 9, pp. 1555–1575, Sep. 1995.
+[15] L. Feng and W. M. Wonham, “Supervisory control architecture for    [30] R. Su and W. M. Wonham, “Global and local consistencies in distributed
+      discrete-event systems,” IEEE Trans. Autom. Control, vol. 53, no. 6,          fault diagnosis for discrete-event systems,” IEEE Trans. Autom. Control,
+     pp. 1449–1461, Jul. 2008.                                                            vol. 50, no. 12, pp. 1923–1935, Dec. 2005.
+[16]  S. Hashtrudi Zad, R. H. Kwong, and W. M. Wonham, “Fault diagnosis    [31]  S. Takai, “Veriﬁcation of robust diagnosability for partially observed
+      in discrete-event systems: Framework and model reduction,” IEEE Trans.          discrete event systems,” Automatica, vol. 48, no. 8, pp. 1913–1919,
+     Autom. Control, vol. 48, no. 7, pp. 1199–1212, Jul. 2003.                       2012.
+[17] N. Kanagawa and S. Takai, “Diagnosability of discrete event systems    [32]  S. Takai, “Robust prognosability for a set of partially observed discrete
+      subject to permanent sensor failures,” Int. J. Control, vol. 88, no. 12,         event systems,” Automatica, vol. 51, pp. 123–130, 2015.
+     pp. 2598–2610, 2015.                                                     [33]  S. Takai and T. Ushio, “Veriﬁcation of codiagnosability for discrete
+[18] C. Keroglou and C. N. Hadjicostis, “Detectability in stochastic discrete         event systems modeled by mealy automata with nondeterministic out-
+     event systems,” Syst. Control Lett., vol. 84, pp. 21–26, 2015.                     put functions,” IEEE Trans. Autom. Control, vol. 57, no. 3, pp. 798–804,
+[19] R. H. Kwong and D. L. Yonge-Mallo, “Fault diagnosis in discrete-event        Mar. 2012.
+     systems: Incomplete models and learning,” IEEE Trans. Syst. Man Cy-    [34] D. Thorsley and D. Teneketzis, “Diagnosability of stochastic discrete-
+      bern., B, vol. 41, no. 1, pp. 118–130, Feb. 2011.                                 event systems,” IEEE Trans. Autom. Control, vol. 50, no. 4, pp. 476–492,
+[20] R. H. Kwong and D. L. Yonge-Mallo, “Fault diagnosis in discrete-event         Apr. 2005.
+     systems with incomplete models: Learnability and diagnosability,” IEEE    [35]  J. H. A. Tomola, F. G. Cabral, L. K. Carvalho, and M. V. Moreira, “Ro-
+     Trans. Cybern., vol. 45, no. 7, pp. 1236–1249, Jul. 2015.                         bust disjunctive-codiagnosability of discrete-event systems against perma-
+[21] D. Lefebvre and C. Delherm, “Diagnosis of des with petri net models,”         nent loss of observations,” IEEE Trans. Autom. Control, vol. 62, no. 11,
+    IEEE Trans. Automat. Sci. Eng., vol. 4, no. 1, pp. 114–118, Jan. 2007.            pp. 5808–5815, Nov. 2017.
+[22]  F. Lin, “Robust and adaptive supervisory control of discrete event sys-    [36] G. S. Viana, J. C. Basilio, and M. V. Moreira, “Computation of the maxi-
+     tems,” IEEE Trans. Autom. Control, vol. 38, no. 12, pp. 1848–1852,      mum time for failure diagnosis of discrete-event systems,” in Proc. Amer.
+     Dec. 1993.                                                                 Control Conf., 2015, pp. 396–401.
+[23]  F. Liu and D. Qiu, “Safe diagnosability of stochastic discrete event    [37]  F. Wang, S. Shu, and F. Lin, “Robust networked control of discrete event
+     systems,” IEEE Trans. Autom. Control, vol. 53, no. 5, pp. 1291–1296,         systems,” IEEE Trans. Automat. Sci. Eng., vol. 13, no. 4, pp. 1528–1540,
+      Jun. 2008.                                                                    Oct. 2016.
+[24]  F. Liu, D. Qiu, H. Xing, and Z. Fan, “Decentralized diagnosis of stochas-    [38] X. Yin, “Initial-state detectability of stochastic discrete-event systems with
+       tic discrete event systems,” IEEE Trans. Autom. Control, vol. 53, no. 2,          probabilistic sensor failures,” Automatica, vol. 80, pp. 127–134, 2017.
+     pp. 535–546, Mar. 2008.                                                  [39] X. Yin and S. Lafortune, “Codiagnosability and coobservability un-
+[25]  J. Lunze and J. Schr¨oder, “State observation and diagnosis of discrete-         der dynamic observations: Transformation and veriﬁcation,” Automatica,
+     event systems described by stochastic automata,” Discrete Event Dyn.          vol. 61, pp. 241–252, 2015.
+       Syst., Theory Appl., vol. 11, no. 4, pp. 319–369, 2001.                      [40] X. Yin and S. Lafortune, “On the decidability and complexity of diagnos-
+[26]  J. R. Norris, Markov Chains. vol. 2. Cambridge, U.K.: Cambridge Univ.          ability for labeled petri nets,” IEEE Trans. Autom. Control, vol. 62, no. 11,
+      Press, 1998.                                                                    pp. 5931–5938, Nov. 2017.
+[27] N. Ran, H. Su, A. Giua, and C. Seatzu, “Codiagnosability analysis of    [41]  S. Yokota, T. Yamamoto, and S. Takai, “Computation of the delay bounds
+     bounded petri nets,” IEEE Trans. Autom. Control, vol. 63, no. 4, pp. 1192–        and synthesis of diagnosers for decentralized diagnosis with conditional
+     1199, Apr. 2018.                                                                 decisions,” Discrete Event Dyn. Syst., vol. 27, no. 1, pp. 45–84, 2017.
+[28] A. Saboori and S. Hashtrudi Zad, “Robust nonblocking supervisory control    [42]  J. Zaytoon and S. Lafortune, “Overview of fault diagnosis methods for
+      of discrete-event systems under partial observation,” Syst. Control Lett.,          discrete event systems,” Annu. Rev. Control, vol. 37, no. 2, pp. 308–320,
+      vol. 55, no. 10, pp. 839–848, 2006.                                          2013.

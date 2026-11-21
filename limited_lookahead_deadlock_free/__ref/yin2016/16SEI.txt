@@ -1,0 +1,480 @@
+3644                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 61, NO. 11, NOVEMBER 2016
+
+             Decentralized Supervisory Control With
+                 Intersection-Based Architecture
+
+                                  Xiang Yin and Stéphane Lafortune
+
+
+
+
+  Abstract—We  investigate a new  decentralized  control  ar-   in [6], the conditional architecture, where supervisors are allowed
+chitecture, called  intersection-based architecture. We propose a   to make conditional decisions, e.g., “disable if nobody enables” and
+decentralized control protocol under  this architecture, called   “enable if nobody disables,” was proposed. In [8], the inference-based
+state-estimator-intersection-based protocol (SEI-protocol), where                                                                          architecture was proposed, where higher order inferences are allowed
+each local supervisor sends its state estimate to the fusion sites and                                                                           in order to achieve a richer class of languages. In [9], a framework that
+these sites take the intersection of these estimates in order to make
+                                                                    allows several architectures running in parallel was proposed. Note that
+a control decision. The necessary and sufﬁcient conditions for the
+                                                                        the goal of using decentralized control is to handle the decentralizedachievability of the speciﬁcation under this protocol is provided.
+This condition is termed as state-estimator-intersection-based coob-   information structure rather than to provide a computationally efﬁcient
+servability (SEI-coobservability). A polynomial-time algorithm for   approach to ﬁnd the centralized solution. This is different from the
+the veriﬁcation of SEI-coobservability is provided. We show that   notion of distributed control in the literature, where one wants to com-
+the languages that can be achieved under the SEI-protocol are   pute the solution of the centralized problem more efﬁciently in a dis-
+incomparable with languages that can be achieved under existing   tributed way.
+architectures.                                                          Similar to the decentralized control problem, many architectures
+  Index Terms—Decentralized  control,  discrete-event systems   and protocols have been proposed in the literature on decentralized
+(DES), intersection-based architecture, observability, supervisory   diagnosis; see, e.g., [12]–[14]. In particular, in [12], a decentralized
+control.                                                               protocol (Protocol 2) was presented, where each local diagnoser sends
+                                                                                             its state estimate associated with fault labels to the coordinator and
+                                                                        the coordinator takes the intersection of the state estimates in order
+                                   I. INTRODUCTION                                                                           to calculate the global decision. This idea was recently revisited in
+  Decentralized control is an efﬁcient way of tackling the control    [15], where a polynomial test for diagnosability under this protocol is
+of large-scale networked systems, where the information structure is   provided.
+decentralized and the physical components of the system are distrib-     Motivated by Protocol 2 in [12], in this technical note, we propose
+uted. In this technical note, we consider the decentralized supervisory   a new decentralized control architecture, called intersection-based
+control problem of Discrete Event Systems (DES). In this problem,    architecture. In particular, we investigate a particular protocol under
+the plant is controlled by a set of local supervisors acting on the plant    this architecture, called state-estimator-intersection-based protocol
+based on their own observations. The supervisors cooperate with each   (SEI-protocol). More speciﬁcally, under this protocol, each local su-
+other in order to achieve some global speciﬁcation.                      pervisor sends its state estimate to the fusion sites and these fusion
+  One of the key ingredients of the decentralized control problem is    sites take the intersection of these state estimates in order to issue a
+the architecture adopted; see, e.g., [1]–[11]. An architecture consists of   global decision. Necessary and sufﬁcient conditions for the achiev-
+the following two ingredients: (i) what information local supervisors    ability of a given speciﬁcation language under the SEI-protocol are
+can send to the fusion sites; and (ii) what rule the fusion sites use in   provided. One condition is the well-know controllability condition
+order to fuse the information received from local supervisors into a   and the other condition is termed as state-estimator-intersection-based
+                                                                        coobservability (SEI-coobservability). A polynomial time algorithmglobal decision. Note that the fusion sites are distributed, since each
+of them corresponds to a local actuator (controllable event). The ﬁrst   for the veriﬁcation of SEI-coovservability  is also provided. More
+architecture for the decentralized supervisory control problem was    interestingly, we show that the languages that can be achieved under
+proposed in [1] and [2], where each supervisor makes a binary deci-   the SEI-protocol are incomparable with the languages that can be
+sion, “disable” or “enable”; the fusion rule is “disable if one disables.”   achieved under any of the existing architectures discussed above.
+This architecture is referred to as the conjunctive architecture. In [3],   Consistent with the assumptions of previous works on decentralized
+the disjunctive architecture was proposed, where the fusion rule is   supervisory control in the literature [1]–[3], [5], [6], [8], [16], the
+“enable if one enables.” In [5], a general architecture was proposed by   intersection-based architecture also has the following features. First,
+combining the conjunctive architecture and the disjunctive architecture   each fusion site need not have the model of the system and its decision
+together. The above-mentioned architectures only allow supervisors to   only relies on the emptiness of the intersection, which can be easily
+make unconditional decisions. In order to overcome this drawback,   implemented. In other words, most of the information is processed
+                                                                            locally and only certain “useful” information is sent to the fusion sites.
+                                                                 Second, the fusion rule for the intersection-based architecture is local
+  Manuscript  received June 18, 2015; revised September 24, 2015 and                                                                           to each actuator (controllable event) and it is memoryless, since it only
+January 21, 2016; accepted January 27, 2016. Date of publication January 28,
+2016; date of current version October 25, 2016. This work was supported in part   takes the intersection of sets of states it receives currently and it does
+by NSF grants CCF-1138860 (Expeditions in Computing project ExCAPE: Ex-   not depend on past information. These features are desirable for decen-
+peditions in Computer Augmented Program Engineering) and CNS-1446298.    tralized control architectures, since we want the fusion sites to be “as
+Recommended by Associate Editor C. Hadjicostis.                          simple as possible.” Finally, although a similar information structure
+  The authors are with the Department of Electrical Engineering and Com-
+                                                         was used in [12] and [15], the diagnosis problem and the control prob-puter Science, University of Michigan, Ann Arbor, MI 48109 USA (e-mail:
+xiangyin@umich.edu; stephane@umich.edu).                          lem are inherently incomparable. Consequently, different architecture
+   Digital Object Identiﬁer 10.1109/TAC.2016.2523424                      formulation and different veriﬁcation method are required.
+
+                     0018-9286 © 2016 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                         See http://www.ieee.org/publications_standards/publications/rights/index.html for more information.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 61, NO. 11, NOVEMBER 2016                                                                   3645
+
+
+
+                                II. PRELIMINARIES                        Si : Pi(L(G)) × Σc,i →{0, 1, φ} × N, where “0” means “disable,”
+                                                                “1” means enable and “ φ” means “pass.” The nonnegative integer
+  We assume basic knowledge of DES and common notations (see,
+                                                            component represents the ambiguity level of the local control decision.
+e.g., [17]). Let Σ be a ﬁnite set of events and Σ∗be the set of all
+                                                           Each fusion site adopts the control decision that has the minimum
+ﬁnite strings over Σ, including the empty string ϵ. A language L ⊆Σ∗
+                                                                 ambiguity level. An inference-based supervisor is called N-inferring
+is a subset of Σ∗and L is the preﬁx-closure of language L deﬁned
+                                                                                                if the maximum ambiguity level is N. It was shown that N-inference
+by L = {t ∈Σ∗: ∃u ∈Σ∗s.t. tu ∈L}. A DES is modeled as a
+                                                                         observability together with controllability and Lm(G)-closure provide
+deterministic ﬁnite-state automaton G = (X, Σ, f, x0, Xm), where X                                                                        the necessary and sufﬁcient conditions for the existence of a non-
+is the ﬁnite set of states, Σ is the ﬁnite set of events, f : X × Σ →X is                                                                   blocking N-inferring supervisor  that achieves K. Moreover, the
+the partial transition function, x0 ∈X is the initial state and Xm is the                                                                      authors in [8] show that coobervability is equivalent to 0-inference ob-
+set of marked states. The transition function f is extended to X × Σ∗                                                                             servability and conditional coobervability is equivalent to 1-inference
+in the usual manner (see, e.g., [17]). The language generated by G is                                                                             observability. By allowing higher-order inference, one may be able to
+deﬁned by L(G) = {s ∈Σ∗: f(x0, s)!}, where ! means “is deﬁned”;                                                                    achieve richer behaviors.
+the marked language is Lm(G) = {s ∈L(G) : f(x0, s) ∈Xm}.
+  In the framework of supervisory control [18],  it is assumed that
+                                                                                                             III. INTERSECTION-BASED ARCHITECTURE
+event set Σ is partitioned into two disjoint subsets: Σ = Σc ˙∪Σuc,
+where Σc  is the set of controllable events and Σuc  is the set of      In this section, we present a new decentralized control architecture
+uncontrollable events. Let K ⊆L(G) be a speciﬁcation language that   called intersection-based architecture. First, we provide an overview
+represents the desired behavior to be achieved under control. We say   of this architecture. In the intersection-based architecture, the default
+that K is: (i) controllable (w.r.t. G and Σuc) if KΣuc ∩L(G) ⊆K;   for the local decision is to disable events. However, in addition to this,
+and (ii) Lm(G)-closed (w.r.t. G) if K ∩Lm(G) = K. Under the full   each local supervisor should also send, for each disabled event, a set
+observation setting,  it is well-known that there exists a centralized   of states as the reason for its disablement. Each fusion site will take
+non-blocking supervisor that achieves K, if and only if, K is both   the intersection of these sets of states received from local supervisors.
+controllable and Lm(G)-closed.                                                 If the intersection is empty, then it means that there is no common
+  Let H = (XH, Σ, fH, x0,H, Xm,H) be a trim automaton  (see,   reason for disabling the event and the ﬁnal decision after fusion is to
+e.g., [17], p.76) that marks the speciﬁcation language K, i.e., K =   enable the event, since local supervisors cannot agree with each other.
+Lm(H) ⊆L(G). We assume that H is a sub-automaton of G, denoted    If the intersection is non-empty, then  it means that the supervisors
+by H ⊑G (see, e.g., [17]). Therefore, we have that XH ⊆X and   have at least one common reason for disabling the event and the ﬁnal
+(∀x ∈XH)(∀σ ∈Σ)[fH(x, σ)! ⇒fH(x, σ) = f(x, σ)]. Note that   decision after fusion is to disable this event. Next, we present the
+this assumption is w.l.o.g., since we can always reﬁne the state spaces   formal deﬁnition of the intersection-based architecture.
+of G and H such that this assumption holds; see, e.g., [19].                In the intersection-based architecture, each local supervisor i ∈I is
+  In the decentralized control problem, there are n local supervisors   deﬁned as a function
+that work as a team in order to achieve the speciﬁcation K. We denote
+by I = {1, . . . , n} the index set of the local supervisors. Each supervi-                    Si : Pi (L(G)) × Σc,i →2X.                 (1)
+sor i ∈I has its own sets of controllable events and observable events.
+                                             We denote by Sint the decentralized supervisor combining local super-
+We denote by Σc,i and Σo,i, the set of locally controllable events
+                                                                          visors Si, i ∈I. Formally, in the intersection-based architecture, Sint
+and the set of locally observable events, respectively, for supervisor
+                                                                                       is deﬁned as the function Sint : L(G) × Σ →{0, 1} such that, for any
+i ∈I. We deﬁne Σc = ∪i∈IΣc,i, Σo = ∪i∈IΣo,i, Σuc = Σ \ Σc and
+                                                             s ∈L(G), for any σ ∈Σ,
+Σuo = Σ \ Σo. For each controllable event σ ∈Σc, we denote by
+Ic(σ) = {i ∈I : σ ∈Σc,i} the set of supervisors that can disable σ.        •  If σ ∈Σuc, then Sint(s, σ) = 1;
+Also, for any i ∈I, Pi : Σ∗→Σ∗o,i is the natural projection deﬁned        •  If σ ∈Σc, then
+in the usual manner [17].
+                                                                                                       1,   if  i∈Ic(σ) Si (Pi(s), σ) = ∅  In order to control the system, supervisors make local decisions                                                                                     Sint(s, σ) =                                           (2)
+and send them to the fusion sites based on their own observations;                                0,   if  i∈Ic(σ) Si (Pi(s), σ)̸ = ∅
+a ﬁnal decision is made at the fusion sites according to some fusion
+rule. We refer to the set of local decisions the supervisors send      Clearly, Si can always enable an event in Σc,i by sending ∅. We
+together with the fusion rule the fusion sites adopt as the architecture   denote by L(Sint/G) the closed-loop behavior under the decentralized
+of the decentralized system. Here, we brieﬂy review some existing   supervisor Sint, which is deﬁned inductively as follows.
+decentralized architectures in the literature. The reader is referred to                                                                                        • ϵ ∈L(Sint/G);
+[1]–[3], [5], [6], [8] for more details.                                                                                        • [sσ ∈L(Sint/G)] ⇔[s ∈L(Sint/G) ∧sσ ∈L(G)∧
+  In the unconditional architecture [1]–[3], [5], each supervisor makes                                                                              Sint(s, σ) = 1].
+an unconditional decision, i.e., “disable” or “enable.” It was shown
+that the notion of coobservability together with controllability and    We also deﬁne Lm(Sint/G) = L(Sint/G) ∩Lm(G).
+Lm(G)-closure provide the necessary and sufﬁcient conditions for the
+existence of a non-blocking supervisor that achieves K.
+                                                                               IV. STATE-ESTIMATOR-INTERSECTION-BASED PROTOCOL
+  In the conditional architecture [6], each supervisor makes condi-
+tional decisions, i.e., “enable,” “disable,” “enable if nobody disables”      In this section, we ﬁrst propose a decentralized control protocol un-
+and “disable  if nobody enables.”  It was shown that the notion of   der the intersection-based architecture. Then we provide the necessary
+conditional coobservability together with controllability and Lm(G)-   and sufﬁcient conditions under which the proposed protocol achieves
+closure provide the necessary and sufﬁcient conditions for the exis-   the speciﬁcation language exactly.
+tence of a non-blocking supervisor that achieves K.                       In the intersection-based architecture, there is no restriction on the
+  In [8], an inference-based architecture was proposed. In this ar-   local decision functions and the supervisor can send any information
+chitecture, each  local  supervisor  Si, i ∈I  is deﬁned  as a map   (as a set of states) it wants (no matter if it achieves the speciﬁcation
+
+3646                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 61, NO. 11, NOVEMBER 2016
+
+
+
+or not). Here, we provide a speciﬁc local decision rule for each
+supervisor, which determines the information it sends to the fusion
+site for each of its controllable events. We refer to these ﬁxed local
+decision rules as a protocol under the architecture.
+  Before we formally present our decentralized control protocol, we
+introduce some necessary notations. Recall that the automaton H =
+(XH, Σ, fH, x0,H, Xm,H) that marks the speciﬁcation language K is
+assumed to be a sub-automaton of G = (X, Σ, f, x0, Xm). For each
+controllable event σ ∈Σc, we deﬁne the set of disabled states by                                                                                    Fig. 1. An example of SEI-coobservable language, where Σo,1 = {a, o, c},
+       DH(σ) := {x ∈XH : f(x, σ)! ∧fH(x, σ)¬!}        (3)   Σo,2 = {b, o, c}, and Σc,1 = Σc,2 = {c}. (a) G. (b) H.
+
+where ¬! means “is not deﬁned.” In other words, DH(σ) is the set of
+states at which we need to disable σ in order to avoid executing an    If  (i) holds, since K  is controllable, we know  that sσ ∈K.  If
+illegal string in L(G) \ K. Also, for each local supervisor i ∈I, we    (ii) holds, since {f(x0, s)} ⊆(∩i∈Ic(σ)Ei(Pi(s))), we know that
+denote by Ei(s) the state estimate of supervisor i w.r.t. H by observing   {f(x0, s)} ∩DH(σ) = ∅, which implies that fH(x, σ)!, where x =
+Pi(s), s ∈K, i.e.,                                               f(x0, s). Therefore, we have that sσ ∈K.
+                                                                   Second, we show that K ⊆L(S∗int/G) by induction on the lengthEi (Pi(s))= x ∈XH : ∃t ∈K s.t. Pi(t)=Pi(s)∧fH(x0,H, t)=x .
+                                                                       of the strings. Initially, we know that ϵ ∈K and ϵ ∈L(S∗int/G).                                                                     (4)
+                                                        Now, let us assume that for any s ∈K such that |s| = k, we have
+  Now, we are ready to present the decentralized control protocol,                                                             s ∈L(S∗int/G). For the induction step, suppose that sσ ∈K is a string
+calledtheState-Estimator-Intersection-Based Protocol (SEI-protocol).                                                                  with |sσ| = k + 1. If σ ∈Σuc, we know that S∗int(s, σ) = 1, which
+Under this protocol, for any string s ∈L(G) and any controllable                                                          means sσ ∈L(S∗int/G). If σ ∈Σc, since K is SEI-coobservable, we
+event σ ∈Σc, each local supervisor  i ∈Ic(σ) computes  its state                                                      know that [∩i∈Ic(σ)Ei(Pi(s))] ∩DH(σ) = ∅. Thus
+estimate Ei(Pi(s)) locally and compares  it with the set DH(σ).
+Then it sends the set of states that it thinks could be the reason for           S∗i (Pi(s), σ) =        [Ei(Pi(s)) ∩DH(σ)] = ∅    (7)
+disabling σ, i.e., Ei(Pi(s)) ∩DH(σ), to the corresponding fusion site.        i∈Ic(σ)                 i∈Ic(σ)
+Therefore, the SEI-protocol is realized by the decentralized supervisor
+S∗int consisting of S∗i , i ∈I deﬁned as follows. For any s ∈L(G) and   which implies that S∗int(s, σ) = 1, i.e, sσ ∈L(S∗int/G).
+any σ ∈Σ                                           (⇒) By contradiction. Assume that L(S∗int/G) = K but K  is
+                                                                     not controllable or SEI-coobservable. If K is not controllable, then
+                      Ei (Pi(s)) ∩DH(σ),   if σ ∈Σc,i
+   S∗i (Pi(s), σ) =                                                (5)  we know that ∃s ∈K, ∃σ ∈Σuc such that sσ ∈L(G) \ K. Since
+                        ∅,                             if σ ∈Σ \ Σc,i.       σ ∈Σuc, we know that S∗int(s, σ) = 1, i.e., sσ ∈L(S∗int/G). This
+                                                                          contradicts the assumption that L(S∗int/G) = K. If K  is not SEI-
+  Deﬁnition  IV.1: A language K = Lm(H) ⊆L(G)  is  said  to                                                                      coobservable, we know that
+be state-estimator-intersection-based coobservable (SEI-coobservable)                                                               ⎡⎛       ⎞         ⎤
+w.r.t. H, G, Σc,i and Σo,i, i ∈I if
+                                                              (∃s ∈K)(∃σ ∈Σc : sσ ∈K) ⎣⎝      Ei [Pi(s)]⎠∩DH(σ)̸ = ∅⎦
+(∀s ∈K)(∀σ ∈Σc : sσ ∈K)                                                                           i∈Ic(σ)
+              ⎡ ⎛        ⎞         ⎤
+                                                            which implies that
+              ⎣ ⎝       Ei [Pi(s)]⎠∩DH(σ) = ∅⎦.   (6)
+                           i∈Ic(σ)                                     S∗i (Pi(s), σ) =        (Ei [Pi(s)] ∩DH(σ))̸ = ∅.
+                                                                              i∈Ic(σ)                 i∈Ic(σ)
+  Remark IV.1: SEI-coobservability not only depends on the lan-
+guages under consideration, but also depends on the automata gen-   Therefore, we know that S∗int(s, σ) = 0, i.e., sσ̸ ∈L(S∗int/G). This
+erating these languages, since it involves sets DH(σ) and Ei(Pi(s)),   again contradicts the assumption that L(S∗int/G) = K.      □
+which both rely on the state space. We will see later that even for the    Remark IV.2: In the “ ⇐” direction of the above proof, we see
+same language, different state-space realizations will result in different    that SEI-coobservability is used only in the proof of the second set
+SEI-coobservability properties. Hereafter, we assume that the state-   inclusion. In other words, L(S∗int/G) ⊆K always holds  if K  is
+space realization of K, i.e., H, is given and ﬁxed, and we want to   controllable. Therefore, we know that even if SEI-coobservability does
+investigate the SEI-coobservability w.r.t. the ﬁxed H.                   not hold, using the SEI-protocol still results in a safe solution, in the
+  The following result states that the SEI-protocol achieves the lan-   sense that L(S∗int/G) ⊆K.
+guage K, if and only, K is controllable and SEI-coobservable.          The following result is a corollary of Theorem IV.1 when non-
+  Theorem IV.1: Given automata H and G, where L(H) = K̸ = ∅,   blockingness is of concern.
+L(S∗int/G) = K iff K is controllable (w.r.t. L(G) and Σuc) and SEI-     Collorary IV.1: L(S∗int/G) = K and Lm(S∗int/G) = L(S∗int/G)
+coobservable (w.r.t. H, G, Σc,i and Σo,i, i ∈I).                                 iff K is controllable (w.r.t. L(G) and Σuc), SEI-coobservable (w.r.t.
+     Proof:  (⇐) First, we show that L(S∗int/G) ⊆K by induction  H, G, Σc,i and Σo,i, i ∈I) and Lm(G)-closed.
+on the length of the strings. Initially, we know that ϵ ∈L(S∗int/G)     Example IV.1: Consider the system automaton G and the speciﬁca-
+and ϵ ∈K. Now, let us assume that for any s ∈L(S∗int/G) such that   tion automaton H in Fig. 1. We have that DH(c) = {4, 6}. For string
+|s| = k, we have s ∈K. For the induction step, suppose that sσ ∈   o such that oc ∈K, we have
+L(S∗int/G) is a string with |sσ| = k + 1. Since sσ ∈L(S∗int/G), we
+know that sσ ∈L(G) and S∗int(s, σ) = 1, i.e., either                   E1 (P1(o)) ∩E2 (P2(o)) ∩DH(c) = {5, 6} ∩{4, 5} ∩{4, 6} = ∅.
+   (i) σ ∈Σuc; or                                                    Therefore, K  is SEI-coobservable and can be achieved by S∗int.
+  (ii) σ ∈Σc and (∩i∈Ic(σ)Ei(Pi(s))) ∩DH(σ) = ∅.                For example, if o occurs, then we know that S∗int(o, c) = 1, since
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 61, NO. 11, NOVEMBER 2016                                                                   3647
+
+
+
+                                                                 where:
+
+                                                                                        • XV = X × X × X is the set of states;
+                                                                                        • ΣV = (Σ ∪{ϵ}) × (Σ ∪{ϵ}) × (Σ ∪{ϵ}) is the event set;
+                                                                                        • x0,V = (x0, x0, x0) is the initial state;
+                                                                                        • XV,m is the set of marked states;
+                                                                                        • fV  : XV × ΣV →XV  is the partial (deterministic) transition
+                                                                            function deﬁned below.
+
+                                                                         In the deﬁnition of fV , we refer to the following violation condition
+Fig. 2.  Σo,1 = {a, o, c}, Σo,2 = {b, o, c}, and Σc,1 = Σc,2 = {c}. (a) H.   (VIO) stated in terms of the controllability properties of the event
+(b) L(S∗int/G).                                        σ ∈Σ under consideration at state triple (x1, x2, x3) ∈XV :
+
+S∗1(P1(o)) ∩S∗2(P2(o)) = ∅. Similarly, if ao occurs, we know that          (VIO) ⇔(VIO−1) ∨(VIO−2) ∨(VIO−12)
+S∗1(P1(ao)) ∩S∗2(P2(ao)) = {4} ∩{4, 5}̸ = ∅, i.e., S∗int(ao, c) = 0.       (VIO−1) ⇔σ ∈Σc,1 \ Σc,2 ∧fH(x1, σ)! ∧fH(x2, σ)¬!
+  Note  that  the  SEI-protocol  is  a  special  protocol  under  the                                                                     ∧f(x2, σ)!
+intersection-based architecture. One may ask whether or not SEI-
+                                                        (VIO−2) ⇔σ ∈Σc,2 \ Σc,1 ∧fH(x1, σ)! ∧fH(x3, σ)¬!coobservability is also necessary for the existence of supervisor under
+the intersection-based architecture. Unfortunately, this is not true in                 ∧f(x3, σ)!
+general, as is shown in the following example.                       (VIO−12) ⇔σ ∈Σc,1 ∩Σc,2 ∧fH(x1, σ)! ∧x2 = x3
+  Example IV.2: Consider the system automaton G and the spec-
+                                                                   ∧fH(x2, σ)¬! ∧f(x2, σ)!.
+iﬁcation automaton H  in  Fig.  2. We know  that DH(c) = {3}.
+For string o such that oc ∈K, we have E1(P1(o)) ∩E2(P2(o)) ∩   The transition function fV is speciﬁed as follows
+DH(c) = {3, 4} ∩{3, 4} ∩{3} = {3}̸ = ∅. Therefore, K is not SEI-
+coobservable. By applying supervisor S∗int, we obtain the closed-loop      (a) For σ ∈Σo,1 ∩Σo,2
+behavior shown in Fig. 2(c). We see that Sint is still safe, although it
+                                                                 fV ((x1, x2, x3),(σ, σ, σ))=(fH(x1, σ), fH(x2, σ), fH(x3, σ)) .
+cannot achieve K exactly.
+  However, there does exist an intersection-based supervisor that     (b) For σ ∈Σo,1 \ Σo,2
+achieves K. Let us consider the supervisor deﬁned as follows:
+                                                                   fV ((x1, x2, x3), (σ, σ, ϵ)) = (fH(x1, σ), fH(x2, σ), x3)
+                              {1},      if P1(s) = o
+            S1(P1(s), c) =                                           fV ((x1, x2, x3), (ϵ, ϵ, σ)) = (x1, x2, fH(x3, σ)) .                               {1, 2},  otherwise
+                              {2},      if P2(s) = o                      (c) For σ ∈Σo,2 \ Σo,1
+            S2(P2(s), c) =
+                               {1, 2},  otherwise.                                                                   fV ((x1, x2, x3), (σ, ϵ, σ)) = (fH(x1, σ), x2, fH(x3, σ))
+One  can   easily   verify   that  Sint(ao, c)=Sint(bo, c)=0  and          fV ((x1, x2, x3), (ϵ, σ, ϵ)) = (x1, fH(x2, σ), x3) .
+Sint(o, c)= 1, i.e., K can be achieved under Sint.
+                                                                              (d) For σ ∈Σuo  Remark IV.3: The system language and speciﬁcation language
+in  Figs. 1 and 2 are exactly the same. The only difference  is
+                                                                      fV ((x1, x2, x3), (σ, ϵ, ϵ)) = (fH(x1, σ), x2, x3)
+that some states in Fig. 1 are merged as a single state in Fig. 2.
+The above example also illustrates the interesting phenomenon that             fV ((x1, x2, x3), (ϵ, σ, ϵ)) = (x1, fH(x2, σ), x3)
+SEI-coobservability not only depends on the system and speciﬁcation             fV ((x1, x2, x3), (ϵ, ϵ, σ)) = (x1, x2, fH(x3, σ)) .
+languages under consideration, but it also depends on the automata
+generating these languages.  Intuitively, this can be interpreted as      Finally, we deﬁne by the set of marked states by
+follows: in Fig. 2, state 4 carries the information that “string ao or bo
+has occurred”; however, in Fig. 1, state 4 carries more the precise infor-  XV,m := {(x1, x2, x3) ∈XV  :
+mation that “only string ao has occurred.” In other words, by reﬁning                (VIO) holds for some σ ∈Σ at (x1, x2, x3)} .   (9)
+the state space of the system, states can carry more information.
+                                                                  This completes the deﬁnition of the I-veriﬁer.
+                                                              Note that a string in V  is a sequence of event triple. Hereafter,          V. VERIFICATION OF SEI-COOBSERVABILITY
+                                                                  with a slight abuse of notation, we also write (s1, s2, s3) ∈Σ∗V  if
+  In this section, we provide a polynomial time algorithm for the   (σ11, σ12, σ13) . . . (σn1 , σn2 , σn3 ) ∈Σ∗V , where si = σ1i . . . σni , i= 1, 2, 3.
+veriﬁcation of SEI-coobservability by constructing a new automaton  By construction, the I-veriﬁer V has the following property. For any
+that we call the I-Veriﬁer. The I-Veriﬁer is similar to the M-machine    string s = (s1, s2, s3) ∈Σ∗V , where s1, s2, s3 ∈L(H), we have that
+studied by [5], [6], and [20] for the veriﬁcation of unconditional and   s ∈L(V ) iff P1(s1) = P1(s2) and P2(s1) = P2(s3). The following
+conditional coobservability. For the sake of simplicity, we state the   theorem reveals that K  is not SEI-coobservable,  if and only  if, a
+results for two supervisors, i.e., I = {1, 2}; the extension to the case   marked is reachable in the I-veriﬁer.
+of n supervisors is straightforward.                                Theorem V.1: AlanguageK =Lm(H) ⊆L(G)isSEI-coobservable
+  Given the system automaton G = (X, Σ, f, x0, Xm), the speci-    (w.r.t. H,G, Σc,i and Σo,i, i ∈I) if and only if Lm(V ) = ∅.
+ﬁcation automaton H = (XH, Σ, fH, x0,H, Xm,H), where H ⊑G,        Proof:  (⇐) By contrapositive. Suppose that K  is not SEI-
+and local supervisors with controllable events and observable events   coobservable. We know that
+Σc,i, Σo,i, i = 1, 2, the I-Veriﬁer V  is deﬁned as the deterministic                     ⎡⎛        ⎞         ⎤
+automaton
+                                                             (∃s ∈K)(∃σ ∈Σc : sσ ∈K) ⎣⎝       Ei (Pi(s))⎠∩DH(σ)̸ = ∅⎦
+            V = (XV , ΣV , fV , x0,V , XV,m)                (8)                                     i∈Ic(σ)
+
+3648                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 61, NO. 11, NOVEMBER 2016
+
+
+
+                                                                          2) The following transition for each i ∈I s.t. σ̸ ∈Σo,i:
+
+                                                            fV   (x1, x2, . . . , xn+1),   ϵ, ϵ, . . . , ϵ, (i+1)th,σ    ϵ, . . . , ϵ
+
+                                              = (x1, x2, . . . , xi, fH(xi+1, σ), xi+2, . . . , xn+1) .
+
+
+                                                                   Moreover, the violation condition (VIO) is deﬁned by
+
+                                                         (VIO) ⇔fH(x1, σ)!
+
+                                                          ∧(∀i, j ∈Ic(σ)) [xi+1 = xj+1 =: x ∧fH(x, σ)¬! ∧f(x, σ)!] .
+Fig. 3.  Examples of the I-Veriﬁer. (a) The complete I-Veriﬁer for the system
+in Fig. 1. (b) Part of the I-Veriﬁer for the system in Fig. 2.
+                                                                      In this case, the I-Veriﬁer V has at most |X|n+1 states and (n + 1)|Σ|
+                                                          |X|n+1 transitions. Therefore, checking whether or not Lm(V ) = ∅
+which implies                                                    can be done in O((n + 1)|Σ||X|n+1), which is polynomial when
+                                               n is ﬁxed, but exponential when n is unbounded. Moreover, once
+  (∃s ∈K)(∃σ ∈Σc : sσ ∈K) (∃x ∈DH(σ))                       SEI-coobservability has been veriﬁed off-line, the SEI-protocol can be
+                                                              implemented in a online manner. More speciﬁcally, according to (5),  (∀i ∈Ic(σ)) (∃si ∈K) [Pi(s) = Pi(si) ∧fH(x0, si) = x] .
+                                                                each supervisor only needs to remember its current state estimate and                                                                (10)
+                                                                  update it upon the occurrence of a new locally observable event, which
+For i = 1, 2, let ti = si if i ∈Ic(σ) and ti = s if i̸ ∈Ic(σ). Let x1 :=   also can be done in polynomial time for each step; see, e.g., [21].
+fH(x0, s), x2 := fH(x0, t1) and x3 := fH(x0, t2). Since P1(s) =
+P1(t1) and P2(s) = P2(t2), by the construction of the I-Veriﬁer, we
+                                                                              VI. PROPERTIES OF SEI-COOBSERVABILITY
+know that state (x1, x2, x3) is reachable in V . Since sσ ∈K, we
+know that fH(x1, σ)!. Also, for i ∈Ic(σ), by xi+1 = x ∈DH(σ),   A. Comparison With Existing Architectures
+we know that fH(xi+1, σ)¬!∧f(xi+1, σ)!. Therefore, if σ ∈Σc,1 \
+                                                                         In this section, we compare the languages that can be achievedΣc,2, then (VIO-1) holds. Similarly, (VIO-2) holds if σ ∈Σc,2 \ Σc,1.
+                                                           by the SEI-protocol and those can be achieved under the existingIf σ ∈Σc,1 ∩Σc,2, then (VIO-12) holds. Overall, we know that con-
+                                                                             architectures. First, we recall some deﬁnitions from [5], [6], [8].dition (VIO) holds at (x1, x2, x3) for σ, which means that (x1, x2, x3)
+                                                                    Deﬁnition VI.1: A language K ⊆L(G) is said to be N-inferenceis marked, i.e., Lm(V )̸ = ∅.
+                                                                    observable w.r.t. L(G), Σc,i and Σo,i, i ∈I if  (⇒) By contrapositive. Suppose that Lm(V )̸ = ∅. We know that
+there exists a string s = (s0, s1, s2) ∈L(V ) such that condition (VIO)
+                                                             (∀σ ∈Σc) [DN+1(σ) = ∅∨EN+1(σ) = ∅]        (11)holds at (fH(x0, s0), fH(x0, s1), fH(x0, s2)) for some σ ∈Σ.  If
+(VIO-1) holds, then we know that σ ∈Σc,1 \ Σc,2, s0σ ∈K and
+                                                            where sets DN+1 and EN+1 are deﬁned inductively as follows:
+s1σ ∈L(G) \ K. If (VIO-2) holds, then we know that σ ∈Σc,2 \
+Σc,1, s0σ ∈K and s2σ ∈L(G) \ K. Finally,  if (VIO-12) holds,                                                         D0(σ) :=  s ∈K : sσ ∈L(G) \ K
+then we know  that σ ∈Σc,1 ∩Σc,2, s0σ ∈K, s1σ ∈L(G) \ K,                                                                   (12)
+                                                           E0(σ) := {s ∈K : sσ ∈K}
+s2σ ∈L(G) \ K and fH(x0, s1) = fH(x0, s2). Moreover, by the
+                                  ⎧
+construction of V , we know that P1(s0) = P1(s1) and P2(s0) =   ⎨                                                         Dk+1(σ) := Dk(σ) ∩    i∈Ic(σ) Pi−1 (Pi [Ek(σ)])
+P2(s2).Overall, we know that (∃s0 ∈K)(∃σ ∈Σc : s0σ ∈K)(∃x ∈                                                                   (13)
+DH(σ)) (∀i ∈Ic(σ))(∃si ∈K)[Pi(s) = Pi(si)∧fH(x0, si) = x],   ⎩Ek+1(σ) := Ek(σ) ∩    i∈Ic(σ) Pi−1 (Pi [Dk(σ)])   .
+which implies that K is not SEI-coobservable.          □
+  Example V.1: Let us ﬁrst revisit Example IV.1 and consider the   Moreover, we say that K ⊆L(G) is
+system and the speciﬁcation shown in Fig. 1. The corresponding
+                                                                                        • coobservable if it is 0-inference observable;
+I-Veriﬁer is shown in Fig. 3(a). Since there is no marked state in V ,
+                                                                                        • conditional coobservable if it is 1-inference observable;
+we know that it is SEI-coobservable. Next, we return to Example IV.2
+                                                                                        • inference observable if there exists a nonnegative integer N ∈N
+and consider the system and the speciﬁcation shown  in Fig.  2.
+                                                                      such that K is N-inference observable.
+Part of the corresponding I-Veriﬁer is shown in Fig. 3(b). Since a
+marked state is reachable in V , we know that SEI-coobservability does    By  [6] and  [8], we know  that  conditional  coobservability  is
+not hold.                                                              weaker than coobservability and inference observability is weaker
+  Remark V.1: In the case of n agents, each state and each event in the                                                                    than conditional coobservability. Hereafter, we will show that SEI-
+I-Veriﬁer are (n + 1)-tuples rather than triples. Then, for each state   coobservability is incomparable with all of these notions. First, we
+(x1, x2, . . . , xn+1) and each event σ, we have the following two types   show that none of these notions implies SEI-coobservability.
+of transitions deﬁned in V :                                                             Example VI.1: Clearly, the system in Example IV.2, which is not
+   1) The single transition                                           SEI-coobservable, is coobservable, since supervisor 1 can disable c
+                                                                                after ao occurs and supervisor 2 can disable c after bo occurs. More
+          fV ((x1, x2, . . . , xn+1), (σ, e1, . . . , en))                    speciﬁcally, it is easy to compute that D1(c) = ∅. Since coobservabil-
+                                                                                    ity is stronger than conditional coobservability or inference observabil-
+        = (fH(x1, σ), fH(x2, e1), . . . , fH(xn+1, en)) ,            ity, we know that L(H) is also conditional coobservable and inference
+                                                                       observable.
+                                      σ,   if σ ∈Σo,i
+              where ∀i ∈I, ei =                             The next example shows that the SEI-protocol can achieve a lan-
+                                              ϵ,    if σ̸ ∈Σo,i.                                                              guage that cannot be achieved by any of the existing architectures.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 61, NO. 11, NOVEMBER 2016                                                                   3649
+
+
+
+                                                                                                   It was also shown in [16] that K is jointly observable iff for any
+                                                  σ ∈Σc, there  exists a function f : Σ∗o,i1 × · · · × Σ∗o,ik →{0, 1},
+                                                            where  {i1, . . . , ik} = Ic(σ),  such   that  ∀s ∈L(G),   if  sσ ∈
+                                                 K, then f(Pi1(s), . . . , Pik(s), σ) = 1 and if sσ ∈L(G) \ K, then
+                                                                  f(Pi1(s), . . . , Pik(s), σ) = 0. Intuitively, this result says that joint
+                                                                          observability together with controllability provide the necessary and
+                                                                        sufﬁcient conditions for the existence of an arbitrary memoryless
+                                                                           architecture under which the speciﬁcation language can be achieved.
+                                                                       Unfortunately, checking joint observability is undecidable in general.
+Fig.  4.   Σo,1 = {a, o, c},  Σo,2 = {b, o, c},  and  Σc,1 = Σc,2 = {c}.
+(a) G. (b) H.                                                              Hereafter, we  provide  a  sufﬁcient  condition under which  joint
+                                                                          observability and SEI-coobservability are equivalent. First, given an
+                                                               automaton G, we say that G is a tree if
+  Example VI.2: Consider the system G and the speciﬁcation H in
+Fig. 4. Let us compute the sets Dk(c) and Ek(c) deﬁned in (12) and       (∀x ∈X) (∀s, t ∈L(G))[f(x0, s) = f(x0, t) ⇒s = t]
+(13). Initially, we have
+                                                                           Clearly, if a language is ﬁnite, then it can always be generated by a
+           D0(c) = {o, bao} and E0(c) = {ao, bo}                 ﬁnite tree.
+                                                           The following theorem reveals that SEI-coobservability coincides
+Also, we have                                                                  with joint observability when the system is a tree.
+ ⎧                                                             Theorem                                                                                    VI.1:                                                                            Suppose                                                                                                             that                                                  H and                                                         G are trees. Then L(H) is
+ ⎨ D1(c) = D0(c) ∩    i∈Ic(σ) Pi−1 (Pi [E0(c)]) ={o, bao}         jointly                                                                           observable                                                                                                                        if                                                                               and only                                                                                                                                       if L(H)                                                                                                                                      is SEI-coobservable.
+ ⎩ E1(c) = E0(σ) ∩    i∈Ic(σ) Pi−1 (Pi [D0(c)]) ={ao, bo}.            Proof: The “if” part is trivial, since (2) and (5) deﬁne a memory-
+                                                                              less decision function. We prove the “only if” part by contrapositive.
+Since D1(c) = D0(c)̸ = ∅and E1(c) = E0(c)̸ = ∅, by (13), we get   Suppose that L(H) is not SEI-coobservable. As discussed earlier, we
+that DN(c) = D0(c)̸ = ∅and EN(c) = E0(c)̸ = ∅for any N ∈N.  know that (10) holds. Consider the state x and strings si, i∈Ic(σ)
+Therefore, K  is not N-inference observable for any N ∈N,  i.e.,   in (10). Under the assumption that H is a tree, we know that si =
+K  is not inference observable, which also implies that K  is not   sj, ∀i, j ∈Ic(σ). We denote this unique string by s′. Therefore,
+coobservable or conditional coobservable.                     we know  that (∃σ∈Σc)(∃sσ∈K)(∃s′σ∈L(G) \ K)(∀i∈Ic(σ))
+  However, K is SEI-coobservable. For string ao such that aoc ∈K,   [Pi(s)=Pi(s′)] which implies that L(H) is not jointly observable. □
+we have E1(ao) ∩E2(ao) ∩DH(c) = {6, 8} ∩{5, 6} ∩{5, 8} = ∅.     Remark VI.1: The intuition of the above theorem is as follows.
+Similarly,  for  string bo such  that boc ∈K, we have E1(bo) ∩   Since G is a tree, the string that leads to a state is unique. Therefore,
+E2(bo) ∩DH(c) = {5, 7} ∩{7, 8} ∩{5, 8} = ∅.  Therefore, K   is   by sending the set of states, we send  all useful local (language)
+SEI-coobservable and it can be achieved by supervisor S∗int.            information to the fusion sites, i.e., Ei(Pi(s)) and Pi−1 (Pi(s)) carry
+  By combining Examples VI.1 and VI.2 together, we have the   the same information in this case. Clearly, checking joint observability
+following facts about the proposed protocol.                                   is decidable if the language is ﬁnite, since we can enumerate all the
+  Fact  1:  For  arbitrarily given and ﬁxed automata G and H,    strings. However, even for the case of a ﬁnite language, it is not clear
+if L(H) is coobservable  (w.r.t. L(G), Σc,i and Σo,i, i ∈I), then  how joint observability can be efﬁciently veriﬁed and what architecture
+it does not imply  that L(H)  is SEI-coobservable  (w.r.t. H, G,   can be used in order to achieve the language if joint observability
+Σc,i and Σo,i, i ∈I). Consequently, neither L(H) conditional coob-   holds. By using Theorem VI.1, we see that SEI-coobservability and
+servable  nor L(H)  inference  observable  implies  that L(H)  is   the SEI-protocol answer these two questions, respectively, when the
+SEI-coobservable.                                                    speciﬁcation language is ﬁnite.
+  Fact 2: For arbitrarily given and ﬁxed automata G and H, if L(H)
+is SEI-coobservable (w.r.t. H, G, Σc,i and Σo,i, i ∈I), then it does
+not imply that L(H) is inference observable (w.r.t. L(G), Σc,i and                            VII. CONCLUSION
+Σo,i, i ∈I). Consequently, L(H) SEI-coobservable neither implies    We presented a new decentralized  control  architecture,  called
+that L(H)  is coobservable nor implies that L(H)  is conditional   intersection-based architecture. Under this architecture, we proposed
+coobservable.                                                      a new decentralized control protocol called the SEI-protocol. This
+                                                                       protocol is interesting and useful in practice, since:
+
+B. Case of Finite Languages                                                           (i) Whether or not it achieves the speciﬁcation language can be
+                                                                         veriﬁed in polynomial time.  In [16], a notion called joint observability was studied. We recall the
+                                                                                                  (ii)  If the speciﬁcation  is achievable, then the protocol can bedeﬁnition1:
+                                                                   implemented online with polynomial complexity at each step.  Deﬁnition VI.2: A language K ⊆L(G) is said to be jointly observ-
+                                                                                                    (iii) The languages that can be achieved by the SEI-protocol andable w.r.t. L(G), Σc,i and Σo,i, i ∈I if
+                                                                              the languages that can be achieved under existing decentralized
+                                                                                 architectures are incomparable.
+(∀σ ∈Σc)(∀sσ ∈K)(∀s′σ ∈L(G) \ K) (∃i ∈Ic(σ))
+                                                                      Therefore, the SEI-protocol provides a new tool for the decentralized                                                     [Pi(s)̸ = Pi(s′)] .
+                                                                         control problem that complements existing architectures. If the behav-
+                                                                               ior can be achieved by using unconditional or conditional architec-
+                                                                                tures, then, of course, there is no need to use the proposed architecture.   1In [16], joint observability was deﬁned for the decentralized observation
+problem. Here we provide a slightly modiﬁed version of the deﬁnition in [16]   However, if none of the existing architectures works, then the proposed
+for the purpose of decentralized control.                                      architecture provides a new opportunity for achieving the speciﬁcation.
+
+3650                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 61, NO. 11, NOVEMBER 2016
+
+
+
+                    REFERENCES                                  [11] C. Seatzu, M. Silva, and J. H. Van Schuppen, Control of Discrete-Event
+                                                                                 Systems: Automata and Petri Net Perspectives.  London, U.K.: Springer-
+ [1] R. Cieslak, C. Desclaux, A. Fawaz, and P. Varaiya, “Supervisory control
+                                                                                       Verlag, 2013.
+     of discrete-event processes with partial observations,” IEEE Trans. Autom.
+                                                                                [12] R. Debouk, S. Lafortune, and D. Teneketzis, “Coordinated decentralized
+     Control, vol. 33, no. 3, pp. 249–260, 1988.
+                                                                                      protocols for failure diagnosis of discrete event systems,” Discrete Event
+ [2] K. Rudie and W. Wonham, “Think globally,  act locally: Decentral-
+                                                                          Dyn. Sys.: Theory Appl., vol. 10, no. 1–2, pp. 33–86, 2000.
+     ized supervisory control,” IEEE Trans. Autom. Control, vol. 37, no. 11,
+                                                                                [13] Y. Wang, T.-S. Yoo, and S. Lafortune, “Diagnosis of discrete event sys-     pp. 1692–1708, 1992.
+                                                                           tems using decentralized architectures,” Discrete Event Dyn. Sys.: Theory [3]  J. Prosser, M. Kam, and H. Kwatny, “Decision fusion and supervisor
+                                                                                        Appl., vol. 17, no. 2, pp. 233–263, 2007.     synthesis in decentralized discrete-event systems,” in Proc. Amer. Control
+                                                                                [14] R. Kumar and S. Takai, “Inference-based ambiguity management in de-     Conf., 1997, vol. 4, pp. 2251–2255.
+                                                                                         centralized decision-making: Decentralized diagnosis of discrete-event [4] S. Ricker and K. Rudie, “Know means no: Incorporating knowledge into
+                                                                                  systems,” IEEE Trans. Autom. Sci. Eng., vol. 6, no. 3, pp. 479–491, 2009.      discrete-event control systems,” IEEE Trans. Autom. Control, vol. 45,
+     no. 9, pp. 1656–1668, 2000.                                               [15] M. Panteli and C. Hadjicostis, “Intersection based decentralized diagno-
+ [5] T.-S. Yoo and S. Lafortune, “A general architecture for decentralized           sis: Implementation and veriﬁcation,” in Proc. 52nd IEEE Conf. Decision
+     supervisory control of discrete-event systems,” Discrete Event Dyn. Sys.:         Control, 2013, pp. 6311–6316.
+     Theory Appl., vol. 12, no. 3, pp. 335–377, 2002.                            [16] S. Tripakis, “Undecidable problems of decentralized observation and
+ [6] T.-S. Yoo and S. Lafortune, “Decentralized supervisory control with con-         control on regular languages,” Inform. Processing Lett., vol. 90, no. 1,
+      ditional decisions: Supervisor existence,” IEEE Trans. Autom. Control,         pp. 21–28, 2004.
+      vol. 49, no. 11, pp. 1886–1904, 2004.                                      [17] C. Cassandras and S. Lafortune, Introduction to Discrete Event Systems.
+ [7] S. Ricker and K. Rudie, “Knowledge is a terrible thing to waste: Using in-       2nd ed.  New York, NY, USA: Springer-Verlag, 2008.
+     ference in discrete-event control problems,” IEEE Trans. Autom. Control,    [18] P. Ramadge and W. Wonham, “Supervisory control of a class of discrete
+      vol. 52, no. 3, pp. 428–441, 2007.                                              event processes,” SIAM J. Cont. Opt., vol. 25, no. 1, pp. 206–230, 1987.
+ [8] R. Kumar and S. Takai, “Inference-based ambiguity management in de-    [19] H. Cho and S. I. Marcus, “On supremal languages of classes of sublan-
+      centralized decision-making: Decentralized control of discrete event sys-        guages that arise in supervisor synthesis problems with partial observa-
+     tems,” IEEE Trans. Autom. Control, vol. 52, no. 10, pp. 1783–1794, 2007.          tion,” Math. Control Sig. Syst., vol. 2, no. 1, pp. 47–69, 1989.
+ [9] H. Chakib and A. Khoumsi, “Multi-decision supervisory control: Paral-    [20] K. Rudie and J. Willems, “The computational complexity of decentralized
+       lel decentralized architectures cooperating for controlling discrete event         discrete-event control problems,” IEEE Trans. Autom. Control, vol. 40,
+     systems,” IEEE Trans. Autom. Control, vol. 56, no. 11, pp. 2608–2622,         no. 7, pp. 1313–1319, 1995.
+     2011.                                                                     [21] P. Kozak and W. Wonham, “Fully decentralized solutions of supervi-
+[10] S. Ricker and H. Marchand, “A parity-based architecture for decentralized         sory control problems,” IEEE Trans. Autom. Control, vol. 40, no. 12,
+      discrete-event control,” in Proc. ACC, 2013, pp. 5678–5684.                     pp. 2094–2097, 1995.

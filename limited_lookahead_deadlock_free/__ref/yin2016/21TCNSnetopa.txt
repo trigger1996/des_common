@@ -1,0 +1,915 @@
+884                                        IEEE TRANSACTIONS ON CONTROL OF NETWORK SYSTEMS, VOL. 8, NO. 2, JUNE 2021
+
+   Opacity of Networked Supervisory Control
+    Systems Over Insecure Communication
+                Channels
+
+         Shuo Yang    , Junyao Hou    , Student Member, IEEE, Xiang Yin    , Member, IEEE,
+                         and Shaoyuan Li    , Senior Member, IEEE
+
+
+
+  Abstract—In this  article, we investigate security and   applied to many engineering systems [5]. In the supervisory
+privacy issues in networked supervisory control systems   control theory, the system/plant, which is modeled as a DES, is
+over multiple channel networks. We consider a networked                                                                 controlled by a supervisor that disables/enables the occurrences
+discrete-event system controlled by a supervisor that re-
+                                                               of events dynamically based on its observation such that theceives information from sensors and sends control deci-
+sions to actuators via observation channels and control   closed-loop system under control meets some desired design
+channels, respectively. The security problem is studied   speciﬁcation.
+for the scenario where some of the communication chan-     In essence, a supervisor is a decision-making module, which
+nels are insecure in the sense there exists a passive in-                                                                 receives information from sensors in the plant (modeled as
+truder (eavesdropper) that can access the information-ﬂow
+                                                             observable events) and sends control decisions to actuators in thein those insecure communication channels. We adopt the
+concept of opacity, an information ﬂow security property, to   plant (modeled as controllable events). In many modern applica-
+characterize the security status of the supervisory control   tions, the supervisor and the plant are connected via communica-
+system. Speciﬁcally, we assume that the system has a se-   tion networks, where the supervisor receives sensor readings via
+cret and the system is said to be opaque if the intruder can                                                               observation channels and sends commands via control channels.
+never determine the secret of the system unambiguously
+                                                            Control systems with such networked information architecturesbased on the information-ﬂow in the insecure channels.
+We consider the notions of current-state opacity, K-step   are referred to as networked control systems (NCSs). Compared
+opacity, and inﬁnite-step opacity in the networked control   with the traditional control architectures, NCSs provide a more
+setting. New network observers are proposed to estimate   ﬂexible way for controlling a system; for example, we can
+the state of the system with two-side incomparable channel                                                        implement the controller in the cloud utilizing more powerful
+information. We show that the opacity veriﬁcation problems
+                                                          computation resources. Due to the advantages of NCSs, supervi-for the networked setting can be effectively solved using
+the proposed network observers.                            sory control of networked discrete-event systems has also drawn
+                                                               considerable attention in the DES literature in the past few years;
+  Index Terms—Discrete event systems, networked control
+                                                                     see, e.g., [1], [11], [14], [16], [19], [21]–[23], and [35].systems, opacity, security.
+                                                          Although networked control systems have many advantages,
+                                                              they also bring new research challenges. One of the major
+                                I. INTRODUCTION                        challenges in NCSs is the information security/privacy issue. In
+                                                                        particular, communication channels in NCSs may be insecure in
+A. Motivation
+                                                                 the sense that the information transmission may be “listened” by
+   UPERVISORY control theory is a formal approach for   an intruder (eavesdropper) that is potentially malicious. In other
+     controller synthesis of discrete-event systems (DES) with   words, the networked architecture may cause an informationS
+provable correctness guarantees. Since the seminal work of   leak, which may further reveal some “secret” of the system.
+Ramadge and Wonham in the late 1980s, the supervisory control   Therefore, developing security analysis methodologies is be-
+theory has been developed extensively and has been successfully  coming progressively more important for NCSs.
+
+  Manuscript received July 30, 2020; accepted December 18, 2020.   B. Related Works
+Date of publication January 8, 2021; date of current version August
+24, 2021. This work was supported by the National Natural Science    Networked supervisory control systems have drawn many
+Foundation of China under Grant 62061136004, Grant 61803259, and   attention recently in the DES literature; see, e.g., [1], [11], [14],
+Grant 61833012. (Shuo Yang and Junyao Hou contributed equally to this   [18], [19], and [21]–[23]. However, most of them focus on how
+work.) Recommended by Associate Editor G. Como. (Corresponding
+author: Xiang Yin.)                                                   to design a networked supervisor that can handle information
+  The authors are with the Department of Automation and Key Labora-   delays/losses in the control and observation channels [4], [23],
+tory of System Control and Information Processing, Shanghai Jiao Tong   [24], [27], [34], [37]. For example, Lin [14] proposes the notion
+University, Shanghai 200240, China (e-mail: xiang-yang@sjtu.edu.cn;
+houjunyao@sjtu.edu.cn; yinxiang@sjtu.edu.cn; syli@sjtu.edu.cn).        of network controllability and network observability as neces-
+   Digital Object Identiﬁer 10.1109/TCNS.2021.3050131                sary and sufﬁcient conditions for the existence of a networked
+
+               2325-5870 © 2021 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                          See https://www.ieee.org/publications/rights/index.html for more information.
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 10,2022 at 03:52:57 UTC from IEEE Xplore. Restrictions apply.
+
+YANG et al.: OPACITY OF NETWORKED SUPERVISORY CONTROL SYSTEMS OVER INSECURE COMMUNICATION CHANNELS                       885
+
+
+                                                           sends control decisions to actuators via control channels. We
+                                                              consider the general scenario where information is transmit-
+                                                                 ted via multiple channel networks, i.e., different actuators and
+                                                               sensors may transmit information using different channels. We
+                                                                    further assume that some of the observation/control channels are
+                                                               insecure in the sense that there exists a passive intruder knowing
+                                                                 the information transmitted in those insecure channels.
+                                                     To characterize the security status of the networked supervi-
+                                                         sorycontrolsystem,weadopttheconceptofaninformation-ﬂow
+                                                                   security property called opacity. Speciﬁcally, we assume that
+                                                                 the networked supervisory control system has a “secret” that
+Fig. 1.  Networked supervisory control system with insecure multiple   does not want to be revealed to the intruder. We say that the
+channel networks. Sensors and actuators in the plant are modeled as
+observable events Σo and controllable events Σc, respectively. Sets   system is opaque if the intruder can never determine that the
+Σo,a ⊆Σo and Σc,a ⊆Σc denote sensors and actuators whose com-   system is/was at a secret state unambiguously by “listening”
+munication channels are insecure, respectively.                       those insecure observation and control channels. In particular,
+                                             we consider three speciﬁc types of opacity, namely: 1) current-
+                                                                        state opacity; 2) K-step opacity; and 3) inﬁnite-step opacity. Insupervisor. To our knowledge, information-ﬂow security issue
+                                                                     current-state opacity, only the current-state-secret is consideredhas not been investigated systematically for supervisory control
+                                                           while in K-step and inﬁnite-step opacity, one is also interestedsystems in the context of DES.
+                                                                    in whether or not the visit of a secret state at some instant can  In [36], the supervisory control problem over insecure control
+                                                        be revealed in the future. We then investigate the veriﬁcationchannels is considered. In particular, the authors consider a “con-
+                                                         problems of notions of opacity in the networked setting. Introl command eavesdropping actuator enablement attacker.”
+                                                                        particular, we show that the veriﬁcation of current-state opacityThis setting of insecure communication channel is very similar
+                                                         can be effectively solved by constructing a new informationto the setting considered in our work. However, [36] considers
+                                                                    structure called the network observer that estimates the statethe behavior-preserving problem of the controlled system, while
+                                                               of the system by correctly fusing the incomparable informationwe investigate the information-security problem under insecure
+                                                                    in the observation and control channels. Furthermore, we gen-channels, which are clearly different.
+                                                                     eralize the network observer to the two-way network observer  In the DES literature, the notion of opacity has also been
+                                                               capturing the smoothed information to verify inﬁnite-step andstudied very extensively in the past few years; see, e.g., [2], [3],
+                                                       K-step opacity.[6], [8]–[10], [13], [20], [25], [26], [29], and [33]. However, most
+                                                        Note that our recent work [30] formulates a similar opacityof the existing works assume that the intruder observes a set of
+                                                       problem in networked supervisory control systems but only forevents of the system; this essentially corresponds to our setting
+                                                                 the case of a single insecure control channel. In this article,of insecure observation channels. In [7] and [17], more general
+                                             we consider a more general case of multiple channel networks,observation models of the intruder are considered. However,
+                                                      where both control channels and observation channels can betheir models do not explicitly capture the information-ﬂow in
+                                                                  insecure. This general setting is fundamentally more difﬁcultnetworked supervisory control systems.
+                                                             than the one-side and single-channel case studied in [30]. In  The study of opacity of networked DES has recently been
+                                                                        particular, in the single-channel setting, the information leakagereported in [15] and [28]. Speciﬁcally, these works assume
+                                                                    in the observation channel is strictly more than that in the controlthat the observation of the intruder may be subject to delays
+                                                               channel. However, in our multiple channel setting, informationor losses, which is similar to Lin’s model proposed in [14] for
+                                                                    in control channels and information in observation channels arenetworked DES. However, our work considers the case that
+                                                          incomparable.Hence,anewstateestimationtechniqueisneededthe supervisor is implemented in a networked environment in
+                                                                    to handle this general case.which the communication channels may be insecure. Instead of
+investigating the effects of delays and losses, our work focuses
+on investigating information leakage in the feedback channels,
+which is clearly different from the network opacity problem   D. Organization
+considered in [15] and [28].
+                                                     The rest of this article is organized as follows. In Section II,
+                                             we introduce some necessary preliminaries. Then, we propose
+C. Our Contributions
+                                                                 the framework of information-ﬂow opacity in multiple channel
+  In this article, we propose a new framework for investigating   networks in Section III. In Section IV, we discuss how to verify
+the security issue in networked supervisory control systems over   current-state opacity. Then, we further extend our framework to
+multiple channel networks. The information structure of the net-   the inﬁnite-step and K-step opacity in Section V. Finally, Sec-
+worked supervisory control system investigated in this article is   tion VI concludes this article. Preliminary and partial versions
+depicted in Fig. 1. Speciﬁcally, we consider a plant G modeled as   of some of the results in this article are presented in [31] without
+a discrete-event system. We assume that the supervisor receives   proofs. Compared with [31], this article contains i) detailed
+observable events from sensors via observation channels and   literature review, explanations, and examples; ii) all technique
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 10,2022 at 03:52:57 UTC from IEEE Xplore. Restrictions apply.
+
+886                                                     IEEE TRANSACTIONS ON CONTROL OF NETWORK SYSTEMS, VOL. 8, NO. 2, JUNE 2021
+
+
+proofs; and iii) the simpliﬁcation of network observer and new   formally, a supervisor can be modeled as a new DFA
+results for inﬁnite-step and K-step opacity.
+                                                          S = (Z, Σ, ξ, z0)
+
+                                 II. PRELIMINARY                       such that the following two conditions hold:
+                                                                   1) (∀z ∈Z)[Σuc ⊆ES(z)];
+A. System Model                                                                   2) (∀z, z′ ∈Z, σ ∈Σ : ξ(z, σ) = z′)[z̸ = z′ ⇒σ ∈Σo].
+  Let Σ be a ﬁnite set of events. We call a ﬁnite sequence of      Intuitively, supervisor S works as follows. When string s ∈
+events a string and we denote by Σ∗the set of all strings over  L(G) is generated by the system (if allowed), the supervisor
+Σ including the empty string ϵ. We deﬁne Σϵ = Σ ∪{ϵ}. For   reaches state z = ξ(s) ∈Z. Then, it decides to enable events
+any string s ∈Σ∗, we denote by |s| its length, i.e., the number  ES(z) currently. We refer to ES(ξ(s)) as the control decision
+of event occurrences in it, with |ϵ| = 0. A language is a set of  upon the occurrence of s. For the sake of simplicity, hereafter,
+strings. For any language L ⊆Σ∗, we denote by L its preﬁx-  we also deﬁne S(s) := ES(ξ(s)). Therefore, the ﬁrst condition
+closure, i.e., L = {t ∈Σ∗: ∃w ∈Σ∗s.t. tw ∈L}.                essentially requires that uncontrollable events should always be
+  We consider a DES modeled as a deterministic ﬁnite-state   enabled by the supervisor. Also, we note that the supervisor
+automaton (DFA)                                          can only update its control decision upon the occurrence of an
+                                                             observable event; this is captured by the second condition. By
+           G = (X, Σ, δ, x0)                         the second condition, we know that S(s) = S(PΣo(s)) for any
+                                                        s ∈Σ∗.
+where X is the ﬁnite set of state, Σ is the ﬁnite set of events,
+                                                     The closed-loop system under control is
+δ : X × Σ →X is the partial deterministic transition function,
+and x0 ∈X is the initial state. For any x, x′ ∈X and σ ∈Σ,         G × S = (X × Z, Σ, η, (x0, z0))
+δ(x, σ) = x′ means that there exists a transition from x to x′
+                                                      where for each (x, z) ∈X × Z and each σ ∈Σ, we have
+with event label σ. We deﬁne EG(x) as the set of events deﬁned
+at state x ∈X,  i.e., EG(x) = {σ ∈Σ : δ(x, σ)!}, where “!”                         (x,′ z′)     if δ(x, σ) = x′ ∧ξ(z, σ) = z′
+                                                               η((x, z), σ) =
+means “is deﬁned”. The transition function is also extended to                  undeﬁned otherwise.
+δ : X × Σ∗→X recursively in the usual manner; see, e.g., [5].
+For the sake of simplicity, we write δ(x, s) as δ(s) when x = x0.             III. MODELING OF NETWORK INFORMATION FLOW
+The language generated by G is L(G) = {s ∈Σ∗: δ(s)!}. Fur-                  AND ITS OPACITY
+thermore, the language generated by G from state x ∈X is
+                                                     The supervisory control framework described in the previous
+deﬁned by L(G, x) = {s ∈Σ∗: δ(x, s)!}.
+                                                                 section provides a mathematical model of how a supervisor  Let ˆΣ ⊆Σ be a set of events. The natural projection from Σ
+                                                           works. Note that, from the implementation point of view, each
+to ˆΣ is a mapping PˆΣ : Σ∗→ˆΣ∗deﬁned recursively by: for any                                                                  controllable event essentially represents a corresponding actua-
+s ∈Σ∗, σ ∈Σ, we have
+                                                                    tor that controls the plant physically and each observable event
+                                PˆΣ(s)σ    if σ ∈ˆΣ           represents a corresponding sensor that reads the occurrence of
+       PˆΣ(ϵ) = ϵ and PˆΣ(sσ) =                            (1)   event. Therefore, in essence, the supervisor is a decision-making                                  PˆΣ(s)      if σ /∈ˆΣ.
+                                                      module and  it needs to interact with the system physically
+The natural projection is also extended to PˆΣ : 2Σ∗→2ˆΣ∗as   via sensors and actuators in the plant in order to control the
+                                                             system. As depicted in Fig. 1, when implementing a supervisorfollows: for any
+                                                                    in the networked environment, each sensor needs to send its
+     L ⊆Σ∗, PˆΣ(L) = {PˆΣ(s) ∈ˆΣ∗: s ∈L}.               reading (occurrence of observable event) to the supervisor via
+                                                                                    its corresponding observation channel and the supervisor needs
+B. Supervisory Control Systems                               to send the enable/disable decision for each controllable event
+                                                                    to the corresponding actuator via its control channel.
+  In the supervisory control framework, system G is controlled                                                                  In the networked environment, however, the communication
+by a supervisor that restricts the behavior of the system dynami-                                                            channels may not always be secure and some information trans-
+cally such that some desired closed-loop requirement is fulﬁlled.                                                              mitted between the supervisor and the plant may be “listened” by
+We assume that the event set is partitioned as                                                        an intruder that is potentially malicious. The question naturally
+                                                                         arises, therefore, whether or not the system is still secure in          Σ = Σc ˙∪Σuc = Σo ˙∪Σuo
+                                                                 the presence of such insecure communication networks. In this
+where Σc, Σuc, Σo, and Σuo are the sets of controllable events,   article,weproposeaframeworktoanalyzesecurityofnetworked
+uncontrollable events, observable events, and unobservable   supervisory control systems using the concept of opacity.
+events, respectively, and “˙∪” denotes the disjoint union. In    To formulate the information security problem, ﬁrst, we con-
+general, there is no relationship between Σc and Σo.              sider the information-ﬂow in observation channels from sensors
+ A supervisor is a mechanism that disables/enables control-   to supervisor. When the system generates an observable event,
+lable events dynamically based on its observation. That is, a    its occurrence can be detected by the associated sensor, which
+supervisor cannot disable the occurrence of an uncontrollable   then sends this information to the supervisor via its observation
+event or observe the occurrence of an unobservable event. More   channel. To model insecure observation channels, we assume
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 10,2022 at 03:52:57 UTC from IEEE Xplore. Restrictions apply.
+
+YANG et al.: OPACITY OF NETWORKED SUPERVISORY CONTROL SYSTEMS OVER INSECURE COMMUNICATION CHANNELS                       887
+
+
+that observable events Σo are further partitioned as              To summarize, we consider an information security problem
+                                                               of a networked supervisory control system in the presence of an
+                Σo = Σo,r ˙∪Σo,a                          intruder having the following capabilities.
+                                                                   1) The intruder knows both the system model and the func-
+where Σo,r denotes the set of events whose observation channels
+                                                                              tionality of the supervisor.
+are secure (“r” stands for “reliable”) and Σo,a denotes the set
+                                                                   2) The observation channels and the control channels are
+of events whose observation channels are insecure (“a” stands
+                                                                 only partially secure in the sense that the intruder knows
+for “attackable”). Therefore, the intruder can only observe event
+                                                                information-ﬂow IS(s) when string s is executed.
+transmission in Σo,a.
+                                                  Remark 1: Hereafter, we assume, without loss of generality,
+  Note that, at each instant, there is only one sensor sending
+                                                                      that Σc,a̸ = ∅. Otherwise, the intruder will only observe theinformation to the supervisor since the system cannot generate
+                                                                projected behavior of the system with respect to event set Σo,a,
+two events simultaneously. However, the information-ﬂow in
+                                                      which boils down to the standard opacity analysis problem.
+control channels is more involved. However, upon the observa-
+                                                               Therefore, under this assumption, the intruder always has an ob-
+tion of PΣo(s), the control decision made by the supervisor is                                                                 servation in control channels when the supervisor sends a control
+S(PΣo(s)). As we discussed above, in multichannel networks,                                                                  decision. However, it may not be able to distinguish two control
+this control decision is not sent to the plant directly as a “pack-
+                                                                decisions γ1, γ2 ∈2Σ such that [S(γ1)]Σc,a = [S(γ2)]Σc,a.age.” Instead, the supervisor needs to send disable/enable com-
+                                                  Remark 2: The reason why the information-ﬂow deﬁned in
+mandtoeachactuatorthatcorrespondstoeachcontrollableevent
+                                                                    (3) starts from an observable event and ends up with a control
+individually. In this regard, although mathematically equivalent,
+                                                               decision is as follows. We do not consider the initial control de-
+it is more meaningful to interpret the supervisor as a mapping
+                                                                  cision S(ϵ) in the information ﬂow since any string generated by
+      S : PΣo(L(G)) × Σc →{Disable, Enable}.      (2)   the closed-loop system will start with the same control decision.
+                                                               In other words, the initial control decision does not carry any
+Thisinterpretationisusuallyadoptedinthedecentralizedcontrol   information about the state of the system when the functionality
+problem to distinguish the fusion capability of each controllable   of the supervisor is publicly known. Also, we assume implicitly
+event; see, e.g., [12], [32]. To model insecure control channels,   that the supervisor will send a control decision immediately after
+similar to the case of observation channel, we also assume that    it receives a new observable event. This is why the information
+controllable event set Σc is further partitioned as            ﬂow ends up with a control decision rather than an observable
+                                                                   event.
+                 Σc = Σc,r ˙∪Σc,a                      To characterize the security status of the supervisory control
+                                                             system, we adopt the concept of opacity, which is widely used in
+where Σc,r denotes the set of controllable events whose control
+                                                                 the information-ﬂow security analysis. Speciﬁcally, we assume
+channels are secure and Σc,a denotes the set of controllable
+                                                                      that the system has a “secret,” which is modeled as a set of
+events whose control channels are insecure. Unlike the case of
+                                                                    secret states XS ⊂X. We say that the overall networked control
+observation channels, where only one sensor will send informa-
+                                                         system is current-state opaque if the intruder can never know
+tion to the supervisor at each instant, the supervisor needs to send
+                                                                    for sure that the system is currently at a secret state based on
+control decisions to all actuators simultaneously. Therefore,
+                                                                 the information released in the communication channels. Thiswhen the supervisor sends control decision γ ∈2Σc to each
+                                                                               is formalized by the following deﬁnition.
+actuator, the intruder can only obtain information [γ]Σc,a :=                                                           Deﬁnition 1: Supervisory control system G×S is said to
+γ ∩Σc,a, which is a projected control decision. We denote by
+                                                        be current-state opaque with respect to insecure observation
+Γa := 2Σc,a the set of all projected control decisions. Note that
+                                                            channels Σo,a, insecure control channels Σc,a, and secret states
+[γ]Σc,a = ∅does not imply that the intruder observes nothing
+                                        XS if
+in control channels; it means that the intruder knows that the
+supervisor is disabling all events in Σc,a as  it will observe         (∀s ∈L(G × S) : δ(s) ∈XS)
+“disable” in each channel of Σc,a.
+  Let s ∈L(G × S) be a string generated by the closed-          (∃t ∈L(G × S) : δ(t) /∈XS)[IS(s) = IS(t)].     (4)
+loop system and suppose PΣo(s) = σ1σ2 · · · σn. Then, the
+                                          We illustrate the proposed framework and the notion of opac-
+information-ﬂow released in the communication channels from
+                                                                           ity by the following example.
+the intruder’s point of view is the following sequence:
+                                                    Example 1: Let us consider system G shown in Fig. 2 (a)
+  IS(s) = PΣo,a(σ1)[S(σ1)]Σc,aPΣo,a(σ2)[S(σ1σ2)]Σc,a        with Σc = {c1, c2} and Σo = Σ. We further assume that Σc,a =
+                                                        {c1} and Σo,a = {c1, c2}, i.e., the intruder can only observe the
+                 · · · PΣo,a(σn)[S(σ1σ2 · · · σn)]Σc,a ∈(Σϵo,aΓa)∗.     occurrence of events c1 and c2 and knows the control decision
+                                                              (3)   for c1. Suppose that the system is controlled by supervisor S
+                                                   shown in Fig. 2(b) and the closed-loop system G × S is then
+We denote by
+                                                   shown in Fig. 2(c). The control objective is simply to avoid the
+       IS = {IS(s) ∈(Σϵo,aΓa)∗: s ∈L(G × S)}           occurrence of dashed transitions in Fig. 2(a). We assume that
+                                        XS = {1}, i.e., we do not want the intruder knows for sure that
+the set of all information-ﬂows available to the intruder.          the system is at secret state 1.
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 10,2022 at 03:52:57 UTC from IEEE Xplore. Restrictions apply.
+
+888                                                     IEEE TRANSACTIONS ON CONTROL OF NETWORK SYSTEMS, VOL. 8, NO. 2, JUNE 2021
+
+
+                                                     by
+                                                             ˆX(s) = {x∈X : ∃t∈L(G × S) s.t. IS(t)=IS(s) ∧δ(t)=x}.
+
+                                                        According to Deﬁnition 1, clearly, the system is current-state
+                                                       opaque if and only if for any s ∈L(G × S), we have ˆX(s)̸ ⊆
+                                                XS. Therefore, how to compute  all possible current-state-
+                                                                estimates becomes the key of verifying current-state opacity.
+                                                                  In the event-based observation setting, such current-state-
+                                                               estimate can be computed by constructing the observer au-
+                                                           tomaton; see, e.g., [5]. However, our setting faces the follow-
+                                                              ing main challenge: the information in control channels and
+                                                                 the information in observation channels are incomparable in
+                                                                 the sense that knowing the information on one side cannot
+                                                              recover the information on the other side (even if the system
+                                                     model and the functionality of the supervisor are known). For
+                                                          example, when the intruder observes a new event σ ∈Σo,a, it
+                                                           cannot perfectly assert the control decision that will be issued
+                                                     by the supervisor, since it cannot perfectly track the state of
+                                                                 the supervisor due to those secure observable events Σo,r. On
+                                                                 the other hand, when the intruder observes a projected control
+Fig. 2.  Supervisory control system (G, S). (a) G. (b) S. (c) G × S.
+                                                               decision γ ∈Γa, it also cannot infer what event is received by
+                                                                 the supervisor from observation channels, since i) the control
+  Let us consider the occurrence of string u1c1u1 ∈L(G ×   information is projected; and ii) the supervisor may issue the
+S) that leads to secret state 1. Since supervisor S can ob-  same control decision upon the occurrences of different events.
+serve  all events,  it will issue a control decision sequence   Therefore, we need an information fusion mechanism for this
+S(u1)S(u1c1)S(u1c1u1) = {c1, c2}{c1}{c1, c2}. Then, from   incomparable information in control channels and observation
+the intruder’s point of view, the information-ﬂow is              channels.
+                                                     To estimate the state of the system, we need to consider the
+  IS(u1c1u1) = PΣo,a(u1)[{c1, c2}]Σc,aPΣo,a(c1)[{c1}]Σc,a     following two situations of the intruder’s observation at each
+                                                                        instant.                PΣo,a(u1)[{c1, c2}]Σc,a = {c1}c1{c1}{c1}.
+                                                                   1) The intruder ﬁrst observes a new observable event in
+However, for string u2c1u2 ∈L(G × S), which leads to non-         observation channels and then (immediately) observes a
+secret state 2, we also have                                              (projected) control decision in control channels; or
+                                                                   2) The intruder just observes a (projected) control decision
+   IS(u2c2u2) = PΣo,a(u2)[{c1}]Σc,aPΣo,a(c1)[{c1}]Σc,a              in control channels directly without seeing anything in
+                  PΣo,a(u2)[{c1}]Σc,a = {c1}c1{c1}{c1}.             observation channels.
+                                                            For the ﬁrst case, the intruder will know that the last observ-
+That is, the occurrence of secret string u2c1u2 does not violate   able event must be in set Σo,a and the projected control decision
+current-state opacity. Note that, although S(u1) requires to   observed can further help the intruder to eliminate uncertainty of
+enable both c1 and c2 while S(u2) only requires to enable c1,   the system. The second case is more complicated and three levels
+these two control decisions are identical for the intruder since   of inference are involved. First, the intruder needs to infer all
+the control channel for c2 is assumed to be secure. However,   feasiblecontroldecisionsbasedontheprojectedcontroldecision
+if Σc,a = {c1, c2}, we know that G × S is not current-state   obtained. Then, for each possible control decision, it needs to
+opaque, since the intruder knows for sure that the system is   further infer all possible observations that make the supervisor to
+at secret state 1 when {c1, c2}c1{c1}{c1, c2} is observed.         issue such a decision. Finally, it will use the inferred observation
+                                                                    to further infer the actual strings generated by the system to
+    IV. VERIFICATION OF CURRENT-STATE OPACITY USING      update the state estimate.
+             NETWORK OBSERVER                    To this end, we deﬁne a new structure called the network
+                                                            observer that utilizes the above discussed information. Let G be  In this section, we discuss how to formally verify current-state
+                                                           a system and S be a supervisor. Then, the network observer isopacity for networked supervisory control systems with insecure
+                                                      deﬁned as a new DFAcommunication channels.
+                                                               Obs(G, S) = (Q, Σobs, f, q0)              (5)
+A. Network Observer
+                                                      where
+  We ﬁrst deﬁne the state estimate from the intruder’s point of      1) Q ⊆(2X×Z \ ∅) × {O, C} is the set of states, where O
+view. Let s ∈L(G × S) be a string generated by the closed-loop        and C are two symbols standing for “observation” and
+system.Then,thecurrent-state-estimateoftheintruderisdeﬁned          “control,” respectively. We denote by QO the set of states
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 10,2022 at 03:52:57 UTC from IEEE Xplore. Restrictions apply.
+
+YANG et al.: OPACITY OF NETWORKED SUPERVISORY CONTROL SYSTEMS OVER INSECURE COMMUNICATION CHANNELS                       889
+
+
+     whose second components are O and by QC the set of
+       states whose second components are C.
+   2) Σobs = Σo,a ∪Γa is the set of events, which is the set of
+      possible observations of the intruder.
+   3) f : Q × Σobs →Q is the transition function deﬁned as
+      follows:
+        a) for any (q1, C) ∈QC, (q2, O) ∈QO and σ ∈Σo,a,
+          f((q1, C), σ) = (q2, O) if
+
+                                   ∃(x, z) ∈q1 s.t.           q2 =  (x,′ z′)∈X × Z :                                    Fig. 3.  Network observer Obs(G, S). Rectangular states and oval
+                                        (x′, z′) = η((x, z), σ)        states denote C-states and O-states, respectively.
+                                                              (6)
+       b) for any (q1, O) ∈QO, (q2, C) ∈QC and γ ∈Γa,
+          f((q1, O), γ) = (q2, C) if                           Note that, however, there is no transition function fOO as
+       ⎧                   ⎫   the intruder cannot observe two events in observation channels
+       ⎨               ∃(x, z)∈q1, w ∈Σ∗uo s.t. ⎬   consecutively without seeing a control decision in between.
+          q2 = ⎩(x′, z′)∈X × Z :  [ES(z)]Σc,a = γ and ⎭     Before we formally show the properties of the network ob-
+                                        (x′, z′)=η((x, z), w)        server, we ﬁrst illustrate by the following example.
+                                                              (7)    Example 2: Let us still consider system G and supervisor
+        c) for any (q1, C) ∈QC, (q2, C) ∈QC and γ ∈Γa,  S shown in Fig. 2(a) and (b), respectively. Its network observer
+          f((q1, C), γ) = (q2, C) if                       Obs(G, S) is shown in Fig. 3. For the sake of simplicity, symbols
+       ⎧                    ⎫  C and O are omitted for each state and we use rectangular states
+       ⎨             ∃(x, z)∈q1, σ∈Σo,r, w∈Σ∗uo⎬   and oval states to denote C-states and O-states, respectively.
+          q2 = ⎩(x′, z′)∈X×Z :s.t. (x′, z′)=η((x, z), σw) ⎭    Initially, the state starts from C-state {(0, A)}. Note that all ob-
+                              and [ES(z′)]Σc,a = γ                                                                servable events that can occur from this state are secure, i.e., the
+                                                              (8)
+                                                                   intruder cannot see their occurrences. Therefore, only function
+       d) q0 = ({(x, z) ∈X × Z : ∃w ∈Σ∗uo s.t. (x, z) =                                               fCC is deﬁned at this C-state. If the intruder observes {c1}, i.e.,
+         η((x0, z0), w)}, C) is the initial state.                                                                c1 is enabled, then it moves to a new C-state {(1, B), (2, C)} in
+  Note  that, we  will  only  consider  reachable  states  in
+                                                      which both state requires to enable c1. If the intruder observes
+Obs(G, S).
+                                                     { }, i.e., c1 is disabled, then it moves to C-state {(3, A)}, which
+   Intuitively, a C-state represents the intruder’s knowledge
+                                                               contains the only possible state consistent with this control
+of the system immediately after observing a control decision
+                                                                  decision. From C-state {(1, B), (2, C)}, the intruder can ﬁrst
+in control channels and an O-state represents the intruder’s
+                                                            observe event c1 in observation channels and then observe
+knowledge of the system immediately after observing an event
+                                                                 control decision {c1} in control channels. For this case, the
+in observation channels. For the sake of clarity, we write the
+                                                              observer will ﬁrst move to O-state {(4, D), (5, E)} and then
+transition function f as fCO if it is from a C-state to an O-state;                                                move to C-state {(4, D), (5, E)}.
+the same for fOC and fCC. More speciﬁcally, the intuition of
+each transition function is as follows:
+                                                         B. Veriﬁcation of Current-State Opacity
+   1) Function fCO, as deﬁned in Equation (6), simply updates
+      each system state and each supervisor state in the state    The following result reveals that the proposed network ob-
+      estimate based on the new observable event σ ∈Σo,a. We   server indeed tracks the state estimate of the intruder.
+     do not consider any unobservable tail of this observable     Proposition 1: For any α∈IS, we have α∈L(Obs(G, S)).
+      event in fCO as the supervisor will respond to this event   Moreover, the state reached by α can be characterized by
+      immediately before the occurrence of a new event.                                                      ∈L(G × S) s.t. IS(t)=α   2) Function fOC, as deﬁned in (7), has the following two     q=  (x, z) ∈X×Z :∃t                                (9)                                                                              and (x, z)=η((x0, z0), t)
+       roles: i) it ﬁrst eliminates states in the state estimate whose
+      projected control decisions are not consistent with the  where  (q, C) = f(q0, α)  is  the  C-state reached by α  in
+      observation in control channels; and ii) then it adds all  Obs(G, S). (Recall that, by the deﬁnition of information-ﬂow,
+       states that can be reached unobservably in the closed-loop  α always ends up with a projected control decision.)
+      system from states remained in the state estimate.           Proof: See the Appendix.                 ■
+   3) Function fCC, as deﬁned in (14), captures the case that     For any state q ∈2X×Z, we denote by X(q) the set of the ﬁrst
+      the intruder observes two projected control decisions con-  component of each element, i.e.,
+       secutively in control channels without seeing an event in
+                                                        X(q) = {x ∈X : ∃z ∈Z s.t. (x, z) ∈q}.
+      observation channels in between. For this case, we know
+       that the supervisor must have received a secure observable  We have the following result from Proposition 1.
+      event σ ∈Σo,r, which is silent for the intruder, and upon     Corollary  1: For any s ∈L(G × S),  the  current-state-
+      the occurrence of which the supervisor makes a control   estimate is the ﬁrst component of the state reached by IS(s)
+      decision with projection γ ∈Γa.                           in Obs(G, S), i.e., we have ˆX(s) = X(f(IS(s))).
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 10,2022 at 03:52:57 UTC from IEEE Xplore. Restrictions apply.
+
+890                                                     IEEE TRANSACTIONS ON CONTROL OF NETWORK SYSTEMS, VOL. 8, NO. 2, JUNE 2021
+
+
+  Proposition 1 says that any information-ﬂow available to
+the intruder is contained in the network observer, i.e., IS ⊆
+L(Obs(G, S)). The following result further shows that the net-
+work observer will only generate valid information-ﬂow.
+  Proposition 2: LC(Obs(G, S)) = IS, where
+
+   LC(Obs(G, S)) = {α ∈(Σϵo,aΓa)∗: f(q0, α) ∈QC}.
+
+  Proof: See the Appendix.                 ■
+  With Corollary 1 and Proposition 2, we obtain the following    Fig. 4.  Simpliﬁed network observer Obs(G, S).
+main theorem, which shows that we can indeed use the network
+observer to verify opacity.                                 Algorithm 1: Simp-Net-Obs Construction.
+  Theorem 1: Let G × S be a supervisory control system with
+                                                                      1:    ˜q0 ←{η((x0, z0), w)∈X × Z : w∈Σ∗uo} and
+insecure observation channels Σo,a, insecure control channels          ˜Q ←{˜q0}
+Σc,a, and secret states XS. Let Obs(G, S) = (Q, Σobs, f, q0) be
+                                                                      2:  DFS( Obs, ˜q0)its network observer. Then, G × S is current-state opaque if and
+only if for any C-state (q, C) ∈QC, we have X(q)̸ ⊆XS.          3:  return Obs = ( ˜Q, ˜Σobs, ˜f, ˜q0)
+  Proof: See the Appendix.                 ■      4:  procedure DFS( Obs, ˜q)
+  We illustrate Theorem 1 by the following example.               5:    for all (σ, γ) ∈Σϵo,a × Γa : ˜f(˜q, (σ, γ))! do
+  Example 3: Again, we consider G and S shown in Fig. 2(a)      6:           ˜q′ ←˜f(˜q, (σ, γ))
+and (b), respectively. In Example 1, we have analyzed that secret                                   (σ,γ)                                                                      7:     Add transition ˜q −−−→˜q′ to ˜f
+string u1c1u1 does not violate opacity. To check whether or not                                                                      8:        if ˜q′̸ ∈˜Q then
+there exists a secret revealing string, we consider its network                                                                      9:         ˜Q ←˜Q ∪{˜q′}
+observer Obs(G, S), which is shown in Fig. 3. Clearly, the
+                                                               10:      DFS( Obs, ˜q′)only C-state that contains a secret state in {(1, B), (2, C)} and
+                                                               11:     end ifwe have X({(1, B), (2, C)}) = {1, 2}̸ ⊆XS = {1}. There-
+                                                               12:   end forfore, we conclude that G × S is current-state opaque.
+                                                               13:  end procedure  Remark 3: The complexity of checking current-state opacity
+using Theorem 1 is exponential in both the number of sys-
+tem/supervisor states and the number of insecure controllable
+events since the network observer contains at most 2|X|×|Z|+1      4) ˜q0 = {(x, z) ∈X × Z : ∃w ∈Σ∗uo s.t. (x, z) =
+states and |Σo,a| × 2|X|×|Z| + 2|Σc,a| × 2|X|×|Z| transitions.            η((x0, z0), w)} is the initial state, which is the same as
+                                                                       the state component of the initial C-state in Obs(G × S).
+                                                     The simpliﬁed network observer can be constructed by Al-C. Simpliﬁed Network Observer
+                                                          gorithm 1 via a depth-ﬁrst-search. The network observer can
+  Note that, in the construction of the network observer, states   be constructed analogously, which is omitted due to space con-
+are partitioned as C-states and O-states in order to precisely   straints.
+track different status in the information-ﬂow. However, as shown     Forexample,forsystemGandsupervisorS showninFig.2(a)
+in Theorem 1, only C-states are considered for the purpose of                                                       and (b), respectively, the simpliﬁed network observer Obs(G ×
+veriﬁcation. To simplify our future developments, we can sim-                                                  S) is shown in Fig. 4. Compared with Obs(G, S) in Fig. 3, all
+plify the network observer by hiding O-states. Speciﬁcally, we                                                               O-states are merged with C-states.
+write the projected decision in the control channels and the event
+in the observation channels as a pair. If a projected control de-
+                                                                 V. VERIFICATION OF INFINITE AND K-STEP OPACITY USING
+cision γ ∈Γa is observed directly without seeing an observable
+                                                      TWO-WAY NETWORK OBSERVER
+event, then we write this information as (ϵ, γ). If the intruder ﬁrst
+observes an event σ ∈Σo,a followed immediately by a projected   A. Smoothed Information and Reversed Observer
+controldecisionγ ∈Γa,thenwewritethisinformationas (σ, γ).                                                                    Current-state opacity only guarantees that the intruder does
+Then, we can deﬁne the simpliﬁed network observer, by omitting
+                                                              not know that the system is currently at a secret state. However,
+O-states, as a new DFA
+                                                                                               it may use future observation to infer that the system was at a
+           Obs(G × S) = ( ˜Q, ˜Σobs, ˜f, ˜q0)           (10)   secret state for some previous instant; such a secret requirement
+                                                         can be captured by inﬁnite-step opacity and K-step opacity. In
+where                                                                  this section, we investigate how to verify these two notions in
+   1) ˜Q ⊂2X×Z is the set of states.                             the networked setting, which are formally deﬁned as follows.
+   2) ˜Σobs = Σϵo,a × Γa is the set of events.                     Deﬁnition 2: Given networked supervisory control system
+   3) ˜f : ˜Q × ˜Σobs →˜Q is the transition function deﬁned by:  G × S with Σo,a, Σc,a and XS, we say that G × S is
+       for any q ∈˜Q and (σ, γ) ∈˜Σobs, we have                     1) inﬁnite-step opaque if
+                  ( ˜f(q, (σ, γ)), C) = f((q, C), σγ).                           (∀st ∈L(G × S) : δ(s) ∈XS)
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 10,2022 at 03:52:57 UTC from IEEE Xplore. Restrictions apply.
+
+YANG et al.: OPACITY OF NETWORKED SUPERVISORY CONTROL SYSTEMS OVER INSECURE COMMUNICATION CHANNELS                       891
+
+
+                  [∃s′t′ ∈L(G × S) : δ(s′) /∈XS]
+               [IS(s) = IS(s′) ∧IS(st) = IS(s′t′)].     (11)
+
+   2) K-step opaque if
+
+         (∀st ∈L(G × S) : δ(s) ∈XS ∧|PΣo(t)| ≤K)
+            [∃s′t′ ∈L(G × S) : δ(s′) /∈XS]
+          [IS(s) = IS(s′) ∧IS(st) = IS(s′t′)].          (12)    Fig.  5.  For  system  G1, we  have Σc = {c1, c2}  and Σo = Σ,
+                                                                   Σc,a = {c1} and Σo,a = {c1, c2}. (a) G1. (b) S1. (c) G1 × S1.
+  Let st ∈L(G × S) be a string in the controlled system and let
+PΣo(st) = σ1 . . . σnσn+1 . . . σn+m, where |PΣo(s)| = n and
+|PΣo(t)| = m. Then, the information-ﬂow IS(st) can be written
+as IS(st) = ısıt, where
+
+  ıs = PΣo,a(σ1)[S(σ1)]Σc,a · · · PΣo,a(σn)[S(σ1 · · · σn)]Σc,a
+
+   ıt = PΣo,a(σn+1)[S(σ1 · · · σn+1)]Σc,a
+
+                            · · · PΣo,a(σn+m)[S(σ1 · · · σn+m)]Σc,a.
+
+To check inﬁnite-step and K-step opacity, the main difﬁculty is
+to handle the smoothed information ıt. To this end, we utilize    Fig. 6.  Example of the (simpliﬁed) network observer and the reversed
+the reversed dynamic of the system as follows. We read the   network observer for G1 and S1. (a) Obs(G1 × S1). (b) ObsR(G1 × S1).
+smoothed information ıt in a reversed manner so that a projected
+event is read ﬁrst before reading its predecessor observable
+event. In this way, we are able to track where the system may     Proposition  3:  For  any  string  (γ1, σ1) . . . (γn, σn) ∈
+start from generating this smoothed information. This idea is  L( ObsR(G × S)), we have
+formalized by the reversed network observer, which is a new
+                                                                             ˜fR(˜q0,R, (γ1, σ1) . . . (γn, σn)) =DFA
+                                                                          ∃s ∈L(G × S, (x, z))
+        ObsR(G × S) = ( ˜QR, ˜Σobs,R, ˜fR, ˜q0,R)       (13)       (x, z) ∈X × Z :                                                        .
+                                                                                                                           s.t. IS(s, (x, z)) = σnγn . . . σ1γ1
+where                                                                                                                  (15)
+   1) ˜QR ⊂2X×Z is the set of states.                           Proof: See the Appendix.
+   2) ˜Σobs,R ⊆Γa × Σϵo,a is the set of events.                  Based on Proposition 3, we can further obtain the following
+   3) ˜fR : ˜QR × ˜Σobs,R →˜QR is the transition function de-   result, which shows that the reversed network observer can
+     ﬁned as follows: for any q1, q2 ∈˜QR, and (γ, σ) ∈   be used together with the network observer to compute the
+       ˜Σobs,R, we have ˜fR(q1, (γ, σ)) = q2 if                    smoothed-state-estimate of the system.
+   ⎧                   ⎫           Theorem 2: For any information-ﬂow σ1γ1 . . . σnγn ∈IS
+                                                                  0 ≤k ≤n, we have   ⎪⎪⎨            ∃(x, z)∈q1, w∈Σ∗uo, σ′ ∈Σo⎪⎪⎬          and any integer                                  s.t. (x, z)=η((x,′ z′), σ′w)
+   q2 =  (x,′ z′)∈X×Z :                                (14)                                                                =                                                                       ˜f((σ1,                                                                  γ1) · · · (σk, γk)) ∩˜fR((γn, σn) · · · (γk+1, σk+1))   ⎪⎪⎩                and PΣo,a(σ′) = σ  ⎪⎪⎭                                                       ⎫                               ⎧                       and [ES(z)]Σc,a = γ                               ⎨              ∃st ∈L(G × S)) s.t. η(s) = (x, z) ⎬
+   4) ˜q0,R = X × Z is the initial state.                     ⎩(x, z) ∈X × Z :   and IS(s) = σ1γ1 . . . σkγk   ⎭.
+  Let (x, z) ∈X × Z be a pair of plant state and supervisor                       and IS(st) = σ1γ1 . . . σnγn
+state and s ∈L(G × S, (x, z)) be a string feasible from (x, z)                                                           (16)
+in the controlled string such that PΣo(s) = σ1σ2 · · · σn. Then,     Proof: See the Appendix.
+we deﬁne the information-ﬂow of s from (x, z) by                                                     The reversed network observer and its properties are illus-
+                                                                      trated by the following example.     IS(s, (x, z))
+                                                    Example 4: Let us consider system G1 and supervisor S1
+   = PΣo,a(σ1)[ξ(z, σ1)]Σc,aPΣo,a(σ2)[ξ(z, σ1σ2)]Σc,a      shown in Fig. 5   (a) and (b), respectively. We assume that
+                                                 Σc = {c1, c2}, Σo = Σ, Σc,a = {c1}, and Σo,a = {c1, c2}.          · · · PΣo,a(σn)[ξ(z, σ1σ2 · · · σn)]Σc,a ∈(Σϵo,aΓa)∗.
+                                                         Then, the closed-loop system G1 × S1 is shown in Fig. 5(c).
+Clearly, we have IS(s, (x, z)) = IS(s) when (x, z) = (x0, z0).  The (simpliﬁed) network observer and the reversed network
+Then, the following result reveals that the proposed reversed   observer of G1 × S1 are shown in Fig. 5(a) and (b), respectively.
+network observer indeed computes all possible state pairs that   For the reversed network observer ObsR(G1 × S1), its initial
+are consistent with the information-ﬂow in a reversed manner.    state is all possible states in G1 × S1. If event ({c1}, c2) occurs,
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 10,2022 at 03:52:57 UTC from IEEE Xplore. Restrictions apply.
+
+892                                                     IEEE TRANSACTIONS ON CONTROL OF NETWORK SYSTEMS, VOL. 8, NO. 2, JUNE 2021
+
+
+then we move to state {(3, E)} since for state (4, D) ∈˜q0,R,
+[ES(D)]Σc,a = {c1} and η((3, E), c2) = (4, D).
+
+
+B. Two-Way Network Observer
+
+  Theorem 2 essentially says that all possible smoothed-state-
+estimates can be captured by combining states in the network
+observer and states in the reversed network observer. In order
+to verify inﬁnite-step opacity and K-step opacity, we compose
+Obs(G × S) and ObsR(G × S) together, where the former
+tracks all states that are consistent with the current information-
+ﬂow while the latter tracks all states that are consistent with
+the future information-ﬂow. We call the composed structure the                                                                               Fig.    7.  Two-way   network   observer   ObsT W (G1 × S1)    for
+two-way network observer, which is a DFA                        the  networked  system  G1 × S1   in   Fig.   5(c)  and   events
+                                                                                     in    {1, 2, 3, 4, 5, 6, 7, 8}   represent   events    in    {((ϵ, {c1}), ϵ),
+    ObsT W (G × S) = (QT W , ΣT W , fT W , qT W,0)     (17)    ((c1, {c1}), ϵ), ((c1, {}), ϵ), ((c2, {c1}), ϵ), (ϵ, ({c1}, ϵ)), (ϵ, ({c1}, c1)),
+                                                                                       (ϵ, ({}, c1)), (ϵ, ({c1}, c2))}, respectively.
+
+where
+   1) QT W ⊆˜Q × ˜QR is the set of states.                                                      C. Veriﬁcation of Inﬁnite-Step and K-Step Opacity
+   2) ΣT W = (˜Σobs × {ϵ}) ∪({ϵ} × ˜Σobs,R)  is  the  set  of
+       events.                                          The following two theorems show how the two-way network
+   3) fT W  : QT W × ΣT W →QT W is the transition function   observer can be used to verify inﬁnite-step opacity and K-step
+     deﬁned as follows: for any state (q1, q2) ∈QT W and   opacity. First, we show how to check inﬁnite-step opacity.
+      event σ ∈˜Σobs ∪˜Σobs,R, the following transitions are    Theorem 3: Let G × S be a supervisory control system
+     deﬁned whenever they are feasible                      with insecure observation channels Σo,a, insecure  control
+                                                            channels Σc,a, and secret states XS. Let ObsT W (G × S) =
+             fT W ((q1, q2), (σ, ϵ)) = ( ˜f(q1, σ), q2)     (18)  (QT W , ET W , fT W , qT W,0) be its two-way network observer.
+                                                         Then, G × S is inﬁnite-step opaque if and only if
+             fT W ((q1, q2), (ϵ, σ)) = (q1, ˜fR(q2, σ))    (19)
+                                                                   ∀(q1, q2) ∈QT W  : q1 ∩q2̸ ⊆XS or q1 ∩q2 = ∅.    (20)
+   4) qT W,0 = (˜q0, ˜q0,R) is the initial state.
+   Still, we only consider the accessible part of ObsT W (G × S).     Proof: See the Appendix.
+  The two-way network observer has the following properties.     For any string s ∈L(ObsT W (G × S)), we denote by |τ(s)|
+First, we show that, if the intersection of the ﬁrst and the second   the number of events in s in the form of (ϵ, σ). Then, we have
+components of a state in QT W is non-empty, then information-   the following theorem for the veriﬁcation of K-step opacity.
+ﬂows leading to each component can be “connected”: one as the    Its proof is omitted as it is similar to the case of inﬁnite-step
+current information-ﬂow and the other as the future information-   opacity. Speciﬁcally, the main difference is that we are only
+ﬂow.                                                               interested in searching states in the two-way network observer
+  Proposition 4: For any  state (q1, q2) ∈QT W  such  that   that can be reached within K steps counted according to the
+q1 ∩q2̸ = ∅,  there  exist  strings  s = (σ1, γ1) . . . (σn, γn) ∈   second component of the transitions.
+                                                  Theorem 4: Let G × S be a supervisory control system withL( Obs(G × S))  and   t = (γ′1, σ′1) . . . (γ′m, σ′m) ∈L( ObsR
+                                                               Σo,a, Σc,a, and XS. Let ObsT W (G × S) be its two-way network(G × S)) such that ˜f(˜q0, s) = q1, ˜fR(˜q0,R, t) = q2 and
+                                                                  observer. Then, G × S is K-step opaque, if and only if, for
+                                                       any string s ∈L(ObsT W (G × S)) such that fT W (qT W,0, s) = (σ1, γ1) . . . (σn, γn)(σ′m, γ′m) . . . (σ′1, γ′1) ∈L( Obs(G × S)).
+                                                                    (q1, q2), we have
+  Proof: See the Appendix.                 ■
+                                                                                [q1 ∩q2 ⊆XS ∧q1 ∩q2̸ = ∅] ⇒|τ(s)| > K.    (21)
+  Example 5: Consider again G1  in Fig. 5(a) and S1  in
+Fig. 5(b). The two-way network observer ObsT W (G1 × S1)   We illustrate how to verify inﬁnite-step opacity and K-step
+is shown in Fig. 7   , which essentially composes Obs(G ×   opacity by the following example.
+S) and ObsR(G × S) asynchronously. For the sake of sim-    Example 6: Consider again the system G1 in Fig. 5(a)
+                                                       and the supervisory S1 in Fig. 5(b), then we verify inﬁnite-plicity, each state in ObsT W (G1 × S1) is renamed accord-
+                                                                  step  opacity by  using two-way network  observer showning to the state names in Fig. 6(a) and (b). For instance,
+                                                                    in  Fig.  7. We notice  that  state (M2, N3), which denotesstate (M2, N4) represents state ({(1, B), (2, C)}, {(2, C)}),
+                                                                        state ({(1, B), (2, C)}, {(1, B), (4, D)}), is reached by stringwhich can be reached by string ((ϵ, {c1}), ϵ)(ϵ, ({}, c1)). Since
+                                                                        ((ϵ, {c1}), ϵ)(ϵ, ({c1}, c1)) or string (ϵ, ({c1}, c1))((ϵ, {c1}), ϵ){(1, B), (2, C)} ∩{(2, C)}̸ = ∅, by Proposition 4, we can ﬁnd
+                                                       and  these two  strings  are  highlighted by  blue  transition
+string (ϵ, {c1})(c1, {}) ∈L( Obs(G × S)).
+                                                                      lines in Fig. 7. Since {(1, B), (2, C)} ∩{(1, B), (4, D)} =
+
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 10,2022 at 03:52:57 UTC from IEEE Xplore. Restrictions apply.
+
+YANG et al.: OPACITY OF NETWORKED SUPERVISORY CONTROL SYSTEMS OVER INSECURE COMMUNICATION CHANNELS                       893
+
+
+(1, B) ⊆XS = {(1, B)}. Therefore, we know that the net-                         ∃t ∈L(G × S) s.t. IS(t)=α
+                                    =  (x, z) ∈X×Z :                                                 .
+worked supervisory control system G1 × S1 is not inﬁnite-step                         and (x, z) = η((x0, z0), t)
+opaque. Speciﬁcally, when the intruder observes {c1}c1{c1},
+it knows with certainty that G1 × S1 was in a secret state  Note that, the last equality comes from the fact that, for any
+1-step  earlier.  In  fact, G1 × S1  is  not  1-step opaque  as   t ∈L(G × S), IS(t) = ϵ if and only if PΣo(t) = ϵ. Therefore,
+|τ((ϵ, ({c1}, c1))((ϵ, {c1}), ϵ))| = 1.                             the induction basis holds.
+  Remark 4: Note that the reversed network observer is neither     Induction Hypothesis: Assume that α ∈L(Obs(G, S)) and
+the reverse of the network observer nor the network observer   (9) holds for |α| = k. To proceed the induction step, we need to
+of the reversed plant model. Speciﬁcally, the intruder observes   consider the following two cases.
+both communication channels and control channels; this issue    Case 1: The next observation of the intruder is a projected
+cannot be captured by the two-way observer in [29]. Therefore,   control decision γ ∈Γa.
+although our approach is motivated by the two-way observer     For the sake of clarity, we write f(q0, α) = (qk, C) and
+in [29], the original construction cannot be directly adopted for   f(q0, αγ) = (qk+1, C). That is, the induction hypothesis is
+our networked setting. We need the proposed new construction
+for the reversed observer to track where the system may start                 ∈L(G × S) s.t. IS(t)=α                                                               qk =  (x, z) ∈X×Z :∃t                                         .   (22)
+from to generate the smoothed information in the multichannel                        and (x, z)=η((x0, z0), t)
+network setting.
+  Remark 5: Let us analyze the complexity of the veriﬁcation      First, we show that information-ﬂow αγ is well deﬁned in
+of inﬁnite-step opacity and K-step opacity in networked system.  Obs(G, S). Since αγ ∈IS, we know that there exists s ∈
+The network two-way observer contains at most 2|X|×|Z| ×  L(G × S) such that IS(s) = αγ. We write s in the form of
+2|X|×|Z| states and |Σo,a| × 2|Σc,a| × 2|X|×|Z| × 2|X|×|Z| tran-   s = s′σw, where σ ∈Σo and w ∈Σ∗uo. Furthermore, we have
+sitions. To check inﬁnite-step opacity, it sufﬁces to preform a  σ ∈Σo,r; otherwise, σ should be observed before γ. Then, we
+reachability search within the two-way observer, and to check   have IS(s′) = α and [ES(ξ(s′σw))]Σc,a = γ. By the induction
+K-step opacity, it sufﬁces to preform a K-step (in terms of the   hypothesis, we have that η(s′) ∈qk. Therefore, by the deﬁnition
+moves in the second component) depth-ﬁrst search within the   of f, we know that f(qk, γ)!, i.e., αγ ∈L(Obs(G, S)).
+two-way observer. Therefore, both properties in the networked     Then, by the deﬁnition of f, we have fCC((qk, C), γ) =
+setting can be checked in exponential-time.                     (qk+1, C), i.e.,
+                                  ⎧                    ⎫
+                      VI. CONCLUSION                ⎨             ∃(x, z)∈qk, σ∈Σo,r, w∈Σ∗uo⎬
+                                                         qk+1 =    z′)∈X×Z : s.t. (x′, z′)=η((x, z), σw)  In  this  article, we proposed a framework for analyzing             ⎩(x′,                  ⎭
+                                                                                 and [ES(z′)]Σc,a = γinformation-ﬂow security of networked supervisory control sys-
+                                  ⎧                     ⎫
+tems over multichannel networks. We provided a model to      ⎨       ∃tσw∈L(G×S), σ∈Σo,r, w∈Σ∗uo⎬
+describe the information leakage in communication networks     = ⎩(x, z)∈X×Z : s.t. (x, z)=η((x0, z0), tσw), ⎭
+and adopted three opacity notions (current-state, inﬁnite-step,                      IS(t)=α and [ES(z)]Σc,a = γ
+and K-step opacity) to evaluate the security status. Effective ap-
+                                                       ∈L(G × S) s.t. IS(s)=αγproaches were proposed to verify current-state opacity, inﬁnite-                                      =  (x, z) ∈X×Z :∃s                                            .
+step opacity, and K-step opacity for networked supervisory                           and (x, z)=η((x0, z0), t)
+control systems. Our results provided a generalized framework
+                                                       Case 2: After α, the intruder ﬁrst observes an observable eventfor the analysis of opacity for networked supervisory control
+                                              σ ∈Σo,a and then observes the next projected control decisionsystems by considering both insecure control channels and in-
+                                                   γ ∈Γa.secure observation channels simultaneously. Note that this work
+                                                            For  this case, we write f(q0, α) = (qk, C), f(q0, ασ) =focused on the veriﬁcation problem, i.e., to check whether or not
+a given networked supervisory control system is opaque. For fu-   (qk+1, O), and f(q0, ασγ) = (qk+2, C). The induction hypoth-
+                                                                      esis is stillture work, we are also interested in investigating how to synthe-
+size a networked supervisor that is “opaque-by-construction.”
+                                                                                ∃t ∈L(G × S) s.t. IS(t)=α
+                                                              qk =  (x, z) ∈X×Z :                                               . (23)
+                                                                              and (x, z)=η((x0, z0), t)                    APPENDIX
+            PROOF OF PROPOSITION 1
+                                                     To proceed the induction step, ﬁrst, we show that information-
+  Proof: We prove by induction on the length of α.          ﬂow ασγ   is  well-deﬁned  in  Obs(G, S).  Since ασγ ∈
+  Induction   Basis:  When   |α| = 0,   clearly  α = ϵ ∈   IS, we know  that  there  exists s ∈L(G × S)  such  that
+L(Obs(G, S)) and (q, C) is the initial state in Obs(G, S).   IS(s) = ασγ. We can write s  in the form of s = s′σw,
+Therefore, we have                                      where w ∈Σ∗uo and IS(s′) = α. By the induction hypothe-
+                                                                                 sis, we have that η(s′) ∈qk. Moreover, since σ ∈Σo,a, by q = {(x, z) ∈X×Z : ∃t ∈Σ∗uo s.t. (x, z) = η((x0, z0), t)}                                                                           (6), we have fCO(qk, σ)! and η(s′σ) ∈qk+1. Then, since
+                       ∃t ∈L(G × S) s.t. PΣo(t)=ϵ         [ES(ξ(s′σ))]Σc,a = [ES(ξ(s′σw))]Σc,a = γ, by (7), we have  =  (x, z) ∈X×Z :
+                       and (x, z) = η((x0, z0), t)          η(s′σw) ∈qk+2. That is, ασγ ∈L(Obs(G, S)).
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 10,2022 at 03:52:57 UTC from IEEE Xplore. Restrictions apply.
+
+894                                                     IEEE TRANSACTIONS ON CONTROL OF NETWORK SYSTEMS, VOL. 8, NO. 2, JUNE 2021
+
+
+  Then, by the deﬁnition of f, we have fCO((qk, C), σ) =   have that
+(qk+1, O) and fOC((qk+1, C), γ) = (qk+2, C). Therefore,
+                                                                             ˜fR(˜q0,R, (γ1, σ1) . . . (γk, σk)(γk+1, σk+1))
+     ⎧                  ⎫       = ˜fR(Sk, (γk+1, σk+1))
+     ⎨         ∃(x, z)∈qk+1, w ∈Σ∗uo s.t. ⎬       ⎧                       ⎫                  (x′, z′)                                ⎨                                                                                     ∃(x′, z′)∈Sk, w∈Σ∗uo, σ′ ∈Σo s.t. ⎬    qk+2 =                                   :   [ES(z)]Σc,a = γ and                                                                          (x, z)     ⎩∈X × Z                        ⎭       =                                                                                         (x′,:  z′)=η((x, z), σ′w), PΣo,a(σ′) = σk+1                              (x′, z′)=η((x, z), w)                                ⎩∈X × Z                                                        ⎭
+     ⎧                 ⎫                                and [ES(z′)]Σc,a = γk+1
+     ⎨         ∃(x, z)∈qk, w ∈Σ∗uo s.t. ⎬        ⎧                       ⎫                 (x′,                     z′)
+     =                                   :[ES(ξ(z, σ))]Σc,a = γ and          ×            Z     ⎩∈X                       ⎭                                                        ⎪⎪⎪⎬                                ⎪⎪⎪⎪⎨                       s.t. IS(s,∃σ′ws(x′,∈L(Gz′)) =× σkγkS, (x,. z)). . σ1γ1⎪                            (x′, z′)=η((x, z), σw)
+     ⎧                  ⎫      =   (x, z) ∈X × Z :  and (x′, z′)=η((x, z), σ′w)
+     ⎨                       ∃t ∈L(G × S), w ∈Σ∗uo ⎬                                                                                and PΣo,a(σ′) = σk+1                (x, z)                                                        ⎪⎪⎪⎪⎭                                ⎪⎪⎪⎪⎩
+     =                  :s.t. IS(t)=α, (x, z)=η(tσw)                                  and [ES(z′)]Σc,a = γk+1     ⎩∈X × Z               ⎭
+                      and [ES(ξ(tσ))]Σc,a = γ         ⎧                     ⎫
+                                ⎨              ∃σ′ws ∈L(G × S, (x, z)) ⎬
+                (x, z)   ∈L(G × S) s.t. IS(s)=ασγ      =      z) ∈X × Z :     s.t. IS(σ′ws, (x, z))     =              :∃s                                              .          ⎩(x,                           ⎭.
+      ∈X × Z    and (x, z)=η((x0, z0), s)                     = σk+1γk+1σkγk . . . σ1γ1
+
+                                                      Note  that  the  third  equivalence  follows  from  the  in-
+                                                              duction  hypothesis,  and  the  last  equation  holds  since
+Since the induction step holds for both cases, we complete the
+                                                        IS(σ′ws, (x, z)) = IS(σ′w, (x, z))IS(s, (x′, z′)) = PΣo,a(σ′)inductive proof.                       ■
+                                                                    [ξ(z, σ′)]Σc,aσkγk . . . σ1γ1 = σk+1γk+1 . . . σ1γ1.      ■  Proof of Proposition 2
+                                                             Proof of Proposition 4
+  Proof:  By  Proposition   1,  we  already  have  IS ⊆
+                                                              Proof: By the construction of ObsT W (G × S), there ex-
+LC(Obs(G, S)). It remains to show that LC(Obs(G, S)) ⊆IS.
+                                                                                    ist  strings  s ∈L( Obs(G × S))  and  t ∈L( ObsR(G × S))Let us consider an arbitrary string α ∈LC(Obs(G, S)). Next,
+                                                          such  that   ˜f(˜q0, s) = q1  and  ˜fR(˜q0,R, t) = q2.  Let  s =we show that α ∈IS by induction on the length of α. When
+                                                               (σ1, γ1) . . . (σn, γn)andt = (γ′1, σ′1) . . . (γ′m, σ′m).Let(x, z) ∈α = ϵ, we know immediately that α ∈IS. Now we assume
+                                                               q1 ∩q2 be a state in X × Z. Then, we havethat, α ∈IS when |α| = k and we consider the following two
+cases:                                                                         i)  ∃(x0, z0) ∈˜q0, ∃s1 ∈L(G × S, (x0, z0)) :
+  Case 1: αγ ∈LC(Obs(G, S)), where γ ∈Γa. By the in-
+duction hypothesis, we know that there exists a string s ∈     IS(s1, (x0, z0)) = σ1γ1 . . . σnγn ∧η((x0, z0), s1) = (x, z)
+L(G × S) such that IS(s) = α. Since αγ ∈L(Obs(G, S)), by    ii)  ∃(x,′ z′) ∈˜q0,R, ∃t1 ∈L(G × S, (x, z)) :
+the deﬁnition of fCC, we know that there exist σ ∈Σo,r, w ∈
+Σ∗uo such that [S(tσw)]Σc,a = γ, where t  is a string such     IS(t1, (x, z)) = σ′mγ′m . . . σ′1γ′1 ∧η((x, z), t1) = (x,′ z′).
+that IS(t) = IS(s) = α. Therefore, we know that IS(tσw) =                                                      Note that  i)  is from Proposition 1, while  ii) comes from
+αPΣo,a(σ)[S(tσw)]Σc,a = αγ ∈IS.                                                               Proposition 3. Therefore, we know that η((x0, z0), s1t1) =
+  Case2:ασγ ∈LC(Obs(G, S)),whereσ ∈Σo,a andγ ∈Γa.                                                                       (x′, z′) and IS(s1t1, (x0, z0)) = σ1γ1 . . . σnγnσ′mγ′m . . . σ′1γ′1.
+By the induction hypothesis, we still know that there exists                                                           This implies that (σ1, γ1) . . . (σn, γn)(σ′m, γ′m) . . . (σ′1, γ′1) ∈
+a string s ∈L(G × S) such that IS(s) = α. Since ασsw ∈
+                                                 L( Obs(G × S)).                       ■
+L(Obs(G, S)), by the deﬁnition of fCO and fOC, we know
+                                                             Proof of Theorem 2
+that there exists w ∈Σ∗uo such that [S(tσw)]Σc,a = γ, where t                                                              Proof: According to the deﬁnition of ˜f, we have that
+is a string such that IS(t) = IS(s) = α. Therefore, IS(tσw) =
+αPΣo,a(σ)[S(tσw)]Σc,a = ασγ ∈IS.                                 ˜f((σ1, γ1) · · · (σk, γk)) =
+  Since the induction step holds for both cases, we complete
+the proof.                          ■         (x, z) ∈X × Z :∃s ∈L(G × S)) s.t. η(s) = (x, z)
+  Proof of Theorem 1                                                          and IS(s) = σ1γ1 . . . σkγk
+  Proof: According to Corollary 1, G × S  is current-state                                                      Based on Proposition 3, we obtain that
+opaque if and only if ∀s ∈L(G × S) : X(f(IS(s))) = ˆX(s)̸ ⊆
+XS. Based on Proposition 2,  this  is further equivalent to    ˜fR((γn, σn) · · · (γk+1, σk+1)) =
+∀(q, C) ∈QC : X(q)̸ ⊆XS holds as any C-state is reached and                                                                                  ∃t ∈L(G × S, (x, z))
+only reached by strings in IS. This ends the proof.                  (x, z) ∈X × Z :                                                           .
+                                                                                                                      s.t. IS(t, (x, z)) = σk+1γk+1 . . . σnγn
+  Proof of Proposition 3
+  Proof: We prove  it by  induction on  n. When n = 0,   Then, by intersecting these two sets, we obtain Theorem 2. ■
+it  is clear that ˜fR(˜q0,R, ϵ) = X × Z since IS(ϵ, (x, z)) = ϵ     Proof of Theorem 3
+for any (x, z) ∈X × Z. Now,  let us assume that Proposi-     Proof: (⇒) By  contraposition. Suppose  that  there  ex-
+tion 3 holds for n = k. For the sake of simplicity, we denote    ists  a  state  (q1, q2) ∈QT W  such  that  q1 ∩q2̸ = ∅and
+˜fR(˜q0,R, (γ1, σ1) . . . (γk, σk)) by Sk. Then, for n = k + 1, we   q1 ∩q2 ⊆XS.  According  to  Proposition  4,  there  exist
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 10,2022 at 03:52:57 UTC from IEEE Xplore. Restrictions apply.
+
+YANG et al.: OPACITY OF NETWORKED SUPERVISORY CONTROL SYSTEMS OVER INSECURE COMMUNICATION CHANNELS                       895
+
+
+strings α = (σ1, γ1) . . . (σn, γn) ∈L( Obs(G × S)) and β =    [10] C. Keroglou and C. N. Hadjicostis, “Probabilistic system opacity in
+                                                                                           discrete event systems,” Discrete Event Dyn. Sys.: Theory Appl., vol. 28,
+(γ′1, σ′1) . . . (γ′m, σ′m) ∈L( ObsR(G × S))suchthat ˜f(˜q0, α) =         no. 2, pp. 289–314, 2018.
+q1, ˜fR(˜q0,R, β) = q2 and                                                 [11]  J. Komenda and F. Lin, “Modular supervisory control of networked
+                                                                                         discrete-event systems,” in Proc. 13th Int. Workshop Discrete Event Syst.,
+           σ1γ1 . . . σnγnσ′mγ′m . . . σ′1γ′1 ∈IS.                       2016, pp. 85–90.                                                                               [12] R. Kumar and S. Takai, “Inference-based ambiguity management in decen-
+Let st ∈L(G × S) be a string such that IS(s) = σ1γ1 . . . σnγn         tralizeddecision-making:Decentralizedcontrolofdiscreteeventsystems,”                                                                 IEEE Trans. Autom. Control, vol. 52, no. 10, pp. 1783–1794, Oct. 2007.
+and IS(st) = σ1γ1 . . . σnγnσ′mγ′m . . . σ′1γ′1. Then, by Theo-    [13]  F. Lin, “Opacity of discrete event systems and its applications,” Automat-
+rem 2, we have that                                                                     ica, vol. 47, no. 3, pp. 496–503, 2011.
+                                                                               [14]  F. Lin, “Control of networked discrete event systems: Dealing with com-
+                    ∃s′t′ ∈L(G × S)) s.t.                                 munication delays and losses,” SIAM J. Control Optimiz., vol. 52, no. 2,
+      η(s′) :                       ⊆XS.              pp. 1276–1298, 2014.           IS(s′) = IS(s) and IS(s′t′) = IS(st)
+                                                                               [15]  F. Lin et al., “Information control in networked discrete event systems and
+This means that G × S is not inﬁnite-step opaque.                                its application to battery management systems,” Discrete Event Dyn. Syst.,
+                                                                                              vol. 30, no. 2, pp. 243–268, 2020.
+  (⇐) Also by contraposition. Suppose that G × S  is not    [16]  F. Lin, W. Wang, L. Han, and B. Shen, “State estimation of multi-channel
+inﬁnite-step opaque w.r.t. Σo,a, Σc,a and XS. This means that        networked discrete event systems,” IEEE Trans. Control Netw. Syst., vol. 7,
+there exists a string st ∈L(G × S) such that                               no. 1, pp. 53–63, Mar. 2020.
+                                                                               [17]  J. Mullins and M. Yeddes, “Opacity with orwellian observers and intran-
+                     ∃s′t′ ∈L(G × S) s.t.                                          sitive non-interference,” in Proc. 12th Int. Workshop Discrete Event Syst.,
+      η(s′) :                       ⊆XS.             2014, pp. 344–349.           IS(s′) = IS(s) and IS(s′t′) = IS(st)                    [18] C. Nunes, M. V. Moreira, M. Alves, L. K. Carvalho, and J. C. Basilio,
+                                                                                  “Codiagnosability of networked discrete event systems subject to com-
+Then, let                                                                     munication delays and intermittent loss of observation,” Discrete Event
+                                                                          Dyn. Syst.,” vol. 28, no. 2, pp. 215–246, 2018.
+   IS(st) = σ1γ1 . . . σnγnσn+1γn+1 . . . σn+mγn+m ∈IS        [19] A. Rashidinejad, M. Reniers, and L. Feng, “Supervisory control of timed
+                                                                                         discrete-event systems subject to communication delays and non-FIFO
+such   that   IS(s) = σ1γ1 . . . σnγn.   This   implies   that         observations,” in Proc. 14th Int. Workshop Discrete Event Syst., 2018,
+                                                                                     pp. 456–463.
+α := (σ1, γ1) . . . (σn, γn) ∈L( Obs(G × S))    and   β :=    [20] A. Saboori and C. N. Hadjicostis, “Veriﬁcation of inﬁnite-step opacity and
+(γn+m, σn+m) . . . (γn+1, σn+1) ∈L( ObsR(G × S)).   Then,        complexity considerations,” IEEE Trans. Autom. Control, vol. 57, no. 5,
+                                                                                     pp. 1265–1269, May. 2012.
+by the construction of ObsT W (G × S), we have string             [21]  S. Shu and F. Lin, “Supervisor synthesis for networked discrete event
+                                                                            systemswithcommunicationdelays,”IEEETrans.Autom.Control,vol.60,
+   ϕ = ((σ1, γ1), ϵ) . . . ((σn, γn), ϵ)(ϵ, (γn+m, σn+m))               no. 8, pp. 2183–2188, Aug. 2015.
+                                                                               [22]  S. Shu and F. Lin, “Deterministic networked control of discrete event sys-
+          . . . (ϵ, (γn+1, σn+1)) ∈L(ObsT W (G × S))       (24)        tems with nondeterministic communication delays,” IEEE Trans. Autom.
+                                                                                     Control, vol. 62, no. 1, pp. 190–205, Jan. 2017.
+and string ϕ leads to state (q1, q2) := ( ˜f(˜q0, α), ˜fR(˜q0,R, β)).    [23]  S. Shu and  F. Lin, “Predictive networked control of discrete event
+According to Theorem 2, we have                                           systems,” IEEE Trans. Autom. Control, vol. 62, no. 9, pp. 4698–4705,
+                                                                                 Sep. 2017.
+                              ∃s′t′ ∈L(G × S)) s.t.                    [24]  S. Takai and T. Ushio, “Veriﬁcation of codiagnosability for discrete
+  q1 ∩q2 =   η(s′) :                                                         .           event systems modeled by mealy automata with nondeterministic output
+                   IS(s′) = IS(s) and IS(s′t′) = IS(st)                functions,” IEEE Trans. Autom. Control, vol. 57, no. 3, pp. 798–804,
+                                                                            Mar. 2012.
+Therefore, q1 ∩q2 ⊆XS. Furthermore, q1 ∩q2̸ = ∅as η(s) ∈    [25] Y. Tong, Z. Li, C. Seatzu, and A. Giua, “Decidability of opacity veriﬁcation
+q1 ∩q2. This completes the contrapositive proof.      ■        problems in labeled petri net systems,” Automatica, vol. 80, pp. 48–53,
+                                                                              2017.
+                                                                               [26] Y. Tong, Z. Li, C. Seatzu, and A. Giua, “Veriﬁcation of state-based
+                 REFERENCES                                       opacity using petri nets,” IEEE Trans. Autom. Control, vol. 62, no. 6,
+                                                                                     pp. 2823–2837, Jun. 2017.
+ [1] M. V. S. Alves, L. K. Carvalho, and J. C. Basilio, “Supervisory control of    [27]  T. Ushio and S. Takai, “Nonblocking supervisory control of discrete
+     timed networked discrete event systems,” in Proc. 56th IEEE Conf. Decis.         event systems modeled by mealy automata with nondeterministic output
+      Control, 2017, pp. 4859–4865.                                                    functions,” IEEE Trans. Autom. Control, vol. 61, no. 3, pp. 799–804, Mar.
+ [2] E. Badouel, M. Bednarczyk, A. Borzyszkowski, B. Caillaud, and P.        2016.
+     Darondeau,“ConcurrentSecrets,”DiscreteEventDyn.Syst.:TheoryAppl.,    [28]  J. Yang, W. Deng, C. Jiang, and D. Qiu, “Opacity of networked dis-
+      vol. 17, no. 4, pp. 425–446, 2007.                                                  crete event systems,” in Proc. 58th IEEE Conf. Decis. Control, 2019,
+ [3]  J. W. Bryans, M. Koutny, L. Mazaré, and P. Ryan, “Opacity generalised         pp. 6736–6741.
+      to transition systems,” Int. J. Inf. Secur., vol. 7, no. 6, pp. 421–435, 2008.    [29] X. Yin and S. Lafortune. “A new approach for the veriﬁcation of inﬁnite-
+ [4] L. K. Carvalho, J. C. Basilio, and M. V. Moreira, “Robust diagnosis of dis-         step and K-step opacity using two-way observers,” Automatica, vol. 80,
+      crete event systems against intermittent loss of observations,” Automatica,         pp. 162–171, 2017.
+      vol. 48, no. 9, pp. 2068–2078, 2012.                                       [30] X. Yin and S. Li, “Veriﬁcation of opacity in networked supervisory
+ [5] C. G. Cassandras and S. Lafortune, Introduction to Discrete Event Systems,         control systems with insecure control channels,” in Proc. IEEE Conf Decis.
+     2nd ed. Berlin, Germany: Springer, 2008.                                       Control, 2018, pp. 4851–4856.
+ [6]  J. Chen, M. Ibrahim, and R. Kumar, “Quantiﬁcation of secrecy in partially    [31] X. Yin and S. Li, “Opacity of networked supervisory control systems over
+     observed stochastic discrete event systems,” IEEE Trans. Autom. Sci. Eng.,         insecure multiple channel networks,” in Proc. 58th IEEE Conf. Decis.
+      vol. 14, no. 1, pp. 185–195, Jan. 2017.                                           Control, 2019, pp. 7641–7646.
+ [7] L. Hélouët, H. Marchand, and L. Ricker, “Opacity with powerful attack-    [32]  T.-S. Yoo and S. Lafortune, “A general architecture for decentralized
+      ers,” in Proc. 14th Int. Workshop Discrete Event Syst., 2018, pp. 464–471.         supervisory control of discrete-event systems,” Discrete Event Dyn. Sys.:
+ [8] R. Jacob, J.-J. Lesage, and J.-M. Faure, “Overview of discrete event sys-        Theory Appl., vol. 12, no. 3, pp. 335–377, 2002.
+     tems opacity: Models, validation, and quantiﬁcation,” Annu. Rev. Control,    [33] K. Zhang, X. Yin, and M. Zamani, “Opacity of nondeterministic transition
+      vol. 41, pp. 135–146, 2016.                                                 systems:A(bi)simulationrelationapproach,”IEEETrans.Autom.Control,
+ [9] Y. Ji, Y.-C. Wu, and S. Lafortune. “Enforcement of opacity by public and          vol. 64, no. 12, pp. 5116–5123, Dec. 2019.
+      private insertion functions,” Automatica, vol. 93, pp. 369–378, 2018.
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 10,2022 at 03:52:57 UTC from IEEE Xplore. Restrictions apply.
+
+896                                                     IEEE TRANSACTIONS ON CONTROL OF NETWORK SYSTEMS, VOL. 8, NO. 2, JUNE 2021
+
+
+
+[34] R. Zhang, K. Cai, Y. Gan, and W. M. Wonham, “Distributed supervisory                      Xiang Yin (Member, IEEE) was born in Anhui,
+      control of discrete-event systems with communication delay,” Discrete                         China, in 1991. He received the B.Eng. degree
+     Event Dyn. Syst., vol. 26, no. 2, pp. 263–293, 2016.                                         from Zhejiang University, Hangzhou, China, in
+[35] B. Zhao, F. Lin, C. Wang, X. Zhang, M. P. Polis, and L. Y. Wang,                        2012, the M.S. and Ph.D. degrees from the Uni-
+     “Supervisory control of networked timed discrete event systems and its                             versity of Michigan, Ann Arbor, MI, USA, in 2013
+      applications to power distribution networks,” IEEE Trans. Control Netw.                      and 2017, respectively, all in electrical engineer-
+       Syst., vol. 4, no. 2, pp. 146–158, Jun. 2017.                                                           ing.
+[36] Y. Zhu, L. Lin, and R. Su, “Supervisor obfuscation against actuator                           Since 2017, he has been with the Depart-
+     enablementattack,”inProc.18thEur.ControlConf.,2019,pp.1760–1765.                      ment of Automation, Shanghai Jiao Tong Uni-
+[37] Y. Zhu, L. Lin, S. Ware, and R. Su, “Supervisor synthesis for networked                                versity, Shanghai, China, where he is currently
+      discrete event systems with communication delays and lossy channels,” in                      an Associate Professor. His research interests
+     Proc. 58th IEEE Conf. Decis. Control, 2019, pp. 6730–6735.              include formal methods, discrete-event systems, and cyber-physical
+                                                                   systems.
+                                                                                Dr. Yin is serving as the Co-chair of the IEEE CSS Technical Com-
+                                                                         mittee on Discrete Event Systems, an Associate Editor for the Journal of
+                                                                        Discrete Event Dynamic Systems: Theory & Applications, and a member
+                                                                               of the IEEE CSS Conference Editorial Board. He was the ﬁnalist in IEEE
+                                                                Conference on Decision and Control (CDC) Best Student Paper Award,
+                 Shuo Yang was born in Hunan, China, in 2000.   2016.
+                He has been working toward the B.Eng. degree
+                        with the Department of Automation, Shanghai
+                       Jiao Tong University, Shanghai, China, since
+                     2017.
+                        His research interests include control theory,
+                       cyber-physical systems, and discrete-event sys-
+                      tems.
+                                                                         Shaoyuan Li (Senior Member, IEEE) received
+                                                                                              the Ph.D. degree in control science and engi-
+                                                                                           neering from Nankai University, Tianjin, China,
+                                                                                                                in 1997.
+                                                                                          Since 1997, he has been with the Depart-
+                                                                              ment of Automation, Shanghai Jiao Tong Uni-
+                                                                                                                  versity, Shanghai, China, where he is currently a
+                  Junyao Hou (Student, Member IEEE) was born                           Professor. His research interests include model
+                           in Hunan, China, in 1993. He received the B.S.                            predictive control, dynamic system optimization,
+                    degree from Southwest University, Chongqing,                      and cyber-physical systems.
+                      China, in 2015, and the M.S. degree from Xid-                               Dr. Li is the Vice President of the Chinese
+                        ian University, Xi’an, China, in 2018, all in au-   Association of Automation.
+                       tomation. He is currently working toward the
+                      Ph.D. degree with the Department of Automa-
+                            tion, Shanghai Jiao Tong University, Shanghai,
+                      China.
+                        His research interests include the security of
+                       cyber-physical systems and abstraction-based
+synthesis in formal methods.
+
+
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on August 10,2022 at 03:52:57 UTC from IEEE Xplore. Restrictions apply.

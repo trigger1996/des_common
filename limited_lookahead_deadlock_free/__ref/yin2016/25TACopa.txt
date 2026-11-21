@@ -1,0 +1,1067 @@
+3846                                                IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 70, NO. 6, JUNE 2025
+
+ On Approximate Opacity of Stochastic Control
+                Systems
+
+             Siyuan Liu    , Graduate Student Member, IEEE, Xiang Yin    , Member, IEEE,
+         Dimos V. Dimarogonas    , Fellow, IEEE, and Majid Zamani    , Senior Member, IEEE
+
+
+
+  Abstract—This article investigates an important class   in modern CPS. Various notions of security properties were
+of information-ﬂow security property called opacity for   considered in the literature for the protection of CPS against
+stochastic control systems. Opacity captures whether a   different types of attacks, which are typically classiﬁed into three
+system’s secret behavior (a subset of the system’s behavior   categories along the CIA mnemonic: conﬁdentiality, integrity,
+that is considered to be critical) can be kept from outside                                                       and availability [1], [2], [3].
+observers. Existing works on opacity for control systems
+                                                              This article is concerned with a conﬁdentiality property calledonly provide a binary characterization of the system’s se-
+                                                                  opacity. In this problem, we assume that the system is monitoredcurity level by determining whether the system is opaque
+or not. In this work, we introduce a quantiﬁable measure of  by an outside eavesdropper (malicious intruder) that is modeled
+opacity that considers the likelihood of satisfying opacity   as a passive observer. Opacity essentially characterizes the sys-
+for stochastic control systems modeled as general Markov   tem’s capability to conceal its secrets information from being
+decision processes (gMDPs). We also propose veriﬁcation   inferred by malicious intruders through the information ﬂow [4],
+methods tailored to the new notions of opacity for ﬁnite   [5]. The concept of opacity is known to be originally introduced
+gMDPs by using value iteration techniques. Then, a new no-   in [6] in the computer science literature to analyze security and
+tion called approximate opacity-preserving stochastic sim-   privacy performances of cryptographic protocols. Since then,
+ulation relation is proposed, which captures the distance                                                               opacity has attracted extensive attentions in the discrete-event
+between two systems’ behaviors in terms of preserving
+                                                          systems (DES) community. Depending on how the systems areopacity. Based on this new system relation, we show that
+                                                      modeled and what kind of secret the systems want to hide,one can verify opacity for stochastic control systems us-
+ing their abstractions (modeled as ﬁnite gMDPs). We also   different opacity notions have been proposed in the context
+discuss how to construct such abstractions for a class of   of DES, including language-based notions [7] and state-based
+gMDPs under certain stability conditions.                     notions [4], [8]. Building on the various notions, veriﬁcation
+                                                       and synthesis approaches were extensively developed for DES
+  Index Terms—Approximate simulation relations, ﬁnite                                                      modeled as ﬁnite-state automata [9], [10], labeled transition
+abstractions, general Markov decision process (gMDP),
+                                                          systems [11], or Petri nets [12]. The applications of opacity canopacity, stochastic control systems.
+                                                        be found in many real-world scenarios, including location-based
+                                                                    services, mobile robot systems, and web services; see [5] and
+                                I. INTRODUCTION                        [13] for more details on the historic developments of opacity.
+                                                                  In more recent years, there has been a growing interest in
+   HE analysis and synthesis of security for cyber-physical                                                                 the analysis of opacity for dynamical systems with continuous
+     systems (CPS) have attracted considerable attentions over                                                                        state spaces [3], [14], [15], [16]. Particularly, different fromTthe past decades due to the increasing information exchange                                                                 the concepts of opacity appeared in DES literature, new no-
+                                                                    tions of approximate opacity were proposed in [14], which
+  Received 1 September 2024; accepted 8 December 2024. Date of   are more applicable to continuous-space CPS whose outputs
+publication 12 December 2024; date of current version 30 May 2025.   are physical signals. This new concept provides a quantitative
+This work was supported in part by the Horizon Europe EIC project   evaluation of a system’s security level by taking into account
+SymAware under Grant 101070802; in part by Digital Futures; in part
+by the Knut and Alice Wallenberg (KAW) Foundation; in part by the   the imperfect measurements of external observations. After that,
+National Natural Science Foundation of China under Grant 62173226   various approaches have been proposed for the veriﬁcation or
+and Grant 62061136004; in part by the German Research Foundation   synthesis of controllers with respect to approximate opacity
+(DFG) under Grant ZA 873/7-1; and in part by the National Science   for continuous-space control systems [14], [17], [18], [19]. In
+Foundation (NSF) under Grant ECCS-2015403. Recommended by As-
+                                                                               all the aforementioned works, the deﬁnitions of opacity forsociate Editor U. Topcu. (Corresponding author: Xiang Yin.)
+  Siyuan Liu and Dimos V. Dimarogonas are with the Division of Deci-   dynamical systems only provide a binary characterization by
+sion and Control Systems, KTH Royal Institute of Technology, 114 28   simply reporting if the system is opaque or not. However, in
+Stockholm, Sweden (e-mail: siyliu@kth.se; dimos@kth.se).          many security-critical real-world applications, such as air trafﬁc
+  Xiang Yin  is with the Department of Automation, Shanghai Jiao   networks, infrastructure systems, robotic manufacturing, and
+Tong University, Shanghai 200240, China, and also with the Key Lab
+of System Control and Information Processing, Ministry of Education,   biological systems, the systems inherently exhibit stochastic
+Shanghai 200240, China (e-mail: yinxiang@sjtu.edu.cn).               behavior due to the uncertainties and randomness in their opera-
+  Majid Zamani is with the Computer Science Department, University of   tions and environments [20], [21]. Consequently, a binary char-
+Colorado Boulder, Boulder, CO 80309 USA, and also with the Computer   acterization of whether a desired property is satisﬁed becomes
+Science Department, Ludwig Maximilian University of Munich, 80539
+                                                             inadequate and impractical. Given that the uncertainty affect-München, Germany (e-mail: majid.zamani@colorado.edu).
+   Digital Object Identiﬁer 10.1109/TAC.2024.3516202                 ing system evolution results in varying likelihoods of different
+
+
+        © 2024 The Authors. This work is licensed under a Creative Commons Attribution 4.0 License. For more information, see
+                                                   http://creativecommons.org/licenses/by/4.0/
+
+LIU et al.: ON APPROXIMATE OPACITY OF STOCHASTIC CONTROL SYSTEMS                                                               3847
+
+
+system trajectories, it is more reasonable to evaluate the proba-   initial-state and current-state opacity here, whereas [29] only
+bility of a system being opaque. In fact, in many real-world sce-   investigates initial-state opacity. Finally, effective veriﬁcation
+narios, a small likelihood of violating opacity may be tolerable.   algorithms are proposed here to verify different notions of
+Typical examples include the quantitative analysis of security   opacity for ﬁnite gMDPs, which was not investigated in [29].
+in cloud computing systems [22] and applications addressing     Organization: The rest of this article is organized as follows.
+location privacy issues [23], both of which rely on probabilistic   In Section II, we introduce notations and necessary preliminaries
+quantiﬁcation of opacity properties. In addition, when a system  on gMDPs. In Section III, we propose new notions of approx-
+is not secure in a nonstochastic sense, introducing a quantitative   imate opacity for gMDPs. Veriﬁcation approaches tailored to
+notion of opacity and developing corresponding probabilistic   approximate opacity for ﬁnite gMDPs are presented in Sec-
+veriﬁcation techniques allow us to assess the degree of satisfac-   tion IV. Section V introduces new notions of opacity-preserving
+tion or violation of the security property of interest. This ap-   stochastic simulation relations and discuss their properties. In
+proach can be instrumental in the early stages of system design.   Section VI, we describe how to construct ﬁnite abstractions for
+  Our contribution: In this article, we propose a new concept of   a class of stochastic control systems. A numerical case study
+approximate opacity for stochastic control systems modeled as    is provided in Section VII to illustrate the effectiveness of the
+general Markov decision processes (gMDPs) over continuous   proposed results. Finally, Section VIII concludes this article.
+state spaces. This new notion deﬁnes appropriate measures to
+quantify opacity in a probabilistic setting. We consider two
+basic types of opacity: initial-state and current-state opacity. In                                    II. PRELIMINARIES
+particular, a notion of approximate initial-state opacity (resp.,                                                                 Notations: In this article, a probability space is written as
+approximate current-state opacity) is proposed for gMDPs that                                                         (Ω, FΩ, PΩ), where Ω is the sample space, FΩ is a sigma-
+requires that any state run of the system should not violate initial-                                                               algebra on Ω representing the set of events, and PΩ : FΩ →
+state opacity (resp., current-state opacity) with a probability                                                                           [0, 1] is a probability measure that assigns probabilities to events.
+greater than a threshold. Intuitively, the proposed new notions                                                                                      It is assumed that the random variables discussed in this ar-
+of opacity can be regarded as the probabilistic counterparts of                                                                             ticle are measurable functions of the form X : (Ω, FΩ) →
+the (qualitative) opacity notions in [14], which allows us to                                                    (SX, FX). Any random variable X induces a probability
+quantitatively evaluate opacity for gMDPs. Based on these new                                                       measure on its measurable space  (SX, FX) as  Prob{A} =
+notions of opacity, we further propose a veriﬁcation approach  PΩ{X−1(A)} for any A ∈FX. For brevity, we often directly
+for gMDPs using abstraction-based techniques. In particular,                                                                discuss the probability measure on (SX, FX) without explicitly
+new notions of opacity-preserving simulation relations are in-                                                          mentioning the underlying probability space and the function X
+troduced to capture the distance between two gMDPs in terms                                                                                  itself. We further denote the set of all probability measures for
+of preserving approximate opacity. We show that one can verify                                                           a given measurable pair (SX, FX) as P(SX, FX). We denote
+approximate opacity of a (inﬁnite) gMDP by using its ﬁnite                                                     by R and N the set of real numbers and nonnegative integers,
+abstractions (modeled as ﬁnite gMDPs) based on these relations.                                                                     respectively. These symbols are annotated with subscripts to
+In addition, we provide an approach to construct such ﬁnite                                                                            restrict them in the usual way, e.g., R>0 denotes the positive
+abstractions for a class of discrete-time gMDPs. For the ﬁnite                                                                      real numbers. For a, b∈N and a≤b, we use [a; b] to denote the
+abstractions (ﬁnite gMDPs), we show that the veriﬁcation of                                                            corresponding intervals in N. We use ∥x∥to denote the inﬁnity
+approximate opacity can be effectively achieved by using value                                                  norm of a vector x ∈Rn. Given any a∈R, |a| denotes the abso-
+iteration techniques.                                                                      lute value of a. The composition of functions f and g is denoted
+  Related works: In the setting of stochastic DES, there have                                                     by f ◦g. We use notations K and K∞to denote the different
+been several results in the literature that consider how to quanti-                                                                   classes of comparison functions, as follows: K={γ :R≥0→R≥0 :
+tativelyevaluateopacitybyusingprobabilisticmodels[24],[25],                                                   γ is continuous, strictly increasing and γ(0)=0}; K∞={γ ∈K:
+[26], [27], [28]. For example, different probabilistic notions of                                                limr→∞γ(r)=∞}. For α, γ ∈K∞, we write α<γ if α(s)<
+current-state opacity were introduced in [24] for probabilistic                                                          γ(s) for all s>0, and Id ∈K∞denotes the identity function.
+ﬁnite-state automata; this approach has been extended to handle                                                       Given sets X and Y with X ⊂Y , the complement of X with
+inﬁnite-step and K-step opacity in [28]. In [26], a Jensen-                                                                 respect to Y is deﬁned as Y \ X ={x ∈Y :x /∈X}.
+Shannon divergence-based measure was adopted to quantify
+secrecy loss in partially observed stochastic DES. Probabilistic
+measurement of opacity are also studied in [25] and [27] for   A. General Markov Decision Processes
+(partially observed) Markov decision processes. Nevertheless,
+                                                                  In this article, we focus on a class of discrete-time stochasticall the aforementioned works are restricted to stochastic DES
+                                                                 control systems, which can be formally modeled as gMDPs [30],that evolves over discrete (ﬁnite) state spaces. In real-world
+                                                                     [31].applications, however, the gMDPs are equipped with contin-
+                                                              Deﬁnition 2.1: A gMDP is a tupleuous, and thus inﬁnite, state sets. A suitably deﬁned notion of
+opacity together with efﬁcient veriﬁcation techniques are indeed
+desirable in order to quantitatively evaluate the security level of                Σ=(X, U, T, Y, h)                   (1)
+general stochastic control systems.
+  There has been an attempt to extend the notion of opacity to  where X ⊆Rn, U ⊆Rm, and Y ⊆Rq are Borel spaces
+stochastic control systems in [29]. Our results here differ from   denoting the state, external input, and output sets of the system,
+those in [29] in the following directions. First and foremost,   respectively. We use B(X) to denote the Borel sigma algebra
+the notion of opacity presented in [29] still provides a binary  on the state set X, thus (X, B(X)) denotes the corresponding
+(qualitative) characterization of opacity, whereas the one pro-   measurable space. We use T :B(X)×X×U →[0, 1] to denote
+posedinthis articleis aquantitativeprobabilisticnotion. Second,   a conditional stochastic kernel that assigns to any state x ∈X
+we develop abstraction-based veriﬁcation approaches for both  and any input u ∈U, a probability measure T(·|x, u) over the
+
+3848                                                              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 70, NO. 6, JUNE 2025
+
+
+measurable space (X, B(X)) so that for any set A ∈B(X)       Here, we consider a passive intruder (outside observer) who
+                                                   knows the dynamics of the system and can observe the output
+            P(x′ ∈A|x, u) =    T(dx′|x, u).            (2)   sequences of the system without actively affecting the behavior
+                         A                             of the system. Furthermore, we assume that due to imperfect
+  The measurable function h : X →Y is the output map.      measurement precision, the intruder is unable to distinguish
+ A system Σ with a ﬁnite state set X and ﬁnite input set U is  two “ ε-close” output trajectories  ζ =(y0, y1, . . . , yn) and
+said to be a ﬁnite gMDP. The dynamical evolution of a gMDP   ζ′ =(y′0, y′1, . . . , y′n) if their distance is smaller than a given
+can be equivalently described by                                threshold ε ≥0, i.e., maxi∈[0;n] ∥yi−y′i∥≤ε. The two ε-close
+                                                                       trajectories  ζ and  ζ′ are said to be  ε-approximate output-
+           ξ(k + 1) = f(ξ(k), ν(k), ς(k)),     Σ :                            k ∈N      (3)   equivalent in the eye of an intruder with measurement precision           ζ(k) = h(ξ(k)),                                                                   greater than ε ≥0. Essentially, the intruder aims to infer certain
+                                                                    secret information about the system using the output sequenceswhere  ξ(·) : N →X,  ζ(·) : N →Y , and  ν(·) : N →U are
+                                                        observedonlineandtheknowledgeofthesystemmodel.Opacitythe state, output, and input signals, respectively. In the probabil-
+                                                                     essentially captures whether or not the system’s secrets can beity space (Ω, FΩ, P), we use  ς = (ς(0), ς(1), . . . ) to denote
+                                                               revealed to the intruder. For the sake of simplicity, we assumea sequence of independent and identically distributed (i.i.d.)
+                                                                      that the input sequences are internal information and unknownrandom variables from Ω to the measurable set  Vς, where
+                                                                    to the intruder. However, one could indeed drop this assumptionς(k) : Ω →Vς, k ∈N. We use U to denote the collections of in-
+                                                                    to handle the setting where both input and output informationput sequences ν(·) : N →U, where ν(k) is independent of ς(t)
+                                                                 are available to the intruder.for any k, t ∈N and  t ≥k. The map f : X × U × Vς →X
+                                                            Before introducing the formal deﬁnitions of approximateis a measurable function serving as the state transition relation.
+                                                               opacity for gMDPs, let us deﬁne the sets of “secure” stateNote that any gMDP endowed with the stochastic kernel T as
+                                                                         trajectories, i.e., the state trajectories whose occurrences do notin Deﬁnition 2.1 can be equivalently represented by a gMDP
+                                                                  reveal secrets to the passive intruder. Depending on what kind ofas in (3) with pair  (f, ς) [32]. Throughout this article, the
+                                                              information are regarded as critical, we consider the followingsystem is assumed to be total,  i.e., for all  x ∈X, and for
+                                                     two types of secrets, one w.r.t. initial-state information, and theall u ∈U,  f(x, u, ς) is deﬁned. As described in Deﬁnition
+                                                                other w.r.t. current-state information of the system.2.1, a gMDP operates over continuous or uncountable state
+                                                                   1)  Initial-state secure trajectories: For any state trajectorysets, thereby extending an MDP by incorporating a metric
+output set where properties of interest are deﬁned [30]. This         ξ of length  |ξ| = L, we say that ξ does not reveal the
+modeling approach is sufﬁciently versatile to include speciﬁc           initial secret if there exists ξ′ of length L such that
+cases such as discrete-time stochastic control systems [33],
+                                                                          ξ′(0) ∈X0 \XS and max ∥h(ξ(i))−h(ξ′(i))∥≤ε.labeled Markov processes [34], discrete-time stochastic hybrid                                       i∈[0;L]
+games [35], stochastic switched systems [36], and other types
+                                                                            Essentially, the aforementioned indicates that for ξ, thereof stochastic hybrid systems.
+  Given any initial state x0 and input sequence ν(·) ∈U, the        always exists an ε-approximate output-equivalent state
+random sequences ξx0ν : Ω × N →X and ζx0ν : Ω × N →Y           trajectory initiated from a nonsecret initial state. A state
+satisfying (3) are, respectively, called the state trajectory and          trajectory ξ is said to be initial-state secure if it does not
+output trajectory of Σ under input sequence  ν from  x0.          reveal the initial secret. We denote the set of initial-state
+Given an input sequence  ν = (ν0, ν1, . . . , νL−1) over ﬁnite         secure state trajectories with ﬁnite time horizon n ∈N as
+time horizon L ∈N, ξx0ν = (x0, x1, . . . , xL) is a ﬁnite state
+                                                      LnIε :={ξ ∈Ln : ξ is initial-state secure} .     (4)trajectory of length  |ξx0ν| = L after initialization. For any
+ξx0ν =(x0, x1, . . . , xi, . . . , xL), we use ξx0ν(i) = xi to denote                                                                   2) Current-state secure trajectories: For any state trajectory
+the ith state of ξx0ν, and by ξx0ν[0; i] := (x0, x1, . . . , xi) the                                                                  ξ of length  |ξ| = L, we say that ξ does not reveal the
+preﬁx of ξx0ν with length i. In addition, we drop the subscripts                                                                      current secret if there exists ξ′ of length L such that
+of ξx0ν and denote by ξ a state trajectory of the system when the
+initial state x0 and input sequence ν are not of interest in some          ξ′(L) ∈X \XS and max ∥h(ξ(i))−h(ξ′(i))∥≤ε.
+contexts. In this article, we are interested in the state trajectories                                       i∈[0;L]
+within a ﬁnite time horizon n ∈N. Thus, let us deﬁne Ln :=                                                                   Similarly,theaforementionedsaysthatfor ξ,therealways
+{ξ : |ξ| = n} and Hn := {ζ : |ζ| = n}, respectively, as the set                                                                     existsan ε-approximateoutput-equivalentstatetrajectory
+of all ﬁnite state trajectories and output trajectories of length
+n ∈N. We also denote by Un := {ν(·) : [0; n −1] →U} the          arriving at a nonsecret current state. A state trajectory ξ
+                                                                      of length L is said to be current-state secure if none of itsset of all input sequences over time horizon n ∈N.
+                                                              preﬁx ξ[0; k], k ≤L reveals the current secret. We denote
+                                                                       the set of current-state secure state trajectories with ﬁnite               III. APPROXIMATE OPACITY FOR GMDPS
+                                                                 time horizon n∈N as
+  In  this section, we introduce new notions of (bounded-
+horizon) approximate opacity quantifying the probability of a           LnCε := {ξ ∈Ln : ξ is current-state secure}.    (5)
+gMDP preserving security within a given time horizon n ∈N.
+                                                                            Essentially, upon observing any state trajectory in LnIεThroughout this article, we adopt a state-based formulation
+                                                                                 (resp., LnCε), the intruder with imperfect measurementof secrets, i.e., the “secrets” of the system as a set of states
+XS ⊆X. Hereafter, we slightly modify the formulation in Def-         precision (captured by ε) is never certain that the initial
+inition 2.1 to accommodate for initial states and secret states, as           (resp., current) state of the system is within the set of
+Σ = (X, X0, XS, U, T, Y, h), where X0 ⊆X is a set of initial          secret states. In this work, we are interested in establishing
+states and XS ⊆X is a set of secret states.                       a lower bound on the probability of the state trajectories
+
+LIU et al.: ON APPROXIMATE OPACITY OF STOCHASTIC CONTROL SYSTEMS                                                               3849
+
+                                                   P(ξAν ∈LnI0) = 0.9 ≥λ 1 for any n ∈N and ν = u∗. Notice
+                                                                      that for the nonsecret initial state x0 = B, clearly we have
+                                                   P(ξBν ∈LnI0) = 1 ≥λ for any n ∈N and ν = u∗. Therefore,
+                                                                 the system is (0, 0.9)-approximate initial-state opaque within
+                                                       any ﬁnite time horizon n ∈N. Similarly, one can check that
+                                                                 the system is (0, 0.8)-approximate current-state opaque within
+                                                       any ﬁnite time horizon n ∈N. Note that this example is for
+                                                                           illustrative purposes. We will provide a formal procedure for
+Fig. 1.   States marked by red denote secret states, states marked by   verifying approximate opacity for gMDPs in the next sections.
+sourceless arrows denote initial states, and the output map is speciﬁed    Remark 3.3: Let us remark that a notion of approximate opac-
+by the value associated to each state. For each transition, the input and   ity was proposed in [14] for continuous-space control systems.
+state transition probabilities are also speciﬁed on the arrows.          The proposed notions in Deﬁnition 3.1 can be seen as the proba-
+                                                                              bilistic counterparts of the notions in [14] to evaluate opacity for
+                                           gMDPs quantitatively. Clearly, when analyzing nonstochastic
+       of a gMDP being initial-state (or current-state) secure   control systems, Deﬁnition 3.1 boils down to [14, Deﬁnition
+      within a ﬁnite time horizon n ∈N .                           III.1] with λ = 1 . Note also that several probabilistic opacity
+  The formal deﬁnition of the new notions of approximate   notions were proposed in [29] to provide a quantiﬁable measure
+opacity for gMDPs is provided as follows.                       of opacity. However, these notions are tailored to stochastic
+  Deﬁnition 3.1 (Approximate Opacity for gMDPs): Consider  DESs, which can be modeled as probabilistic ﬁnite automata,
+a gMDP Σ=(X, X0, XS, U, T, Y, h) and constants ε∈R≥0,  and thus, not suitable for general stochastic control systems with
+0≤λ≤1, and n∈N. System Σ is said to be                   continuous state spaces as considered in this article.
+   1)  ( ε, λ)-approximate initial-state opaque over time hori-    Remark 3.4:  In simple terms, observability [37] in control
+     zon n if for any x0 ∈X0 and any ν ∈Un, P x0(ξx0νν    ∈   systems indicates that the system’s states can be inferred from its
+    LnIε) ≥λ;                                            externaloutputs,whichisrelatedtotheconceptofasystembeing
+   2)  ( ε, λ)-approximate current-state opaque over time hori-   nonopaque. The relationship between observability and opacity
+     zon n if for any x0 ∈X0 and any ν ∈Un, P x0(ξx0νν    ∈   has been extensively explored in DES literature. Speciﬁcally,
+    LnCε) ≥λ;                                           Lin [7] demonstrated that observability in DES can be redeﬁned         ν                        ν                             as language-based opacity by appropriately deﬁning the lan-
+where Px0(ξx0ν ∈LnIε) (resp., Px0(ξx0ν ∈LnCε)) denotes the   guages and observation mappings. Nevertheless, understanding
+probability that the state evolution of the system Σ is initial-state
+                                                                 the link between observability and opacity in general nonlinear
+(resp., current-state) secure over a ﬁnite time horizon n starting
+                                                                     (stochastic) control systems remains a complex task. This is due
+from x0 under input sequence ν.                                                                    to the abundant notions of observability in the literature, such
+   Essentially, Deﬁnition 3.1 requires that, for any initial state
+                                                               as [37] and [38], and is thus a subject for future research.
+and any input sequence, the system is probable to produce
+                                                     Remark 3.5:  Note that the proposed notion of approximate
+an initial-state/current-state secure trajectory with a probability
+                                                               opacity requires that for any initial state and any possible input
+that is at least  λ. The parameter  ε reﬂects the precision of                                                          sequence ν ∈Un, the probability that the resulting state tra-
+measurements by potential external intruders, within which we
+                                                                   jectory is initial-state (or current-state) opaque must exceed a
+can ensure the opacity of a gMDP. Without loss of generality,
+                                                             given threshold. Given this, the results presented in this article
+throughout the work, we assume
+                                                                 are not limited by any speciﬁc control policy imposed on the
+                                                             system. Therefore, the proposed results can be directly applied
+   ∀x0 ∈X0 : {x ∈X0 : ∥h(x0) −h(x)∥≤ε} ⊈XS    (6)   to stochastic control systems under any predesigned control
+                                                                policy by restricting the set of possible control sequences, such
+for any gMDP Σ = (X, X0, XS, U, T, Y, h); otherwise ( ε, λ)-   as the discrete feedback or sampled-data feedback controllers
+approximate initial state (resp., current-state) opacity is trivially   developed in existing literature [39], [40], [41]. It would also be
+violated.                                                 an interesting future research direction to explore the design of
+  We illustrate the proposed notions of approximate opacity for   discrete or sampled-data feedback controllers to enforce opacity
+gMDPs using the following example.                              for gMDPs using approaches similar to those in these references.
+  Example 3.2:  Consider a ﬁnite MDP Σ as shown in Fig. 1,
+where X = {A, B, C, D, E}, X0 = {A, B}, XS = {A, D},                                                                           IV. VERIFICATION OF APPROXIMATE OPACITY FOR FINITE
+U = {u}, Y = {0.1, 0.2, 0.25, 0.3}, andtheoutput mapis spec-                                                     GMDPS
+iﬁed by the value associated with each state. The state transition
+probability equipped with each transition is also depicted on the     In this section, we show how to verify approximate opacity for
+arrows. First, we show that the system is  (ε, λ)-approximate   ﬁnite gMDPs. The results here will provide a foundation for the
+initial-state opaque within ﬁnite time horizon  n ∈N with   veriﬁcation of approximate opacity for inﬁnite gMDPs through
+ε = 0, λ = 0.9. By the deﬁnition of secure state trajectories in   certain system relations as shown in Section V.
+(4), we have for the secret initial state A, a ﬁnite state run in
+the form of ACEE∗is initial-state secure, since there exists   A. Veriﬁcation of Approximate Initial-State Opacity
+another state run starting from nonsecret initial state B, i.e.,
+                                                                  In order to verify approximate initial-state opacity for ﬁniteBCEE∗that generates exactly the same output run; however,
+                                                gMDPs, we will ﬁrst construct a new system that serves as ana ﬁnite state run in the form of AAA∗CEE∗will generate
+an output run  (0.1, 0.1, 0.1∗, 0.25, 0.3, 0.3∗), for which there
+does not exist a ﬁnite run starting from a nonsecret state that      1In the remainder, we omit the super- and subscripts of Px0ν when they are
+generates the same output run. Thus, we have for  x0 = A,    clear from the context.
+
+3850                                                              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 70, NO. 6, JUNE 2025
+
+
+approximate initial-state estimator. For the sake of brevity, for     Note that by ﬁxing ν(t) ∈U in ΣI,obs at any time step t ≥0,
+any x ∈X, we deﬁne                                             we obtain a transition probability matrix denoted by  Pν(t)I     :
+                                             XI × XI →[0, 1]. Then, the next two lemmas are needed to         Bε(x) = {x′ ∈X : ∥h(x)−h(x′)∥≤ε}
+                                                           prove the main result in this subsection.
+as the set of states that are  ε-close to x in terms of output    Lemma 4.2: Consider a ﬁnite gMDP Σ=(X, X0, XS, U, T,
+observations. The formal deﬁnition of an approximate initial-   Y, h) and its approximate initial-state estimator  ΣI,obs as in
+state estimator is provided as follows.                         Deﬁnition 4.1. For any initial state x0 and any input sequence
+  Deﬁnition 4.1 (Approximate initial-state estimator):  Con-  ν = (ν(0), . . . , ν(n −1)), we have
+sider a ﬁnite gMDP Σ=(X, X0, XS, U, T, Y, h) and ε ∈R≥0.
+The  ε-approximate initial-state estimator is a ﬁnite gMDP      1 −P(ξx0ν ∈LnIε) = 1IbadPν(n−1)I         · · · Pν(1)I   Pν(0)I   1Ix0
+(without outputs) ΣI,obs = (XI, XI0, U, TI), where                                                      where LnIε is the set of initial-state secure state trajectories as   1)    XI = {(x, q) ∈X × 2X×X : (¯x1, ¯x2) ∈q ⇒¯x2 ∈                                                                    in (4) within time horizon n ∈N, and 1Ibad and 1Ix0 are the     Bε(x)} is the set of states;
+                                                                   indicator vectors2  for states in XbadI   as deﬁned in (8) and for   2)  XI0 = {(x, q) ∈X0 × 2X0×X0 : (¯x1, ¯x2)∈q ⇔[¯x1 =                                                                               initial states in XI0 in ΣI,obs, respectively.
+        ¯x2 ∧¯x2 ∈Bε(x)]} is the set of initial states;                                                     The proof of Lemma 4.2 is provided in the Appendix.
+   3) U is the same set of inputs as in Σ;                 Lemma 4.3: Consider a ﬁnite gMDP Σ = (X, X0, XS, U, T,
+   4)  TI : XI × U × XI →[0, 1] is the transition probability   Y, h) and its approximate initial-state estimator  ΣI,obs as in
+      function deﬁned by: for any xI = (x, q) ∈XI, any x′I =   Deﬁnition 4.1. If for any initial state x0 and any input sequence
+       (x′, q′) ∈XI, and any u ∈U,                       ν =(ν(0), . . . , ν(n −1)), the following holds:
+           a)  TI(x′I|xI, u)̸ = 0 if
+                                                                   1IbadPν(n−1)I         · · · Pν(1)I   Pν(0)I   1Ix0 ≤1 −λ         (9)                       i)  T(x′|x, u) > 0;
+                      ii)             q′ =   u′∈U{(¯x1, ¯x′2) ∈X × X :  where 1Ibad and 1Ix0 are the indicator vectors for the states in
+                        (¯x1, ¯x2) ∈q ∧T(¯x′2|¯x2, u′) > 0 ∧¯x′2 ∈                                                                    ΣI,obs as in Lemma 4.2, then Σ is  (ε, λ)-approximate initial-
+                  Bε(x′)};                                         state opaque over time horizon n ∈N.
+          b) when TI(x′I|xI, u)̸ = 0, we have TI(x′I|xI, u) =    The proof of Lemma 4.3 is provided in the Appendix. Next,
+            T(x′|x, u).                             we show how to verify approximate initial-state opacity for ﬁnite
+  In the aforementioned deﬁnition, for each (x, q) ∈XI, x is  gMDPs using value iteration techniques.
+the real system state, and q indicates the initial-state estimate.     Bounded-step reachability: For a ﬁnite gMDP  ΣI,obs as in
+Speciﬁcally, q ∈2X×X is a set of state pairs, i.e., each state in   Deﬁnition 4.1, the problem of checking whether (9) holds can
+q is in the form of  (¯x1, ¯x2), where  ¯x1 denotes the state where   be solved by computing the maximal probability of reaching
+the trajectory comes from initially and  ¯x2 denotes a possible   the “bad” states in XbadI   , as deﬁned in (8), within ﬁnite time
+current state that is  ε-close to its real current state. Thus, the   horizon n ∈N starting from any initial state (x0, q0) ∈XI0
+ﬁrst component of q is the initial-state estimate. Note that from   under any input sequence ν  . This bounded-step reachability
+the construction of ΣI,obs, for any state trajectory (x0, . . . , xn)   property is denoted by ♦≤nXbadI   , where ♦denotes the “even-
+of  Σ, there exists a unique initial-state estimation sequence   tually” operator. Let us deﬁne the maximal probabilities of the
+((x0, q0) . . . (xn, qn)) in its approximate initial-state estimator   aforementioned reachability problem as
+ΣI,obs. In addition, we denote by ξIx0 a state trajectory of ΣI,obs
+                                                       P max(ξIx0 |= ♦≤nXbadI  )               (10)generated from initial state  (x0, q0) ∈XI0 under some input
+sequence.                                                      where ξIx0 |= ♦≤nXbadI   represents that the state trajectory ξIx0  Given any state trajectory (x0, . . . , xn) of Σ and its output
+                                                               of ΣI,obs satisﬁes the property of “eventually reaching set XbadIsequence  (h(x0), . . . , h(xn)), let us deﬁne the initial-state
+                                                              within n ∈N time steps.” Let us further deﬁne the vectorestimate with  ε precision by observing  (h(x0), . . . , h(xn))
+                                                           (ps)s∈XI,with ps := P max(ξIs |= ♦≤nXbadI  )beingthemaximalas
+                                                                  probability of reaching XbadI  within n ∈N time steps starting
+EεI(h(x0), . . . , h(xn)) :=                                 from state s ∈XI under any input sequence. We further denote
+                                                     by XnbI ⊆XI \ XbadI   the set of states from which XbadI   is not{¯x0 ∈X0 : ∃(¯x0, . . . , ¯xn)∈Ln s.t. max ∥h(¯xi)−h(xi)∥≤ε}.                                          i∈[0;n]                        reachable in the underlying directed graph of the ﬁnite gMDP
+                                                              (7)   ΣI,obs.
+                                          We show in the next lemma that the previously discussed
+  Consider the corresponding initial-state estimation sequence  maximal reachability probability of the ﬁnite gMDP  ΣI,obs
+((x0, q0) . . . (xn, qn)) in   ΣI,obs. Since the ﬁrst component   can be computed by a value iteration approach. This lemma
+of   qn  in   ΣI,obs  is  the  initial-state  estimate, we have    is inspired by [20, Thm.10.100] and provided without proof.
+EεI(h(x0), . . . , h(xn)) = {¯x1 ∈X : (¯x1, ¯x2) ∈qn}.           Lemma 4.4:  (Value iteration for bounded-step reachability
+  Accordingly, we can deﬁne the set of “bad” (secret revealing)   probabilities of ﬁnite gMDPs) Consider a ﬁnite gMDP ΣI,obs =
+states in ΣI,obs as
+
+XbadI  := {(x, q) ∈XI : {¯x1 ∈X : (¯x1, ¯x2) ∈q} ⊆XS}.  (8)       2 Speciﬁcally, 1Ibad is a binary row vector indexed by states in XI such that
+                                                                        each element whose index is in XbadI   is 1, otherwise it is 0. Similarly, given any
+  Here, a “bad” state is a state in the initial-state estimator whose   x0, 1Ix0 is a binary row vector indexed by states in XI such that each element
+associated initial-state estimate lies entirely within the set of   with index (x0, q0) ∈XI0 (with the ﬁrst component being x0) is 1, otherwise
+secret states.                                                                                                it is 0. Note that 1Ix0 are standard basis vectors for any x0 ∈X0.
+
+LIU et al.: ON APPROXIMATE OPACITY OF STOCHASTIC CONTROL SYSTEMS                                                               3851
+
+
+                                                       and  1IB = [0, 1, 0, 0, 0, 0, 0, 0, 0]. Now, considering λ = 0.9,
+                                             we  show   that   Σ   is  (0,0.9)-approximate   initial-state
+                                                       opaque by  applying Theorem  4.5.  Let  us  ﬁrst compute
+                                          P max(ξIx0 |= ♦≤nXbadI  )  by  following  the  value  iteration
+                                                              process as in Lemma 4.4. Note that based on the underlying
+                                                                  directed  graph  of  this  ﬁnite gMDP, we  have   XnbI =
+                                                     {(B, {(A, A), (B, B)}), (C, {(A, C), (B, C)}), (D, {(B, D)}),
+                                                      (E, {(A, E), (B, E)}), (E, {(B, E)})} as the set of states from
+                                                      which  XbadI    is not reachable. The equations of the value
+                                                                       iteration process are as follows:
+Fig. 2.  Example of approximate initial-state estimators.                  1)forthestatesin XbadI  ,weget p(i)(A,{(A,A)}) = p(i)(C,{(A,C)}) =
+                                                                           p(i)(E,{(A,E)}) = 1 for any  i;
+(XI, XI0, U, TI) as in Deﬁnition 4.1 and set  XbadI ⊆XI as
+                                                                                                          I  , we get   p(i)(B,{(A,A),(B,B)}) =deﬁned in (8). The vector  (ps)s∈XI with  ps = P max(ξIs |=     2) for the states in  Xnb
+♦≤nXbadI  ) can be computed by following the value iteration   p(i)(C,{(A,C),(B,C)}) =  p(i)(D,{(B,D)}) =  p(i)(E,{(A,E),(B,E)}) =
+process:                                                                  p(i)(E,{(B,E)}) = 0 for any  i;
+   1) ps = p(i)s = 1, for any i for all s ∈XbadI   ;                   3)   for   the   other    state      (A, {(A, A), (B, B)}),
+                                                      which   is   neither   in     XbadI    nor   in    XnbI  ,  we
+   2) ps = p(i)s = 0, for any i for all s ∈XnbI  ;
+                                                         have       p(0)(A,{(A,A),(B,B)}) = 0,       p(i+1)(A,{(A,A),(B,B)}) =
+   3) ps = p(n)s   for all s ∈XI \ (XbadI  ∪XnbI ),               max{0.1p(i)(A,{(A,A),(B,B)}), 0.9p(i)(C,{(A,C),(B,C)})} = 0.1.
+                                                             Thus,  the  solution  of  the  value  iteration  process  in      with p(0)s = 0, p(i+1)s  = max{      TI(s′|s, u)p′(i)s  }.
+                                           Lemma    4.4    yields    the    vector        (ps)s∈XI =                                     s′∈XI
+                                                                {0.1, 1, 1, 1, 0, 0, 0, 0, 0}   with    n ≥1.   Therefore,  we
+  By using the value iteration approach in the above lemma,   obtain  that   P max(ξIx0 |= ♦≤nXbadI  ) = 0.1  for   x0 = A
+one can get the maximal probabilities P max(ξIx0 |= ♦≤nXbadI  )  and P max(ξIx0 |= ♦≤nXbadI  ) = 0 for  x0 = B, which shows
+for all initial states  x0 ∈X0. We discuss the complexity of                                                                      that P max(ξIx0 |= ♦≤nXbadI  ) ≤1 −λ for any initial state x0.computing P max(ξIs |= ♦≤nXbadI  ) later in Remark 4.9.                                             By Theorem 4.5, we conclude that Σ is (0,0.9)-approximate
+  In the next theorem, we present the main result in this sub-                                                                            initial-state opaque within any time horizon n ∈N with n ≥1.
+section on the veriﬁcation of approximate initial-state opacity
+of ﬁnite gMDPs.
+  Theorem 4.5:  Consider a ﬁnite gMDP Σ=(X, X0, XS, U,
+T, Y, h) and its approximate initial-state estimator  ΣI,obs as   B. Veriﬁcation of Approximate Current-State Opacity
+in Deﬁnition 4.1. Then, Σ is  (ε, λ)-approximate initial-state     In  this subsection, we show how to verify approximate
+opaque over time horizon n∈N if and only if for any x0 ∈X0:   current-state opacity for ﬁnite gMDPs. To achieve this, we ﬁrst
+                                                                 construct a new system that serves as an approximate current-          P max(ξIx0 |= ♦≤nXbadI  ) ≤1 −λ                                                                        state estimator as follows.
+with P max(ξIx0 |= ♦≤nXbadI  ) computed as in Lemma 4.4.         Deﬁnition 4.7 (Approximate current-state estimator):  Con-
+  Proof:  First recall from (10) that P max(ξIx0 |= ♦≤nXbadI  )   sider a ﬁnite gMDP Σ=(X, X0, XS, U, T, Y, h) and ε ∈R≥0.
+denotes the maximal probability of a trajectory ξIx0 in  ΣI,obs  The  ε-approximate current-state estimator is a ﬁnite gMDP                                                              (without outputs) ΣC,obs = (XC, XC0, U, TI), where
+eventually reaching XbadI  within time horizon n ∈N under any                                                                    1)    XC = {(x, q, l) ∈X × 2X × {0, 1} : ¯x ∈q ⇒
+input sequence. Thus, we have for any x0 ∈X0
+                                                                                                       ¯x ∈Bε(x)} is the set of states;
+                                           I        · · · Pν(1)I   Pν(0)I   1Ix0        2)    XC0 = {(x, q, l) ∈X0 × 2X0 × {0, 1} : [¯x ∈q ⇔P max(ξIx0 |= ♦≤nXbadI )=maxν  1IbadPν(n−1)
+                                                                                                       ¯x ∈Bε(x)] ∧[l = 0]} is the set of initial states;
+where  ν =(ν(0),. . . ,ν(n−1)). Then, (9) holds  if and only       3) U is the same set of inputs as in Σ;
+if P max(ξIx0 |= ♦≤nXbadI )≤1−λ. The rest of the proof for       4)  TC : XC × U × XC →[0, 1] is the transition proba-
+this theorem follows  readily by combining the  results  in            bility function deﬁned by: for any xC = (x, q, l) ∈XC,
+Lemmas 4.2 and 4.3. ■                                                              any x′C = (x′, q′, l′) ∈XC, and any u ∈U,
+  Example  4.6:  Let us consider  the  ﬁnite gMDP Σ as                                                                         a)  TC(x′C|xC, u)̸ = 0 if
+shown  in  Fig.  1. In order  to  verify approximate opacity
+                                                                                             i)  T(x′|x, u) > 0;of   Σ, we  ﬁrst  build  an    ε-approximate  initial-state
+                                                                                               ii)   q′ =   u′∈U{¯x′ ∈X : ¯x ∈q ∧T(¯x′|¯x, u′) > 0 ∧¯x′ ∈estimator   ΣI,obs  following Deﬁnition  4.1,  with   ε = 0.
+The  estimator  is shown  in  Fig.  2, where  XI = {(A,           Bε(¯x′)};
+{(A, A), (B, B)}), (B, {(A, A), (B, B)}), (A, {(A, A)}), (C,          iii)    l′ = 0 ⇔[l = 0] ∧[{¯x′ ∈X : ¯x′ ∈q′} ⊈XS];
+{(A, C), (B, C)}), (D, {(B, D)}), (C, {(A, C)}), (E, {(A, E),       when  TC(x′C|xC, u)̸ = 0, we have  TC(x′C|xC, u) =
+(B, E)}), (E, {(B, E)}), (E, {(A, E)})}, U = {u}, XI0 =          T(x′|x, u).
+{(A, {(A, A), (B, B)}), (B, {(A, A), (B, B)})}. By  (8), we     In the aforementioned deﬁnition, for each (x, q, l) ∈XC, x
+get  XbadI =  {(A, {(A, A)}), (C, {(A, C)}), (E, {(A, E)})},    is the real system state, q is the current-state estimate, and  l
+from which one  can  readily  have  the  indicator  vectors    is a binary state taking values either 0 or 1. Note that q ∈2X
+1Ibad = [0, 0, 1, 0, 0, 1, 0, 0, 1],    1IA = [1, 0, 0, 0, 0, 0, 0, 0, 0],    is a set of states, with  ¯x ∈q denoting its current state estimate.
+
+3852                                                              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 70, NO. 6, JUNE 2025
+
+
+According to Deﬁnition 4.7, for a state (x′, q′, l′) ∈XC,  l′ = 0   the estimators ΣI,obs and ΣC,obs are ﬁnite gMDPs, the values
+if and only if:                                                  of P max(ξIx0 |= ♦≤nXbadI  ) and P max(ξCx0 |= ♦≤nXbadC ) can be
+  1)  {¯x′ ∈X : ¯x′ ∈q′} ⊈XS, i.e., the current-state estimate  computed in polynomial time in the size of the estimators. As a
+does not lie entirely within the set of secret states;              consequence, the question of whether a ﬁnite gMDP is approx-
+  2)  l = 0 at the previous time step.                          imate initial-state/current-state opaque for some λ ∈[0, 1) is
+  Otherwise,  l′ = 1.                                         decidable in polynomial time.
+   Essentially, for any trajectory that is currently at state (x, q, l),
+l tracks whether or not the trajectory has revealed the current-                                                                    V. APPROXIMATE OPACITY-PRESERVING STOCHASTIC
+state secret before or upon visiting the state. In particular, l = 0                                                                     SIMULATION RELATIONS
+indicates that none of the preﬁxes of the trajectory reveals the
+current-state secret;  l = 1 indicates that the trajectory reveals     In the previous sections, we introduced notions of approx-
+the current-state secret at the current step or previous time steps.   imate opacity for gMDPs, and presented opacity veriﬁcation
+  For  any  state  trajectory    (x0, . . . , xn)  of   Σ,  there   approaches for ﬁnite gMDPs. However, the veriﬁcation of ap-
+exists   a   unique    current-state   estimation   sequence   proximate opacity directly on gMDPs with inﬁnite state sets
+((x0, q0, l0) . . . (xn, qn, ln)) in  its approximate current-state    is infeasible. Therefore, in the next sections, we propose an
+estimator ΣC,obs. In addition, we denote by ξCx0 a state trajectory   abstraction-based approach for the opacity veriﬁcation problem
+of ΣC,obs generated from initial state (x0, q0, l0) ∈XC0 under   forinﬁnitegMDPsbyleveragingnewnotionsofsystemrelations
+some input sequence. Accordingly, we can deﬁne the set of   between a gMDP and its ﬁnite abstraction.
+“bad” (secret revealing) states as                            To this end, in this section, we introduce new notions of
+                                                          approximate opacity-preserving stochastic simulation relations
+            XbadC = {(x, q, l) ∈XC : l = 1}.          (11)   based on lifting for gMDPs, and then, show their usefulness in
+  By ﬁxing an input  ν(t) ∈U in  ΣC,obs at each time step   the veriﬁcation of approximate opacity for gMDPs. Let us ﬁrst
+                                                                       recall the notion of δ-lifted relation proposed in [30].t ≥0, we obtain a transition probability matrix denoted by
+Pν(t)C    : XC × XC →[0, 1]. Similar as stated in Lemmas 4.2     Deﬁnition 5.1 ( δ-lifted relation [30]):  Let X and  ˆX be
+                                                     two sets associated with the corresponding measurable spacesand 4.3, given any ﬁnite gMDP Σ=(X, X0, XS, U, T, Y, h)
+and its approximate current-state estimator  ΣC,obs as in Def-  (X, B(X)) and ( ˆX, B( ˆX)). Consider a relation R ⊆X × ˆX
+inition 4.7, for any initial state  x0 and any input sequence   with R ∈B(X × ˆX). We denote by  ¯Rδ ⊆P(X, B(X)) ×
+ν = (ν(0), . . . , ν(n −1)), we have                     P( ˆX, B( ˆX)) the corresponding δ-lifted relation if there exists a
+                                                                  probability measure L, referred to as a lifting, for the probability
+    1 −P(ξx0ν ∈LnCε) = 1CbadPν(n−1)C        · · · Pν(1)C  Pν(0)C  1Cx0                                                           space (X × ˆX, B(X × ˆX), L) such that (Φ, Θ) ∈¯Rδ, denoted
+where LnCε is the set of current-state secure state trajectories as  by Φ¯RδΘ, if and only if
+in (5) within time horizon n ∈N, and 1Cbad and 1Cx0 are the      1) ∀A ∈B(X), L(A × ˆX) = Φ(A);
+indicator vectors for states in XbadC  as deﬁned in (11) and for      2)  ∀ˆA ∈B( ˆX), L(X × ˆA) = Θ( ˆA);
+initial states in XC0 in ΣC,obs, respectively. Moreover, if any      3) for the probability space  (X × ˆX, B(X × ˆX), L),  it
+initial state x0 and any input sequence ν = (ν(0), . . . , ν(n −         holds that xRˆx with probability at least 1 −δ, equiva-
+1)), the following holds:                                                       lently, L(R) ∈[1 −δ, 1].
+                                                         Given a relation R ⊆X × ˆX, the aforementioned deﬁnition
+        1CbadPν(n−1)C        · · · Pν(1)C  Pν(0)C  1Cx0 ≤1 −λ       (12)   provides conditions under which the relation R can be lifted to
+then Σ is  (ε, λ)-approximate current-state opaque over time   a relation  ¯Rδ that relates probability measures over state sets
+horizon n ∈N. The veriﬁcation of approximate current-state X and ˆX. The third condition in Deﬁnition 5.1 requires that the
+opacity for ﬁnite gMDPs follows similarly as in Section IV-A   probability measure L assigns a probability of at least 1 −δ to
+using value iteration techniques. Let us denote by P max(ξCx0 |=   the set of state pairs in the relation R.
+♦≤nXbadC ) the maximal probabilities of a trajectory  ξCx0 in     In the next subsections, we introduce the new notions of
+                                                          approximate opacity-preserving stochastic simulation relationsΣC,obs reaching  XbadC  within bounded time horizon n ∈N
+                                                          based on  δ-lifted relation as in the aforementioned deﬁnition.under any input sequences. Note that by following the value
+                                                   The stochastic simulation relations can be used to capture theiteration approach similar to Lemma 4.4, one can compute
+                                                                       similarities between a gMDP and its ﬁnite abstraction.P max(ξCs |= ♦≤nXbadC ) as well.
+  The next theorem summarizes the main result of the veriﬁca-
+tion of approximate current-state opacity of ﬁnite gMDPs.       A. Initial-State Opacity-Preserving Stochastic Simulation
+  Theorem 4.8:  Consider a ﬁnite gMDP Σ=(X, X0, XS, U,   Relation
+T, Y, h) and its approximate current-state estimator  ΣC,obs as                                                                               First, we introduce a new notion of stochastic simulation
+in Deﬁnition 4.7. Then, Σ is  (ε, λ)-approximate current-state                                                                     relations for preserving approximate initial-state opacity.
+opaque over time horizon n∈N if and only if for any x0 ∈X0                                                              Deﬁnition 5.2 (Approximate initial-state opacity-preserving
+         P max(ξCx0 |= ♦≤nXbadC ) ≤1 −λ.                  stochastic simulation relation):  Consider two gMDPs Σ=
+                                                    (X, X0, XS, U, T, Y, h) and ˆΣ=( ˆX, ˆX0, ˆXS, ˆU, ˆT, ˆY , ˆh)with
+  Proof:  This theorem can be proved by the same reasoning
+                                                                 the same output sets Y = ˆY . System  ˆΣ is  (ϵ, δ)-initial-statefor Theorem 4.5. ■
+                                                                opacity-preservingly ( (ϵ, δ)-InitSOP) simulated by  Σ,  i.e.,  Remark 4.9: The precise values of P max(ξIx0 |= ♦≤nXbadI  )
+                                                                         ˆΣ ⪯Iϵδ Σ, if there exists a relation Rx ⊆X × ˆX and Boreland P max(ξCx0 |= ♦≤nXbadC ) can be computed by following the
+value iteration processes in Lemma 4.4, using existing com-   measurable stochastic kernels LT (·|x, ˆx, ˆu) and L ˆT (·|x, ˆx, u)
+putational tools such as MDPtoolbox [42]. Note that since  on X × ˆX such that
+
+LIU et al.: ON APPROXIMATE OPACITY OF STOCHASTIC CONTROL SYSTEMS                                                               3853
+
+
+   1) a)  ∀x0 ∈X0 ∩XS,  ∃ˆx0 ∈ˆX0 ∩ˆXS, s.t.  (x0, ˆx0) ∈
+     Rx;
+      b) ∀ˆx0 ∈ˆX0 \ ˆXS, ∃x0 ∈X0 \ XS, s.t. (x0, ˆx0) ∈Rx;
+    a)  ∀(x, ˆx) ∈Rx, ∥h(x) −ˆh(ˆx)∥≤ϵ;
+   b)  ∀(x, ˆx) ∈Rx, we have
+           a)   ∀ˆu ∈ˆU, ∃u ∈U, s.t.  T(·|x, u)  ¯Rδ  ˆT(·|ˆx, ˆu)
+            with lifting LT (·|x, ˆx, ˆu);
+          b)  ∀u ∈U,  ∃ˆu ∈ˆU, s.t.  T(·|x, u)  ¯Rδ  ˆT(·|ˆx, ˆu)
+            with lifting LˆT (·|x, ˆx, u).
+                                                                               Fig. 3.  Example of (ϵ, δ)-InitSOP from ˆΣ to Σ, i.e., ˆΣ ⪯Iϵδ Σ.  The third condition of Deﬁnition 5.2 implies that for any
+ˆu ∈ˆU, there exists u ∈U, and vice versa, such that the state
+probability measures are in the lifted relation after one state   HnCε := {(y0, . . . , yn) ∈Hn : ∃(x0, . . . , xn) ∈LnCε, s.t.
+transition for any  (x, ˆx) ∈Rx. In other words, the  δ-lifted
+relation  ¯Rδ requires that the state pairs remain in the relation                                     yi = h(xi) ∀i ∈[0; n]}   (17)
+Rx in the next time step with a probability of at least 1 −δ if they  where HnIε and HnCε denotes the set of secure output se-
+are in the relation Rx at the current time step. This new notion of   quences w.r.t. approximate initial-state opacity and approximate
+stochastic simulation relation can be used to relate two gMDPs   current-state opacity, respectively, over time horizon n ∈N.
+in terms of preserving approximate initial-state opacity. In an  The following lemma will be used later to prove our main results.
+(ϵ, δ)-InitSOP stochastic simulation relation, the parameter  δ    Lemma 5.4:  Consider a gMDP Σ = (X, X0, XS, U, T,
+quantiﬁes the distance in probability between gMDPs, and  ϵ   Y, h), the associated sets of secure state trajectories LIε and
+is used to capture the closeness of output trajectories of two   LCε in (4) and (5), and the sets of secure output sequences in
+gMDPs. If ˆΣ ⪯Iϵδ Σ with ˆΣ being a (ﬁnite) gMDP, ˆΣ is called   (16) and (17). For any initial state x0 and input sequence ν, we
+an InitSOP (ﬁnite) abstraction of system Σ.                   have
+  Before showing the usefulness of this relation, let us denote
+                                              ∈LnIε) ≥λ ⇐⇒P(ζx0ν ∈HnIε) ≥λ      (18)for any measurable set E over the output trajectories of a gMDP        P(ξx0ν
+Σ with E ⊆Hn, the  ϵ-expansion and  ϵ-contraction of set                                                             P(ξx0ν ∈LnCε) ≥λ ⇐⇒P(ζx0ν ∈HnCε) ≥λ.      (19)E, denoted by Eϵ and E−ϵ, respectively. In particular, for any
+ϵ > 0, Eϵ and E−ϵ are the ϵ neighborhoods of set E, where    The proof of Lemma 5.4 is provided in the Appendix. The next
+Eϵand E−ϵ are, respectively, the smallest measurable set in Hn   theorem presents one of the main results of this article, which
+containing E, and the largest measurable set contained in E   shows that the newly introduced stochastic simulation relation
+satisfying                                                          in Deﬁnition 5.2 can be used for the preservation of approximate
+                                                                            initial-state opacity between two gMDPs.
+   Eϵ = {(y0, . . . , yn) ∈Hn : ∃(¯y0, . . . , ¯yn) ∈E              Theorem 5.5:  Consider two gMDPs Σ=(X, X0, XS, U, T,
+                      max ∥¯yi−yi∥≤ϵ}      (13)   Y, h) and ˆΣ=( ˆX, ˆX0, ˆXS, ˆU, ˆT, ˆY , ˆh) with the same output
+                                        i∈[0;n]
+                                                                      sets Y = ˆY . Let  ϵ, δ ∈R≥0. If  ˆΣ ⪯Iϵδ Σ and γδ = 1 −(1 −
+   E−ϵ ={(y0, . . . , yn) ∈Hn : ∀(¯y0, . . . , ¯yn) ∈Hn \ E        δ)n ≤λ, then the following holds:
+                        min  ∥¯yi −yi∥≥ϵ}.   (14)          ˆΣ is (ε, λ)-approximate initial-state opaque
+                                        i∈[0;n]
+                           ⇒Σ is(ε + 2ϵ, λδ)-approximate initial-state opaque    (20)
+  The following proposition provides us a probabilistic close-
+ness guarantee between a gMDP and its InitSOP abstraction.    where the opacity satisfaction holds within time horizon n ∈N
+  Proposition 5.3:  Consider two gMDPs Σ=(X, X0, XS,  and λδ = (1 −γδ)(λ −γδ).
+U, T, Y, h) and  ˆΣ=( ˆX, ˆX0, ˆXS, ˆU, ˆT, ˆY , ˆh) with the same    The proof of Theorem 5.5 is provided in the Appendix. This
+                                                                       result provides the foundation for verifying approximate initial-output sets Y = ˆY . If  ˆΣ ⪯Iϵδ Σ, then for any (x0, ˆx0) ∈Rx                                                                        state opacity of gMDPs using abstraction-based techniques. As
+and any input sequence  ˆν on ˆΣ, there exists an input sequence  gMDPs are equipped with uncountable state spaces as well
+ν for  Σ, and vice versa, such that for all measurable events   as metric output spaces, the veriﬁcation/analysis of properties
+E ⊆Hn and the ϵ-neighborhoods Eϵ and E−ϵ as deﬁned in   over gMDPs is generally infeasible. It is thus promising to
+(13) and (14)                                               approximate these models by simpler ones that are prone to
+                                                        be veriﬁed, such as ﬁnite gMDPs [21], [30]. In this work, by
+  P(ˆζˆx0ˆν ∈E−ϵ)−γδ ≤P(ζx0ν ∈E)≤P(ˆζˆx0ˆν ∈Eϵ)+γδ  (15)                                                                constructing a ﬁnite abstraction ˆΣ of the concrete system Σ via
+                                                                 the InitSOP stochastic simulation relation between them, one
+where |ζx0ν| = |ˆζˆx0ˆν| = n with constant γδ := 1 −(1 −δ)n.                                                         can ﬁrst efﬁciently verify opacity over the simpler system ˆΣ by
+  The proof of Proposition 5.3 is provided in the Appendix.                                                            applying the veriﬁcation approach in Section IV, and then, carry
+Before showing the main result of this section, let us deﬁne the                                                        back the results to the concrete system Σ by using Theorem 5.5.
+sets of “secure output sequences” with respect to the secure state                                                     The following example illustrates the usefulness of the new
+trajectories LnIε and LnCε as deﬁned in (4) and (5), respectively,   notion of InitSOP stochastic simulation relation as presented in
+ HnIε := {(y0, . . . , yn) ∈Hn : ∃(x0, . . . , xn) ∈LnIε, s.t.      TheoremExample5.5.5.6:  Consider two gMDPs Σ=(X, X0, XS, U, T,
+                                  yi = h(xi) ∀i ∈[0; n]};  (16)   Y, h) and ˆΣ=( ˆX, ˆX0, ˆXS, ˆU, ˆT, ˆY , ˆh) as depicted in Fig. 3,
+
+3854                                                              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 70, NO. 6, JUNE 2025
+
+
+where  X = {A, B, C, D, E, F},  X0 = {A, D},  XS =     This new notion of stochastic simulation relation can be used
+{A};   ˆX = {G, H, I},   ˆX0 = {G, I},   ˆXS = {G}, and   to relate two gMDPs in terms of preserving approximate current-
+U = ˆU = {u}.  All  secret  states  are marked  in  red, and   state opacity. If  ˆΣ ⪯Cϵδ Σ with  ˆΣ being a (ﬁnite) gMDP,  ˆΣ is
+the output of each  state  is speciﬁed by the value associ-   called a CurSOP (ﬁnite) abstraction of Σ.
+ated with  it. Let us consider the following relation:  Rx =    The next proposition provides us with a probabilistic close-
+{(A, G), (B, H), (C, H), (E, H), (F, H), (D, I)}. We claim   ness guarantee between a gMDP and its CurSOP abstraction.
+that Rx is an  (ϵ, δ)-initial-state opacity-preserving stochastic     Proposition 5.8:  Consider two gMDPs Σ=(X, X0, XS,
+simulation relation from  ˆΣ to Σ with  ϵ = 0.1 and δ = 0.1.   U, T, Y, h) and  ˆΣ=( ˆX, ˆX0, ˆXS, ˆU, ˆT, ˆY , ˆh) with the same
+This is shown by checking the conditions in Deﬁnition 5.2   output sets Y = ˆY . If ˆΣ ⪯Cϵδ Σ, then for any (x0, ˆx0) ∈Rx and
+as follows. First, for the secret initial state A ∈X0 ∩XS,   any input sequence ˆν on ˆΣ, there exists an input sequence ν for
+there exists G ∈ˆX0 ∩ˆXS, s.t.  (A, G) ∈Rx. Similarly, for  Σ, and vice versa, such that for all measurable events E ⊆Hn
+the nonsecret initial state  I ∈ˆX0 \ ˆXS, there exists D ∈  and the ϵ-neighborhoods Eϵ and E−ϵ as deﬁned in (13)–(14),
+X0 \ XS s.t. (D, I) ∈Rx. Thus, condition 1 in Deﬁnition 5.2   the inequality (15) holds with constant γδ = 1 −(1 −δ)n.
+holds. Also, one can check that ∥h(x) −ˆh(ˆx)∥≤ϵ holds, with    The proof of this proposition follows similar reasoning as that
+ϵ = 0.1 for all (x, ˆx) ∈Rx, which implies that condition 2 in   of Proposition 5.3 and is omitted here. By employing the afore-
+Deﬁnition 5.2 also holds. Moreover, one can check that condi-   mentioned proposition, we provide the following theorem that
+tions 3a and 3b hold for any (x, ˆx) ∈Rx as well. As an example,  shows that the newly introduced stochastic simulation relation
+for  (A, G) ∈Rx and u ∈U, there exists u ∈ˆU, s.t., with   in Deﬁnition 5.7 can be used for the preservation of approximate
+probability 1 −δ = 0.9, the succeeding states are B and H   current-state opacity between two gMDPs.
+with (B, H) being in relation Rx. One can conclude that Rx is    Theorem 5.9:  Consider two gMDPs Σ=(X, X0, XS, U, T,
+an  (ϵ, δ)-initial-state opacity-preserving stochastic simulation   Y, h) and ˆΣ=( ˆX, ˆX0, ˆXS, ˆU, ˆT, ˆY , ˆh) with the same output
+relation from ˆΣ to Σ with ϵ = 0.1 and δ = 0.1, i.e., ˆΣ ⪯I0.10.1 Σ.   sets Y = ˆY . Let  ϵ, δ ∈R≥0. If  ˆΣ ⪯Cϵδ Σ and γδ = 1 −(1 −
+By applying the veriﬁcation approach in Section IV-A, we can   δ)n ≤λ, then the following holds:
+easily check that ˆΣ is (0.2,1)-approximate initial-state opaque
+                                                                               ˆΣ is (ε, λ)-approximate current-state opaquewithin any ﬁnite time horizon n ∈N. Therefore, according to
+Theorem 5.5, we conclude that Σ is (0.4, 0.81n)-approximate  ⇒Σ is(ε + 2ϵ, λδ)-approximate current-state opaque   (21)
+initial-state opaque within ﬁnite time horizon n ∈N, without
+needing to apply the veriﬁcation approach to Σ directly. ⋄       where the opacity satisfaction holds within time horizon n ∈N
+                                                       and λδ = (1 −γδ)(λ −γδ).
+                                                     The proof of Theorem 5.9 is provided in the Appendix.B. Current-State Opacity-Preserving Stochastic
+                                                     Remark 5.10:  Let us remark that the parameters  ϵ and  δ
+Simulation Relation
+                                                                      that appeared in Theorems 5.5 and 5.9 are related to the opacity-
+  Here, we introduce a new notion of approximate current-state   preserving stochastic simulation relations between two gMDPs
+opacity-preserving stochastic simulation relations.               as in Deﬁnitions 5.2 and 5.7, respectively. They are used to
+  Deﬁnition 5.7 (Approximate current-state opacity-preserving   specify two different types of precision:  ϵ characterizes the
+stochastic  simulation   relation):   Consider  two  gMDPs   “closeness” between the output trajectories of two gMDPs in
+Σ= (X, X0, XS, U, T, Y, h) and ˆΣ=( ˆX, ˆX0, ˆXS, ˆU, ˆT, ˆY , ˆh)   terms of being approximate opaque, while δ is used to quantify
+with the same output sets Y = ˆY . System ˆΣ is  (ϵ, δ)-current-   the probability of the pair of state trajectories of two gMDPs
+state opacity-preservingly ( (ϵ, δ)-CurSOP) simulated by  Σ,   remaining in the simulation relation after each time step.
+i.e., ˆΣ ⪯Cϵδ Σ, if there exists a relation Rx ⊆X × ˆX and Borel
+                                                                           VI. FINITE ABSTRACTIONS FOR GMDPSmeasurable stochastic kernels LT (·|x, ˆx, ˆu) and L ˆT (·|x, ˆx, u)
+on X × ˆX such that                                              In the previous section, we introduced notions of approximate
+   1) a) ∀x0 ∈X0, ∃ˆx0 ∈ˆX0, s.t. (x0, ˆx0) ∈Rx;             opacity-preserving stochastic simulation relations and discussed
+                                                                        their usefulness in verifying approximate opacity for gMDPs      b) ∀ˆx0 ∈ˆX0, ∃x0 ∈X0, s.t. (x0, ˆx0) ∈Rx;
+                                                             using their abstractions. In this section, we will discuss how    a)  ∀(x, ˆx) ∈Rx, ∥h(x) −ˆh(ˆx)∥≤ϵ;
+                                                                    to establish the proposed simulation relations for gMDPs and
+   b)  ∀(x, ˆx) ∈Rx, we have3                                                                        their ﬁnite abstractions (ﬁnite gMDPs). To be speciﬁc, we pro-
+           a)  ∀u ∈U,  ∃ˆu ∈ˆU, s.t.  T(·|x, u)  ¯Rδ  ˆT(·|ˆx, ˆu)                                                             vide conditions under which one can always construct ﬁnite
+            with lifting L ˆT (·|x, ˆx, u);                           abstractions under the desired  (ϵ, δ)-InitSOP (resp., CurSOP)
+          b)  ∀u ∈U,  s.t.  x+ ∈XS,  ∃ˆu ∈ˆU,  s.t.  ˆx+ ∈   stochastic simulation relations for a (possibly inﬁnite) gMDP.
+            ˆXS and  T(·|x, u)   ¯Rδ   ˆT(·|ˆx, ˆu) with lifting     In the following, we consider a gMDP Σ = (X, X0, XS, U,
+        LˆT (·|x, ˆx, u);                                 T, Y, h) with X = X0, and assume its output map h satisﬁes
+           c)   ∀ˆu ∈ˆU, ∃u ∈U, s.t.  T(·|x, u)  ¯Rδ  ˆT(·|ˆx, ˆu)   the following general Lipschitz assumption:
+            with lifting LT (·|x, ˆx, ˆu);                                   ∥h(x) −h(x′)∥≤ℓ(∥x −x′∥)           (22)
+          d)   ∀ˆu ∈ˆU, s.t. ˆx+ ∈ˆX \ ˆXS, ∃u ∈U, s.t. x+ ∈
+                                                                    for all x, x′ ∈X, where ℓ∈K∞. In addition, the existence of      X \ XS and T(·|x, u)  ¯Rδ  ˆT(·|ˆx, ˆu) with lifting                                                               opacity-preserving stochastic simulation relations between Σ
+         LT (·|x, ˆx, ˆu).                                                       and its ﬁnite abstraction is established under the assumption that
+                                     Σ is incrementally input-to-state stable [43] as in the following
+   3 We denote x+ := f(x, u, ς) and ˆx+ := ˆf(ˆx, ˆu, ς) for the sake of brevity.   deﬁnition.
+
+LIU et al.: ON APPROXIMATE OPACITY OF STOCHASTIC CONTROL SYSTEMS                                                               3855
+
+
+  Deﬁnition 6.1: A gMDP Σ = (X, X0, XS, U, T, Y, h) is   B. Establishing Opacity-Preserving Stochastic
+calledincrementallyinput-to-statestable(δ-ISS)ifthereexistsa   Simulation Relations
+function V  : X × X →R≥0 suchthat ∀x, x′ ∈X, ∀u, u′ ∈U,
+                                                                  In the following theorem, we show that for a δ-ISS gMDP
+the following conditions hold:
+                                                      Σ, if the tuple q = (η, θ, μ) of quantization parameters satisﬁes
+   α(∥x −x′∥) ≤V (x, x′) ≤α(∥x −x′∥)              (23)   certain conditions, then the ﬁnite gMDP   ˆΣ constructed in
+                                                              Section VI-A is an (ϵ, δ)-InitSOP ﬁnite abstraction of Σ.
+  E V (f(x, u, ς), f(x′, u′, ς)) x, x′, u, u′ −V (x, x′) ≤        Theorem 6.2:  Consider a δ-ISS gMDP as in Deﬁnition 6.1,
+                                                                associated with function V satisfying (23)–(25) with functions    −¯κ(V (x, x′)) + ¯ρ(∥u −u′∥)                        (24)
+                                                           α, α, ¯κ  ¯ρ. For any desired parameters ϵ ∈R>0, δ ∈(0, 1], let
+for some α, α, ¯κ ∈K∞, and  ¯ρ ∈K∞∪{0}.                       ˆΣ be a ﬁnite abstraction of Σ as constructed in Section VI-A,
+  The aforementioned deﬁnition can be seen as a stochastic   with the quantization parameters q = (η, 0, μ) satisfying
+counterpart of the δ-ISS Lyapunov functions deﬁned in [44] for
+                                                      η ≤min{γ−1(α ◦ℓ−1(ϵ)δ −(Id −¯κ) ◦α ◦ℓ−1(ϵ) −¯ρ(μ)),discrete-time nonstochastic systems.
+  In addition, we assume that there exists a function γ ∈K∞                            α−1 ◦α ◦ℓ−1(ϵ)}      (27)
+such that V satisﬁes
+                                                                   then, ˆΣ is (ϵ, δ)-InitSOP simulated by Σ via the relation
+  V (x, x′) −V (x, x′′) ≤γ(∥x′ −x′′∥) ∀x, x′, x′′ ∈X.   (25)
+                                              Rx = {(x, ˆx) ∈X × ˆX|V (x, ˆx) ≤α ◦ℓ−1(ϵ)}.      (28)
+  This assumption is not restrictive in the sense that condition
+(25) can be satisﬁed for any differentiable function V restricted    The proof of Theorem 6.2 is provided in the Appendix. The
+to a compact subset of X × X by applying the mean value   following theorem provides another main result of this section,
+theorem [43].                                            showing that for a δ-ISS gMDP Σ, if the tuple q = (η, θ, μ)
+                                                               of quantization parameters satisﬁes certain conditions, then the
+                                                                ﬁnite gMDP ˆΣ constructed in Section VI-A is an (ϵ, δ)-CurSOP
+A. Finite gMDPs
+                                                                ﬁnite abstraction of Σ.
+  In this subsection, we approximate a gMDP Σ with a    Theorem 6.3:  Consider a δ-ISS gMDP as in Deﬁnition 6.1,
+ﬁnite abstraction (ﬁnite gMDP)   ˆΣ. The construction  fol-   associated with function V satisfying (23)–(25) with functions
+lows a similar procedure as in [45, Algorithm 1] with some   α, α, ¯κ, and ¯ρ. For any desired parameters ϵ ∈R>0, δ ∈(0, 1],
+modiﬁcations  to incorporate the  secret information of the    let ˆΣ be a ﬁnite abstraction of Σ as constructed in Section VI-A,
+system.                                                     with the quantization parameters q = (η, θ, μ) satisfying
+  Consider a concrete gMDP Σ=(X, X0, XS, U, T, Y, h), we
+                                                      η ≤min{γ−1(α ◦ℓ−1(ϵ)δ −(Id −¯κ) ◦α ◦ℓ−1(ϵ) −¯ρ(μ)),assume that for the rest of this article, sets  X,  XS, and
+U are of the form of ﬁnite unions of boxes and X0 = X.                                                                            α−1 ◦α ◦ℓ−1(ϵ)}      (29)
+Consider a tuple q = (η, θ, μ) of parameters, where 0 < η ≤
+min{span(XS), span(X \ XS)} is the state set quantization,                                  ℓ−1(ϵ) ≤θ             (30)
+0 < μ < span(U) is the external input set quantization, and
+θ ∈R≥0 is a design parameter.                                    then, ˆΣ is (ϵ, δ)-CurSOP simulated by Σ via the relation
+  The ﬁnite abstraction of Σ is a ﬁnite gMDP, represented by the
+                                              Rx = {(x, ˆx) ∈X × ˆX|V (x, ˆx) ≤α ◦ℓ−1(ϵ)}.      (31)tuple ˆΣ=( ˆX, ˆX0, ˆXS, ˆU, ˆT, ˆY , ˆh), where  ˆX = ˆX0 = [X]η,
+ˆXS = [XθS]η,  ˆU = [U]μ,  ˆY = {h(ˆx)|ˆx ∈ˆX},  ˆh(ˆx) = h(ˆx)    The proof of Theorem 6.3 is provided in Appendix.
+∀ˆx ∈ˆX. Intuitively, the state and input sets of   ˆΣ consist    Remark VI.4: As seen from Theorems 6.2 and 6.3, for any
+                                                                desired parameters  ϵ ∈R>0, δ ∈(0, 1], one can always ﬁndof ﬁnitely many representative points, each of which repre-
+                                                                    suitable quantization parameters η and μ to construct a ﬁnitesents an aggregate of continuous states or inputs of the con-
+                                                                  abstraction  ˆΣ that opacity-preservingly simulates the originalcrete system. We denote by Πx : X →ˆX the abstraction map
+                                        gMDP Σ. Recall from Propositions 5.3 and 5.8 that the smallerthat assigns to any x ∈X, the representative point   ˆx ∈ˆX                                                           δ is, the more precise the abstraction ˆΣ is in terms of generatingof  x. Similarly, Πu : U →ˆU is used to denote the abstrac-                                                                   similar output trajectories as the original gMDP Σ. However,
+tion maps for external inputs. Given the quantization parame-                                                             note that according to conditions (27) and (29), a smaller  δ
+ters, the abstraction maps Πx and Πu satisfy the following                                                                    will lead to smaller quantization parameters η and μ for the
+inequalities:                                                                construction of abstraction ˆΣ. This will further result in building
+ ∥Πx(x) −x∥≤η ∀x ∈X; ∥Πu(u) −u∥≤μ ∀u ∈U. (26)   a “ﬁne” abstraction with a state set that is too large, and thus,
+                                                              too expensive to compute or store. Therefore, from a practical
+  The dynamics   ˆf : ˆX × ˆU × Vς →ˆX  of the abstraction   point of view, it is advisable to choose the value of δ as small
+                                                               as possible, given the available computing power.is deﬁned  as     ˆf(ˆx, ˆu, ς) = Πx(f(ˆx, ˆu, ς)). We  use  Ξ :
+ˆX →2X to denote the map that assigns any representative    Remark 6.5:  Observe that the proposed opacity-preserving
+                                                                   stochastic simulation relations for the initial state (or the current
+point   ˆx ∈X to the corresponding partition set represented
+                                                                         state) are one-sided because condition 1 in Deﬁnition 5.2 (and
+by  ˆx, i.e.  Ξ(ˆx) = {x ∈X : Πx(x) = ˆx}. Consequently, one
+                                                               conditions 3b and 3d in Deﬁnition 5.7) lacks symmetry. On the
+can compute the  transition probability matrix   ˆT  for   ˆΣ                                                                other hand, condition 3 in Deﬁnition 5.2 (along with conditions
+as   ˆT(ˆx′|ˆx, ˆu) = T(Ξ(ˆx′)|ˆx, ˆu), for  all    ˆx, ˆx′ ∈ˆX, and  all   3a and 3c in Deﬁnition 5.7) exhibits symmetry (two-sided).
+ˆu ∈ˆU.                                                    Thus, in order to establish suitable opacity-preserving stochastic
+
+3856                                                              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 70, NO. 6, JUNE 2025
+
+
+
+
+
+Fig. 4.  Road trafﬁc model observed by an outside intruder.
+
+
+simulation relations, the δ-ISS assumption remains essential for
+the original gMDPs as detailed in [43].
+                                                                               Fig. 5.   State trajectory (Traj.1) initiated from a secret initial condition
+                                                           and  its (ε-close) output equivalent trajectory (Traj.2) started from a
+                        VII. CASE STUDY                          nonsecret initial condition. The shaded area in light blue represents the
+                                                                 ε-band around Traj.1.
+  In this section, we illustrate our results on a road trafﬁc model
+adapted from [46], as shown in Fig. 4. Here, the trafﬁc ﬂow
+model is considered as one cell of a road trafﬁc network. The
+cell is assumed to be equipped with at least one measurable entry
+and one exit. The trafﬁc ﬂow dynamics of the cell is given by
+
+       x(k + 1) =   (1 −τvl −e)x(k) + bν(k) + dω(k) Σ :
+          y(k) =  cx(k)
+
+
+where τ is the sampling time in hour, l is the length of each cell
+in kilometers, and v is the trafﬁc ﬂow speed in kilometers per
+hour. The state x(k) of Σ represents the density of the trafﬁc in
+the vehicle per cell at a speciﬁc time instant indexed by k. The
+scalar b denotes the number of vehicles that are allowed to enter    Fig. 6.  Constructed ﬁnite abstraction ˆΣ for the system Σ with ˆΣ ⪯Iϵδ Σ.
+the cell during each sampling time controlled by the input signals   The states marked by red denote secret states; the states marked by
+                                                                     sourceless arrows denote initial states; the outputs are speciﬁed by the
+ν(·) ∈{0, 1}, where  ν(·) = 1 (resp.  ν(·) = 0) corresponds   value associated with each state. For each transition, the input and state
+to green (resp., red) trafﬁc light. The constant  e denotes the    transition probabilities are also speciﬁed on the arrows.
+percentage of vehicles that leave the cell during each sampling
+time through exits. The system is considered to be affected
+by additive noise where  ω(k) is a sequence of independent     Next, we show the approximate initial-state opacity of Σ
+random variables with standard normal distribution that models  by applying the abstraction-based veriﬁcation approach as pro-
+environmental uncertainties. The values of the parameters in the   posedinthisarticle.Weareinterestedinthestateset X := [0, 3],
+system are:  τ = 60×6030   h,  l = 1 km, v = 60km/h,  b = 0.5,    initial set X0 := [2, 3], and secret set XS := [2.5, 3] ∪[0, 0.5].
+c = 0.1, d = 0.1, and e = 0.4.                               Considering precision parameters  δ = 0.15 and  ϵ = 1, let
+  In this example, we consider that the initial density of the   us ﬁrst construct a ﬁnite gMDP as the approximate initial-
+trafﬁc model contains critical information that needs to be kept   state opacity-preserving abstraction of  Σ. Consider function
+secret (e.g., a high trafﬁc density might indicate activities hap-  V (x, x′) = ∥x −x′∥. One can readily verify that function V
+pening with vehicles gathering in that road cell). It is implicitly   satisﬁes (23)–(25) with functions  α(s) = α(s) = s,  ¯κ(s) =
+assumed that there is a malicious intruder (with imprecise mea-   ( τvl −e)s = 0.9s,  ¯ρ(s) = bs = 0.5s, and ℓ(s) = 0.1s, which
+surements captured by ε ∈R≥0) who is remotely observing the   implies that Σ is δ-ISS as in Deﬁnition 6.1. Next, by leveraging
+output behavior of the road cell, intending to carry out an attack.  Theorem 6.2, let us choose q = (0.5, 0, 0) as the quantization
+Therefore, the system is interested in verifying its security level   parameters that satisﬁes (27), and then, construct a ﬁnite gMDP
+in terms of the probability guarantee of maintaining plausible   following the steps in Section VI-A. The obtained ﬁnite gMDP
+deniability for secret initial conditions. This can be formulated   ˆΣ is depicted as in Fig. 6. Note that the states q1 to q6 are the
+as an ( ε, λ)-approximate initial-state opacity veriﬁcation prob-                                                                  representative points in  ˆΣ after discretizing the state set using
+lem as in Deﬁnition 3.1 with λ characterizing the probability                                                                quantization parameter η = 0.5. Once obtaining this opacity-
+guarantee on the occurrence of secure executions of the system.                                                               preserving abstraction ˆΣ, we apply the veriﬁcation approach as
+Recall that a secure execution of the system is a state trajectory                                                              presented in Section IV, summarized as in the following steps:
+(x0, . . . , xn), for which there exists a state trajectory generated
+                                                                   1) constructing an  ε-approximate  initial-state estimator
+from a nonsecret state such that their output trajectories are
+                                                                          ΣI,obs of ˆΣ;indistinguishable for an intruder with measurement precision
+ε. An example of such a pair of trajectories generated by the      2) solving the value iteration process for the maximal prob-
+road trafﬁc model is depicted in Fig. 5. Note that the veriﬁca-           abilities of ΣI,obs reaching the bad region XbadI   [cf. (8)];
+tion of opacity directly on continuous-space control systems is      3) leveraging Theorem 4.5 to conclude the approximate
+generally infeasible.                                                            initial-state opacity of  ˆΣ.
+
+LIU et al.: ON APPROXIMATE OPACITY OF STOCHASTIC CONTROL SYSTEMS                                                               3857
+
+
+  Following  these  steps, we  obtain  that    ˆΣ  is  (0.05,1)-   of the existence of absorbing sets [49] of the original stochastic
+approximate initial-state opaque over any ﬁnite time horizon   system.
+n ∈N. Note that the veriﬁcation of initial-state opacity for  ˆΣ     Proof of Lemma 4.2:  Consider an initial state  x0 in Σ
+follows exactly the same process as already explained in Exam-  and an input sequence ν = (ν(0), . . . , ν(n −1)). For any state
+ple 4.6, and thus, we omit here the detailed process due to lack of   trajectory  ξx0ν = (x0, . . . , xn) in  Σ, by Deﬁnition 4.1 of
+space. Moreover, since ˆΣ is (ϵ, δ)-InitSOP simulated by Σ with   the approximate initial-state estimator  ΣI,obs, there exists a
+ϵ = 1 and δ = 0.15, by further leveraging Theorem 5.5, we get   unique initial-state estimation sequence ((x0, q0) . . . (xn, qn))
+that Σ is (2.05, 0.7225n)-approximate initial-state opaque over   in  ΣI,obs generated from (x0, q0) under  ν. Recall that under
+any time horizon n ∈N.                                 ν = (ν(0), . . . , ν(k −1)),thetransitionprobabilityfunction TI
+  Let us remark that this example serves as an intuitive illustra-                                                                    in ΣI,obs boils down to Pν(i)I     : XI × XI →[0, 1] at each time
+tion of the proposed results. We intended to establish a coarse
+                                                                  step i ∈[0; n −1]. Thus, 1IbadPν(n−1)I         · · · Pν(1)I   Pν(0)I   1Ix0 givesdiscretization on the state set by choosing a large quantization
+parameter η for the sake of a visualization of the constructed ﬁ-   us the probability of a trajectory of ΣI,obs starting from initial
+nite gMDP as in Fig. 6. Instead, one can always resort to existing   state  (x0, q0) under input sequence ν entering into states in
+software tools, e.g., Faust [47], to generate and export a ﬁner   XbadI   . Now consider that ((x0, q0) . . . (xn, qn)) reaches XbadI
+abstraction that better approximates the concrete gMDP using   at any time step k ∈[0; n], then we have for all  i ∈[k; n],
+smaller quantization parameters. Once the exported abstract   (xi, qi) ∈XbadI   , and {¯x1 ∈X : (¯x1, ¯x2) ∈qi} ⊆XS holds by
+model (a ﬁnite gMDP) is obtained, one can verify opacity on the   (8). This means that from time step  k, the initial-state es-
+ﬁnite gMDP by employing the well-known probabilistic model                                                               timate is a subset of  XS, which further implies that when
+checkers, such as PRISM [48], together with the veriﬁcation                                                            observing the output sequence  (h(x0), . . . , h(xn)) of Σ, we
+approach presented in Section IV.
+                                                                 get    {x′0 ∈X0 : ∃(x′0, . . . , x′n) ∈L s.t. maxi∈[0;n] ∥h(xi) −
+                                                             h(x′i)∥≤ε} ⊆XS by (7). Thus, ξx0ν is not initial-state secure,
+                                                                                          i.e.,  ξx0ν /∈LnIε, from the deﬁnition of  LnIε in (4). Recall                        VIII. CONCLUSION
+                                                                      that  TI(x′I|xI, u) = T(x′|x, u) also holds by Deﬁnition 4.1.
+  In this article, we proposed new notions of approximate                                                               Therefore, we get 1IbadPν(n−1)I         · · · Pν(1)I   Pν(0)I   1Ix0 = P(ξx0ν /∈initial-state and  current-state  opacity  for continuous-space
+                                             LnIε) = 1 −P(ξx0ν ∈LnIε).                 ■stochastic control systems. This new notion provides a quantiﬁ-
+                                                             Proof of Lemma 4.3:  Consider an  initial  state  x0  inable measure of opacity, allowing us to quantitatively evaluate
+the probability of a stochastic system satisfying opacity during  Σ and an  input sequence   ν = (ν(0), . . . , ν(n −1)). Let
+each execution. We presented novel methods to verify approx-   ξx0ν = (x0, . . . , xn) be an arbitrary state trajectory in Σ and
+imate opacity for stochastic systems modeled as ﬁnite gMDPs   ((x0, q0) . . . (xn, qn)) be  its corresponding  initial-state  esti-
+by using value iteration techniques on their approximate initial-   mation sequence in  ΣI,obs. If (9) holds, then by leveraging
+state (or current-state) estimators. Using newly proposed notions  Lemma 4.2, we get  1 −P(ξx0ν ∈LnIε) ≤1 −λ, which im-
+of opacity-preserving simulation relations, an abstraction-based   plies P(ξx0ν ∈LnIε) ≥λ. Thus, we conclude that Σ is (ε, λ)-
+veriﬁcation approach is then developed to show approximate                                                          approximate initial-state opaque over time horizon n ∈N by
+opacity for inﬁnite gMDPs through their ﬁnite abstractions                                                           Deﬁnition 3.1.                        ■
+(modeled as ﬁnite gMDPs). We also discussed how to construct
+                                                             Proof of Proposition 5.3:   First note that condition 3 in
+ﬁnite abstractions that preserve approximate opacity for a class
+                                                           Deﬁnition 5.2 intuitively implies that, for any pair of statesof stochastic control systems.
+                                                                (x, ˆx) in relation Rx, there always exist inputs such that the  For future works, we plan to investigate the synthesis of con-
+trol policies to enforce opacity for gMDPs. Moreover, we would   succeedingstates (x′, ˆx′)arealsoinrelation Rx withprobability
+like to extend the results to other notions of opacity including   at least 1 −δ. Consequently, by combining the initial conditions
+inﬁnite-step opacity and preopacity. Note that the veriﬁcation   in condition 1 of Deﬁnition 5.2, for any pair of initial states
+of inﬁnite-step opacity or preopacity is much more challenging   that are in relation (x0, ˆx0) ∈Rx and any control strategy ν,
+since we also need to consider how future information can affect   there exists ˆν (and vice versa), such that the corresponding state
+our knowledge about the current status of the system. Thus, a   trajectories ξx0ν and  ˆξˆx0ˆν satisfy
+new information structure is needed for constructing the estima-
+tor that involves the computation of delayed state estimates. The     P{(ξx0ν(k), ˆξˆx0ˆν(k)) ∈Rx ∀k ∈[0; n]} ≥(1 −δ)n.  (32)
+challenge in extending our results to verify opacity over inﬁnite
+time horizons lies in the limitation of the abstraction-based    Now,  let us consider  the following events  for any  set
+veriﬁcation technique for continuous-space gMDPs. Notice that  E ⊆Hn:   E1 := {ˆζˆx0ˆν ∈E−ϵ}, E2 := {ζx0ν ∈E}, E3 :=
+from Propositions 5.3 and 5.8, the guarantee on the probabilistic   {(ξx0ν(k), ˆξˆx0ˆν(k)) ∈Rx  ∀k ∈[0; n]},  where    ζx0ν  and
+distance between a gMDP and its abstraction becomes vacuous     ˆζˆx0ˆν  are  the  corresponding  output  trajectories, and  Eϵ
+when n goes to inﬁnity. In fact, the problem of building ab-                                                       and  E−ϵ are deﬁned in (13) and (14), respectively. From
+stractions for stochastic systems for inﬁnite-horizon properties
+                                                               condition 2 of Deﬁnition 5.2, we get E1 ∩E3 =⇒E2, and thus,is known to be challenging [21] due to the conservative nature of
+                                                   P(E1 ∩E3) ≤P(E2). This further implies that the followingLyapunov-like techniques (simulation relations) and associated
+error bounds. As a potential direction to extend the results to an   inequality  holds   P( ¯E2) = 1 −P(E2) ≤1 −P(E1 ∩E3) =
+inﬁnite time horizon, one may consider using similar ideas as  P( ¯E1 ∪¯E3) ≤P( ¯E1) + P( ¯E3), where  ¯E1,  ¯E2, and  ¯E3 denote
+proposed in [49], which builds bisimilar ﬁnite abstractions for   the complements of events  E1,  E2, and  E3, respectively.
+inﬁnite-horizon properties (safety and reachability) by assuming   Since we have, by (32),  P( ¯E3) ≤1 −(1 −δ)n, then we
+and exploiting some additional structural features, e.g., in terms   get P( ¯E2) ≤P( ¯E1) + 1 −(1 −δ)n =⇒1 −P(E2) ≤1 −
+
+3858                                                              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 70, NO. 6, JUNE 2025
+
+
+P(E1)+1−(1 −δ)n =⇒P(E1) ≤P(E2) + 1 −(1 −δ)n,      Combining (37) and (36), we have
+which gives us P(ˆζˆx0ˆν ∈E−ϵ)−γδ ≤P(ζx0ν ∈E). The proof                                                            P(ζx0ν ∈ˆHϵIε) ≥P(ˆζˆx0ˆν ∈ˆHnIε) −γδ ≥λ −γδ    (38)
+of  P(ζx0ν ∈E) ≤P(ˆζˆx0ˆν ∈Eϵ)+γδ uses similar reasoning
+and is omitted here.                     ■  where ˆHϵIε is ϵ-expansion of ˆHnIε as deﬁned in (13), which can
+  Proof of Lemma 5.4: We provide the proof for (18). The   be further rewritten as
+proof of (19) can be derived similarly. Let us consider events           (13)
+                                                                     ˆHϵIε =  {(ˆ¯y0, . . . , ˆ¯yn) ∈ˆHn : ∃(ˆy0, . . . , ˆyn) ∈ˆHnIε, s.t.E1 := {ξx0ν ∈LnIε} and  E2 := {ζx0ν ∈HnIε}. Note that the
+proof of (18) can be done by showing  E1 ⇐⇒E2. Consider                         max ∥ˆyi −ˆ¯yi∥≤ϵ}
+                                                                                                                         i∈[0;n]
+an arbitrary initial state  x0, an arbitrary input sequence  ν,
+a ﬁnite state run  ξx0ν = (x0, . . . , xn) and the corresponding           (38)                                      =  {(ˆ¯y0, . . . , ˆ¯yn) ∈ˆHn : ∃(ˆx′0, . . . , ˆx′n) ∈ˆLnIε, s.t.output trajectory ζx0ν = (y0, . . . , yn) with yi = h(xi).
+   First,  let us prove  that   E1 =⇒E2. Suppose   ξx0ν =                      max  ∥ˆ¯yi −ˆh(ˆx′i)∥≤ϵ}.  (39)
+(x0, . . . , xn) ∈LnIε. Then, by (16), we get  ζx0ν ∈HnIε holds                                         i∈[0;n]
+readily, which gives us E1 =⇒E2. Next, we show E2 =⇒E1.     Next, in order to show the approximate initial-state opacity
+Suppose ζx0ν = (y0, . . . , yn) ∈HnIε, we have by (16)           of system Σ, let us consider the set of secure output runs within
+                                                           time horizon n ∈N in Σ w.r.t. the constant (ε + 2ϵ) ≥0 as
+   ∃ξx′0ν′ = (x′0, . . . , x′n) ∈LnIε, yi = h(x′i) ∀i ∈[0; n].   (33)   follows:
+  In addition, by (4), there exists (x′′0, . . . , x′′n) ∈Ln s.t.      HnI(ε+2ϵ) = {(y0, . . . , yn) ∈Hn : ∃(x0, . . . , xn) ∈LnI(ε+2ϵ),
+       x′′0 ∈X0\XS, and max ∥h(x′i) −h(x′′i )∥≤ε.     (34)                                            s.t. yi = h(xi) ∀i ∈[0; n]}.  (40)
+                               i∈[0;n]
+                                                             Consider the trajectory  (ˆx′0, . . . , ˆx′n) ∈ˆLnIε in (39). By (4),  Combining (34) with (33), we have ∥yi −h(x′′i )∥≤ε ∀i ∈
+[0; n]. Therefore, we have for  ξx0ν = (x0, . . . , xn),  ∃x′′0 ∈  we get that there exists  (ˆx′′0, . . . , ˆx′′n) ∈ˆLn such that
+X0\XS, s.t. maxi∈[0;n] ∥yi −h(x′′i )∥≤ε. Thus, it follows that              ˆx′′0 ∈ˆX0\ ˆXS, and max ∥ˆh(ˆx′i) −ˆh(ˆx′′i )∥≤ε.     (41)
+ξx0ν ∈LnIε holds as well, which further implies E2 =⇒E1. ■                                  i∈[0;n]
+  Proof of Theorem 5.5:  First note that for a nonsecret initial-     Note that by conditions 1b and 3b in Deﬁnition 5.2, for
+state x0 ∈X0 \ XS, any trajectory from x0 satisﬁes ξx0ν ∈     ˆx′′0 ∈ˆX0\ ˆXS in   ˆΣ, there exists  x′0 ∈X0 \XS in Σ with
+LnIε, which directly implies that  P(ξx0ν ∈LnIε) = 1 for any   (x′0, ˆx′′0) ∈Rx, such that the trajectory  (x′0, . . . , x′n) from  x′0
+ε ∈R≥0. Now, consider an arbitrary initial state x0 ∈X0 ∩XS   satisﬁes  (x′i, ˆx′′i ) ∈Rx  ∀i ∈[0; n] with probability at least
+andarandomstatetrajectory ξx0ν = (x0, . . . , xn)withlength n   (1 −δ)n, i.e.,  P{(x′i, ˆx′′i ) ∈Rx ∀i ∈[0; n]} ≥(1 −δ)n. Let
+generatedfrom x0 under aninput sequence ν insystem Σ. Since   us consider again the random trajectory  ξx0ν in Σ and its
+ˆΣ ⪯Iϵδ Σ, by condition 1a in Deﬁnition 5.2, for x0 ∈X0 ∩XS   corresponding output trajectory  ζx0ν, and deﬁne the events:
+in Σ, there exists ˆx0 ∈ˆX0 ∩ˆXS in ˆΣ, such that (x0, ˆx0) ∈Rx.   E1 := {(x′i, ˆx′′i ) ∈Rx ∀i ∈[0; n]};  E2 := {ζx0ν ∈ˆHϵIε}; and
+Consider this pair of initial states (x0, ˆx0) ∈Rx, by Proposition   E3 := {ζx0ν ∈HnI(ε+2ϵ)}. Note that E1 further implies that
+5.3 together with condition 3a in Deﬁnition 5.2, there exists
+an input sequence   ˆν in  ˆΣ, s.t. given any E ⊆Hn and the              max ∥h(x′i) −ˆh(ˆx′′i )∥≤ϵ             (42)
+ϵ-neighborhoods Eϵ and E−ϵ as in (13) and (14), we have                             i∈[0;n]
+                                                     by condition 2  in Deﬁnition  5.2. Now consider   ζx0ν =
+  P(ˆζˆx0ˆν ∈E−ϵ)−γδ ≤P(ζx0ν ∈E)≤P(ˆζˆx0ˆν ∈Eϵ)+γδ  (35)   (y0, . . . , yn) with   E2 := {ζx0ν ∈ˆHϵIε} holds, by leverag-
+                                                              ing the aforementioned implications from  E2, we get thatwith constant γδ = 1 −(1 −δ)n, where ζx0ν and ˆζˆx0ˆν denotes                                                                  there exists  (x′0, . . . , x′n) with  x′0 ∈X0 \XS in  Σ, such
+the output sequence corresponding to the state trajectory ξx0ν                                                                      that  maxi∈[0;n] ∥h(x′i) −yi∥≤ε + 2ϵ, where the inequality
+in Σ and the state trajectory   ˆξˆx0ˆν in  ˆΣ, respectively. Now                                                                               is obtained by combining (39), (41), and (42). This implies
+notice that since  ˆΣ is  (ε, λ)-approximate initial-state opaque                                                                      that  ζx0ν ∈HnI(ε+2ϵ) holds. Therefore, we obtain that  E1 ∩
+within time horizon n ∈N, we have from Deﬁnition 3.1 that
+                                                         E2 =⇒E3 holds, and thus, P(E1 ∩E2) ≤P(E3). Therefore, we
+P(ˆξˆx0ˆν ∈ˆLnIε) ≥λ, where ˆLnIε is the set of initial-state secure                               (39)
+state trajectories in  ˆΣ as deﬁned in (4). Thus, by Lemma 5.4,   get P(ζx0ν ∈HnI(ε+2ϵ)) ≥(1 −δ)n(λ −γδ) = (1 −γδ)(λ −
+the corresponding output run  ˆζˆx0ˆν = (ˆy0, . . . , ˆyn) satisﬁes       γδ). By leveraging again (18), we have P(ξx0ν ∈LnI(ε+2ϵ)) ≥
+                                                           (1 −γδ)(λ −γδ). Thus, we can conclude that Σ is (ε + 2ϵ, λδ)-
+                           P(ˆζˆx0ˆν ∈ˆHnIε) ≥λ                 (36)   approximate initial-state opaque within time horizon n ∈N,
+                                                           with λδ = (1 −γδ)(λ −γδ).                ■
+where ˆHnIε is the set of secure output sequences in ˆΣ as deﬁned                                                             Proof of Theorem 5.9:  Consider an arbitrary initial state x0
+in (16), i.e.,
+                                                       and a random state trajectory ξx0ν = (x0, . . . , xn) with length
+  ˆHnIε = {(ˆy0, . . . , ˆyn) ∈ˆHn : ∃(ˆx′0, . . . , ˆx′n) ∈ˆLnIε, s.t.      n generated from x0 under a control sequence ν in system Σ.
+                                                           Since ˆΣ ⪯Cϵδ Σ, by condition 1a in Deﬁnition 5.7, for x0 ∈X0
+                                                  ˆyi = ˆh(ˆx′i) ∀i ∈[0; n]}.  (37)                                                                    in Σ, there exists ˆx0 ∈ˆX0 in ˆΣ, such that (x0, ˆx0) ∈Rx. Now
+
+LIU et al.: ON APPROXIMATE OPACITY OF STOCHASTIC CONTROL SYSTEMS                                                               3859
+
+
+consider this pair of initial states (x0, ˆx0) ∈Rx, by Proposition  by condition 2  in Deﬁnition  5.7. Now consider   ζx0ν =
+5.8 together with condition 3a in Deﬁnition 5.7, there exists an   (y0, . . . , yn) with  E2 := {ζx0ν ∈ˆHϵCε} holds, by leveraging
+input sequence  ˆν in  ˆΣ, such that given any set E ⊆Hn and   the aforementioned implications from  E2, we get that there
+the ϵ-neighborhoods Eϵ and E−ϵ as deﬁned in (13) and (14),   exists (x′0, . . . , x′n) in Σ being current-state secure with none
+we have                                                        of  its preﬁx revealing current-state secret as in (48), such
+  P(ˆζˆx0ˆν ∈E−ϵ)−γδ ≤P(ζx0ν ∈E)≤P(ˆζˆx0ˆν ∈Eϵ)+γδ  (43)   that  maxi∈[0;n] ∥h(x′i) −yi∥≤ε + 2ϵ, where the inequality
+                                                                               is obtained by combining (46), (48), and (49). This implies
+                                                                            ∩with constant γδ = 1 −(1 −δ)n, where ζx0ν and ˆζˆx0ˆν denotes   that  ζx0ν ∈HnC(ε+2ϵ) holds. Therefore, we obtain that  E1
+the output sequence corresponding to the state trajectory ξx0ν   E2 =⇒E3 holds, and thus, P(E1 ∩E2) ≤P(E3). Therefore, we
+                                                                                                      (39)in Σ and the state trajectory   ˆξˆx0ˆν in  ˆΣ, respectively. Now
+notice that since ˆΣ is (ε, λ)-approximate current-state opaque   get P(ζx0ν ∈HnC(ε+2ϵ)) ≥(1 −δ)n(λ −γδ) = (1 −γδ)(λ −
+within time horizon n ∈N, we have from Deﬁnition 3.1 that   γδ). By leveraging again (19), we have P(ξx0ν ∈LnC(ε+2ϵ)) ≥
+P(ˆξˆx0ˆν ∈ˆLnCε) ≥λ, where ˆLCε is the set of current-state secure   (1 −γδ)(λ −γδ). Thus, we can conclude that Σ is (ε + 2ϵ, λδ)-
+state trajectories in  ˆΣ as deﬁned in (5). Thus, by Lemma 5.4,   approximate current-state opaque within time horizon n ∈N,
+the corresponding output run  ˆζˆx0ˆν = (ˆy0, . . . , ˆyn) satisﬁes      with λδ = (1 −γδ)(λ −γδ).                ■
+                                                             Proof of Theorem 6.2: We start with showing condition 1 in
+                           P(ˆζˆx0ˆν ∈ˆHnCε) ≥λ                 (44)   Deﬁnition 5.2. Consider any secret initial state x0 ∈X0 ∩XS
+where ˆHnCε is the set of secure output sequences in ˆΣ as deﬁned   in Σ, since η ≤span(XS), there always exists a representative                                                                point   ˆx0 = Πx(x0) in   ˆΣ inside the set  ˆX0 ∩ˆXS by the
+in (17), i.e.,
+                                                                construction of sets  ˆX0 = [X]η and  ˆXS = [XθS]η. Note that
+  ˆHnCε = {(ˆy0, . . . , ˆyn) ∈ˆHn : ∃(ˆx′0, . . . , ˆx′n) ∈ˆLnCε, s.t.       ∥x0 −ˆx0∥≤η holds by (28). By combining (23) and (27), we
+                                                         have V (x0, ˆx0) ≤α(∥x0 −ˆx0∥) ≤α(η) ≤α ◦ℓ−1(ε), which
+                                                  ˆyi = ˆh(ˆx′i) ∀i ∈[0; n]}.  (45)                                                               implies (x0, ˆx0) ∈Rx by the deﬁnition of Rx in (28). Hence,
+  Combining  (43) and  (44), we have   P(ζx0ν ∈ˆHϵCε) ≥   condition 1a is satisﬁed readily. For condition 1b, for every ˆx0 ∈
+                                                                 ˆX0 \ ˆXS, by choosing x0 = ˆx0 which is also inside X0 \ XS,P(ˆζˆx0ˆν ∈ˆHnCε) −γδ ≥λ −γδ, where  ˆHϵCε is ϵ-expansion of                                             we again get V (x0, ˆx0) = 0 ≤α ◦ℓ−1(ε), which implies that
+ˆHnCε as deﬁned in (13), which can be further rewritten as         (x0, ˆx0) ∈Rx holds. We proceed with showing condition 2.
+        (13)                                            Combining the Lipschitz assumption (22) and (23), one gets
+  ˆHϵCε =  {(ˆ¯y0, . . . , ˆ¯yn) ∈ˆHn : ∃(ˆy0, . . . , ˆyn) ∈ˆHnCε, s.t.                                                     (23)              (24)
+                                                                    for any  (x, ˆx) ∈Rx, ∥h(x) −h(ˆx)∥ ≤ℓ(∥x −ˆx∥) ≤ℓ◦
+                       max ∥ˆyi −ˆ¯yi∥≤ϵ}                            (29)                                         i∈[0;n]
+                                                   α−1(V (x, ˆx)) ≤ϵ, which shows that condition 2 is satisﬁed.
+        (46)                                                     Next,  we  show  condition  3  also  holds.  By  tak-    =  {(ˆ¯y0, . . . , ˆ¯yn) ∈ˆHn : ∃(ˆx′0, . . . , ˆx′n) ∈ˆLnCε, s.t.
+                                                              ing   the  conditional  expectation  from   (25),   for  any
+                    max  ∥ˆ¯yi −ˆh(ˆx′i)∥≤ϵ}.  (46)   (x, ˆx) ∈Rx,  for  u ∈U,  there  exists     ˆu ∈ˆU, and  vice
+                                     i∈[0;n]
+                                                                    versa,  such  that   E[V (f(x, u, ς), ˆf(ˆx, ˆu, ς))  x, ˆx, u, ˆu] −
+  Next, in order to show the approximate current-state opacity                                                  E[V (f(x, u, ς), f(ˆx, ˆu, ς))  x, ˆx, u, ˆu] ≤E[γ(∥ˆf(ˆx, ˆu, ς) −
+of system Σ, let us consider the set of secure output runs in Σ                                                                        f(ˆx, ˆu, ς)∥)  x, ˆx, u, ˆu], where    ˆf(ˆx, ˆu, ς) = Πx(f(ˆx, ˆu, ς)).
+within time horizon n ∈N w.r.t. the constant ε + 2ϵ ≥0
+                                                       Using (26), we further get
+ HnC(ε+2ϵ) = {(y0, . . . , yn) ∈Hn : ∃(x0, . . . , xn) ∈LnC(ε+2ϵ),
+                                       E V (f(x, u, ς), ˆf(ˆx, ˆu, ς))  x, ˆx, u, ˆu
+                                     s.t. yi = h(xi) ∀i ∈[0; n]}.    (47)
+                                 −E V (f(x, u, ς), f(ˆx, ˆu, ς))  x, ˆx, u, ˆu ≤γ(η).    (50)
+  Consider the trajectory  (ˆx′0, . . . , ˆx′n) ∈ˆLnCε in (46). By (5),
+we get that for any of its preﬁx  (ˆx′0, . . . , ˆx′k) ∀k ∈[0; n], there    By (24), we have E[V (f(x, u, ς), f(ˆx, ˆu, ς))  x, ˆx, u, ˆu] ≤
+exists  (ˆx′′0, . . . , ˆx′′k) ∈ˆLn such that                           (Id −¯κ)(V (x, ˆx)) + ¯ρ(∥u −u′∥). By further using (26) and
+                                                                     (50), it follows that
+          ˆx′′k ∈ˆX\ ˆXS, and max ∥ˆh(ˆx′i) −ˆh(ˆx′′i )∥≤ε.      (48)
+                               i∈[0;k]
+                                           E V (f(x, u, ς), ˆf(ˆx, ˆu, ς))  x, ˆx, u, ˆu
+  For any of the preﬁx  (ˆx′0, . . . , ˆx′k), by conditions 1b, 3c, and
+3d in Deﬁnition 5.7, there exists x′0 ∈X0 with (x′0, ˆx′0) ∈Rx,          ≤(Id −¯κ)(V (x, ˆx)) + ¯ρ(μ) + γ(η).        (51)
+s.t. the trajectory  (x′0, . . . , x′k) satisﬁes  (x′i, ˆx′′i ) ∈Rx  ∀i ∈
+                                                          Applying Markov’s inequality [50] to (51), we get the follow-[0; k] with probability at least  (1 −δ)n, and  x′k ∈X \ XS,
+                                                              ing inequality chain:i.e., P{(x′′i , ˆx′′i ) ∈Rx ∀i ∈[0; k]} ≥(1 −δ)k.
+  Let us consider again the random trajectory ξx0ν in Σ and   P{V (f(x, u, ς), ˆf(ˆx, ˆu, ς)) ≤α ◦ℓ−1(ϵ)  x, ˆx, u, ˆu}
+its corresponding output trajectory ζx0ν, and deﬁne the events:
+E1 := {(x′i, ˆx′′i ) ∈Rx ∀i ∈[0; n]};  E2 := {ζx0ν ∈ˆHϵCε}; and  = 1 −P{V (f(x, u, ς), ˆf(ˆx, ˆu, ς)) ≥α ◦ℓ−1(ϵ)  x, ˆx, u, ˆu}
+E3 := {ζx0ν ∈HnC(ε+2ϵ)}. Note that E1 further implies that                 1
+                                   ≥1 −          V (f(x, u, ς), ˆf(ˆx, ˆu, ς))  x, ˆx, u, ˆu                                               α ◦ℓ−1(ϵ)E            max ∥h(x′i) −ˆh(ˆx′′i )∥≤ϵ             (49)
+                     i∈[0;n]
+
+3860                                                              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 70, NO. 6, JUNE 2025
+
+
+
+  (29)        1                                                           [10] X. Yin and S. Lafortune, “A new approach for the veriﬁcation of inﬁnite-
+ ≥1 −            (Id −¯κ) ◦α ◦ℓ−1(ϵ) + ¯ρ(μ) + γ(η)             step and k-step opacity using two-way observers,” Automatica, vol. 80,
+       α ◦ℓ−1(ϵ)                                                           pp. 162–171, 2017.
+                                                                               [11]  J. W. Bryans, M. Koutny, L. Mazaré, and P. Y. Ryan, “Opacity generalised  (28)
+ ≥1 −δ.                                             (52)          to transition systems,” Int. J. Inf. Secur., vol. 7, no. 6, pp. 421–435, 2008.
+                                                                               [12] Y. Tong, H. Lan, and C. Seatzu, “Veriﬁcation of k-step and inﬁnite-
+                                                                                        step opacity of bounded labeled petri nets,” Automatica, vol. 140, 2022,
+  Note  that  the  last  inequality  in (52)  is achieved from                                                                                         Art. no. 110221.
+(27), where one has  α◦ℓ−1(ϵ){(Id1       −¯κ) ◦α ◦ℓ−1(ϵ) + ¯ρ(μ) +    [13] R. Jacob, J.-J. Lesage, and J.-M. Faure, “Overview of discrete event sys-
+γ(η)} ≤δ. Hence, condition 3 of Deﬁnition 5.2 is also satisﬁed,        tems opacity: Models, validation, and quantiﬁcation,” Annu. Rev. Control,
+                                                                                              vol. 41, pp. 135–146, 2016.
+which completes the proof.                 ■    [14] X. Yin, M. Zamani, and S. Liu, “On approximate opacity of cyber-physical
+  Proof of Theorem 6.3: We start with showing condition 1 in         systems,” IEEE Trans. Autom. Control, vol. 66, no. 4, pp. 1630–1645,
+Deﬁnition 5.7. Consider any initial state x0 ∈X0 in Σ, since         Apr. 2020.                                                                               [15] B. Ramasubramanian, W. Cleaveland, and S. Marcus, “Notions of cen-
+η ≤span(X0), there always exists a representative point  ˆx0 =          tralized and decentralized opacity in linear systems,” IEEE Trans. Autom.
+Πx(x0)in ˆΣbytheconstructionof ˆX0 suchthat ∥x0 −ˆx0∥≤η         Control, vol. 265, no. 4, pp. 1442–1455, 2020.
+holds by (26). By (23) and (29), we have V (x0, ˆx0) ≤α(∥x0 −    [16] L. An and G.-H. Yang, “Opacity enforcement for conﬁdential robust                                                                                       control in linear cyber-physical systems,” IEEE Trans. Autom. Control,
+ˆx0∥) ≤α(η) ≤α ◦ℓ−1(ϵ),whichimplies (x0, ˆx0) ∈Rx bythe          vol. 65, no. 3, pp. 1234–1241, Mar. 2020.
+deﬁnition of Rx in (31). For condition 1b, for every  ˆx0 ∈ˆX0,    [17]  S. Liu and M. Zamani, “Veriﬁcation of approximate opacity via barrier cer-
+by choosing x0 = ˆx0, which is also inside X0, we again get          tiﬁcates,” IEEE Control Syst. Lett., vol. 5, no. 4, pp. 1369–1374, Apr. 2020.                                                                               [18] M. Mizoguchi and T. Ushio, “Abstraction-based control under quantized
+V (x0, ˆx0) = 0 ≤α ◦ℓ−1(ε), which implies that (x0, ˆx0) ∈Rx         observation with approximate opacity using symbolic control barrier func-
+holds. Hence, condition 1 is satisﬁed readily. Conditions 2, 3a,          tions,” IEEE Control Syst. Lett., vol. 6, pp. 2222–2227, Dec. 2021.
+and 3c can be shown following the same reasoning as in Theo-    [19]  S. Liu and M. Zamani, “Compositional synthesis of opacity-preserving
+                                                                                 ﬁniteabstractionsforinterconnectedsystems,”Automatica,vol.131,2021,
+rem 6.2, thus is omitted here. Finally, let us show that conditions          Art. no. 109745.
+3b and 3d in Deﬁnition 5.7 hold as well. Consider any pair of    [20] C. Baier, J.-P. Katoen, and K. G. Larsen, Principles of Model Checking.
+states (x, ˆx) ∈Rx, and suppose that under an input u ∈U, we        Cambridge, MA, USA: MIT Press, 2008.
+                                                                               [21] A. Lavaei, S. Soudjani, A. Abate, and M. Zamani, “Automated veriﬁca-
+get x+ = f(x, u, ς) ∈XS. Similar to the proof of condition 3a,          tion and synthesis of stochastic hybrid systems: A survey,” Automatica,
+we can show that by choosing  ˆu = u, we have (x+, ˆx+) ∈Rx          vol. 146, 2022, Art. no. 110617.
+                                                                               [22] W. Zeng and M. Koutny, “Quantitative analysis of opacity in cloud com-with probability greater than 1 −δ, where  ˆx+ = ˆf(ˆx, ˆu, ς).                                                                                   puting systems,” IEEE Trans. Cloud Comput., vol. 9, no. 3, pp. 1210–1219,
+Since (x+, ˆx+) ∈Rx, by combining (31) with (23) and (30),         Jul.–Sep. 2021.
+we have ∥x+ −ˆx+∥≤α−1(V (x+, ˆx+)) ≤ℓ−1(ϵ) ≤θ. More-    [23] C. Mu and D. Clark, “Verifying opacity properties in security systems,”
+                                                                 IEEE Trans. Dependable Secure Comput., vol. 20, no. 2, pp. 1450–1460,
+over, by the construction of the secret set in the ﬁnite abstraction,                                                                                   Feb. 2022.
+one has ˆXS = [XθS]η with the inﬂation parameter θ satisfying    [24] A. Saboori and C. N. Hadjicostis, “Current-state opacity formulations in
+ℓ−1(ϵ) ≤θ and 0<η≤min{span(XS), span(X \ XS)}. This          probabilistic ﬁnite automata,” IEEE Trans. Autom. Control, vol. 59, no. 1,
+further implies that  ˆx+ ∈ˆXS holds as well. Thus, condition         pp. 120–133, Jan. 2014.                                                                               [25] B. Bérard, K. Chatterjee, and N. Sznajder, “Probabilistic opacity for
+3b is satisﬁed. Condition 3d can be proved in a similar way.       Markov decision processes,” Inf. Process. Lett., vol. 115, no. 1, pp. 52–59,
+Therefore, we conclude that condition 3 of Deﬁnition 5.7 is        2015.
+                                                                               [26]  J. Chen, M. Ibrahim, and R. Kumar, “Quantiﬁcation of secrecy in partially
+satisﬁed, which completes the proof.             ■                                                                               observed stochastic discrete event systems,” IEEE Trans. Autom. Sci. Eng.,
+                                                                                              vol. 14, no. 1, pp. 185–195, Jan. 2017.
+                 REFERENCES                                 [27] M. Ahmadi, B. Wu, H. Lin, and U. Topcu, “Privacy veriﬁcation in
+                                                       POMDPs via barrier certiﬁcates,” in Proc. IEEE Conf. Decis. Control,
+ [1] H. Sandberg, S. Amin, and K. H. Johansson, “Cyberphysical security in        2018, pp. 5610–5615.
+     networked control systems: An introduction to the issue,” IEEE Control    [28] X. Yin, Z. Li, W. Wang, and S. Li, “Inﬁnite-step opacity and k-step opacity
+      Syst. Mag., vol. 35, no. 1, pp. 20–23, Feb. 2015.                                 of stochastic discrete-event systems,” Automatica, vol. 99, pp. 266–274,
+ [2]  S. M. Dibaji, M. Pirani, D. B. Flamholz, A. M. Annaswamy, K. H.        2019.
+     Johansson, and A. Chakrabortty, “A systems and control perspective of    [29]  S. Liu, X. Yin, and M. Zamani, “On a notion of approximate opacity for
+    CPS security,” Annu. Rev. Control, vol. 47, pp. 394–411, 2019.                    discrete-time stochastic control systems,” in Proc. Amer Control Conf.,
+ [3]  S. Liu, A. Trivedi, X. Yin, and M. Zamani, “Secure-by-construction syn-        2020, pp. 5413–5418.
+      thesis of cyber-physical systems,” Annu. Rev. Control, vol. 53, pp. 30–50,    [30]  S. Haesaert, S. E. Zadeh Soudjani, and A. Abate, “Veriﬁcation of general
+     2022.                                                           Markov decision processes by approximate similarity relations and policy
+ [4] A. Saboori and C. N. Hadjicostis, “Notions of security and opacity         reﬁnement,” SIAM J. Control Optim, vol. 55, no. 4, pp. 2333–2367, 2017.
+      in discrete event systems,” in Proc. IEEE Conf. Decis. Control, 2007,    [31] A. Lavaei, S. Soudjani, and M. Zamani, “Compositional abstraction-based
+     pp. 5056–5061.                                                                  synthesis of general MDPS via approximate probabilistic relations,” Non-
+ [5]  S. Lafortune, F. Lin, and C. N. Hadjicostis, “On the history of diagnos-          linear Anal., Hybrid Syst., vol. 39, 2021, Art. no. 100991.
+      ability and opacity in discrete event systems,” Annu. Rev. Control, vol. 45,    [32] O. Kallenberg and O. Kallenberg, Foundations of Modern Probability,
+     pp. 257–266, 2018.                                                                   vol. 2. Berlin, Germany: Springer, 1997.
+ [6] L. Mazaré, “Using uniﬁcation for opacity properties,” in Proc. Workshop    [33]  J. Lu and R. E. Skelton, “Mean-square small gain theorem for stochastic
+      Issues Theory Secur., vol. 4, 2004, pp. 165–176.                                   control: Discrete-time case,” IEEE Trans. Autom. Control, vol. 47, no. 3,
+ [7]  F. Lin, “Opacity of discrete event systems and its applications,” Automat-         pp. 490–494, Mar. 2002.
+      ica, vol. 47, no. 3, pp. 496–503, 2011.                                     [34]  J. Desharnais, V. Gupta, R. Jagadeesan, and P. Panangaden, “Metrics
+ [8]  S. Yang and X. Yin, “Secure your intention: On notions of pre-opacity          for labelled Markov processes,” Theor. Comput. Sci., vol. 318, no. 3,
+      in discrete-event systems,” IEEE Trans. Autom. Control, vol. 68, no. 8,         pp. 323–354, 2004.
+     pp. 4754–4766, Aug. 2023.                                               [35]  J. Ding, M. Kamgarpour, S. Summers, A. Abate, J. Lygeros, and C.
+ [9] A. Saboori and C. Hadjicostis, “Veriﬁcation of inﬁnite-step opacity and         Tomlin, “A Stochastic games framework for veriﬁcation and control of
+     complexity considerations,” IEEE Trans. Autom. Control, vol. 57, no. 5,          discrete time stochastic hybrid systems,” Automatica, vol. 49, no. 9,
+     pp. 1265–1269, May 2012.                                                     pp. 2665–2674, 2013.
+
+LIU et al.: ON APPROXIMATE OPACITY OF STOCHASTIC CONTROL SYSTEMS                                                               3861
+
+
+
+[36]  J.-W. Lee and G. E. Dullerud, “Uniform stabilization of discrete-time                       Xiang Yin (Member, IEEE) was born in Anhui,
+     switched and Markovian jump linear systems,” Automatica, vol. 42, no. 2,                         China, in 1991. He received the B.Eng. degree
+     pp. 205–218, 2006.                                                                                      in electrical engineering from Zhejiang Univer-
+[37] R. E. Kalman, “On the general theory of control systems,” in Proc 1st Int.                                    sity, Hangzhou, China, in 2012, and the M.S.
+     Conf. Autom. Control, Moscow, Russia, 1960, pp. 481–492.                               and Ph.D. degrees in electrical engineering from
+[38]  H.-F. Chen, “On stochastic observability and controllability,” Automatica,                          the University of Michigan, Ann Arbor, MI, USA,
+      vol. 16, no. 2, pp. 179–190, 1980.                                                                       in 2013 and 2017, respectively.
+[39] G. Chen, C. Fan, J. Sun, and J. Xia, “Mean square exponential stability                          Since 2017, he has been with the Department
+      analysis for Itô stochastic systems with aperiodic sampling and multiple                             of Automation, Shanghai Jiao Tong University,
+      time-delays,” IEEE Trans. Autom. Control, vol. 67, no. 5, pp. 2473–2480,                        Shanghai, China, where he is currently an As-
+    May 2021.                                                                                 sociate Professor. His research interests include
+[40] G. Chen, G. Du, J. Xia, X. Xie, and J. H. Park, “Controller synthesis   formal methods, discrete-event systems, and cyber-physical systems.
+      of aperiodic sampled-data networked control system with application to      Dr. Yin was the IEEE Conference on Decision and Control (CDC)
+      interleaved ﬂyback module integrated converter,” IEEE Trans. Circuits   Best Student Paper Award Finalist in 2016. He is serving as the Cochair
+      Syst. I, Reg. Papers., vol. 70, no. 11, pp. 4570–4580, Nov. 2023.            of the IEEE CSS Technical Committee on Discrete Event Systems, an
+[41] G. Chen, J. Xia, J. H. Park, H. Shen, and G. Zhuang, “Sampled-data   Associate Editor for the Journal of Discrete Event Dynamic Systems:
+     synchronization of stochastic Markovian jump neural networks with time-   Theory & Applications, and a Member of the IEEE CSS Conference
+     varying delay,” IEEE Trans. Neural Netw. Learn. Syst., vol. 33, no. 8,    Editorial Board.
+     pp. 3829–3841, Aug. 2021.
+[42]  I. Chadès, G. Chapron, M.-J. Cros, F. Garcia, and R. Sabbadin, “MDPtool-                                                                        Dimos V. Dimarogonas (Fellow, IEEE) was
+     box: A multi-platform toolbox to solve stochastic dynamic programming                                                                                      born  in  Athens,  Greece. He  received  the
+     problems,” Ecography, vol. 37, no. 9, pp. 916–920, 2014.                                                                                       diploma degree in electrical and computer engi-
+[43] M. Zamani, P. Mohajerin, R. Esfahani, A. M. Abate, and J. Lygeros,                                                                                           neering and the Ph.D. degree in mechanical en-
+     “Symbolic control of stochastic systems via approximately bisimilar ﬁnite                                                                                               gineering from the National Technical University
+      abstractions,” IEEE Trans. Autom. Control, vol. 59, no. 12, pp. 3135–3150,                                                                                                        of Athens, Athens, Greece, in 2001 and 2007,
+     Dec. 2014.                                                                                                        respectively.
+[44] D. N. Tran, B. S. Rüffer, and C. M. Kellett, “Convergence properties for                                                                                Between 2007 and 2010, he held Postdoc-
+      discrete-time nonlinear systems,” IEEE Trans. Autom. Control, vol. 64,                                                                                                                toral positions with the Department of Auto-
+     no. 8, pp. 3415–3422, Aug. 2018.                                                                                           matic Control, KTH Royal Institute of Technol-
+[45] A. Lavaei, S. Soudjani, and M. Zamani, “From dissipativity theory to                                                                                                 ogy, Stockholm, Sweden, and the Laboratory for
+     compositional construction of ﬁnite Markov decision processes,” in Proc.                                                                         Information and Decision Systems, Massachusetts Institute of Technol-
+     21st Int. Conf. Hybrid Syst., Comput. Control, 2018, pp. 21–30.                                                                          ogy, Cambridge, MA, USA. He is currently a Professor with the Division
+[46] C. Canudas-de Wit, L. L. Ojeda, and A. Y. Kibangou, “Graph constrained-                                                                               of Decision and Control Systems, School of Electrical Engineering and
+   CTM observer design for the Grenoble south ring,” IFAC Proc. Vols.,                                                            Computer Science, KTH Royal Institute of Technology. His current re-
+      vol. 45, no. 24, pp. 197–202, 2012.                                                                  search interests include multiagent systems, hybrid systems and con-
+[47]  S. Soudjani, C. Gevaerts, and A. Abate, “FAUST2: Formal abstractions                                                                                                   trol, robot navigation and manipulation, human–robot interaction, and
+      of uncountable-state stochastic processes,” in Tools and Algorithms for                                                                 networked control.
+      the Construction and Analysis of Systems (Lecture Notes in Computer                                                                               Dr. Dimarogonas serves as an Associate Editor for Automatica and a
+      Science), vol. 9035. Berlin, Germany: Springer, 2015, pp. 272–286.                                                                     Senior Editor for IEEE TRANSACTIONS ON CONTROL OF NETWORK SYS-
+[48] M. Kwiatkowska, G. Norman, and D. Parker, “Prism: Probabilistic sym-                                                                  TEMS. He was the recipient of the ERC starting Grant in 2014, the
+      bolic model checker,” in TOOLS. Berlin, Germany: Springer, 2002,                                               ERC Consolidator Grant in 2019, and the Knut och Alice Wallenberg
+     pp. 200–204.                                                        Academy Fellowship in 2015.
+[49]  I. Tkachev and A. Abate, “On inﬁnite-horizon probabilistic properties
+     and stochastic bisimulation functions,” in Proc IEEE Conf Decis. Control,
+     2011, pp. 526–531.                                                                   Majid Zamani (Senior Member, IEEE) re-
+[50] R. Durrett, Probability: Theory and Examples, vol. 49. Cambridge, U.K.:                         ceived the B.Sc. degree in electrical engineer-
+     Cambridge Univ Press, 2019.                                                                  ing from the Isfahan University of Technology,
+                                                                                                   Isfahan, Iran, in 2005, the M.Sc. degree in elec-
+                                                                                                                           trical engineering from the Sharif University of
+                                                                                            Technology, Tehran, Iran, in 2007, and the M.A.
+                                                                                    degree in mathematics and the Ph.D. degree
+                                                                                                                in electrical engineering from the University of
+                                                                                                          California, Los Angeles, CA, USA, both in 2012.
+                                                                                Between September 2012 and December
+                    Siyuan Liu (Graduate Student Member, IEEE)                        2013, he was a Postdoctoral Researcher with
+                      received the B.E. degree in automation science   the Delft Center for Systems and Control, Delft University of Technology,
+                   and the M.E. degree in control engineering from    Delft, Netherlands. From 2013 to 2014, he was an Assistant Professor
+                    Beihang University, Beijing, China, in 2014 and   with the Design Engineering Department, Delft University of Technology.
+                     2017, respectively, and the Ph.D. degree in elec-   From 2014 to 2019, he was an Assistant Professor with the Department
+                              trical and computer engineering from the Tech-    of Electrical and Computer Engineering, Technical University of Munich,
+                          nical University of Munich, Munich, Germany, in   Munich, Germany. He is currently an Associate Professor with the Com-
+                     2022.                                            puter Science Department, University of Colorado Boulder, Boulder,
+                   She was a Research Assistant with the Hybrid   CO, USA. He is also a guest Professor with the Computer Science
+                       Control Systems Lab, Ludwig-Maximilian Uni-   Department, Ludwig Maximilian University of Munich, Munich, Germany.
+                          versity of Munich, Munich. In 2021, she was a   His research interests include veriﬁcation and control of hybrid systems,
+visiting Researcher with the KTH Royal Institute of Technology, Stock-   embedded control software synthesis, networked control systems, and
+holm, Sweden, where she is currently a Postdoctoral Research Fellow   incremental properties of nonlinear control systems.
+with the Division of Decision and Control Systems. Her current research      Dr. Zamani was the recipient of the George S. Axelby Outstanding
+interests include formal veriﬁcation and control of hybrid systems, multi-   Paper Award from the IEEE Control Systems Society in 2023, the
+agent systems, and compositional analysis of large-scale cyber-physical  NSF Career award in 2022, and the ERC Starting Grant and Proof of
+systems.                                                       Concept Grant from the European Research Council in 2018 and 2023,
+                                                                               respectively.

@@ -1,0 +1,455 @@
+               Opacity Enforcing Supervisory Control
+                                                       ⋆                 using Non-deterministic Supervisors
+
+                              Yifan Xie ∗Xiang Yin ∗Shaoyuan Li ∗
+
+                    ∗Department of Automation, Shanghai Jiao Tong University, Shanghai
+                        200240, China. (E-mail: {xyfan1234,yinxiang,syli}@sjtu.edu.cn)
+
+
+          Abstract: In this paper, we investigate the enforcement of opacity via supervisory control in
+           the context of discrete-event systems. A system is said to be opaque  if the intruder, which
+               is modeled as a passive observer, can never infer conﬁdentially that the system is at a secret
+             state. The design objective is to synthesize a supervisor such that the closed-loop system is
+          opaque even though the control policy is publicly known. We propose to use non-deterministic
+            supervisors, provides a set of control decisions at each instant, to enforce opacity. Such a non-
+            deterministic control mechanism can enhance the plausible deniability of the controlled system
+            as the online control decision cannot be implicitly inferred from the control policy. We provide
+          an eﬀective approach to synthesize a non-deterministic opacity-enforcing supervisor. We show
+           that non-deterministic supervisors are strictly more powerful than deterministic supervisors.
+
+          Keywords: Opacity, Supervisory Control, Discrete Event Systems.
+
+
+                    1. INTRODUCTION                    event sets. However, it needs to assume that the control
+                                                             policy is not publicly known.
+We  investigate an  information-ﬂow  security  property                                                             All existing works on opacity-enforcing supervisory control
+called opacity in the context of Discrete-Event Systems.                                                            considers deterministic supervisors. Such a deterministic
+Opacity is a conﬁdential property capturing whether or                                                    mechanism, however, may decrease the plausible deniabil-
+not the system can always plausibly deny the execution                                                                    ity of the system. In this paper, we propose to use non-
+of a secret behavior. Due to the increasing demands for                                                             deterministic supervisors to enforce opacity. Unlike a de-
+security certiﬁcation in safety-critical systems, opacity has                                                               terministic supervisor that issues a speciﬁc control decision
+been extensively studied in the past years; see, e.g., Yin                                                            at each instant, a non-deterministic supervisor provides a
+and Lafortune [2017], Lafortune et al. [2018], Yin et al.                                                                  set of control decisions and the speciﬁc control decision
+[2019]. Given a system that is veriﬁed to be non-opaque,                                                           applied is chosen randomly via a “coin toss” manner. In
+one important problem  is to enforce opacity via some                                                          other words, even if the intruder knows the control policy,
+enforcement mechanisms. For example, Cassez et al. [2012]                                                                                it still does not know the speciﬁc control decision applied
+consider the enforcement of opacity via dynamic masks                                                            as it is decided randomly on-the-ﬂy. Compared with the
+that change the output information dynamically. Similarly,                                                             deterministic mechanism, the non-deterministic mechanis-
+Ji et al. [2019] uses insertion functions to enforce opacity                                m can signiﬁcantly enhance the plausible deniability of the
+by adding factitious events.                                                         system, and, therefore, is more likely to enforce opacity.
+One of the most widely investigated opacity enforcement                                               To synthesize a non-deterministic supervisor that enforces
+mechanism is via the supervisory control theory Badouel                                                               opacity, we propose a new information-state that not only
+et al. [2007], Saboori and Hadjicostis [2011]. In this frame-                                                           contains the state-estimate from the supervisor’s point of
+work, a supervisor is used to restrict the system such that                                                           view, but also contains the estimate of the supervisor’s
+the closed-loop system is opaque. For example, in Dubreil                                                          estimate from the intruder’s point of view. In other words,
+et al. [2010], the authors solve the opacity control problem                                                         the control decision should be made not only based on
+by assuming that all controllable events are observable                                                 what the supervisor thinks about the plant, but also based
+and the observation of the intruder  is included in the                                                  on what the intruder thinks about the supervisor. Based
+observation of the supervisor. In Yin and Lafortune [2016],                                                  on this information-state, we provide an eﬀective approach
+a uniform approach is provided to solve opacity-enforcing                                                          that synthesizes a non-deterministic supervisor that en-
+control problem without the assumption that controllable                                                                forces opacity. In particular, we show that using non-
+events are observable by assuming the intruder and the su-                                                             deterministic supervisors is strictly more powerful than us-
+pervisor have the same observation. Recently in Tong et al.                                                            ing deterministic supervisors, in the sense that, there may
+[2018], the authors provide an algorithm for synthesizing                                                                 exist a non-deterministic opacity-enforcing supervisor even
+an opacity enforcing control without any assumption on                                               when deterministic supervisors cannot enforce opacity. To
+                                                         the best of our knowledge, non-deterministic supervisors
+                                                      have only been applied to the standard supervisory con-
+⋆This work was supported by the National Natural Science Foun-
+                                                                    trol problem for safety and non-blockingness Inan [1994],
+dation of China (61803259, 61833012) and Shanghai Jiao Tong Uni-
+versity Scientiﬁc and Technological Innovation Funds..
+
+Kumar et al. [2005]; it has not yet been applied to the                                                                                                          1
+opacity-enforcement problem.                                                                   𝒄𝟏              𝒐𝟐
+                                                                                                              𝒄𝟐     𝒐𝟏
+                    2. PRELIMINARIES                                                  0      2  𝒐𝟑   5       6
+
+                                                                                                              𝒄𝟏     𝒐𝟐
+A DES is modeled as a deterministic ﬁnite-state automa-                               𝒄𝟐              𝒐𝟏
+ton G = (X, Σ, δ, x0), where X is the ﬁnite set of states,                                   3
+Σ is the ﬁnite set of events, δ : X × Σ →X is the partial
+transition function, where δ(x, σ) = y means that there   Fig. 1. System G with Σc = {c1, c2}, Σo = {o1, o2, o3},
+is a transition labeled by event σ from state x to y, and     XS = {0, 5}.
+x0 ∈X is the initial state. For simplicity, we write δ(x, s)
+as δ(s) when x = x0. The language generated by G is   by URγ(m) the unobservable reach of m under control
+denote L(G).                                                decision γ ∈Γ, i.e.,
+                                               URγ(m) = {δ(x, w) ∈X : x ∈m, w ∈(Σuo ∩γ)∗}.  (1)When the system is partially observed, Σ is partitioned
+into two disjoint sets: Σ = Σo ˙∪Σuo, where Σo is the set  We also denote by NXσ(m) the observable reach of m upon
+of observable events and Σuo  is the set of unobservable   the occurrence of an observable event σ ∈Σo, i.e.,
+events. We denote by P  : Σ∗→Σ∗o the natural projection          NXσ(m) = {δ(x, σ) ∈X : x ∈m}.         (2)
+from Σ to Σo. The natural projection is also extended to
+P : 2Σ∗→2Σ∗o.                                                               3. ENFORCING OPACITY USING
+                                               NON-DETERMINISTIC SUPERVISORSIn the framework of supervisory control, we assume that
+the events set is further partitioned as Σ = Σc ˙∪Σuc, where
+                                                            3.1 Motivating ExampleΣc  is the set of controllable events and Σuc  is the set
+of uncontrollable events. A control decision γ ∈2Σ is a
+set of events such that Σuc ⊆γ, namely uncontrollable   Example 1. Let us consider system G shown in Fig. 1 with
+events can never be disabled. We deﬁne Γ =  {γ ∈   Σo = Σuc = {o1, o2, o3} and XS = {0, 5}. This system is
+2Σ  : Σuc ⊆γ} as the set of control decisions. Then a   not opaque since upon the occurrence of o3, the intruder
+deterministic supervisor  is a function S  : P(L(G)) →Γ.   knows for sure that the system is at secret state 5.
+The language generated by the controlled system, denoted                                                       For this system, we cannot even synthesize a deterministic
+by L(S/G), is deﬁned recursively in the usual manner; see,                                                            supervisor to enforce  opacity. To  see  this  clearly,  let
+e.g, Cassandras and Lafortune [2008] (page 139).                                                        us evaluate what the supervisor can do  initially. We
+We assume that system G has a “secret”, which is modeled   have Γ = {∅, {c1}, {c2}, {c1, c2}}. 1 Clearly, the supervisor
+as a set of secret states XS ⊆X. Furthermore, we consider   cannot choose ∅as the initial control decision; otherwise
+a passive intruder having the following capabilities:          secret state 0 will be the only reachable state. Also, the
+                                                            supervisor cannot make {c1}  initially. This  is because,
+ A1 The intruder knows the system model;               under this control decision and by observing event o1, the
+ A2 The intruder can observe the occurrences of observ-   intruder knows for sure that the system is at state 5 which
+     able events.                                                                         o1                                 o1                                                                               is reached via 1 −→5. Note that transition 3 −→6 cannot
+Such an intruder is essentially an “eavesdropper” and we   provide the plausible deniability as state 3 is not reachable
+say that system G is opaque w.r.t. XS and Σo if           under {c1} as c2 is disabled initially. For the same reason,
+                                                  making {c2} initially will also reveal the secret. Finally,(∀s∈L(G) : δ(s)∈XS)(∃t∈L(G) : δ(t) /∈XS)[P(s) = P(t)].
+                                                              decision {c1, c2} is also problematic initially as it makes
+That is, the intruder cannot infer for sure that the system                                                        o3
+                                                               state 2 reachable from which transition 2 −→5 will also
+is in a secret state based on the information ﬂow.
+                                                              reveal the secret. Therefore, we cannot enforce opacity for
+When the original system is not opaque, one approach    this system using a deterministic supervisor.
+is to design a supervisor S such that the closed-loop
+                                                      However, one can enforce opacity using the following con-
+system S/G is opaque; this is referred to as the opacity-
+                                                                    trol mechanism. Initially, the supervisor randomly chooses
+enforcing control problem. In this setting, however, the
+                                                                either  it decides to enable c1 or to enable c2, but notimplementation of such a supervisor may become a public
+                                                          both. In other words, the control policy initially is a set
+information. To capture this severe scenario, we assume:
+                                                            {{c1}, {c2}} and the speciﬁc choice is made randomly on-
+ A3 The intruder knows the functionality of the supervi-   the-ﬂy. Therefore, upon the occurrence of o1 or o2, the
+     sor, i.e., the control policy.                             intruder does not know whether this event is from state 1
+                                                            or from state 3 since it does not know whether or not the
+Note that this knowledge together with the assumption
+                                                                         initial control decision is {c1} or {c2}. On the other hand,
+that the intruder and the observer both observe Σo imply                                                               since c1 and c2 will not be enabled simultaneously, state 2
+that the intruder knows precisely the control decision ap-
+                                                                               is not reachable; hence, event o3, which reveals the secret,
+plied at each instant. Formally, we say that a deterministic                                                                    will also not occur.                      2
+supervisor S : P(L(G)) →Γ enforces opacity on G if for
+any string s ∈L(S/G) such that δ(s) ∈XS, there exists a  The above example shows that using non-deterministic
+string t ∈L(S/G) such that δ(s) /∈XS and P(s) = P(t).    control mechanism is more powerful than the deterministic
+Finally, we introduce some operators that will be used    1 For the sake of simplicity, uncontrollable events are omitted in each
+in this paper. Given a set of states m ∈2X, we denote    control decision, i.e., ∅standards for {o1, o2, o3} in this example.
+
+one for the purpose of enforcing opacity. Using a non-                · γ1σ1 . . . γnσn ∈Le(SN/G); and
+deterministic decision framework will, on the one hand,                · σ1 . . . σnσn+1 ∈L(G); and
+enhance the plausible deniability of the secret behavior of                · σn+1 ∈γn+1; and
+the system and, on the other hand, decrease the conﬁden-                  {γn}                             if σn ∈Σuo
+                                                                                                           · γn+1 ∈tiality of the intruder’s knowledge about the system.                                                               SN(O(γ1σ1 . . . γnσn))   if σn ∈Σo
+
+3.2 Non-deterministic Supervisor                     The intuition of the above deﬁnition is as follows. At each
+                                                                instant,  if no observable event occurs, then the applied
+Compared with a deterministic supervisor that issues a   control decision should not change. On the other hand,
+speciﬁc control decision at each instant, a non-deterministic    if a new observable event occurs, then the supervisor may
+supervisor works as follows. At each instant, the non-   choose a speciﬁc control decision from the set of all possible
+deterministic supervisor provides a set of possible control   control decisions provided by SN.
+decisions. Then  it non-deterministically picks a speciﬁc
+                                                       For any extended string ρ = γ1σ1 . . . γnσn ∈(ΓΣ)∗, wecontrol decision from this set in a “coin-toss” manner. In
+                                                       denote by ρ|Σ the projection to Σ∗, i.e., ρ|Σ = σ1 . . . σn.other words, the control policy only determines a set of
+                                   A string s ∈Σ∗is said to be generated by SN/G if thereallowed decisions, but the speciﬁc control decision chosen
+                                                                  exists an extended string ρ ∈Le(SN/G) such that ρ|Σ = s.is unknown a priori, which is a realization under the policy.
+                                      We deﬁne L(SN/G) = {ρ|Σ ∈Σ∗: ρ ∈Le(SN/G)} as theTherefore, the supervisor makes decision not only based on
+                                                        language generated by the closed-loop system.observable events, but also depends on the speciﬁc control
+decisions chosen along the trajectory.                       Therefore, when an extended string ρ ∈Le(SN/G)  is
+                                                           generated, the supervisor observes O(ρ). Then for anyTo deﬁne the “history” of the supervisor, we introduce
+                                                           observable extended string ρ ∈O(Le(SN/G)), we deﬁnethe notion of the extended string which is an alternating
+sequence of control decisions and events in the form of                         ∃ρ′ ∈Le(SN/G) ∩({ϵ} ∪(ΓΣ)∗(ΓΣo))                                                                    ˆESN (ρ)=  δ(ρ′|Σ):           ρ = γ1σ1γ2σ2 . . . γnσn ∈(ΓΣ)∗,                                                              s.t. O(ρ′) = ρ
+                                                                                                                       (4)where γi ∈Γ is the ith selected control decision and σi ∈γi
+is the ith event. Since some events are unobservable for the   ESN (ρ)={δ(ρ′|Σ) : ∃ρ′ ∈Le(SN/G) s.t. O(ρ′) = ρ}.    (5)
+supervisor, we deﬁne a mapping                                                 That  is, ˆESN (ρ)  is the state-estimate of the supervisor
+          O : (ΓΣ)∗→(ΓΣo)∗,                   immediately after observing an observable event, while
+such that, for any extended string, it erases               ESN (ρ) is the state-estimate of the supervisor with the
+                                                           observable  tile included. These state estimates can be
+  • each unobservable event together with its successor                                                  computed recursively as follows Yin and Lafortune [2016]:
+     control decision; and
+  • the successor control decision of the last observable     • ˆESN (ϵ) = {x0};
+     event.                                              • For any ρ = ρ′γσ ∈O(Le(SN/G)), we have
+Formally, for any extended string                                                       · ESN (ρ′) = URγ(ˆESN (ρ′)); and
+               ρ = γ1σ1γ2σ2 . . . γnσn,                                            · ˆESN (ρ) = NXσ(ESN (ρ′)).
+let 1 ≤i1 < i2 <  · · · < ik ≤n be all indices such that                                                            3.3 Opacity of Non-deterministic Control Systems
+σij ∈Σo, then we have
+ O(ρ) =                                               (3)   In the deﬁnition of opacity of control systems, the intruder
+    ϵ                                                   if {i1, . . . , ik} = ∅    model has been speciﬁed by A1-A3. Here, we still consider
+                                                         the same intruder model, but we explain A3 more clearly
+   γ1(σi1γi1+1) · · · (σik−1γik−1+1)σik    if {i1, . . . , ik}̸ = ∅                                                                in the non-deterministic setting.
+Such an projected extended string is also referred to as a
+decision history. We force a projected extended string to   A3’ The intruder knows the functionality of the supervi-
+also end up with an (observable) event as this is the instant         sor. This means that it knows the set of all possible
+where the supervisor needs to make a new decision.              control decisions the supervisor may pick according to
+                                                              the control policy. However, it does not know which
+The non-deterministic supervisor is deﬁned as a function                                                                speciﬁc control decision the supervisor picks online.
+              SN : (ΓΣo)∗→2Γ
+                                                       This assumption is reasonable in many applications as long
+that maps a decision history O(ρ) ∈(ΓΣo)∗to a set of                                                            as the communication channel between supervisor and the
+possible control decisions. This deﬁnition essentially says                                                          actuator  is reliable. Then under this setting, when the
+that, although the control policy is non-deterministic, the                                                            supervisor observes ρ ∈O(Le(SN/G)), the intruder can
+supervisor knows the realization history, i.e., which speciﬁc                                                         only observes ρ|Σ ∈P(L(SN/G)). Therefore, the state
+decision was picked at each previous instant.                                                          estimate of the intruder essentially is more uncertainty,
+Deﬁnition 1. Let SN be a non-deterministic supervisor.   which needs to estimate all possible realizations consistent
+The set of extended strings generated by the closed-loop   with the control policy and the observation. Then for any
+system, denoted by Le(SN/G), is deﬁned recursively by:    observable string s ∈P(L(SN/G)), we deﬁne XI(s) as the
+                                                               state estimate of the intruder, i.e.,  • ϵ ∈Le(SN/G);
+  • γ1σ1 ∈Le(SN/G) if γ1 ∈SN(ϵ) and σ1 ∈γ1;             XI(s) = {δ(s′) : ∃s′ ∈L(SN/G) s.t. P(s′) = s}.    (6)
+  • For any ρ = γ1σ1 . . . γnσnγn+1σn+1 ∈(ΓΣ)∗, n ≥1,  Then opacity of control systems under non-deterministic
+    we have ρ ∈Le(SN/G), if and only if                   supervisors is deﬁned as follows.
+
+Deﬁnition 2. Let SN : (ΓΣo)∗→2Γ be a non-deterministic  which makes control decision based on the proposed infor-
+supervisor. We say the closed-loop system SN/G is opaque   mation state. Hereafter, we will restrict our attention to
+(w.r.t. Σo and XS) if ∀s ∈P(L(SN/G)):XI(s)̸ ⊆XS.       IS-based supervisors.
+                                               As we discussed earlier, the ﬁrst component can be com-Then the opacity-enforcing control synthesis problem is
+                                                     puted recursively based on ρ. However, the question  isformulated as follows.
+                                              how to compute the second component. To this end, we
+Problem 1. Given system G and secret states XS ⊆X,   should not only know the control decision for ρ, but should
+synthesize a nondeterministic supervisor SN  : (ΓΣo)∗→   also know the control decisions for those ρ′ such that
+2Γ such that SN/G is opaque.                                                          ρ|Σ = ρ′|Σ. In the remaining part of this section, we will
+                                                           elaborate on how ˆEI(ρ|Σ) can be computed recursively andThe estimate of the supervisor and the estimate of the
+                                                  by what information.intruder can be related as follows. Since the intruder
+observes  strictly  less than the supervisor,  its estimate
+                                                            4.2 Micro/Macro States and Decisionsof the system  is  essentially the union  of  its estimate
+of all possible supervisor’s knowledge about the system.
+To see this more clearly, for any observable string s ∈   Before we proceed further, we deﬁne some necessary con-
+P(L(SN/G)), we also deﬁne                                  cepts. First, we introduce the notion of micro-state, which
+                                                                               is used to represent the knowledge of supervisor.
+  ˆEI(s) = {ˆESN (ρ) ∈2X : ρ ∈O(Le(SN/G)) s.t. ρ|Σ = s}                                                       Deﬁnition 4. (Micro-State) A micro-state m ∈2X  is a                                                        (7)
+                                                                 set of states and we deﬁne M = 2X as the set of micro-
+ EI(s) = {ESN (ρ) ∈2X : ρ ∈O(Le(SN/G)) s.t. ρ|Σ = s}     states. An augmented micro-state m+ = (m, γ) ∈2X × Γ
+                                                        (8)    is a micro-state augmented with a control decision and we
+as the intruder’s estimate of the state-estimations of the   deﬁne M + = 2X ×Γ as the set of augmented micro-states.
+supervisor. Then we have the following result.
+                                                    Then, we deﬁne the notion of macro-state, which is used to
+Proposition 1. For any s ∈P(L(SN/G)), we have                                                            represent the knowledge of intruder about the supervisor.
+                  XI(s) = ∪EI(s).                      Deﬁnition 5. (Macro-State) A macro-state m = {m1, m2,
+                                                                                                . . . , mn} ⊆2X is a set of micro-states and and we deﬁne
+      4. INFORMATION STATE AND ITS FLOW    M = 22X as the set of macro-states. An augmented macro-
+                                                                 state m+ = {(m1, γ1), (m2, γ2), . . . , (mn, γn)} ⊆2X × Γ
+4.1 Proposed Information Structure                                 is a set of augmented micro-states and we deﬁne M+ =
+                                                  22X×Γ as the set of augmented macro-states.
+In the deterministic control problem, it is known that 2X is
+suﬃcient to realize an opacity-enforcing supervisor. That   In order to estimate the knowledge of the intruder, we
+is, a supervisor can be represented as S  : 2X →Γ which   should not only know the decision of the supervisor at a
+recursively estimates the state of the system and makes   speciﬁc micro-state, but also should know the decisions at
+decision based on the estimate.                            other micro-states in the same macro-state, which means
+                                                          that these micro-states are indistinguishable from theIn the non-deterministic control problem, the supervisor
+                                                               intruder’s point of view. This leads to the notion of macro-and the intruder observe diﬀerent information. Hence, the
+                                                                control-decision.supervisor needs to make decision based on both the state
+estimates of itself and that of the intruder. To separate the   Deﬁnition 6. (Macro-Control-Decision) A macro-control-
+observation of the supervisor and the intruder, we propose   decision is a set in the form of
+the following information-state space                       d = {(m1, Γ1), (m2, Γ2), . . . , (mn, Γn)} ⊆2X × 2Γ,
+                     I := 2X × 22X.                     where each (mi, Γi) is a pair of micro-state and a non-
+                                                             deterministic control decision (a set of control decisions).Intuitively, the ﬁrst component aims to represent the state
+estimate of supervisor, while the second component aims  We denote byD=22X×2Γthe set of macro-control-decisions.
+to represent intruder’s knowledge of the supervisor.
+                                                       Let m = {m1, m2, , . . . , mn} ∈M be a macro-state and
+Formally, given a non-deterministic supervisor SN and let   d ∈D be a macro-control-decision. We say that d  is
+ρ ∈O(Le(SN/G)) be a decision history observed by the   compatible with m if it is in the form of
+supervisor. We deﬁne                                                      d = {(m1, Γ1), (m2, Γ2), . . . , (mn, Γn)} ⊆2X × 2Γ,
+          I(ρ) = (ˆESN (ρ), ˆEI(ρ|Σ)) ∈2X × 22X                    i.e., d essentially assigns each micro-state mi ∈m a non-
+as the information-state reached by ρ under SN. Clearly,   deterministic control decision Γi ∈2Γ.
+we have ˆESN (ρ) ∈ˆEI(ρ|Σ) by deﬁnition.                The unobservable reach of a macro-control-decision d ∈D
+Deﬁnition 3. We say that a non-deterministic supervisor    is deﬁned by
+SN : (ΓΣo)∗→2Γ is information-state-based (IS-based) if    ⊙(d) = {(m′, γ) : ∃(m, Γ) ∈d, γ ∈Γ s.t. m′ = URγ(m)}.
+ ∀ρ, ρ′ ∈O(Le(SN/G)) : I(ρ)=I(ρ′) ⇒SN(ρ)=SN(ρ′).
+                                                       Let m+ be an augmented macro-state and σ ∈Σo be an
+In other words, an IS-based non-deterministic supervisor   observable event. Then the observable reach of m+ upon
+can be represented as                                     the occurrence of σ is deﬁned as
+                SN : I →2Γ                 NXσ(m+)d    = {m′ : ∃(m, γ)∈m+ s.t. m′ =NXσ(m)∧σ∈γ}.
+
+4.3 Information-Flow Analysis                                          m0 −→m+d0    0 −→m1σ1    −→.d1    . . −−→mnσn   −→m+dn   n ,     (14)
+Now, suppose that an IS-based non-deterministic supervi-   where m0 = {{x0}}, di = dSN (mi), m+i = ⊙(di) and
+                                                                                                           ).sor SN  : I →2Γ is given and let m = {m1, . . . , mk} be   mi+1 = NXσi+1(m+                     d           i
+a macro-state representing the intruder’s estimate of the
+supervisor’s knowledge. We deﬁne                        For any augmented macro-state m+, we deﬁne Ξ(m+) =
+                                       {m ∈M  : (m, γ) ∈m+} as the macro-state obtained by
+  dSN (m) = {(m1, SN(m1, m)), . . . , (mk, SN(mk, m))}                                                     removing the control decision components from m+. Then
+as the macro-control-decision made by IS-based supervisor                                                         the following theorem reveals that the above deﬁned states
+SN at macro-state m.                                     mn and Ξ(m+n ) are indeed ˆEI(σ1 . . . σn) and EI(σ1 . . . σn),
+Initially, the state-estimate of the supervisor is m0 = {x0}   respectively.
+and the intruder believes that this is the unique estimate   Theorem 1. Let SN be an IS-based non-deterministic su-
+of the system with estimate m0 = {m0}.                    pervisor and σ1 . . . σn ∈P(L(SN/G)) be an observable
+                                                                string available to the intruder. Let mn and m+n be statesThen the supervisor allows non-deterministic control de-
+                                                       induced by σ1 . . . σn and SN according to Equation (14).cision Γ0 = SN(ϵ) = SN(m0, m0). Note that, we have
+pre-speciﬁed that the supervisor is IS-based. Therefore, we  Then we have (i) mn = ˆEI(s); and (ii) Ξ(m+n ) = EI(s).
+denote the control decision information at this instant by   Example 2. Let us consider system G in Figure 1. We
+a macro-control-decision dSN (m0) = {(m0, SN(m0, m0))},   consider a non-deterministic supervisor SN deﬁned by
+which means that “the supervisor will make control deci-   ∀ρ ∈(ΓΣo)∗: SN(ρ) = {{c1}, {c2}}. Clearly. SN  is IS-
+sion if its state-estimate is m0”. Note that, at this instant,   based. Initially, the supervisor’s estimate  is m0 = {0}
+dSN (m0) is a singleton as the intruder does not yet have   and the intruder’s estimate of the supervisor  is m0 =
+ambiguity about the supervisor, i.e., m0 = {m0}.           {{0}}. The ﬁrst macro-control decision  is dSN (m0) =
+                                                            {({0}, {{c1}, {c2}})}. Then the intruder’s knowledge  is
+Once the allowed decision set Γ0 is speciﬁed, the supervisor                                                    updated to m+0 = {({0, 1}, {c1}), ({0, 3}, {c2})} accordingwill pick a concrete control decision in it. The intruder
+                                                            to Eq. (9).  If event o1  is observed, then the intruderdoes not know which decision is chosen while the super-
+                                                     update its knowledge to m1 = {{5}, {6}} according tovisor knows. Suppose that Γ0 = {γ10, . . . , γk0} contains k                                                      Eq. (10), which means that the intruder guesses that the
+control decisions. Then the intruder’s knowledge about the
+                                                              supervisor’s state-estimate is either {5} or {6} based on
+supervisor is
+                                                         the information available.
+    m+0 = ⊙(dSN (m0))                             (9)
+         ={(URγ10(m0), γ10), . . . , (URγk0 (m0), γk0)}                 5. SUPERVISOR SYNTHESIS PROCEDURE
+        ={(m10, γ10), . . . , (mk0, γk0)},                       5.1 Bipartite Transition System
+which means that the supervisor’s estimate (with the
+unobservable tile) is possibly URγi0(m0) and the control  By the analysis in the previous section, we see that the
+decision applied is γi0. Note that, the supervisor knows   update of the intruder’s knowledge consists of two steps:
+which augmented micro-state (mi0, γi0) it is at precisely.     one is when the supervisor picks a macro-control-decision
+                                                  and the other is when a new observable event occurs. To
+Then when a new observable event σ ∈Σo occurs, and the   separate these two steps, we adopt the idea of the bipartite
+intruder updates its knowledge to                            transition system proposed in Yin and Lafortune [2016].
+        m1 = NXσ(m+                               ) = {m11, . . . , mp2}.        (10)   Deﬁnition 7. A generalized  bipartite  transition system      d     0
+                                                (G-BTS) T w.r.t. G is a 7-tuple
+Now, let us assume that, after some steps, the intruder’s
+                                                      T = (QY , QZ, hYZ, hZY , Σo, D, y0).knowledge about the supervisor (immediately after the
+occurrence of an observable event) is                     where
+           mn = {m1n, . . . , mkn},              (11)     • QY ⊆M is a set of macro-states;
+                                                       • QZ ⊆M+ is the set of augmented macro-states;Note that the supervisor knows the exact state estimate,
+i.e., min ∈mn, and for each min, it allows control decisions     • hYZ  : QY × D →QZ is the transition function from
+Γi = SN(min, mn). Therefore, the corresponding marco-      Y -states to Z-states satisfying: for any hYZ(m, d) =
+                                             m+, we havecontrol-decision is
+                                                                                                           · d is compatible with m; and
+dSN (mn)={(m1n, SN(m1n, mn)), . . . , (mkn, SN(mkn, mn))}.                                                                                                           · m+ = ⊙(d).
+                                                     (12)
+                                                       • hZY  : QZ × Σo →QY  is the transition function from
+Then the intruder’s knowledge about the supervisor by        Z-states to Y -states satisfying: for any hZY (m+, σ) =
+adding this control information becomes                  m, σ ∈Σo, we have
+          m+n = ⊙(dSN (mn)),              (13)                 · m = NXσ(m+).                       d
+which is an augmented marco-state containing at most     • D is the set of macro-control-decisions;
+Pki=1 |S(min, mn)| augmented micro-states.                  • Σo is the set of observable events of system G;
+                                                       • y0 = {{x0}} ∈QY  is the initial Y -state.
+Based on the above discussion, suppose that the intruder
+observes σ1 . . . σn ∈P(L(SN/G)) and by knowing the fact  The G-BTS essentially captures the information-ﬂow ana-
+that SN is an IS-based supervisor, it induces the following   lyzed in Section 4. Speciﬁcally, at each Y -state, the IS-
+sequence                                               based supervisor makes a macro-control-decision d and
+
+            𝒔𝟏𝟎              𝒔𝟔                              Then given an IS-based non-deterministic supervisor SN,                                               𝒔𝟏                   𝒔𝟐
+            {5}                  𝒐𝟏     (                              0,1                                                                       ,                                    𝒅𝟓                                 𝛾2)                                                   𝒅𝟏                                               we say that SN is included in a consistent G-BTS T  if                                                      {{0}}                                                                          ( 0  , 𝛾1)                             (                              0,3                                                                       ,            {6}    𝒐𝟐                                 𝛾3)
+                                                   𝒅𝟒                      ∀ρ ∈P(L(SN/G)) : dSN (I(ρ)) ∈CT (I(ρ))
+          𝒔𝟏𝟒 𝒅𝟔             𝒔𝟓    𝒅𝟑         𝒔𝟒 𝒅𝟐               𝒔𝟑
+                                               As discussed  earlier, we  restrict our attention to  IS-          ( 5  , 𝛾1)          ( 0,3  , 𝛾3)            ( 0,1  , 𝛾2)          ( 0,1,2,3  , 𝛾4)
+                                  𝒐𝟐   𝒐𝟐                                                      𝒐𝟑                                                      based supervisors. Our approach for synthesizing non-          ( 6  , 𝛾1)                                               𝒐𝟏                          𝒐𝟏                                                             𝒐𝟐  𝒐𝟏
+                                                             deterministic opacity-enforcing supervisors is to (i) ﬁrst
+         𝑇∗
+                        𝒔𝟗  {{6}}            𝒔𝟖  {{5}}           𝒔𝟕  {{5,6}}           construct  a G-BTS  that  includes  as many  opacity-
+                            𝒅𝟕               𝒅𝟖               𝒅𝟗           enforcing supervisor as possible; and (ii ) then extract one
+                       𝒔𝟏𝟑 ( 6  , 𝛾1)        𝒔𝟏𝟐  ( 5  , 𝛾1)       𝒔𝟏𝟏  ( 5,6  , 𝛾1)          IS-based supervisor from it.           𝑇𝑡𝑜𝑡𝑎𝑙
+                                                    (a)
+                                               More speciﬁcally, if an IS-based supervisor is included in a
+                                           G-BTS T, then by Theorem 1, we know that the Z-state z
+                                0,1  , 𝛾2  ,   𝒐𝟏   {5},    {𝛾1}   {5},      𝛾1   5  , 𝛾1   ,
+                         𝛾2   ( 0,1  , 𝛾2)        5           ( 5  , 𝛾1)         ( 5  , 𝛾1)     reached is essentially the set of all possible state-estimates
+         {𝛾2, 𝛾3}                 ( 0,3  , 𝛾3)        6           ( 6  , 𝛾1)         ( 6  , 𝛾1)                    {0},                                                    of the supervisor. Moreover, by Proposition 1, we know
+    {0},                               𝒐𝟐
+                 ( 0,1  , 𝛾2)                                          that ∪Ξ(z) = XI(s), where s is the observation leading to   {{0}}
+                 ( 0,3  , 𝛾3)              𝒐𝟐                              the Z-state. Therefore, to make sure that the closed-loop
+                         𝛾3   0,3  , 𝛾3  ,          {6},    {𝛾1}   {6},      𝛾1   6  , 𝛾1   ,     system SN/G is opaque, it suﬃces to guarantee that, for
+                                 ( 0,1  , 𝛾2)        5           ( 5  , 𝛾1)         ( 5  , 𝛾1)
+                                      𝒐𝟏                                                   any Z-state z reached, we have
+                                 ( 0,3  , 𝛾3)                                        6           ( 6  , 𝛾1)         ( 6  , 𝛾1)
+                                                 (b)                                             ∪Ξ(z) ⊈XS.
+
+    𝑑1 = { 0  , 𝛾1  }                                             ( 5  , {𝛾1})                     To this end, we deﬁne                                𝑑6 =                                             (                                   6                                        =    =           {          0                               ,                       }                                                                                                    , {𝛾1})                                                                𝛾1                                                                                {𝑜1,                                                                                   𝑜2,                                                                           𝑜3}    𝑑2               𝛾2
+                                        =    =           {          0                               ,                                   6                                                                                                   ,                                                              𝛾2                                                                                {𝑜1,                                                                                   𝑜2,                                                                                      𝑜3, 𝑐1}                   Qreveal = {z ∈M+ : ∪Ξ(z) ⊆Xs}    𝑑3               𝛾3                       }             𝑑7 = {                                               𝛾1  }
+                                        =    =           {          0  ,                       =                                               {                                   5  ,                                                           }                                                              𝛾3                                                                                {𝑜1,                                                                                   𝑜2,                                                                                      𝑜3,                                                                                  𝑐2}    𝑑4                𝛾4                       }             𝑑8                                               𝛾1
+    =          0                               ,                                               {                                            5,6                                                                                                       ,                                                             }                                                                  𝛾4 =                                                                               {𝑜1,                                                                                   𝑜2,                                                                                      𝑜3,                                                                                                𝑐1,                                                                                     𝑐2}     as the set of secret-revealing Z-states.    𝑑5                  𝛾2, 𝛾3                                𝑑9 =                                                 𝛾1
+                                                          In order to synthesize an IS-based supervisor, ﬁrst, we
+Fig. 2. (a) An Example of the G-BTS, where rectangular   construct the largest G-BTS w.r.t G that enumerates all
+     states represent Y -states and oval states represent Z-   the feasible transitions satisfying the constraints of hYZ
+     states. (b) Decision diagram of the synthesized non-   and hZY . We denote such a largest G-BTS by Ttotal. Then,
+     deterministic supervisor.                        we need to delete all secret-revealing Z-states in Ttotal and
+                                                         obtain a new G-BTSthen moves to a Z-state by updating of the intruder knowl-
+edge via unobservable reaches under the issued macro-                T0 = Ttotal↾(QY ∪QZ)\Qreveal,
+control-decision d. When a new observable event σ ∈Σo   where T↾Q denotes the G-BTS obtained by restricting the
+occurs at a Z-state, we move to a Y -state by computing   state-space of T to Q ⊆QY ∪QZ.
+the observable reach, and so forth.
+                                                      However, by deleting secret-revealing states, the resulting
+Example 3. Again, we consider system G in Figure 1.                                           G-BTS may become inconsistent. Hence, we also need to
+An example of the G-BTS  is shown in Figure 2(a), in                                                              delete inconsistent states recursively. Speciﬁcally, we deﬁne
+which rectangular states represent Y -states and oval states                                                  an operator F that maps a G-BTS to a new G-BTS by:
+represent Z-states. States are named by s1, . . . , s14. The
+                                                       F : T 7→T↾QTconst,initial Y -state is s1 = {{0}}, from which macro-control-
+decisions d1, . . . , d5 that are compatible with s1 can be   and we deﬁne T ∗= limk→∞F k(T0) as the largest con-
+made. For example,  if the macro-control-decision made    sistent G-BTS in which there is no secret-revealing state.
+is d5 = {({0}, {{c1}, {c2}})}, then we move to Z-state  The correctness of the iteration is similar to the determin-
+s6 = ⊙(d5). From this state, observable events o1 and o2    istic case in Yin and Lafortune [2016]. We illustrate the
+can occur, and both lead to the same Y -state s10.          procedure by the following example.
+                                                  Example 4. Consider again system G in Figure 1. First,
+5.2 Synthesis of Nondeterministic Supervisors           we construct the largest G-BTS Ttotal which is in fact the
+                                                             structure shown in Figure 2(a). For sake of simplicity, some
+Now, we present how  to  synthesize non-deterministic   macro-control-decisions with redundant information are
+opacity-enforcing supervisors. Given a G-BTS T, for any   omitted in Ttotal. For example, d = {({0}, {γ1, γ2})} is not
+Y -state y ∈QY , we deﬁne                                       listed at state s1, since γ1 ⊂γ2 and macro-control-decision
+          CT (y) := {d ∈D : hYZ(y, d)!}                d2  is suﬃcient enough to carry this information. Note
+                                                          that Z-states s2 and s12 are secret-revealing states sinceas the set of macro-control-decisions deﬁned at y in T.
+                                                     ∪Ξ(s2) = {0} ⊆XS and ∪Ξ(s12) = {5} ⊆XS. Therefore,Also, we say that a Y -state y is consistent  if CT (y)̸ = ∅;
+                                               we need to deleted states s2 and s12. However, this createsand a Z-state z is consistent if, for any σ ∈Σo, we have
+                                                              inconsistent states s8, which needs to be deleted. Again,
+   hZY (z, σ)! ⇔(∃(m, γ)∈z)[NXσ(m)̸ = ∅∧σ∈γ}].                                                                  this further creates inconsistent states s3, s4 and s5. So
+Intuitively, a Y -state is consistent if at least one macro-   we also need to delete them and obtain the ﬁnal structure
+control-decision is deﬁned and a Z-state is consistent  if  T ∗containing states s1,s6,s10 and s14, which is the largest
+all feasible events are deﬁned. Consistency is required for  G-BTS having no secret-revealing state.
+the purpose of control as the supervisor should be able to
+provide a control decision for any observation. We denote   Based on T ∗, we synthesize an IS-based non-deterministic
+by QTconst the set of consistent states in T and we call T    supervisor as follows. First, we construct a sub-system of
+consistent if all reachable states are consistent.          T ∗such that at each Y -state, there is only one macro-
+
+control decision deﬁned. This can be done by a depth-   cision γ1 for both information-states ({5}, {{5}, {6}}) and
+ﬁrst-search or a breath-ﬁrst-search starting from the initial   ({6}, {{5}, {6}}). The overall decision diagram of the su-
+Y -state. Since we do not consider any other design objec-   pervisor included in Tsolu is shown in Figure 2(b).
+tive in this work, e.g., maximally-permissiveness or non-
+blockingness, we can just arbitrarily pick a macro-control                          6. CONCLUSION
+decision for each Y -state encountered, until we traverse the
+entire reachable space. We denote by Tsolu the resulting G-   In this paper, we proposed to use non-deterministic con-
+BTS, which includes a unique IS-based supervisor. Such                                                                    trol mechanism to enforce opacity. We showed that non-
+an included supervisor can be “encoded” as follows. The                                                             deterministic supervisors may successfully enforce opacity
+supervisor tracks its state estimate E(·) and ˆE(·) as well   even when deterministic supervisors fail to do so. Eﬀective
+as Y - and Z-states in Tsolu. At each decision making   approach was provided to synthesize a non-deterministic
+instant, suppose the state estimate is m ∈M and the   opacity-enforcing supervisor based on both the informa-
+Y -state is m, where we have m ∈m. Then the supervisor   tion of the supervisor and the information of the intruder.
+allows a a non-deterministic control decision Γ′ such that   This work makes the ﬁrst step towards the enforcement
+(m, Γ′) ∈d, where d is the unique macro-control decision    of opacity using non-deterministic supervisors. Note that,
+deﬁned at m in Tsolu. Then supervisor will randomly pick   in this paper, we restrict a priori the structure of the
+a control decision γ ∈Γ′ to apply and wait for the next   solution to IS-based supervisors. We conjecture that such a
+observation. The state tracked in T then moved to the    restriction is without loss of generality, but it still requires
+unique successor state and the estimate of the supervisor   further investigation.
+is updated more precisely based on the speciﬁc control
+decision γ applied. This decoding procedure is formally                                                    REFERENCES
+summarized by Algorithm 1.
+                                                        Badouel, E., Bednarczyk, M., Borzyszkowski, A., Caillaud,
+Algorithm 1 Encode-ND-Sup-BTS(Tsolu)                  B., and Darondeau, P. (2007).   Concurrent  secrets.
+                                                              Discrete Event Dynamic Systems, 17(4), 425–446.
+  1: ρ ←ϵ, ˆE(ρ) ←{x0} and y ←{{x0}}.                                                        Cassandras, C. and Lafortune, S. (2008). Introduction to
+  2: Deﬁne d be  the  macro-control-decision such  that                                                              Discrete Event Systems. Springer, 2nd edition.
+    CTsolu(y) = {d}                                                           Cassez, F., Dubreil, J., and Marchand, H. (2012). Synthe-
+  3: Deﬁne Γ′ ∈2Γ be the non-deterministic control deci-                                                                              sis of opaque systems with static and dynamic masks.    sion such that (ˆE(ρ), Γ′) ∈d                                                      Formal Methods in System Design, 40(1), 88–115.
+  4: Randomly pick γ ∈Γ′ and apply this control decision                                                            Dubreil,  J., Darondeau, P., and Marchand, H. (2010).
+  5: E(ρ) ←URγ(ˆE(ρ)) and z ←hYZ(y, d)                    Supervisory control for opacity. IEEE Trans. Automatic
+  6: while A new event σ ∈(Σo ∩γ) is observed do           Control, 55(5), 1089–1100.
+  7:     ˆE(ρ) ←NXγ(E(ρ)) and y ←hZY (z, σ)               Inan, K. (1994).   Nondeterministic supervision under
+  8:    ρ ←ργσ                                                  partial observations.  In 11th Int. Conf. Analysis and
+  9:    Deﬁne d be the macro-control-decision such that     Optim. Systems Discrete Event Systems, 39–48.
+    CTsolu(y) = {d}                                                   Ji, Y., Yin, X., and Lafortune, S. (2019). Enforcing opacity
+10:    Deﬁne Γ′ ∈2Γ be the non-deterministic control     by insertion functions under multiple energy constraints.
+    decision such that (ˆE(ρ), Γ′) ∈d                         Automatica, 108, 108476.
+11:    Randomly pick γ ∈Γ′ and apply this control   Kumar, R., Jiang,  S., Zhou, C., and Qiu, W. (2005).
+    decision                                              Polynomial synthesis of supervisor for partially observed
+12:    E(ρ) ←URγ(ˆE(ρ)) and z ←hYZ(y, d)                   discrete-event systems by allowing nondeterminism in
+13: end while                                                   control. IEEE Trans. Auto. Control, 50(4), 463–475.
+                                                           Lafortune, S., Lin, F., and Hadjicostis, C. (2018). On the
+Example 5. In our running example, we have T ∗= Tsolu
+                                                            ∗      history of diagnosability and opacity in discrete eventsince the macro-control-decision at each Y -state in T
+                                                            systems. Annual Reviews in Control, 45, 257–266.
+is already unique. Then we decode a non-deterministic
+                                                           Saboori, A. and Hadjicostis, C. (2011). Opacity-enforcing
+supervisor from Tsolu by Algorithm 1 as follows. Initial-                                                             supervisory strategies via state estimator constructions.
+ly, we have  ˆE(ϵ) = {0}, y = {{0}}, and d = d5 =    IEEE Trans. Automatic Control, 57(5), 1155–1165.
+{({0}, {γ2, γ3})}. Therefore, we have Γ′ = {γ2, γ3}, i.e., the   Tong, Y., Li, Z., Seatzu, C., and Giua, A. (2018). Current-
+supervisor can randomly choose to apply γ2 or γ3. Then,      state opacity enforcement in discrete event systems un-
+ﬁrst, we update the state in Tsolu to s6 = hYZ(s0, d5) =     der incomparable observations. Discrete Event Dynamic
+{({0, 1}, γ2), ({0, 3}, γ3)}. If γ2 is applied, then the state-     Systems, 28(2), 161–182.
+estimate  is to E(ϵ) = URγ2(ˆE(ϵ)) = {0, 1}; otherwise,   Yin, X. and  Lafortune,  S.  (2016).  A uniform  ap-
+it  is updated to E(ϵ) = URγ3(ˆE(ϵ)) = {0, 3}. Suppose     proach for synthesizing property-enforcing supervisors
+that decision γ2 is chosen. Then by observing o1, ﬁrst, we      for partially-observed discrete-event systems.  IEEE
+update the state-estimate to ˆE(γ2o1) = NXo1(E(ϵ)) = {5}.     Trans. Automatic Control, 61(8), 2140–2154.
+Also, we update the state in Tsolu to s10 = hZY (s6, o1) =   Yin, X. and Lafortune, S. (2017). A new approach for
+{{5}, {6}}. Again, we need to decode the control de-     the veriﬁcation of inﬁnite-step and k-step opacity using
+cision  for each information-state based on the unique     two-way observers. Automatica, 80, 162–171.
+macro-control-decision d6 deﬁned at s10. Here, note that   Yin, X., Li, Z., Wang, W., and Li, S. (2019). Inﬁnite-step
+for both  (5, {γ1}), (6, {γ1}) ∈d6, {γ1}  is a singleton.     opacity and K-step opacity of stochastic discrete-event
+This means that we will apply deterministic control de-     systems. Automatica, 99, 266–274.

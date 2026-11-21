@@ -1,0 +1,523 @@
+2022 American Control Conference (ACC)
+Atlanta, USA, June 8-10, 2022
+
+
+   To Transmit or Not to Transmit: Optimal Sensor Scheduling for
+        Remote State Estimation of Discrete-Event Systems
+
+
+                              Yingying Liu, Xiang Yin and Shaoyuan Li
+
+
+                                                   Ω  Abstract— This paper  considers  the problem  of optimal
+sensor scheduling for remote state estimation of discrete-event                 s ∈L(G)                              PΩ(s)
+systems. In this setting, the sensors observe events from the       Plant G              Sensor                              Receiver
+plant and transmit them to the receiver or estimator selectively.                                    Transmission switch
+The transmission mechanism decides to transmit the observed
+information or not according to an information transmission     Fig. 1.   Architecture of transmission mechanism, where Ωdenotes the
+                                                                             transmission transmission policy and PΩdenotes the information mappingpolicy. The receiver needs to have sufﬁcient information for
+                                                                       under policy Ω(see precise deﬁnitions in Section II).
+the purpose of decision-making. To solve this problem, we ﬁrst
+construct a non-deterministic dynamic observer that contains   synthesize an information transmission policy such that some
+all feasible information transmission policies. Then we show   given property holds. Instead of investigating the enforce-
+that the information updating rule of the dynamic observer   ment of speciﬁc objectives, e.g., control [8] or diagnosis [9],
+indeed yields the state estimate from the receiver’s point of                                                                   in this paper, we consider a particular class of properties
+view. Finally, we propose an approach to extract a speciﬁc
+                                                                 called Information-State-based (IS-based) properties  [10].information transmission policy, realized by a ﬁnite-state au-
+tomaton, from the dynamic observer while satisfying some   Roughly speaking, an IS-based property is a property that
+desired observation properties. A running example is provided   only depends on the current local information of the system.
+to illustrate the proposed procedures.                        To construct such a transmission mechanism, we syn-
+                                                                  thesize a non-deterministic dynamic observer that enforces                          I. INTRODUCTION
+                                                                       state disambiguation and contains all feasible information
+  Discrete-event systems (DES) is an importance class of
+                                                              transmission policies. It is ensured that the synthesis prob-
+engineering systems such as manufacturing systems and
+                                                    lem of a feasible information transmission policy is always
+autonomous robots [1], [2], [3]. In real world systems, events
+                                                                  solvable. We prove that the information updating rule of
+are sometimes unobservable due to the limited observation
+                                                                the dynamic observer indeed yields the state estimate of
+capacity. Therefore, the estimation of states for the system is
+                                                                the receiver. We also propose a method to extract a speciﬁc
+an important problem. Most works in partially-observed DES
+                                                             information transmission policy from the dynamic observer
+considers static observations, where all sensor readings are
+                                                           while ensuring the given IS-based properties. Moreover, to
+assumed to be sent to the user/receiver. However, in many
+                                                           reduce sensor-related costs caused by energy, bandwidth, or
+modern applications such as remote control [4], or remote
+                                                                  security constraints, we require that the sensors transmit as
+estimation [5], the sensors and the user of the information
+                                                     few events as possible.
+are physically  different and located remotely. Therefore,
+                                                    Our work is closely related to the so-called dynamic sensor
+the sensors can choose to transmit or not transmit  their
+                                                                   activation proposed in [11], [12], [13], [14], [15], [16]. In
+observations [6], [7].
+                                                                        this context, the sensors and the information user can the
+  In  this  paper, we  consider a remote  state  estimation
+                                                        same. By contrast, this paper considers the remote estimation
+problem of discrete-event systems. As shown in Fig.  1,
+                                                       problem where the sensor and the receiver are located at a
+we consider the scenario where the system makes observa-
+                                                        remote distance and thus be more complex and challenging.
+tions online through its sensors. The sensors can be turned
+                                                             Also, authors in [17], [18] investigate how to release the
+ON/OFF dynamically by a transmission switch, where the
+                                             maximum information to the public by a controller while
+switch decides whether  to transmit  its observation  to a
+                                                            ensuring opacity. This setting is similar to us. However, here
+receiver or not, according to an information transmission
+                                             we consider the IS-based property, which is not restricted
+policy. It is precisely because of such property that we do
+                                                                   to opacity and can formulate utilities such as diagnosability,
+not need to transmit one observable event all the time and
+                                                                       detectability, and distinguishability.
+only need to transmit  it when necessary (to satisfy some
+observational property).                                                                                 II. PRELIMINARIES AND PROBLEM FORMULATION
+  Then the receiver makes control decisions for the system
+                                                            A. System Modelbased on the transmitted information. Our objective is to
+                                         We consider a DES modeled by a deterministic ﬁnite-state
+  This  work  was  supported  by   the  National  Natural  Science
+Foundation   of  China  (62061136004,  62173226,  61833012)  and   automaton (DFA) G = (Q, Σ, δ, q0), where Q is a ﬁnite set
+the  National  Key  Research  and  Development  Program  of  China   of states, Σ is a ﬁnite set of events, δ: Q × Σ →Q is
+(2018AAA0101700). The authors are with the Department of Automation   a (partial) transition function, q0 ∈Q is the initial state.
+and Key  Laboratory  of System  Control and  Information  Processing,
+Shanghai  Jiao  Tong  University,  Shanghai  200240,  China.  E-mail:   In the usual way, δ can be extended to δ: Q × Σ∗→Q,
+{yingyingliu611,yinxiang,syli}@sjtu.edu.cn.       where Σ∗is the set of all ﬁnite-length strings, including the
+
+
+978-1-6654-5196-3/$31.00 ©2022 AACC                      4483
+
+
+   Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on December 19,2022 at 15:30:02 UTC from IEEE Xplore. Restrictions apply.
+
+empty string ε. The generated behavior of G is language     For any string s ∈L(G) generated by the system, we
+L(G) = {s ∈Σ∗: δ(q0, s)!}, where δ(q0, s)! means that   deﬁne EGΩ(s) := {δ(q0, t) ∈Q  : ∃t ∈L(G) s.t. PΩ(s) =
+δ(q0, s) is deﬁned. We denote Σq = {σ ∈Σ : δ(q, σ)!} the   PΩ(t)} as the state estimate of the receiver. Clearly, for
+set of events that are deﬁned at state q.                          strings s, t ∈L(G), if PΩ(s) = PΩ(t), then EGΩ(s) = EGΩ(t).
+ A string s1 ∈Σ∗is a preﬁx of s ∈Σ∗, written as s1 ≤s,  We deﬁne P Ω(s)−1  = {s′ ∈Σ∗: PΩ(s) = PΩ(s′)}.
+if there is a string s2 ∈Σ∗such that s1s2 = s. The length of      In this work, instead of considering speciﬁc objectives,
+a string s is denoted by |s|. The preﬁx closure of a language    e.g., control or diagnosis, we consider a particular class of
+L is the set L = {s ∈Σ∗: ∃t ∈L s.t. s ≤t}. For a    properties called Information-State-based (IS-based) proper-
+natural number n, let [1, n] = {1, . . . , n} denote the set of    ties [10]. The notion of an information state is deﬁned as a
+all natural numbers from 1 to n. Let Σo ⊆Σ, we denote by   subset IS ⊆Q of states of G and the set of all information
+P : Σ∗o →Σ∗the standard natural projection from Σo to Σ.    states is denoted by I = 2Q.
+                                                             Deﬁnition 1: Given an automaton G, an IS-based prop-B. Problem Formulation
+                                                                   erty ϕ  w.r.t. G  is a function ϕ  : 2Q →{0, 1}, where
+  We consider the scenario where the system G is equipped
+                                                          ∀i ∈2Q, ϕ(i) = 1 means that i satisﬁes this property. We
+with sensors that monitor the global system. As shown in
+                                                           say that sublanguage L ⊆L(G) satisﬁes ϕ w.r.t. G, which
+Fig.  1, the sensors observe global  events. They can be
+                                                                              is denoted by L |=G ϕ, if ∀s ∈L : ϕ(RG(s, L)) = 1, where
+turned ON/OFF dynamically by a transmission switch, where
+                                                   RG(s, L) = {δ(q0, t) ∈Q : ∃t ∈L(G) s.t. P(s) = P(t)}.
+the transmission switch decides, based on the observation
+                                                           For more details about IS-based property, the reader is re-
+history, whether to transmit this observation to a receiver
+                                                                 ferred to [10]. We will employ the distinguishability property
+or not. Here we consider a generic receiver, and it can be,
+                                                              as a running example to illustrate the results.
+e.g., a supervisor or a diagnoser, depending on the speciﬁc
+                                                    Our objective is to synthesize an information transmissionapplication. The receiver makes control decisions for the
+                                                               policy such that some given property holds. We deﬁne thesystem based on the obtained information. Such a decision
+                                                            Information Transmission Problem (IT Problem) as follows.mechanism  is formalized as an information transmission
+                                                        Porblem 1: Given a plant G = (Q, Σ, δ, q0) and a IS-policy. Let Σo ⊆Σ be the  set of events observed by
+                                                         based property ϕ  : 2Q →{0, 1}. Find an informationsensors. In this paper, we suppose all events are observable
+                                                              transmission policy Ω= (A, L) s.t.by sensors (full observation), i.e., Σo = Σ. The information
+                                                                                      (i) L(A) satisﬁes ϕ w.r.t. G, i.e., L(A) |=G ϕ;transmission policy is deﬁned by
+                                                                                        (ii) the sensors transmit as few events as possible.
+             Ω: Σ∗Σ →{Y, N},
+where Y and N are information transmission labels. Speciﬁ-        III. A GENERAL MOST COMPREHENSIVE DYNAMIC
+cally, for each observation sσ ∈Σ∗Σ, Ωwill decide whether                     OBSERVER
+to transmit the observation of σ,  i.e., Ω(sσ) = Y , or                                                           For implementation purposes, we ﬁrstly attach the infor-
+not Ω(sσ) = N. The above deﬁnition of the information                                                        mation transmission labels {Y, N} to the system G. Then
+transmission policy is history-dependent. Note that the ob-                                             we construct a dynamic observer that contains all possible
+servability of an event with different history may be different.                                                             information transmission policies. Finally, we formally show
+In practice, the information transmission policy needs to be                                                                     that the information updating rule of the dynamic observer
+implemented in ﬁnite memory, which can be represented as                                                           indeed yields the state estimate of the receiver.
+a pair (a ﬁnite transducer)
+           Ω= (A, L),                      (1)   A. Attach information transmission labels to the system
+where A =  (X, ΣA, η, x0)  is a DFA,  called a sensor    We attach the information transmission labels to the sys-
+automaton, such that (i) L(A) = Σ∗A; and (ii) ∀x ∈X, σ /∈   tem G, called labelled system, which can be represented as
+Σo : η(x, σ) = x, and L : X × ΣA →{Y, N} is a labelling   a nondeterministic ﬁnite-state automaton (NFA)
+function that determines whether the current observable event
+                                                           Gag = (˜Q, Σ, f, ˜Q0),                 (2)
+is transmitted or not. Here, we assume the event domain of
+A is Σ for the sake of simplicity, but it can only update its                                                     where
+sensor state upon the occurrences of its observable events in                                                                  •  ˜Q = Q × {Y, N}|Σ| is the set of states;
+ΣA. Also, for any σ ∈ΣA, L(x, σ) = Y means that the
+                                                                  • Σ is the set of events;
+occurrence of event σ will be transmitted at state x, while               Q˜                                                                  • f : ˜Q×Σ →2   is the partial transition function deﬁned
+L(x, σ) = N represents the opposite. Hereafter in the paper,                                                                  by: for any ˜q, ˜q′ ∈˜Q and σ ∈Σ,  ˜q′ ∈f(˜q, σ) if q′ =
+an information transmission policy will be considered as a
+                                                                     δ(q, σ), i.e., the labels of ˜q is free to change.
+pair Ω= (A, L) rather than a language-based mapping.                                                                  •  ˜Q0 = {q0} × {Y, N}|Σ|.  The projection based on a given information transmission
+policy Ωis recursively deﬁned by PΩ: L(G) →Σ∗        As shown above, the  state space of Gag  is deﬁned by
+                                                                  ˜Q = Q × {Y, N}|Σ|. For each state  ˜q ∈˜Q, we  list  all
+              (                         PΩ(s)σ,  if Ω(sσ) = Y ;           possible transmission decisions/labels of all events in Σ for    PΩ(ϵ) = ϵ; PΩ(sσ) =
+                         PΩ(s),  if Ω(sσ) = N.                    ˜q. Speciﬁcally, for each event σ, we have two transmission
+
+
+                                                       4484
+
+
+   Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on December 19,2022 at 15:30:02 UTC from IEEE Xplore. Restrictions apply.
+
+                                                        q5                        For any ˜q′ ∈˜Q reached unobservably from ˜q by p, we denote                                            σ1                    σ3
+                         σ2        σ3         σ2            σ2                         ˆQ(p) = {(q1, l1), (q2, l2), · · · , (qn+1, ln+1)}
+                      q4          q3          q0            q1                q2
+                                                            σ1                  the set of states reached unobservably from ˜q to ˜q′ by p. The
+               G
+                                                                      set of states that are unobservable reached from ˜q thus can
+                                                       be obtained by
+                                  σ1      q0Y Y Y
+                                      σ3                                                         S(˜q) = [  ˆQ(p)                  (4)                           q5       σ1
+                                σ1       q0Y Y N
+                          σ1                             σ1σ1     σ3        σ2                                                               p∈Up(˜q)                            σ1
+            σ3                                     σ3  q0Y NY σ2            σ1
+                                      σ3   σ2    σ2               A set ı is said to be unobservable reach-closed if for any                         σ3σ3                   σ2                                          σ2                                                               σ2                                                 σ2       q4Y                             σ3                                                    σ2                            N                                                                      states (qi, li) ∈ı, we have                                      σ3 q0NY                    σ2                                                                     q2Y                                             σ2
+                         q3Y                                                                   σ2                                                                       σ2σ2 q1Y σ2                         NN                                         q0Y        σ3    σ3                                     σ3                      σ2                                      σ3  σ2              σ1       σ1                     l(qi, σi) = N :  ∃(qj, lj) ∈ı s.t., f(˜qi, σi) = ˜qj.
+                             σ3
+                                            σ2                                                               σ2                    σ2        σ3                            N                               σ3       q0NY      q4N                                                             q2N        That is to say, for any state (qi, li) in ı, if the event σi deﬁned
+                                          σ2                      q3N     σ3             σ3                              q0NNY                                                   σ2 q1N     σ1                  at (qi, li) will not be transmitted, i.e., l(qi, σi) = N, then
+                                   σ3                            q0NNN                             there must exists a state (qj, lj) in  ı such that (qj, lj) is
+                                                             reachable by σi from (qi, li).                         Gag
+                                                            Consider the collection of  all subsets of S(˜q) that are
+Fig. 2.  System G and labelled system Gag. For simpliﬁcation, instead of
+                                                           unobservable reach-closed:listing the labels of all events to each state, we list the labels of events that
+are deﬁned at each state; namely, only 2|Σq| labels are listed at state q.
+                                                              UC(˜q) = {ı ⊆S(˜q) : ı is unobservable reach-closed}.  (5)
+decisions: transmit Y and not transmit N. These two deci-
+sions are attached at  ˜q. Similarly, We list the transmission        It is straightforward to verify that UC(˜q) is nonempty (˜q
+decisions of each event at each state in Gag.                 belongs) and is closed under arbitrary unions.
+  Example 1: Given  plant G  in  Fig.  2, we  attach  the      Let ı = {˜q1, . . . , ˜qn}. The subsets that are unobservable
+information  transmission  labels  {Y, N}  to G  to  con-   reach-closed are deﬁned by
+struct Gag  as deﬁned by  (2). The  initial  states of Gag                                                                       UC(ı) = [ UC(˜q).
+are  ˜q0 =  {q0} × {Y, N}|Σq0| =  {q0} × {Y, N}3 =                                                                                                                              ˜q∈ı
+{q0Y Y Y, q0Y Y N, q0Y NY, q0NY Y, q0Y NN, q0NNY,
+                                                           Moreover, there may be a decision conﬂict because forq0NNY, q0NNN} since there have three events (σ1, σ2, and
+σ3) to be deﬁned at q0. Similarly, we get the state space ˜Q =   each σ ∈Σ we can only choose either Y  or N for each
+                                              σ ∈Σ. Therefore, some states cannot occur simultaneously{q0Y Y Y, q0Y Y N, q0Y NY, q0NY Y, q0Y NN, q0NNY,
+                                                                   in S(˜q). We say two sequencesq0NNY, q0NNN, q1Y, q1N, q2Y, q2N, q3Y, q3N, q4Y, q4N,
+q5}. The constructed Gag is shown in Fig. 2.                 p =(q1, l1) −→(q2,σ1      l2) −→·σ2    · · −−→(qn+1,σn        ln+1)
+                                                                                              σ′1            σ′2       σ′m
+                                                                       p′ =(q′1, l′1) −→(q′2, l′2) −→· · · −−→(q′m+1, l′m+1)B. Construction of the dynamic observer
+
+                                                                are non-conﬂicting if  To give  all possible information policies, we construct
+a dynamic observer for Gag, which needs the following    ∀i ≤min{n, m} : (qi, li)̸ = (q′i, l′i) ⇒σ1 . . . σi̸ = σ′1 . . . σ′i
+deﬁnitions. In order to clearly give the transmission policy
+of each deﬁned event, we employ L to denote the set of all    We say  ı ⊆S(˜q)  is non-conﬂicting  if there exists a
+functions l : Σ →{Y, N}. The function l maps events in Σ    collection of u-paths P ⊆Up(˜q) such that each pair of upaths
+to the labels {Y, N}. Speciﬁcally, l(σ) = Y means the event    in it are non-conﬂicting and ı = S p∈P ˆQ(p).
+σ is transmitted by the sensor, and l(σ) = N represents the     Again consider the collection of all subsets of S(˜q) that
+opposite. For any two states ˜q = (q, l), ˜q′ = (q′, l′) ∈Gag    are non-conﬂicting:
+with  l, l′ ∈L, an unobservable path from  ˜q to  ˜q′  is a                                                               NC(˜q) = {ı ⊆S(˜q) : ı is non-conﬂicting}.
+sequence in Gag
+                                                                                     It can be veriﬁed that NC is nonempty and is closed under
+                 σ1                             σ2                                 σn
+   p = (q1, l1) −→(q2,                           l2) −→·                                                 · · −−→(qn+1,                                              ln+1),    (3)    arbitrary intersections. Similarly, let ı = {˜q1, . . . , ˜qn}. The
+                                                               subsets of ı that are non-conﬂicting are deﬁned by
+where ˜q = (q1, l1) and  ˜q′ = (qn+1, ln+1) such that, for all
+                                                                NC(ı) = [ NC(˜q).i = 1, . . . , n : li = l(σi) = N. We denote u-path(˜q, ˜q′) the
+set of unobservable paths (u-path) from ˜q to ˜q′ and say ˜q′ is                                             ˜q∈ı
+reached unobservably from ˜q by u-path(˜q, ˜q′). Thus the set      Let
+of unobservable paths from ˜q is deﬁned by                                                             maxS(ı) = UC(ı) ∩NC(ı)              (6)
+                Up(˜q) = [ u-path(˜q, ˜q′).                 be the maximal subset of S(ı) that is unobservable reach-
+                             ˜q′∈˜Q                                closed and non-conﬂicting. Note  that maxS(ı)  is not a
+
+
+                                                       4485
+
+
+   Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on December 19,2022 at 15:30:02 UTC from IEEE Xplore. Restrictions apply.
+
+singleton because we may have different maximal choices  maxS(q0NNY ) = UC(q0NNY ) ∩NC(q0NNY ). By (4)
+that are conﬂicting.                               we have S(q0NNY ) = {ˆQ(p1), ˆQ(p2), . . . , ˆQ(p5)}, where
+                                                                                        σ1,σ2                                  σ1,σ2
+  Let  ˜q =  (q, l) be an augmented state and σ ∈Σ be   p1 = (q0NNY ) −−−→(q5, q1Y ), p2 = (q0NNY ) −−−→
+an observable event. NXσ(˜q) is deﬁned if l(σ) = Y and    (q5, q1N),  p3 =  (q0NNY )  −−−→σ1,σ2    (q5, q1N) −→σ2
+                                                                                                  σ1,σ2f(q, σ)!. Furthermore, we have                                                                                                               σ2    ⇌σ1                                                                            q1N) −→(q2N)                                                        (q2Y ), p4 = (q0NNY ) −−−→(q5,
+                                                                                                                            σ2
+                                                                                                  σ1,σ2           NXσ(˜q) = {˜q′ ∈˜Q : ˜q′ ∈f(˜q, σ)}          (7)                                                                                                               σ2    ⇌σ1                                                                            q1N) −→(q2N)                                                       (q1N), p5 = (q0NNY ) −−−→(q5,
+                                                                                                                            σ2
+                                                                                                                               σ1,σ2                                                                             σ2For ı = {˜q1, . . . , ˜qn}, we deﬁne                                                  (q1N)   −→                                                                       (q2Y ), and p6  =  (q0NNY )  −−−→
+                                                                                                                   σ2                                                                                         σ1     ⇌σ2                                                                                                                                                      ).                                                      −→(q1N)                                                                                   (q2N) −→(q1YNXσ(ı) = {{˜q′1, . . . , ˜q′n} ∈2 Q˜ : ∀i ∈[1, n],  ˜q′i ∈f(˜qi, σ)}.    (q5, q1N) −→(q2N)σ2                                                                                                       σ1
+                                                            (8)   ˆQ(p2)  is  not unobservable  reach-closed  since  for  state
+  We deﬁne the set of states that can be reached unobserv-   q1N ∈  ˆQ(p2),  there does not  exist a  state  in ˆQ(p2)
+ably from some state in ı by UR(ı) = maxS(ı).                     s.t. q1N can reach  it. We thus get that UC(q0NNY ) =
+  Now we are ready to construct the dynamic observer of   {ˆQ(p1), ˆQ(p3), ˆQ(p4), ˆQ(p5), ˆQ(p6)}.  It can be  veriﬁed
+Gag, which is deﬁned as a new NFA                            that  all  the  paths  in UC(q0NNY )  are  non-conﬂicting,
+                                             we thus get  that UR(q0NNY ) = maxS(q0NNY ) =
+             Obs(Gag) = (Z, Σ, ξ, Z0),              (9)   {ˆQ(p1), ˆQ(p3), ˆQ(p4), ˆQ(p5), ˆQ(p6)}          =
+                                             {{q0NNY, q5, q1Y }, {q0NNY, q5, q1N, q2Y }, {q0NNY, q5,where
+       Q˜                                         q1N, q2N}, {q0NNY, q5, q1N, q2N, q1Y }, {q0NNY, q5, q1N,  • Z ⊆2   is the set of states;
+                                                   q2N, q2Y }}.
+  • Σ is the set of events;
+                                                     Then we employ the initial state z0 = {q0NNY, q5, q1Y }  • ξ : Z ×Σ →2Z is the partial transition function deﬁned
+                                                                   in maxS(q0NNY ) to illustrate how to update the states     by: for any z ∈Z, σ ∈Σ, we have
+                                                                   in Obs(Gag). Since there have two events σ2, σ3 that are
+      ξ(z, σ) = UR(NXσ(z)) =  [   maxS(z′); (10)   deﬁned at {q0NNY, q5, q1Y }, by (10) we have transitions:
+                               z′∈NXσ(z)                              (i)     ξ(z0, σ2)    =      UR(NXσ2(z0))    =
+                               S                                                                maxS(z′). By  (8) we have NXσ2(z0) =                                                               z′∈NXσ2(z0)  • Z0 = UR(˜Q0) is the set of initial states.                                                                            {{˜q′2}   :    ˜q′2 ∈  f(q0NNY, σ2)} =  {{q2Y }, {q2N}}.
+  The   initial  states  Z0   is  deﬁned  by UR(˜Q0)  =   Then  ξ(z0, σ2)  =  maxS({q2Y }) ∪maxS({q2N}).
+S  ˜q0∈˜Q0 maxS(˜q0). UR(z) is the set of states that can be   Since {q2Y }  is labeled with Y ,  it  is  directly obtained
+reached unobservably from some state in z and is unob-                                                                     that maxS({q2Y }) =  {q2Y }.  For {q2N} we  have
+servable reach-closed and non-conﬂicting. Since UR(z) =                                              maxS({q2N})   =     { ˆQ(p′1), ˆQ(p′2), ˆQ(p′3), ˆQ(p′4)},
+maxS(z) and maxS(z) may not a singleton, UR(z) may                                                     where  p′1 =  (q2N) −→σ1   (q1Y ),  p′2 =  (q2N) ⇌σ1
+not singleton as well. NXσ(z) is the set of states that can                                                              σ2
+be reached from some state ˜q in z immediately by event σ,   (q1N),  p′3 = (q2N) ⇌σ1 (q1N) −→(q2Yσ2         ),  and p′4 =
+i.e., f(˜q, σ). Similarly, f(˜q, σ) may not singleton because the             σ1            σ1σ2            σ2
+                                                  (q2N) −→  (q1N) ⇌                                                                        (q2N) −→  (q1Y ), We  thusfuture states of ˜q reached by σ are attached with different                                                                                         σ2
+labels.                                                        obtain  ξ(z0, σ2) = maxS({q2Y }) ∪maxS({q2N}) =
+  As deﬁned above, we employ NXσ(z)  to update the   {{q2Y }, {q2N, q1Y }, {q1N, q2N}, {q1N, q2N, q1Y },
+states when the event σ  is transmitted  at  state z. After   {q1N, q2N, q2Y }}.  (ii)  ξ(z0, σ3) =  UR(NXσ3(z0)) =
+obtaining the updated  state, we use UR to compute the  S          maxS(z′).    By      (8)    we     have                                                               z′∈NXσ3(z0)
+states that are reached unobservably from states in NXσ(z).   NXσ3(z0) =   {{˜q′3}    :     ˜q′4  ∈  f(q0NNY, σ3)} =
+Since UR(z) = maxS(z) = UC(z) ∩NC(z), we need to   {{q3Y }, {q3N}}.  Similarly, we have maxS({q3N}) =
+ﬁnd  all the unobservable paths p as given in (3) ﬁrstly.   {ˆQ(p′′1), ˆQ(p′′2), ˆQ(p′′3)}, where  p′′1 = (q3N) −→(q4Yσ3          ),
+Then by deleting the paths whose generated states are not    p′′2 =  (q3N) −→σ2   (q4N) ⇌σ3  (q4N),  and  p′′3 =
+                                                                                                   σ3unobservable reach-closed and conﬂicting, we get the paths                                                                          σ2           σ3                                                                                                   σ3
+that satisfy (6). It is ensured that all states in Obs(Gag) are   (q3N) −→(q4N) ⇌ (q4N) −→(q4Y ). We thus get
+                                                                                       σ3
+unobservable reach-closed and non-conﬂicting. In addition,    that  ξ(z0, σ3) =  maxS({q3Y }) ∪maxS({q3N}) =
+Obs(Gag) contains  all possible information transmission   {{q3Y }, {q3N, q4Y }, {q3N, q4N}, {q3N, q4N, q4Y }}.
+policies. An illustrative example is given in the following.                                                    The other states can be computed in the similar way. The
+  Example 2: Let us consider the system G and the labelled                                                            obtained dynamic observer Obs(Gag) is shown in Fig. 3.
+system Gag in Fig. 2. We employ this example to illustrate
+the procedure of synthesizing the state set of Obs(Gag). In                                                         C. State Estimate
+this example, we only show partial paths started from the
+initial state q0NNY . The cases started from other initial    As mentioned in Section III-A, all possible information
+states are similar.                                             transmission policies are listed in Gag. These information
+   Initially,  we  need   to  compute   the   initial   states   transmission policies can be restricted to a speciﬁc policy
+started  from q0NNY .  We  have  UR(q0NNY )  = Ω= (A, L) by producting them. The product of A =
+
+
+                                                       4486
+
+
+   Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on December 19,2022 at 15:30:02 UTC from IEEE Xplore. Restrictions apply.
+
+                                    q0NNY, q5, q1Y
+                                                                                             x4     σ3   x0    σ2    x1    σ2    x2    σ1    x3
+                                                                Y      N       Y      Y
+                        σ2         σ2       σ2     σ2   σ2
+                                                                                                       σ3, σ2        σ1                                     σ1, σ2
+                                                                               σ3     σ3          σ3           σ3                 N,N      N                           N,N                                                                 A
+         q2Y    q1N, q2N, q1Y   q1N, q2N, q2Y   q1N, q2N   q1Y, q2N               q3Y   q3N, q4Y  q3N, q4N, q4Y   q3N, q4N
+            σ1         σ2              σ1                      σ2                            σ3     σ3
+                                                                                                        σ3     σ3
+                                                                                                          σ3                                                                                       σ3
+       σ2  σ1                                                                                             σ2                                                                                    σ2                                                                                                       σ3                                                                                                         σ2                                                                                                                        x0, q0NNY   σ2    x1, q1Y   σ2   x2, q2Y                                                                                       q4Y σ3                                                                                              q4N                       x4, q3N                                                                                            q4N, q4Y σ3                                                                                σ3
+                                           q0NY N, q5, q3N,                                                                  q4N, q4Y                σ3                      q0NY N, q5, q3Y         q1Y
+      σ2                                          σ2                      σ2                                                                 σ3                                                                                                    σ3                               σ2               σ1                            σ1                                                                                               σ3
+                                q1N, q2N, q1Y,                                            q4N,                                                  q4Y                   q1Y, q4Y
+                         σ2, σ3                                                   σ2,                                                 σ3                                                                                                        x4, q4N            x0, q5                           x3, q1N
+
+                                                                                                                                          σ1    σ2
+  q0NNY, q5, q1N, q2N, q1Y  q0NNY, q5, q1N, q2N, q2Y      q0Y NN, q1Y, q3Y         q0Y NN, q1N, q2N, q1Y, q3N, q4N, q4Y                      σ3
+              σ2                            σ1, σ3                        σ1, σ2                              σ1, σ2, σ3                                                                                x3, q2N
+                                                                A × Gag
+
+ q0NNY, q5, q1N, q2N   q0NNY, q5, q1N, q2Y   q0NNN, q1Y, q3Y, q5    q0NNN, q5, q1N, q2N, q1Y, q3N, q4N, q4Y                                    σ3                             σ2
+           σ3                    σ1                     σ2                                 σ2, σ3                               x4, (q3N, q4N)         (x0, x1), (q0NNY, q5, q1Y )        x2, q2Y
+                                                                                                                                             σ1
+
+
+                                                                          q0Y Y N, q3N,                                                                                    q4N,                                                         q0Y Y N,                                                                 q3Y                    q0Y NY, q2N,                               q1N,   q0Y NY,           q1Y                                                                                         Y                                     q2Y    q0NY Y,                                                            q5                                                                                           q4Y      q0Y Y
+                                                                        σ1,                                                                   σ2          σ1,              σ2, σ3                                                                                                σ1,                                                                                                   σ2, σ3                                                                                                                      σ1,                                                                                                                          σ2, σ3                                                                      x3, (q1N, q2N)                                   σ1,                                  σ3                                                         σ2,                                                      σ3
+                                                                                            Obs(A × Gag)
+
+                Fig. 3.  The dynamic observer Obs(Gag)                     Fig. 4.   Sensor automata A, the product automata A × Gag and the
+                                                                            observer Obs(A × Gag).
+(X, Σ, η, x0) and Gag = (˜Q, Σ, f, ˜Q0) is deﬁned by A ×
+                                                               estimator value of the dynamic observer Obs(Gag) after anGag = (Y, Σ, θ, y0), where
+                                                            observable string which is available to the observer. For any
+  • Y ⊆X × ˜Q is the set of states,                                                                                 ı ∈Y ′, let
+  • Σ is the set of events,
+                                                           Q˜  • θ : Y ×Σ →Y  is the partial transition function deﬁned    I2(ı) = {{˜q1, . . . , ˜qm} ∈2   : ı = (x1, . . . , xk, ˜q1, . . . , ˜qm)}.
+     by: for any y = (x, ˜q), y′ = (x′, ˜q′) ∈Y, σ ∈Σ, ∀σ′ ∈
+      Σ˜q′, we have y′ = θ(y, σ) iff                               Proposition 1: Let Obs(Gag) = (Z, Σ, ξ, Z0) be the dy-
+                                                     namic observer induced by (9), and s be an observable string
+       x′ = η(x, σ) ∧˜q′ ∈f(˜q, σ) ∧l(σ′) = L(x′, σ′)  (11)    available to the observer Obs(A × Gag) = (Y ′, Σ, θ′, y′0).
+  • y0 = (x0, ˜q0) with l(σ) = L(x0, σ), for all σ ∈Σ˜q0, is   Then we have I2(θ′(y′0, s)) ∈S z0∈Z0 ξ(z0, s).
+     the initial states.                                                Finally, we formally show that the  state space of the
+                                                     dynamic observer Obs(A × Gag) indeed yields the state  To estimate the  states of the system under the given                                       ˜
+                                                              estimate of the receiver. For ı ∈2Q, letinformation transmission policy Ω, we construct the observer
+of A × Gag, which  is deﬁned by Obs(A × Gag) =                                                                                    I1(ı) = {q ∈Q : ˜q ∈ı}.
+(Y ′, Σ, θ′, y′0), where
+  • Y ′ ⊆2Y = 2X×Q˜ is the set of states,                   Theorem 1: Let Ω= (A, L) be an information trans-
+  • Σ is the set of events,                                  mission policy imposed on G and s = σ1σ2 . . . σm be an
+  •  θ′  : Y ′ × Σ →Y ′  is the partial transition function   observable string available to the dynamic observer Obs(A×
+    deﬁned by: for any  ı, ı′ ∈Y ′, σ ∈Σ, we have  ı′ =   Gag) = (Y ′, Σ, θ′, y′0). Then we have
+      θ′(ı, σ) iff
+                                                                                 I1(I2(θ′(y′0, s))) = EGΩ(s).
+                                  ı′ = UR′(NX′σ(ı))              (12)     Example 3: Let us consider system Gag in Fig. 2. Given
+                                                       an information transmission policy Ω= (A, L), where A is     where for any ı ∈2Y we have
+                                                  shown in Fig. 4 and L is given by: l(x0, σ1) = l(x0, σ2) =
+   NX′σ(ı) = {y′ ∈Y  : ∃y ∈ı s.t. θ(y, σ) = y′}            l(x3, σ1) = l(x3, σ2) = l(x4, σ3) = l(x4, σ4) = N and
+    UR′(ı) = {y′ ∈Y  : ∃y ∈ı, ∃s ∈Σ∗s.t. PΩ(s) = ϵ     l(x0, σ3) = l(x1, σ2) = l(x2, σ1) = Y . The correspond-
+                                                             ing product automata A × Gag and the dynamic observer   ∧y′ = θ(y, s)},
+                                            Obs(A × Gag) deﬁned above are given  in Fig.  4. Let
+  •  y′0 = (UR′(x0), UR′(˜q0)) is the initial states with y0 =    string s be an arbitrary observable string available to the
+     (x0, ˜q0).                                                   the dynamic observer Obs(A × Gag).  It can be veriﬁed
+  By the deﬁnition of the transition function we have y′ =    that I2(θ′(y′0, s)) ∈S z0∈Z0 ξ(z0, s) (Proposition 1) and
+θ′(y, σ) = UR′(NX′σ(y)) = UR′(θ(y, σ)) = {y′ ∈Y   :    I1(I2(θ′(y′0, s))) = EGΩ(s) (Theorem 1) always hold.
+∃s ∈Σ∗s.t. PΩ(s) = PΩ(σ) ∧y′ = θ(y, s)}. By extending
+                                                                    IV. SYNTHESIS OF FEASIBLE TRANSMISSIONthe transition function to a string s in a usual way we get that
+θ′(y, s) = {y′ ∈Y  : ∃t ∈Σ∗s.t. PΩ(s) = PΩ(t) ∧y′ =                INFORMATION POLICIES
+θ(y, t)} = EA×GagΩ      (s).                                          In this section, we discuss how to synthesize a determin-
+  Next, we show that the state components of the observer’s    istic information policy that ensures the IS-based property is
+state reached upon Obs(A×Gag) always belongs to the state    satisﬁed. Given an observer Obs(Gag) = (Z, Σ, ξ, Z0), we
+
+
+                                                       4487
+
+
+   Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on December 19,2022 at 15:30:02 UTC from IEEE Xplore. Restrictions apply.
+
+                                                                                                                                                               q0NNN, q1Y,                                                                                                                                                                                                                                               q3Y,                                                                                                                                                                                                                                                                    q5                                                                                                                   q0NNN, q1Y,                                                                                                                                                                                 q3Y,                                                                                                                                                                                                  q5            q0Y NY,                                                                                                                                                                                            q1Y   q0NY Y,                                                                                                                                                                                                                                            q5                                                                                                                                   q1Y   q0NY Y,                                                                                                                                                                          q5say that a state z is consistent if ∀σ ∈Σz̸ = ∅, NXσ(z)̸ = ∅.              q0Y NY,                                                                                                                                                                                              σ2                                                                                                                                                                                                                                                         σ2,                                                                                                                                                                                                                                 σ4                                                                                                                                    σ2                                                                                                                                                                                                                                     σ2,                                                                                                                                                                                                               σ3                                                                                                                                                                                        σ2,                                                                                                                                                                       σ4                                                                                                                                                                    σ2,                                                                                                                                                      σ3
+We denote by Zconst the set of consistent states in Z and
+we say Z is consistent if all reachable states are consistent.
+  Our approach for synthesizing a deterministic information      q0NY N, q5, q3Y    q0Y NN, q1Y,σ1,q3Yσ2, σ4   q0Y NY, q3Y,σ1, σ3,q5 σ4                     q0Y NN, q1Y,σ1,q3Yσ2, σ4   q0Y NY, q3Y,σ1, σ3,q5 σ4
+policy consists of the following two steps: (i) ﬁrst construct
+the largest sub-automata G∗of Obs(Gag) such that L(G∗)           q0NNY, q5, q1Y               q0Y Y N, q3Y                     q0NNY, q5, q1Y
+satisﬁes the IS-based property and the states of G∗are           σ2            σ3                   σ1                             σ2            σ3
+consistent; and (ii) then extract one deterministic information            q2Y       q3Y                         q5                             q2Y       q3Y
+transmission policy Ωbased on G∗.
+                                                                                                                        σ2   σ1      σ4     σ4       σ4                                  σ2   σ1      σ4     σ4       σ4
+
+                                                                                                                                              q4N, q4Y σ3  q4N                        q1Y      σ3      q4Y σ3σ3  q4N, q4Y σ3  q4NA. Synthesis of the transmission information policy                           q1Y      σ3      q4Y σ3σ3
+  To satisfy the IS-based property ϕ, it should be guaranteed              G0               σ3   σ3                                    G∗         σ3   σ3
+                   ˜
+that, for any ı ∈2 Q, ϕ(ı) = 1.                                                                      Fig. 5. G0 and G∗
+  To this end, we deﬁne                                                          fewer events as possible. Speciﬁcally, we  start from the
+                Zdis = {ı ∈Z : ϕ(ı) = 0}                         initial state q0 ∈Q, check and choose the states labeled
+                                                    by N for each deﬁned event as far as possible. We denote
+as the set of states that dissatisﬁes the IS-based property ϕ.    the set of states that contains  ˜q in Obs(Gag) by Q(˜q) =
+  In order to synthesize a desired transmission informa-   {z ∈Z|˜q ∈z}. Then for each event σ deﬁned at Q(˜q)
+tion policy, we ﬁrstly construct the largest sub-automata of    in Obs(Gag), Q(˜q) can be divided into three sets QYσ (˜q),
+Obs(Gag)(= (Z, Σ, ξ, Z0)) that enumerates all the feasible  QNσ (˜q), and Quσ(˜q), where QYσ (˜q) = {z ∈Q(˜q)|l(˜q, σ) =
+transitions satisfying the constraints of ξ. Such an all-feasible  Y } denotes the set of states that σ will be transmitted at
+automaton is denoted by Gtotal. Then, we need to delete    state ˜q, QNσ (˜q) = {z ∈Q(˜q)|l(˜q, σ) = N} denotes the set of
+some states that dissatisfy the IS-based property and obtain    states that σ will not be transmitted at state ˜q, and Quσ(˜q) =
+a new automaton G0 = Gtotal ↾Z\Zdis, where G ↾Z denotes   Q(˜q)\(QYσ (˜q)∪QNσ (˜q)) denotes the set of states that σ will
+the automata obtained by restricting the state-space of G to   be transmitted at some loops and not be transmitted at other
+Z.                                                              loops. Then by choosing different transmission decision from
+  However, by deleting partial states, the resulting automata  QYσ (˜q), QNσ (˜q), and Quσ(˜q), for each state ˜q and σ we obtain
+may become inconsistent. Hence, we also need to delete   a unique deterministic transmission decision. That is why we
+inconsistent  states  recursively. To  this end, we give an    will obtain a deterministic transmission information policy.
+operator R  that maps an automaton  to a new one by:     Example 4: Let us consider Obs(Gag)  in Fig.  2. We
+R  : G 7→G ↾Zconst and deﬁne G∗= limk→∞Rk(G0)    ﬁrstly delete states that make the system G undistinguishable
+as the largest consistent automaton which satisﬁes the IS-   and obtain a distinguishable automata G0 as shown in Fig. 5.
+based property. An algorithm (Algorithm 1) is proposed to  We note that there exist some states that are inconsistent in
+synthesize G∗via a depth-ﬁrst search. By Algorithm 1, we                                                 G0, e.g., (q0NY N, q3Y, q5) and (q0Y Y N, q3Y ). Event σ2
+will delete a state if there exists an event that are deﬁned    is deﬁned at states (q0NY N, q3Y, q5) and (q0Y Y N, q3Y ) in
+in Obs(Gag) and not deﬁned at Rk(G0) for some k →∞   Obs(Gag) and not deﬁned in G0. We thus need to delete
+(lines 3-5), namely, the deleted states are inconsistent. We    inconsistent states recursively by Algorithm 1 and obtain the
+obtain an automaton that satisﬁes the IS-based property by    largest consistent and distinguishable automata G∗which
+deleting all inconsistent states recursively.                          is shown in Fig. 5. Next, we synthesize an automata A
+                                                      from the largest feasible automata G∗, where the obtained
+ Algorithm 1:                                           automata A transmits events as few as possible by choosing
+  input  : Obs(Gag) = (Z, Σ, ξ, Z0)                          the states labeled by N for each deﬁned event. For instance,
+  output: G∗= (˜Z, ˜Σ, ˜ξ, Z0)˜                           G∗contains q4Y , (q4Y, q4N), and q4N for the state ˜q4, to
+                                                               transmit fewer events here we keep q4N and delete q4Y and
+1   G∗= Gtotal ↾Z\Zdis= (˜Z, Σ, ˜ξ, Z0);˜                                                           (q4Y, q4N). The resulting automata A is shown in Fig. 6.
+2      ˜Z = Z;
+3     for each z ∈Z do                                     B. Realization of the information transmission policy
+ 4            if ∃σ ∈Σ s.t. ξ(z, σ)! and ⌝˜ξ(z, σ)! then              In the  last subsection, we synthesize an automata A
+ 5              ˜Z = ˜Z \ {z};                               from the largest feasible automata G∗to present a speciﬁc
+                                                             information transmission policy, where the labels of each
+   G∗= G∗↾˜Z.                                                             event are given as the  effect of A. However, we can’t
+                                                               accurately know how the information is transmitted at each
+  So  far, the ﬁrst step has been ﬁnished. Now we exe-    step. There may  exist some  state-transition loops  in G
+cute the second step by synthesizing an automata A =   such that the label of the event in this loop with different
+(X, ΣA, η, x0) from the largest feasible automaton G∗to    history may be different. In order to accurately know how
+present the corresponding information transmission policy,    the information are transmitted at each step under a given
+while ensures that the obtained automata A transmits as   policy A = (X, Σ, η, X0), namely, obtain the labeling
+
+
+                                                       4488
+
+
+   Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on December 19,2022 at 15:30:02 UTC from IEEE Xplore. Restrictions apply.
+
+                           q0NNY, q5, q1Y                               state estimation of the receiver under A. Therefore, the state
+                                                           space of S is consist with the state estimation of the receiver
+                                 σ2         σ3
+                                                  (EGΩ(s)).
+                                 q2Y     q3Y
+                                σ2  σ1      σ2                                              V. CONCLUSION
+
+                                 q1Y     q4N                               In this paper, we studied the problem of optimal sensor
+         Fig. 6.  Synthesized information transmission policy A           scheduling for remote state estimation of discrete-event sys-
+                                                             tems. We investigated a mechanism that selectively transmits
+                                                                the observable events according to an information trans-            σ3
+             q0NNY, (q0NNY, q5, q1Y )  q3Y, q3Y                                          σ2    q1Y, (q0NNY, q5, q1Y )   σ2   q2Y, q2Y
+                                                           mission policy. We proposed algorithms for synthesizing
+    σ2                    σ1                                             σ2    σ1
+                                                                 deterministic information policies that ensure the IS-based
+ q4N, q4N          q5, (q0NNY, q5, q1Y )                                         q1Y, q1Y     property. In the future, we aim to consider the distributed
+                                                      and decentralized sensing and information transmission ar-
+    σ3
+                                                                  chitecture based on the results proposed in this paper.
+              Fig. 7.  The product automata S = Gag × A
+function L, we construct a new non-deterministic automata                    REFERENCES
+S = Gag × A = (H, Σ, ζ, h0), where
+                                                                                     [1] Y. Liu, K. Cai, and Z. Li., “On scalable supervisory control of multi-
+  • H ⊆˜Q × X is the set of states,                                    agent discrete-event systems,” Automatica, p. 108, 2019.
+  • Σ is the set of events,                                                 [2] Z. Ma and K. Cai, “Optimal  secret protections  in discrete-event
+  • ζ : H ×Σ →H is the partial transition function deﬁned          systems,” IEEE Transactions on Automatic Control, 2021.
+                                                                                     [3] X. Yu, X. Yin, S. Li, and Z. Li, “Security-preserving multi-agent
+     by: for any h = (˜q, x), h′ = (˜q′, x′) ∈H, σ ∈Σ, we          coordination for complex temporal logic tasks,” Control Engineering
+    have h′ ∈ζ(h, σ) iff                                                      Practice, vol. 123, p. 105130, 2022.
+                                                                                     [4] G. M. Lipsa and N. C. Martins, “Remote  state estimation with
+               (                              x,  if l(σ) = N                       communication costs for ﬁrst-order  lti systems,” IEEE Transactions
+                        x′ =                                         on Automatic Control, vol. 59, no. 9, p. 2013–2025, 2011.
+                             η(x, σ),  if l(σ) = Y ;                [5]  S. Trimpe and R. D’Andrea, “Event-based  state estimation with
+           q′ = δ(q, σ) ∧˜q′ ∈{q′ × {Y, N}|Σq′|} ∩x′,                 vol.variance-based59, no. 12, triggering,”p. 3266–3281,IEEE2014.Transactions on Automatic Control,
+                                                                                     [6] K. Rudie, S. Lafortune, and F. Lin, “Minimal communication in a
+  • h0 = (˜q0, x0) with ˜q0 ∈{q0 × {Y, N}|Σq0|} ∩x0 is the           distributed discrete-event system,” IEEE Transactions on Automatic
+      initial state.                                                                Control, vol. 48, no. 6, pp. 957–975, 2003.
+                                                                                     [7]  F. Lin, “Control of networked discrete event systems: dealing with
+After attaching the policy A to the system, the transmission         communication delays and losses,” SIAM Journal on Control and
+label of each event at each step can be obtained by the ﬁrst          Optimization, vol. 52, no. 2, pp. 1276–1298, 2014.
+component of the states in S and is deterministic (even if S      [8] Y. Ji, X. Yin, and S. Lafortune, “Optimal supervisory control with
+                                                                mean payoff objectives and under partial observation,” Automatica,
+may be nondeterministic). For any state h = (˜q, x) ∈H and           vol. 123, p. 109359, 2021.
+σ ∈Σh, we have L(˜q, σ) = l(σ).                                         [9] Z. Ma, X. Yin, and Z. Li, “Marking diagnosability veriﬁcation in
+  Example 5: Let us again consider Gag in Fig. 2 and the          labeled petri nets,” Automatica, vol. 131, p. 109713, 2021.
+                                                                              [10] X. Yin and S. Lafortune, “A uniform approach  for synthesizing
+information transmission policy A in Fig. 6. We attach the                                                                                   property-enforcing supervisors for partially-observed discrete-event
+policy A to the system by the above deﬁnition and the          systems,” IEEE Transactions on Automatic Control, vol. 61, no. 8,
+obtained S = Gag × A is shown in Fig. 7.                            2016.
+                                                                              [11] W. Wang, S. Lafortune, A. R. Girard, and F. Lin, “Optimal sensor
+  Remark 1: We note  that S may be non-deterministic,                                                                                         activation for diagnosing discrete event systems,” Automatica, vol. 46,
+which is caused by transitions leading to the exact state es-          no. 7, pp. 1165–1175, 2010.
+timate of the receiver while with different labels. To convert    [12] E. Dallal and S. Lafortune, “On most permissive observers in dynamic
+                                                                                  sensor activation problems observations,” IEEE Transactions on Au-
+S to a deterministic automaton, we introduce a relabeling                                                                                 tomatic Control, vol. 59, no. 4, p. 966–981, 2014.
+map R : (H × Σ →H) →(H × (Σ × {Y, N}|Σ|) →H)    [13] W. Wang, C. Gong, and D. Wang, “Optimizing sensor activation in a
+such that for any h, h′ ∈H, σ ∈Σ,                                    language domain for fault diagnosis,” IEEE Transactions on Automatic
+                                                                                    Control, vol. 64, no. 2, pp. 743–750, 2018.
+                                            (σ,lh′)                            [14] X. Yin and S. Lafortune, “Minimization of sensor activation in de-        R : (h σ−→h′) −→(h −−−−→h′),                                                                                       centralized discrete-event systems,” IEEE Transactions on Automatic
+                                                                                    Control, vol. 63, no. 11, pp. 3705–3718, 2018.
+where lh′ = l(I1(h′)). We add a label to each transition,    [15] X. Yin and S. Lafortune, “A general approach for optimizing dynamic
+where the label is consistent with the label of the reachable          sensor activation for discrete event systems,” Automatica, vol. 105,
+state of this transition. By the relabeling map R, we obtain          pp. 376–383, 2019.
+a new deterministic automaton S′ = (H, Σ, ζ′, h0), where    [16] mentN. Ran,of boundedJ. Hao, andlabeledC. Seatzu,petri nets,”“PrognosabilityIEEE Transactionsanalysis onandAutomaticenforce-
+ζ′  : (H × Σ →H) →(H × (Σ × {Y, N}|Σ|) →H) is          Control, 2021.
+deﬁned by ζ′(h, (σ, lh′)) = h′ iff ζ(h, σ) = h′.                    [17] B. Zhang, S. Shu, and F. Lin, “Maximum information release while
+                                                                                 ensuring opacity in discrete event systems,” IEEE Transactions on
+Gag × A belongs to that of Obs(Gag) and thus gives the         Automation Science and Engineering, vol. 12, no. 3, pp. 1067–1079,
+  By the above steps, we know that the information policy         2015.
+A is obtained by choosing a unique transmission decision    [18] B. Behinaein, F. Lin, and K. Rudie, “Optimal information release
+                                                                                          for mixed opacity in discrete-event systems,” IEEE Transactions on
+for each event in G∗and G∗is obtained by deleting the         Automation Science and Engineering, vol. 16, no. 4, pp. 1960–1970,
+bad states of Obs(Gag). Hence, the state space of S =         2019.
+
+                                                       4489
+
+
+   Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on December 19,2022 at 15:30:02 UTC from IEEE Xplore. Restrictions apply.

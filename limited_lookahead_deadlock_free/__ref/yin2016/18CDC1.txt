@@ -1,0 +1,429 @@
+2018 IEEE Conference on Decision and Control (CDC)
+Miami Beach, FL, USA, Dec. 17-19, 2018
+
+
+   Veriﬁcation of Coprognosability in Decentralized Fault Prognosis
+                           of Labeled Petri Nets
+
+
+                           Wenqing Wu, Xiang Yin and Shaoyuan Li
+
+
+  Abstract— We investigate the problem of decentralized fault   [17] have investigated online fault prognosis methods for
+prognosis of discrete-event systems modeled by unbounded   both logical and stochastic Petri nets. Recently, it has been
+labeled Petri nets. We assume that the system  is monitored                                                  shown in [27] the condition of prognosability is decidable
+by a set of local agents (prognosers) with local observations
+                                                                   for unbounded Petri nets in the centralized setting.so that they can predict the occurrence of fault in the system
+as a team. It  is known in the literature that the notion of      In many large-scale systems, the information structure are
+coprognosability provides the necessary and sufﬁcient condition    naturally decentralized. For such systems, centralized fault
+for the existence of a set of decentralized prognosers so that   prognosis algorithms cannot be directly applied due to the
+any  fault can be  predicted  before  its occurrence without                                                             information constraint and we need to develop corresponding
+false alarm. In this paper, we investigate the veriﬁcation of
+                                                               decentralized prognostic protocols for the purpose of faultcoprognosability for systems modeled by labeled Petri nets.
+We show that coprognosability  is decidable even when the   prognosis. Therefore,  the problem of  decentralized  fault
+Petri net is unbounded. Speciﬁcally, we provide an approach   prognosis has also drawn many attention in the past years;
+to transform the coprognosability veriﬁcation problem to a    see,  e.g., [14]–[16], [22], [31], [32]. In this setting,  it  is
+model checking problem that can be effectively solved. Our                                                     assumed that the system  is monitored by a set of local
+result extends existing works on coprognosability analysis in
+                                                             prognosers. Each local prognoser has its own observation anddecentralized fault prognosis from regular languages to Petri
+net languages.                                            can send local prognostic decision to a coordinator, where
+                                                           a ﬁnal global prognostic decision is issued. Particularly, in
+                          I. INTRODUCTION                          [16], the authors investigated the decentralized fault prog-
+                                                               nosis problem under the disjunctive architecture, where a
+  We investigate the fault prognosis problem for Discrete-
+                                                              global fault alarm is issued if one local fault alarm is issued.
+Event Systems (DES) modeled by labeled Petri nets. This
+                                                         Moreover, the authors  in [16] proposed a notion  called
+problem  is crucial in many safety-critical systems, where
+                                                              coprognosability as the necessary and sufﬁcient condition
+we need to predict the occurrences of faults so that some
+                                                         under which there exists a decentralized prognoser that can
+protecting actions can be taken before a fault is encountered.
+                                                                successfully predict fault in the disjunctive architecture. In
+In this paper, we consider DES modeled by labeled Petri
+                                                              [15] and [22], the decentralized fault prognosis problem has
+nets, a computational model that is widely used in model-
+                                                       been further studied in the conjunctive architecture and the
+ing cyber-physical systems with concurrency, e.g., ﬂexible
+                                                              inference-based architecture, respectively.
+manufacturing systems and software systems. Our goal is to
+                                                                 In this paper, we study the decentralized fault prognosis
+analyze a priori whether or not any fault in the system can
+                                                       problem for (unbounded) labeled Petri nets in the disjunctive
+be successfully predicted.
+                                                                    architecture. Speciﬁcally, we are interested in verifying co-
+  In the context of DES, the problem of fault prognosis
+                                                               prognosability for Petri net languages in order to determine a
+has drawn considerable  attention  in the past years;  see,
+                                                                      priori if the fault prognostic task can be accomplished. Note
+e.g., [6], [11], [15], [16], [19], [21], [23]–[25], [28], [30]–
+                                                                          that, since the state space of a Petri net is unbounded in
+[32]. This problem was initially studied in [12], [13], where
+                                                                 general, existing approaches based on ﬁnite-state automata
+the authors consider DES modeled by ﬁnite-state automa-
+                                                           cannot be applied to our problem. The main contributions of
+ta and a language-based property called predictability (or
+                                                                        this paper are as follows. First, we provide a necessary and
+prognosability) was proposed. Speciﬁcally, predictability is
+                                                               sufﬁcient condition for coprognosability of DES modeled
+the necessary and sufﬁcient condition under which there
+                                                    by unbounded  Petri  nets. Then we present an  effective
+exists a centralized prognoser that can always issue a fault
+                                                               construction to capture this condition and show that checking
+alarm before the occurrence of fault without any false alar-
+                                                              coprognosability is decidable for general unbounded labeled
+m. Recently, predictability/prognosability analysis has also
+                                                                     Petri nets. To the best of our knowledge, existing works
+been investigated for DES modeled by timed automata [9],
+                                                    on decentralized fault prognosis mentioned above assume
+stochastic automata [6], [10], [11], [19] and fuzzy automata
+                                                                     that the systems are modeled by ﬁnite-state automata and
+[5]. For DES modeled by Petri nets, the authors in [1]–[3],
+                                                                the decentralized fault prognosis problem has never been
+  This work is supported by the National Natural Science Foundation of    studied for systems modeled by Petri nets. Therefore, our
+China (61803259, 61833012).                                           results extend existing works on coprognosability analysis
+  W.  Wu,  X.  Yin  and  S.  Li  are  with  Department  of  Automa-   from regular languages to Petri nets languages.
+tion  and Key  Laboratory  of  System  Control  and  Information  Pro-
+cessing,  Shanghai  Jiao  Tong  University,  Shanghai  200240,  China.     The remaining part of the paper is organized as follows.
+{wuwenqing.dy,yinxiang,syli}@sjtu.edu.cn.         Section II presents necessary preliminaries. In Section III,
+
+
+978-1-5386-1394-8/18/$31.00 ©2018 IEEE                    4845
+
+coprognosability  is deﬁned for labeled Petri nets and  its   Tuo are the sets of observable and unobservable transitions,
+relevant properties are also discussed. In Section IV, we    respectively. The labeling function L can also be extended
+provide a necessary and sufﬁcient condition for coprognos-   from T to T ∗recursively by:
+ability, which can be effectively checked by an existing       (i) L(λ) = ϵ; and
+model checking problem. Finally, we conclude the paper in      (ii) ∀σ ∈T ∗, t ∈T  : L(σt) = L(σ)L(t).
+Section V.                                                              Therefore,  the language  generated by  labeled  Petri  net
+                        II. PRELIMINARIES                  ⟨N, M0, L⟩is a set of strings deﬁned by L(L(N, M0)) :=
+                                                   {L(σ) : σ ∈L(N, M0)}. A  (place/transition)  net  is a  directed  bipartite  graph,
+                                                                        Finally, we make the following standard assumption in thedeﬁned  as  a  4-tuple N =  (P, T, A, ω), where P =
+                                                                 analysis of partially-observed DES
+{p1, p2, . . . , pn}   is  the  ﬁnite  set  of  places,  T  =
+{t1, t2, . . . , tm} is the ﬁnite set of transitions, A ⊆(P ×   A1 ⟨N, M0⟩does not enter a deadlock, i.e., (∀σ ∈T ∗:
+T) ∪(T × P)  is the set of directed arcs from places to     M0 σ−→M)(∃t ∈T)[M t−→].
+transitions and from transitions to places and ω : A →N is
+                                                                              III. COPROGNOSABILITY OF LABELED PETRI NETS
+the weight function that assigns to each arc a non-negative
+                                                                 In the decentralized fault prognosis problem, the systeminteger. We introduce the empty transition λ and we deﬁne
+T + := T ∪{λ}. For any place p ∈P, we denote its preset   ⟨N, M0⟩is monitored by a set of n local agents (or local
+                                                               prognosers). We denote by I = {1, 2, . . . , n} the indexby I(p),  i.e., I(p) := {t ∈T  :  (t, p) ∈A}; we denote
+                                                                            set. We assume that each agent has  its own observation.its postset by O(p),  i.e., O(p) := {t ∈T  : (p, t) ∈A}.
+                                                             Formally, for any i ∈I, we denote by Li : T →Σ ∪{ϵ} itsFor any transition t, we deﬁne its preset I(t) and its postset
+                                                                   local labeling function and we denote by To,i and Tuo,i theO(t) analogously, which are sets of places. Given a net N, a
+                                                                     sets of observable transitions and unobservable transitionsmarking M is a vector M = [M(p1) M(p2) . . . M(pn)]⊤∈
+Nn, where M(pi) is the number of tokens in place pi ∈P. A    w.r.t. Li, respectively. Therefore, a labeled Petri net in the
+Petri net is a pair ⟨N, M0⟩, where N is a net and M0 ∈Nn    decentralized setting is written by ⟨N, M0, {Li}i∈I⟩.
+                                                                 In the fault prognosis problem, we assume that the setis the initial markings. We say that transition t is enabled at
+                                                              of transitions is further partitioned as two disjoint sets T =state M  if ∀p ∈I(t) : M(p) ≥ω(p, t). If t is enabled at
+M, then it can ﬁre and yields a new marking M ′ deﬁned by  TN ∪TF , where TN is the set of normal transitions and TF is
+∀p ∈P  : M ′(p) = M(p) −ω(p, t) + ω(t, p). We denote by    the set of fault transitions. For any sequence σ = t1t2 . . . tk ∈
+                                             T ∗, with a slight abuse of notation, we denote by TF ∈σ ifM t−→N that transition t ∈T is enabled at M in net N and
+                                        ′                                                                 ′   σ contains a fault transition, i.e., ∃i ∈{1, . . . , k} : ti ∈TF .denote by M t−→N M  that the ﬁring of t at M yields M
+                                                                 In order to characterize whether or not any fault in a
+in net N. We will also omit the subscript N when the net
+                                                               decentralized system can be predicted, a language-based
+is clear from the context.
+                                                              condition called coprognosability was proposed in [16]. This  Let T ∗denote the set of all ﬁnite sequences of transitions
+                                                             deﬁnition is reviewed as follows in the context of Petri net
+(or, for simplicity, sequences) including the empty transition
+                                                             languages.λ. For any σ ∈T ∗, we have σλ = λσ = σ. A sequence
+                                                             Deﬁnition 3.1 (Coprognosability): Let ⟨N, M0, {Li}i∈I⟩σ = t1t2 . . . tk ∈T ∗is said to be enabled at M  if ∀i ∈
+                          ti                                            ti          be a labeled Petri net with decentralized information. Then
+{1, . . . , k} : Mi −→, where M1 = M and Mi −→Mi+1.
+                              σ                     ⟨N, M0, {Li}⟩is said to be coprognosable w.r.t. TF  ifAnalogously, we denote by M −→N  that σ ∈T ∗can be
+                      σ             ′ﬁred at M and by M −→N M  that ﬁring σ yields M ′.     (∀α ∈L(N, M0) : TF ∈α)(∃β ∈α : TF /∈β)
+For a Petri net ⟨N, M0⟩, L(N, M0) denotes the set of ﬁnite       (∃i ∈I)(∀θ ∈L(N, M0) : Li(θ) = Li(β) ∧TF /∈θ)
+sequences which are enabled at M0, i.e., L(N, M0) = {σ ∈
+          σ                                      (∃K ∈N)(∀θγ ∈L(N, M0))[|γ| ≥K ⇒TF ∈γ]    (1)T ∗: M0 −→N }. Given a sequence σ ∈T ∗, we denote by
+                                                                           Intuitively, coprognosability requires  that for any  faultσ the set of preﬁxes of σ,  i.e., σ = {σi ∈T ∗: ∃σj ∈
+                                                            sequence, it must have a non-fault preﬁx such that, at leastT ∗s.t. σiσj = σ}. Finally, the length of sequence σ  is
+                                                      one local prognoser knows for sure that a fault will occur indenoted by |σ|. For any sequence σ ∈T ∗and any transition
+                                                           a ﬁnite number of steps. Therefore, a local fault alarm can be
+t ∈T, we denote by #σ(t) the number of times t occurs in
+                                                                 sent to the coordinator in order to issue a global fault alarm
+σ.
+                                                             before the fault actually occurs. It has been shown in [16]
+  We deﬁne Σ as a ﬁnite set of events (or alphabets). A
+                                                                     that coprognosability provides the necessary and sufﬁcientstring  is a ﬁnite sequence of events and we use Σ∗to
+                                                              condition under which there exists a set of local prognosers
+denote the set of all strings including the empty string ϵ.
+                                                                     that can achieve the following two requirements under the
+A labeled Petri net is a triple ⟨N, M0, L⟩, where ⟨N, M0⟩
+                                                                  disjunctive architecture1
+is a Petri net and L : T →Σ ∪{ϵ} is a labeling function
+                                                                  • Any fault can be predicted before its occurrence; andthat assigns to each transition an event. In other words, for
+any t ∈T, L(t) indicates the event that can be observed      • A fault will occur in a ﬁnite number of steps once a
+when t ﬁres. Given a transition t ∈T, we call it observable         fault alarm is issued.
+if L(t) ∈Σ; otherwise, t  is unobservable. Therefore, T       1In the disjunctive architecture, the coordinator issues a global alarm if
+is naturally partitioned as T = To ˙∪Tuo, where To and    one local prognoser issues a fault alarm.
+
+
+                                                       4846
+
+                       𝑡2    𝜀, 𝑏                         K)[M σ−→].
+                               𝑡3         𝜀, 𝜀
+                    𝑡1                                                    Intuitively, a boundary marking is a marking from which a
+                                                                       fault can occur in the next step and a non-indicator marking is
+                    𝑎, 𝑏  𝑝1  𝑏, 𝑏  𝑝2  𝑓1                    a marking from which an arbitrarily long non-fault sequence
+                                                        can occur. Since a marking is a vector with its elements taken                       (a) Petri net ⟨N ′, M′0, {L′1, L′2}⟩
+                                                      from the set of nonnegative integers, there does not exist a
+                       𝑡2    𝜀, 𝑏                                       strictly monotone decreasing sequence of markings. Hence,
+                                𝑡3         𝜀, 𝜀                   under the deadlock-free assumption, M  is a non-indicator
+                     𝑡1
+                                                       marking if and only if
+                    𝑎, 𝜀  𝑝1  𝑎, 𝑏  𝑝2  𝑓1                                                           ∃σ1, σ2 ∈T N∗  s.t. M −→M1σ1   −→M2σ2     and M1 ≤M2.
+                      (b) Petri net ⟨N, M0, {L1, L2}⟩
+                                                              Next, we introduce the following lemma that illustrates
+Fig. 1.   For each transition  t,  its associated label (e1, e2) means that   how to decide coprognosability according to the above two
+L1(t) = e1 and L3(t) = e2.                                         notions.
+                                              Lemma 3.1: Labeled Petri net ⟨N, M0, {Li}i∈I⟩is not
+                                                          coprognosable w.r.t. TF ,  if and only  if, there exist n + 1
+The reader  is referred to [16] for how coprognosability                                            ∗                                                                non-fault sequences σB, σ1, . . . , σn ∈T N such that
+guarantees the above two conditions. In this paper, we will                                         σB
+                                                                1) MB is a boundary marking, where M0 −−→MB; andfocus on how to verify this condition for languages generated
+                                                                2) For any i ∈I, Mi is a non-indicator marking, where
+by unbounded Petri nets.                                                      σi
+                                         M0 −→Mi; and   First, let us illustrate the notion of coprognosability in Petri
+                                                                3) For any i ∈I, Li(σB) = Li(σi).nets by the following examples.
+  Example 3.1: Let   us   consider   labeled   Petri   net          IV. VERIFICATION OF COPROGNOSABILITY
+⟨N ′, M0,′ {L′1, L′2}⟩  with  two  local  agents  shown  in                                                                 In the previous section, we have discussed the deﬁnition
+Figure 1(a), where To,1 = {t1, t3}, To,2 = {t1, t2, t3} and                                                              of  coprognosability  for  labeled  Petri  nets and provided
+TF = {f1}. Let Σ = {a, b}, L′1(t1) = a, L′1(t3) = b and                                                       an approach to characterize coprognosability based on the
+L′2(t1) = L′2(t2) = L′2(t3) = b. Note that transition t3 has                                                              notions of boundary markings and non-indicator markings.
+to ﬁre before the occurrence of fault transition f1, and once                                                              In this section, we provide a veriﬁable necessary and suf-
+it ﬁres, the ﬁrst agent observes event L′1(t3) = b, which can                                                              ﬁcient condition for coprognosability in order to show that
+only be generated by transition t3 through labeling function                                                              coprognosability is indeed decidable.
+L′1,  it can issue a fault alarm unambiguously. Hence, the                                                          According to Lemma 3.1, the veriﬁcation of coprognos-
+system is coprognosable, although from the perspective of
+                                                                       ability is equivalent to checking the existence of a “leading”
+L′2, all the observable transitions have the same label.                                                         sequence σB that goes to a boundary marking and n “fol-
+  Example 3.2: Let   us   consider   labeled   Petri   net
+                                                         lowing” sequences σ1, . . . , σn, each of them goes to a non-
+⟨N, M0, {L1, L2}⟩  with  two  local  agents  shown  in                                                                  indicator marking, such that σB and σi look the same under
+Figure 1(b), where To,1 = {t1, t3}, To,2 = {t2, t3} and                                                                the i-th observation mapping Li. To this end, we need to
+TF = {f1}. Let Σ = {a, b}, L1(t1) = L1(t3) = a and                                                                construct a new net that tracks all such leading and following
+L2(t2) = L2(t3) = b. This system is not coprognosable. To                                                            sequences.
+reveal this, we consider fault sequence t3f1 ∈L(N, M0).                                                             Let ⟨N, M0, {Li}i∈I⟩be the original labeled Petri net.
+Then for t3 ∈t3f1 : TF /∈t3, we can ﬁnd t1 ∈L(N, M0)                                                                           First, we deﬁne a new labeled Petri net
+such that L1(t1) = L1(t3) = a and an arbitrarily long
+                             t1(t1)k                            ⟨˜N, M0,˜  {˜Li}i∈I⟩, where N˜ = (˜P, ˜T, ˜A, ˜ω)non-fault sequence M0 −−−−→, k ∈N is deﬁned. Similarly,
+for  t3, we  can  also ﬁnd  t2 ∈  L(N, M0)  such  that   as follows:
+L2(t2) = L2(t3) =  b and an  arbitrarily long non-fault                                                                  •  ˜P = P ∪{pf}, where pf is a new place;                   t2(t2)k
+sequence M0 −−−−→, k ∈N is deﬁned. In other words,      •  ˜T = T ∪{te,i : e ∈Σ, i ∈I}, where each te,i is a new
+when t3 occurs, none of the agents knows for sure that a         transition deﬁned for each e ∈Σ, i ∈I;
+fault will occur in a ﬁnite number of steps. Therefore, fault      •  ˜A and ˜ω are deﬁned by:
+sequence t3f1 cannot be alarmed correctly, i.e., the system        – For any t ∈TN, I(t) and O(t) are the same as in N
+is not coprognosable.                                            and ∀p ∈P : ˜ω(p, t) = ω(p, t), ˜ω(t, p) = ω(t, p).
+  Before proceeding to the veriﬁcation of coprognosability        – For any t ∈TF , I(t) is the same as in N with
+for labeled Petri nets, we ﬁrst deﬁne the notions of boundary          ∀p ∈P  : ˜ω(p, t) = ω(p, t), while O(t) = {pf}
+marking and non-indicator marking, which was originally            with ˜ω(t, pf) = 1.
+introduced in [27].                                          – For any te,i, e ∈Σ, i ∈I, I(t) = O(t) = {pf} and
+  Deﬁnition 3.2: A marking M ∈Nn is said to be                          ˜ω(te,i, pf) = ˜ω(pf, te,i) = 1.
+                                                         tf
+  • a boundary marking if (∃tf ∈TF )[M −→];                                          and             • The  initial marking  is M0˜  = [M 0⊤ 0]⊤, where we
+                                                   ∗  • a non-indicator marking if (∀K ∈N)(∃σ ∈T N : |σ| ≥       assume that the last place is pf.
+
+
+                                                       4847
+
+                                          𝜀, 𝑏
+               𝑡2   𝜀, 𝑏                                              𝑡𝑏,1 𝑏, 𝜀                                 is deﬁned if, for any i ∈I, we have
+                       𝑡3        𝜀, 𝜀            𝑡1                                         𝑡𝑏,2           𝑎, 𝜀                                      [˜Li(t0) = Li(ti)] ∧[˜Li(t0)=ϵ ⇒ti =λ]    (2)
+                                  𝑝𝑓        𝑡𝑎,1
+           𝑎, 𝜀   𝑝1  𝑎, 𝑏  𝑝2  𝑓1                                                          – For each i ∈I, transition (t0, t1, . . . , ti, . . . , tn) ∈                                             𝑡𝑎,2  𝜀, 𝑎
+                                                                                     T|| is deﬁned if
+                            (a) ⟨˜N, M0,˜  { L1,˜  L2}⟩˜
+                                                                    [Li(ti)=ϵ] ∧[ti̸ =λ] ∧[∀j ≥0, j̸ = i : tj =λ] (3)
+                       𝑡2𝑁  𝜀, 𝑏
+              𝑁          𝑡3𝑁                               – For    each   deﬁned    transition    t∥   =                   𝑡1
+                                                                                 (t0, t1, t2, . . . , tn)  ∈   T||, we  have  I(t∥) =
+                                    S i≥0 I(ti) and O(t∥) = S i≥0 O(ti). Also,                    𝑎, 𝜀  𝑝1  𝑎, 𝑏  𝑝2
+
+                                              (                          (b) ⟨NN, M0, {L1, L2}⟩                                                             ˜ω(t0, p)       if p ∈˜P                                                                                      ω||(t∥, p) =
+                                                                                               ωN,i(ti, p)   if p ∈PN,i
+ Fig. 2. NN and N˜ are constructed based on the system in Figure 1(b).
+
+                                              (                                                                                                        ˜ω(p, t0)       if p ∈˜P
+                                                                                    ω||(p, t∥) =  • For each i ∈I, the labeling function ˜Li : ˜T →Σ ∪{ϵ}                               ωN,i(p, ti)   if p ∈PN,i
+      is deﬁned as
+
+                                                                                  0                                                     ⊤ M 0⊤ M 0⊤ . . . M0⊤ ]⊤.          Li(t)   if t ∈TN                         • M0,|| = [M˜
+                                                                           Intuitively, net ⟨N||, M0,||⟩consists of (n+1) components,          ϵ         if t ∈Tf               ˜Li(t) =                                    where the ﬁrst component N˜  is used to track the “leading”                     e         if t = te,j and i = j
+          ϵ         if t = te,j and  i̸ = j           sequence that goes to a boundary marking and the (i + 1)-                                                                   th component NN,i  is used to track the i-th “following”
+   Intuitively, N˜ is a copy of N except for new place pf and   sequence that goes to a non-indicator marking. Moreover,
+                                                                   for each i ∈I, the leading sequence and the i-th following
+new transitions te,i. In particular, for any non-fault sequence,
+the dynamic of N˜ and the labels coincide with those of   sequence have the same observation based on the labeling
+N.˜ On the other hand, when a fault transition ﬁres, a token   functions Li and ˜Li.
+is sent to new place pf in N˜ signifying the occurrence of     More   speciﬁcally,   for   any    transition   t∥   =
+                                                                      (t0, t1, . . . , ti, . . . , tn)  ∈   T||  satisfying  Equation  (2),fault. For each e ∈Σ, a series of self-loop transitions te,i
+                                                                the   leading   transition  moves  and   each   followingare correspondingly deﬁned at pf, so that for any non-fault
+                                                     component  should move  accordingly   if  this  transitionsequence whose label  is e1 . . . ek under Li, there always
+                                                         does not look as ϵ  locally. Similarly,  for any  transition
+exists a self-loop sequence in the form of te1,i . . . tek,i that
+                                     t∥= (t0, t1, . . . , ti, . . . , tn) ∈T|| satisfying Equation (3),produces the same observation under ˜Li but produces empty
+                                                         each   following  component  can   execute   a   locallyobservation under ˜Lj, j̸ = i. As will become clear later, such
+                                                           unobservable  transition  without  involving  the  leadinga construction is used to ﬁnd non-indicator markings.
+                                                     component and other following components. To sum up,
+  Also, we denote by NN the normal net obtained by remov-
+                                                                   for any sequence σ = (σ′, σ1, σ2, . . . , σn) ∈L(N||, M0,||)ing transitions in TF from N. We denote by NN,1, . . . , NN,n
+                                             we can conclude  that  ˜Li(σ′) =  Li(σi). On  the  othern copies of NN with disjoint places PN,i and transitions
+TN,i. For example, for Petri net shown in Figure 1(b), N˜    hand,  for  any  σ′  ∈  L(N,˜ M0),˜    σi  ∈  L(NN,i, M0)
+                                                      and  ˜Li(σ′) =  Li(σi), i ∈I,  there  exists a sequenceand NN are shown in Figures 2(a) and 2(b), respectively.
+                                              σ  ∈  L(N||, M0,||)  such  that   it  is  in  the  form  of  Next,  we   build   a  new   (unlabeled)   Petri   net
+                                                                   (σ′, σ1, σ2, . . . , σn)   (possibly  by   inserting   λ).  This⟨N||, M0,||⟩   which    synchronizes   ⟨˜N, M0⟩˜      with
+                                                               construction of N||  is motivated by the so called veriﬁer⟨NN,1, M0⟩, . . . , ⟨NN,n, M0⟩  so  that  the move  in  the
+                                                                   (or  twin-machine)  construction  for  diagnosability  andﬁrst component and the (i + 1)-th component have the same
+                                                               prognosability  analysis;  see,  e.g.,  [7],  [8],  [18],  [20],label under ˜Li and Li. Formally, Petri net
+                                                                    [29]. Here, we adopt the basic idea and extend  it to the
+        ⟨N||, M0,||⟩, where N|| = (P||, T||, A||, ω||),           decentralized setting for the purpose of fault prognosis with
+                                                                    non-trivial modiﬁcations.
+is deﬁned as follows:                                   The following theorem reveals how to use net ⟨N||, M0,||⟩
+  •  P|| = ˜P ∪PN,1 ∪PN,2 ∪· · · ∪PN,n;                       to test coprognosability for labeled Petri nets.
+  •  T|| ⊆˜T + × T N,1+ × T N,2+ × · · · × T N,n+  \ {(λ, . . . , λ)};      Theorem 4.1: Labeled Petri net ⟨N, M0, {Li}i∈I⟩is not
+                                           |(n+1)times{z   }      coprognosable w.r.t. TF ,  if and only  if, there exists a se-
+  • A|| and ω|| are deﬁned by:                           quence
+      – For any t0 ∈˜T, transition (t0, t1, t2, . . . , tn) ∈T||                    M0,|| α−→N|| M1 β−→N|| M2               (4)
+
+
+                                                       4848
+
+in ⟨N||, M0,||⟩such that                                          in Theorem 4.1 satisﬁes the Yen’s formula and M1 ≤M2.
+                                                      Note that transitions predicates can be replaced by marking
+(M2 ≥M1) ∧(   _      #α(t) ≥1)∧           (5)    predicates. Moreover, the size of our condition is polynomial
+               t∈TF ×{λ}×···×{λ}                                in the number of transitions and number of places in the
+( ^        _                 #β(t) ≥1)    original net (but is exponential in the number of local agents).
+                                                              Therefore, we conclude that checking coprognosability  is
+ i∈I t∈˜T +×TN,1×···×T+       N,i−1×TN,i×T+            N,i+1×···×T+         N,n+                                                             decidable and  it can be solved in EXPSPACE in the size
+  Let us explain the basic idea of the above theorem. Note
+                                                              of the original net when the number of local agents is ﬁxed.
+that, each sequence  in N∥consists of (n + 1) compo-
+nents. We denote by αi−1 the i-th components in α,  i.e.,                                                                        Finally, we show how  to use Theorem 4.1  to  verify
+α = (α0, α1, . . . , αn); the same for β. Now, let us assume                                                              coprognosability by the following example.
+that there exists a sequence satisfying the three conditions.                                                      Example 4.1: Let us again  consider  labeled  Petri  net
+Since W t∈TF ×{λ}×···×{λ} #α(t) ≥1, we know that the   ⟨N, M0, {L1, L2}⟩shown in Figure 1(b), where To,1 =
+ﬁrst component α0 must contain a fault transition and there                                                                  {t1, t3}, To,2 = {t2, t3} and TF = {f1}. Its correspond-
+exists a preﬁx of α0 leading to a boundary marking. Also,                                                             ing net ⟨N||, M0,||⟩is depicted in Figure 3. For the sake
+the last condition implies that β1, β2, . . . , βn are all non-λ.                                                              of clarity, we use super-script Ni for each transition and
+This together with M2 ≥M1 guarantees that any marking                                                              place that correspond to NN,i.˜    For example, transition is
+reached by a preﬁx of α1, α2, . . . , αn  is a non-indicator                                                     deﬁned (t1, tN11  , λ) in deﬁned in N||, since L1(t1) = a and
+marking, since each βi can be ﬁred for an arbitrary number of                                                         L2(t1) = ϵ, i.e., Equation (2) is fulﬁlled. Similarly, transition
+times. Thus, the conditions in Theorem 4.1 essentially ensure                                                              (λ, λ, tN21  )  is also deﬁned since L2(t1) =  ϵ; this  is the
+that there exist a leading sequence that goes to a boundary                                                                    situation described in Equation (3).
+marking and n following sequences, each of them goes to                                                 As we discussed in Example 3.2, the system is not coprog-
+a non-indicator marking, such  that the leading sequence                                                               nosable. Next we show this using Theorem 4.1. Speciﬁcally,
+and each following sequence  are  locally observationally                                             we have the following sequence in ⟨N||, M0,||⟩:
+equivalent, which disproves coprognosability. On the other
+                                         1           0       0      0hand,  if the labeled Petri net  is not coprognosable,  i.e.,
+there exists a sequence α such that M0,||  α−→N|| M1 =      0         =:α       0     =:β1    0     =:β2    0
+  ⊤  ⊤   ⊤     ⊤                                    0   z             }|             { 1  z       }|       { 1  z       }|       {  1[M B M 1,1 M 1,2 . . . M1,n]⊤, where MB is a boundary mark-               (t3, tN11   , tN22  )(f1, λ, λ)     (ta,1, tN11   , λ)      (tb,2, λ, tN22  )                                                        1 −−−−−−−−−−−−−−−−−−−→ 1 −−−−−−−−−−−→ 1 −−−−−−−−−−−→ 1ing and M1,1, M1,2, . . . , M1,n are n non-indicator markings.
+                                                        0                 0           0           0As  all  fault  transitions are unobservable in  ˜L, we have
+      (tf ,λ,...,λ)                                            1                 1           1           1M1 −−−−−−−→N|| M2 for some tf ∈TF . Such an M2 can                                                                                                                                                                                                                                                                                                                                      0                 0           0           0
+be extended to a covering since the self-loops in the form of
+te,i in N˜ can track any sequence that forms a covering for      =:M0,|||{z}               =:M1|{z}                    =:M2|{z}
+each component.                                                     where   places   in   each   marking   are   ordered  by
+  In the above theorem, we have shown that checking non-   {p1, p2, pf, pN11  , pN12  , pN21  , pN22  }.  This  sequence  satisﬁes
+coprognosability is equivalent to checking the existence of    the   condition   in   Equation   (5).    First,  we   have
+a speciﬁc sequence in net ⟨N∥, M0,∥⟩. This condition  is    (f1, λ, λ) ∈TF ×{λ}×{λ} and #α((f1, λ, λ)) = 1. Second,
+actually veriﬁable as a special case of Petri nets model    for β := β1β2, we have (ta,1, tN11  , λ) ∈˜T + × TN,1 × T N,2,+
+checking problem called the Yen’s problem [26]. This leads              +   +                                                                            (tb,2, λ, tN22  ) ∈˜T × T N,1 × TN,2 and #β((ta,1, tN11  , λ)) =
+to the decidability of coprognosability.
+                                                             #β((tb,2, λ, tN22  )) = 1. Also,  it is clear that M2 = M1.
+  Theorem 4.2: Checking coprognosability is decidable for                                                              Therefore, the system  is not coprognosable according to
+label Petri nets. Moreover, it is in EXPSPACE.                                                  Theorem 4.1.
+     Proof: The decidability comes from the fact that the ex-
+                                                                              V. CONCLUSIONistence of a sequence satisfying the Equation (5) is expressed
+by a logic called Yen’s formula [4], [26], whose satisﬁability      In this paper, we solve the problem of verifying coprog-
+is decidable. Speciﬁcally, Yen’s result allows us to test the    nosability for decentralized labeled Petri nets. We show that
+                                σ1        σ2             σk
+existence of a sequence M0 −→M1 −→· · · Mk−1 −→    this problem is decidable by providing a veriﬁable necessary
+Mk such that a predicate φ(M1, . . . , Mk, σ1, . . . , σk) holds,   and sufﬁcient condition. Our result extends existing results
+where φ(M1, . . . , Mk, σ1, . . . , σk) is a marking and transi-   on coprognosability analysis from regular languages to Petri
+tion predicate obtained by conjunctions and disjunctions of    net languages. Note that coprognosability is a condition that
+the terms in the form of Mi(p) = Mj(p′), Mi(p) > Mj(p′),   determines a priori whether or not any fault can be predicted.
+#σi(t) ≤c, #σi(t) ≥c and #σi(t) ≤#σj(t′), where  How to develop efﬁcient online prognostic algorithms for
+t, t′ ∈T, p, p′ ∈P and c  is an arbitrary constant. For    decentralized Petri nets is an important future direction.
+more detail on Yen’s logic, the reader  is referred to the                                                               REFERENCES
+literature [26]. Moreover, it has been shown in [4] that the
+                                                                                     [1] R. Ammour, E. Leclercq, E. Sanlaville, and D. Lefebvre.   Fault
+Yen’s problem can be decided in EXPSPACE if M1 ≤Mk          prognosis of timed stochastic discrete event systems with bounded
+and there is no transition predicate. Clearly, our condition          estimation error. Automatica, 82:35–41, 2017.
+
+
+                                                       4849
+
+            (𝜆, 𝑡2𝑁1, 𝜆)
+
+
+                     𝑝1𝑁1                             𝑝2𝑁1
+                                             𝑁2)
+                                 𝑡3
+            (𝑡1, 𝑡1𝑁1, 𝜆)         (𝑡1, 𝑡3𝑁1, 𝜆)        𝑁1,                                 𝑡1    (𝑡3, 𝑡1𝑁1, 𝑡2𝑁)
+                                     (𝑡3, 𝑡3𝑁1, 𝑡3𝑁2)    (𝑡3,
+                                                                                                    (𝑡𝑎,1 , 𝑡1𝑁1, 𝜆)       (𝑡𝑎,1 , 𝑡3𝑁1, 𝜆)
+
+
+                                                                                      𝑝𝑓
+                    𝑝1                                   𝑝2           (𝑓1, 𝜆, 𝜆)
+                                     (𝑡2, 𝜆, 𝑡3𝑁2)
+                                                                                                     (𝑡𝑏,2 , 𝜆, 𝑡3𝑁2)
+               (𝑡2, 𝜆, 𝑡2𝑁2)
+
+                                                        𝑝2𝑁2
+             (𝜆, 𝜆, 𝑡1𝑁2)
+                   𝑝1𝑁2
+                                               (𝑡3, 𝑡3𝑁1, 𝑡2𝑁2)
+
+                                                                                                                             (𝑡𝑏,2 , 𝜆, 𝑡2𝑁2)
+
+                                                     Fig. 3.  ⟨N||, M0,||⟩for the system in Figure 1(b).
+
+
+
+ [2] R. Ammour, E. Leclercq, E. Sanlaville, and D. Lefebvre. State esti-    [16] R. Kumar and S. Takai. Decentralized prognosis of failures in discrete
+     mation of discrete event systems for rul prediction issue. International          event systems. IEEE Trans. Autom. Contr., 55(1):48–59, 2010.
+     Journal of Production Research, 55(23):7040–7057, 2017.               [17] D. Lefebvre.  Fault diagnosis and prognosis with partially observed
+ [3] R. Ammour, E. Leclercq, E. Sanlaville, and D. Lefebvre.   Faults           Petri nets. IEEE Trans. S.M.C.: Syst., 44(10):1413–1424, 2014.
+     prognosis using partially observed stochastic petri-nets: an incremental    [18] A. Madalinski, F. Nouioua, and P. Dague. Diagnosability veriﬁcation
+     approach. Discrete Event Dynamic Systems, pages 1–21, 2018.               with Petri net unfoldings.  Int. J. Knowledge-Based and Intelligent
+ [4] M. F. Atig and P. Habermehl. On Yen’s path logic for Petri nets.         Engineering Syst., 14(2):49–55, 2010.
+      International Journal of Foundations of Computer Science, 22(4):783–    [19]  F. Nouioua, P. Dague, and L. Ye. Predictability in probabilistic discrete
+     799, 2011.                                                                  event systems. In Soft Methods for Data Sci., pages 381–389. 2017.
+ [5] B. Benmessahel, M. Touahria, and F. Nouioua. Predictability of fuzzy    [20] N. Ran, H. Su, A. Giua, and C. Seatzu. Codiagnosability analysis of
+      discrete event systems. Discrete Event Dynamic Systems, 27(4):641–        bounded Petri nets. IEEE Transactions on Automatic Control, 2017.
+     673, 2017.                                                              [21]  S. Takai. Robust prognosability for a set of partially observed discrete
+ [6] N. Bertrand, S. Haddad, and E. Lefaucheux. Foundation of diagnosis          event systems. Automatica, 51:123–130, 2015.
+     and predictability in probabilistic systems.  In 34th IARCS Annual    [22]  S. Takai and R. Kumar.  Inference-based decentralized prognosis in
+     Conf. FSTTCS, pages 417–429, 2014.                                            discrete event systems.  IEEE Transactions on Automatic Control,
+ [7] B. Bordbar, A. Al-Ajeli, and M. Alodib. On diagnosis of violations         56(1):165–171, 2011.
+      of constraints in Petri net models of discrete event systems. In 26th    [23]  S. Takai and R. Kumar. Distributed failure prognosis of discrete event
+      International Conference on Tools with Artiﬁcial Intelligence, pages         systems with bounded-delay communications.  IEEE Trans. Autom.
+     673–680. IEEE, 2014.                                                            Contr., 57(5):1259–1265, 2012.
+ [8] M.P. Cabasino, A. Giua, S. Lafortune, and C. Seatzu. A new approach    [24] L. Ye, P. Dague, and F. Nouioua. Predictability analysis of distributed
+      for diagnosability analysis of Petri nets using veriﬁer nets. IEEE Trans.           discrete event systems. In 52nd CDC, pages 5009–5015, 2013.
+     Automatic Control, 57(12):3104–3117, 2012.                            [25] L. Ye,  P. Dague, and F. Nouioua. A predictability algorithm for
+ [9]  F. Cassez and A. Grastien. Predictability of event occurrences in timed           distributed discrete event systems.  In International Conference on
+     systems. In Formal Mod. Anal. Timed Syst., pages 62–76. 2013.             Formal Engineering Methods, pages 201–216. Springer, 2015.
+[10] M. Chang, W. Dong, Y.  Ji, and L. Tong.  On fault predictability    [26] H.-C. Yen. A uniﬁed approach for deciding the existence of certain
+      in  stochastic  discrete event systems.   Asian journal  of  Control,           Petri net paths. Inform. Computation, 96(1):119–137, 1992.
+     15(5):1458–1467, 2013.                                                 [27] X. Yin.  Veriﬁcation of prognosability for labeled petri nets. IEEE
+[11]  J. Chen and R. Kumar.  Stochastic failure prognosability of discrete          Transactions on Automatic Control, 2018.
+     event systems. IEEE Trans. Autom. Contr., 60(6):1570–1581, 2015.      [28] X. Yin and S. Lafortune. A general approach for solving dynamic
+[12]  S. Genc and S. Lafortune.   Predictability of event occurrences in          sensor activation problems for a class of properties.  In 54th IEEE
+      partially-observed discrete-event systems. Automatica, 45(2):301–311,         Conference on Decision and Control, pages 3610–3615, 2015.
+     2009.                                                                   [29] X. Yin and S. Lafortune.  On the decidability and complexity of
+[13]  T. J´eron, H. Marchand, S. Genc, and S. Lafortune.  Predictability of          diagnosability for labeled Petri nets. IEEE Trans. Autom. Contr., 2017.
+     sequence patterns in discrete event systems. In Proc. 17th IFAC World    [30] X. Yin and Z. Li.  Decentralized fault prognosis of discrete-event
+     Congress, pages 537–543, 2008.                                          systems using state-estimate-based protocols. IEEE Transactions on
+[14] A. Khoumsi.  Multi-decision prognosis: Decentralized architectures          Cybernetics, 2018. DOI: TCYB.2018.2799961.
+     cooperating for predicting failures in discrete event systems. In 20th    [31] X. Yin and Z.-J. Li. Decentralized fault prognosis of discrete event
+     Mediterranean Conference on Control & Automation, pages 309–314.         systems with guaranteed performance bound.  Automatica, 69:375–
+     IEEE, 2012.                                                               379, 2016.
+[15] A. Khoumsi and H. Chakib. Conjunctive and disjunctive architectures    [32] X. Yin and Z.-J. Li. Reliable decentralized fault prognosis of discrete-
+      for decentralized prognosis of failures in discrete-event systems. IEEE          event systems. IEEE Trans. S.M.C.: Syst., 49(10), 2016.
+     Trans. Autom. Sci. Engin., 9(2):412–417, 2012.
+
+
+                                                       4850

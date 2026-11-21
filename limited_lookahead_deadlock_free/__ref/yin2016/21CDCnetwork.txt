@@ -1,0 +1,528 @@
+2021 60th IEEE Conference on Decision and Control (CDC)
+December 13-15, 2021. Austin, Texas
+
+
+  Modeling and Analysis of Networked Supervisory Control Systems
+                   with Multiple Control Channels
+
+
+                      Zhaocong Liu, Junyao Hou, Xiang Yin and Shaoyuan Li
+
+
+  Abstract— In  this paper, we propose a novel framework                                 0/1                                                              CHANNEL 𝟏       ACT𝟏for modeling and analysis of networked discrete-event sys-
+tems (DES). We assume that the plant  is controlled by a       …    …
+feedback supervisor whose control decisions are subject to               CHANNEL 𝒏  0/1   ACT𝒏    G
+communication delays and losses. Furthermore, we consider                                 Actuators   Plant
+a general setting where the supervisor sends control decisions    …
+to different actuators via different communication channels
+whose dynamic are independent. We provide a system theoretic
+                                                                  SUP𝒏 𝒔∈{𝟎, 𝟏}approach by identifying the state-space of overall networked                                                                                                   Supervisor  𝒔∈𝚺∗
+system and investigating the dynamic of the entire state-space.       …
+                                                                               SUP
+Our approach precisely specify the roles of the supervisor, the               SUP𝟏 𝒔∈{𝟎, 𝟏}
+communication channels and the actuators. Also, we compare
+the proposed networked DES model with the existing one and                                                                                  Fig. 1.  Networked supervisory control architecture with multiple control
+show that the proposed networked model can capture physical    channels considered in this work.
+situations of a networked system more precisely.
+                                                                   in networked DES is to appropriately handle the issues of
+                          I. INTRODUCTION                                                      communication delays and losses in the control/observation
+  Supervisory control theory (SCT) in the context of Dis-   channels, which is an active research direction in the liter-
+crete Event Systems (DESs) is a formal approach for the    ature. For example, in [3], [22], I/O automata are used to
+synthesis of correct-by-construction controllers for dynamic   model networked DES with communication delays. Timing
+systems  [6],  [19],  [20]. The SCT has been  extensively    issue has also been considered in networked DES by [2],
+investigated for more than thirty years since the seminal    [13], [14], [23].
+work of Ramadge and Wonham. Nowadays, in many modern      In the recent work of Lin [8] and its subsequential works
+applications, supervisors are connected with plants via com-    [7], [10], [15], [16], a language-based framework is proposed
+munication networks to transmit data, e.g., control decisions    for modeling and control of networked DES. In particular,
+or sensor readings. This leads to the so called networked dis-   communications delays and losses are considered in both the
+crete event systems, which have drawn considerable attention    control channel and the observation channel. In this frame-
+in the past few years in the literature; see, e.g., [1], [5], [8],   work, necessary and sufﬁcient conditions for the existence of
+[9], [12], [14], [17], [24].                                   a supervisor as well as supervisor synthesis procedures have
+  Compared with non-networked control architecture, one   been investigated extensively. Our woks is motivated by the
+of the most important features of networked control  ar-   language-based framework proposed by Lin. However, we
+chitecture  is  that  the  control decision module,  e.g.,  the   aim to further explore more practice networked DES models
+supervisor, may not be embedded in the plant. In many   by considering the following two issues that have not been
+application, for example, this is due to physical constraints    fully addressed in [8]:
+because sensors, actuators and supervisors are physically      • The control decision in the framework of [8] is sent
+distributed, in particular, for large-scale systems. Moreover,        as a “package" to all actuators; this corresponds to the
+the networked control architecture provides more ﬂexibility        case of a single control channel. In practice, actuators
+for the implementation of the supervisor. For example, one         in the plant may be physically distributed and, there-
+can implement the supervisor in the cloud by utilizing more         fore, different actuators, which correspond to different
+powerful computational resources.                                   controllable  events, may receive decisions from the
+  On the other hand, transmitting data over networks  is        supervisor by different control channels.
+sometimes  unreliable due  to communication  delays and      • The closed-loop language deﬁned in [8]  is an over-
+losses; this is particularly the case in process industries with        approximation of the exact language of the networked
+severe environments [11]. Therefore, the central problem        systems. Particularly, there may exist physically infea-
+                                                                          sible strings in the closed-loop language deﬁned in [8];
+  This work was supported by the National Key Research and Development
+                                                           an example for such a scenario is provided in Section V.Program of China (2018AAA0101700) and the National Natural Science
+Foundation of China (6217020111,62061136004,61803259).                 In this work, we investigate the networked supervisory
+  This  work  was  supported  by   the  National  Natural  Science    control architecture depicted in Figure 1, where the supervi-
+Foundation  of  China  (61803259,  61833012)  and  by  Shanghai  Jiao
+Tong University Scientiﬁc and Technological Innovation Funds. E-mail:    sor sends control decisions to different actuators via different
+{zhaocongl,houjunyao,yinxiang,syli}@sjtu.edu.cn. control channels whose dynamics are independent and all
+
+
+978-1-6654-3658-8/21/$31.00 ©2021 IEEE                     316
+
+channels may be subject to communication delays and losses.      In the supervisory control framework, the event set  is
+To focus on investigating the effect of delays and losses in    partitioned as two disjoint sets
+multiple control channels, we assume that the observation
+                                                 Σ = Σc ˙∪Σuc,channel  is perfect with full observation. Our approach  is
+from a system theoretic perspective by identifying the state-                                                     where Σc is the set of controllable events and Σuc is the set
+space of overall networked system and investigating the                                                              of uncontrollable events. A supervisor is a function
+dynamic of the entire state-space. Such “states" of the entire
+networked systems are referred to as network conﬁgurations.                 SUP : L(G) →2Σc,                  (1)
+In particular, we explicitly distinguish the roles of the super-
+                                                                     that dynamically decides which controllable events to enable.
+visor, the communication channels and the actuators because
+                                                      Note that uncontrollable events are always enabled by de-
+the current control decision issued by the supervisor may
+                                                                           fault. Then the closed-loop language under control, denoted
+not be the current control decision applied in the actuator.
+                                                    by L(SUP/G), is deﬁned recursively by
+In  particular, we show  that, compared with the closed-
+                                                                  • ϵ ∈L(SUP/G);loop language deﬁned in [8], our deﬁnition of closed-loop
+                                                                  •  for any s ∈Σ∗, σ ∈Σ, we have sσ ∈L(SUP/G) ifflanguage is more precise in the sense it excludes those strings
+that are physically infeasible.                                                                           [s ∈L(SUP/G)] ∧[sσ ∈L(G)] ∧[σ ∈SUP(s) ∪Σuc].
+  Our work in most related to the recent work of [24], where
+FIFO channel automata are proposed to model the dynamic    Intuitively, the above deﬁnition says that sσ is in the closed-
+of the communication channels. However, the model in [24]   loop language if (i) s is in the closed-loop language; and (ii)
+is for the case of single control channel, while our new   sσ is feasible in G; and (iii) σ is either uncontrollable or
+dynamic models captures the nature of multiple control   enabled by SUP upon the occurrence of s.
+channels. In the literature of networked DES, the effect of
+                                                            B. Supervisor Implementation over Networksmultiple observation channels has been investigated very
+recently for state estimation and detection [1], [18], [21].     Note that we can write supervisor SUP in Equation (1)
+However, to the best of our knowledge, the effect of multiple    equivalently as
+control channels in the context of networked DES has never
+                                                         SUP : L(G) × Σc →{0, 1},              (2)been considered. Furthermore, we explicitly compared the
+closed-loop language in our framework with the one in [8],   where “0" means “disable" and “1" means “enable".
+which is also not considered in [24].                                                         Although supervisors deﬁned in Equations (1) and (2) are
+  The remainder of  this paper  is organized as follows.   mathematically equivalent, their physical interpretations in
+In Section  II, we introduce some necessary notations and   terms of how the supervisor is implemented are quite differ-
+present multi-channel setting. Modeling and analysis of com-    ent. Speciﬁcally, Equation (1) suggests that, at each instant,
+munication delays and communication losses in each single    the supervisor sends control decision SUP(s) as a package
+control channel are provided in Section III. In Section IV,    to the plant. However, in practice, each controllable event
+we propose the closed-loop dynamics of the overall system    represents a single actuator and actuators in the plant may
+consisting of multiple control channels. The comparison   be physically distributed. Therefore, Equation (2) captures a
+between our framework and the framework in [8] is provided   more general scenario where the supervisor sends control de-
+in Section V.                                                    cision SUP(s)(σ) (disable or enable) to each σ individually.
+                                                           This difference is crucial in the networked setting as the su-
+          II. NETWORKED SUPERVISORY CONTROL
+                                                                pervisor may send control decisions to different actuators by
+A. Standard Supervisory Control                                 different communication channels whose network properties
+                                                               (delays or losses) are different and independent.  We consider a DES modeled as a deterministic ﬁnite-state
+                                                                 In general, the system has |Σc| actuators. Hereafter, forautomaton (DFA)
+                                                                the sake of simplicity, we assume that event set Σ is ordered
+         G = (Q, Σ, δ, q0),                      so that the ﬁrst |Σc| events in Σ are controllable with Σc =
+                                                          {σ1, σ2, · · · , σ|Σc|}. For each σi ∈Σc, the corresponding
+where Q is the ﬁnite set of states, Σ is the ﬁnite set of                                                                 actuator is denoted by ACTi. Also, for the sake of simplicity,
+events, δ  : Q × Σ →Q is the (partial) transition function                                             we write
+and q0 ∈Q is the initial state. The transition function can be                                                                      SUPi(s) := SUP(s)(σi),
+extended to δ : Q×Σ∗→Q recursively in the usual manner;
+see, e.g., [4]. A string is a sequence of events in the form   which is the control decision (0 or 1) the supervisor sends to
+of s = σ1σ2 · · · σn, σi ∈Σ; a language is a set of strings.   ACTi upon the occurrence of string s in the plant. In the non-
+We denote by Σ∗the set of all strings over Σ including the   networked setting, this decision will be received by ACTi
+empty string ϵ. Then the language generated by DFA G is   immediately and take  effect. However, in the networked
+L(G) = {s ∈Σ∗: δ(q0, s)!}, where ! means “is deﬁned".    setting,  the decision  for σi  is  transmitted  to ACTi  via
+For any positive natural number N ∈N, we denote by [1, N]    the corresponding control channel denoted by CHANNELi,
+the set of natural numbers from 1 to N.                   which may be subject to the following issues:
+
+
+                                                       317
+
+  • Control Delays: decision SUPi(s) may be delayed in the      (iii) The conﬁguration of each control channel CHANNELi,
+     sense that it will go to CHANNELi and is not received        which captures what decisions are waiting in the chan-
+    by ACTi immediately but after some delays.                   nel and in what order. Formally, for each CHANNELi,
+  • Control Losses: decision SUPi(s) may be lost in the         the channel conﬁguration for σi is a set of pairs in the
+     sense that it will not go to CHANNELi, and therefore,        form of
+       it will never be received by ACTi.
+                                                                                    θi = {(γ1, n1), (γ2, n2), . . . , (γk, nk)}
+  Note  that,  in  this work, we only focus on the  issue
+of delays and losses in control channels. The observation        where γj ∈{0, 1} and nj ∈[1, NiD ]. We denote by Θi
+channels are assumed to be perfect with full observation. To         the set of all channel conﬁgurations for CHANNELi.
+present our framework, we make the following assumptions          Intuitively, for each (γ, n) ∈θi, γ ∈{0, 1} represents
+on the control channels:                                         a disable or enable decision while n represents the
+                                                   maximum remaining time of γ in the channel.A1 For each CHANNELi, the number of consecutive deci-
+                                   L                  (iv) Finally, for the case of decision losses, we also need a    sion losses is upper bounded by integer Ni ∈N;
+                                                                  counter to capture the number of consecutive decisionA2 For each CHANNELi, the number of control delays is
+                     D                                   losses for each channel.    upper bounded by integer Ni ∈N;
+A3 The number of delays or losses are counted by event      Hereafter, we will discuss how this state-space evolves,
+    occurrences in the plant;                                                i.e., the dynamics of the networked control system. We
+A4 For each CHANNELi, decisions in the channel are ﬁrst-    ﬁrst discuss the issues of communication delays and losses
+    in-ﬁrst-out (FIFO);                                         separately and then show how to combine them together.
+A5 The initial control decisions are embedded in each ACTi;                                                            B. Communication Delays
+    hence are not subject to control delays or losses;
+                                                           For the case of control delays, in addition to the currentA6 The dynamic of each CHANNELi, i = 1, . . . , |Σc| are
+                                                                     string executed s ∈L(G), we also need to track the current    independent,  i.e., delays or losses in one channel will
+                                                           channel conﬁguration  θi ∈Θi and the current actuator    not affect delays or losses in another channel.
+                                                           conﬁguration ai ∈{0, 1}. For any θi ∈Θi, we deﬁne
+In the following sections, we will formally describe the
+                                                              operator NX : Θi →Θi by
+dynamics of such a networked supervisory control system.
+                                                        NX(θi) = {(γ, n −1) : (γ, n) ∈θi ∧n > 1}
+      III. DELAYS AND LOSSES IN SINGLE CHANNEL
+                                                     which decreases the remaining time of each control decision
+  Since control channels are independent, in this section,    in the channel by one unit.
+we focus on modeling and analysis of each single channel.     Now, for controllable event σi ∈Σc, suppose that the
+Speciﬁcally, we provide a framework to explicitly capture    current actuator conﬁguration  for ACTi  is ai ∈{0, 1}
+the issues of delays and losses from a system theoretic   and the current channel conﬁguration CHANNELi is θi =
+perspective.                                                  {(γ1, n1), (γ2, n2), . . . , (γk, nk)} ∈Θi. Suppose that SUPi
+                                                           sends a new decision γ ∈{0, 1}. We are interested in what
+A. State Space for Control Networks                           are the next actuator conﬁguration and channel conﬁguration
+                                                                   for σi. To this end, we deﬁne operator  In the system theory, states are referred to as variables with
+minimum number that are sufﬁcient enough to represent the        MoveDi   : {0, 1} × Θi × {0, 1} →2{0,1}×Θi
+current status of the dynamic system. In the standard super-
+visory control framework, string s ∈L(SUP/G) executed   by: for any (ai, θi) ∈{0, 1} × Θi and γ ∈{0, 1}, we have
+is sufﬁcient enough to serve as the “state" of the system      •  If θi = ∅, then
+as it determines both the current-state δ(q0, s) in the plant                                D                                                MoveDi (ai, θi, γ) = {(γ, ∅), (ai, {(γ, Ni )})}    (3)and the current control decision SUP(s) applied (when SUP
+is realized by a ﬁnite-state automaton, it further sufﬁces to      •  If θi̸ = ∅and nmin = 1, then
+know the current-state in the supervisor automaton). Howev-
+er, this information is not sufﬁcient to determine the current       MoveDi (ai, θi, γ) = {(γmin, NX(θi) ∪{(γ, NiD )})}
+status of a networked control system as the current control                                                                (4)
+decision issued and the current control decision applied may      •  If θi̸ = ∅and nmin > 1, then
+be different due to communication delays and losses.            MoveDi (ai, θi, γ)                                  (5)
+  Now, we provide a general state-space model for net-                            D
+                                                                                          (ai, NX(θi) ∪{(γ, Ni )}),worked supervisory  control systems. The  “state"  of  the     =                            D
+                                                                  (γmin, NX(θi \ {(γmin, nmin)}) ∪{(γ, Ni )})networked closed-loop system contains four components:
+  (i) The states of the plant and the supervisor; both can be       where (γmin, nmin) ∈θ is the pair such that nmin =
+     determined by string s ∈L(G) executed.                  min{n1, . . . , nk}.
+  (ii) The conﬁguration of each actuator ACTi representing       Intuitively, MoveDi  captures how the conﬁgurations of
+     the current effective control decision (0 or 1) for σi.    CHANNELi and ACTi evolve when a new decision is issued.
+
+
+                                                       318
+
+Note that MoveDi  is a non-deterministic transition function                 (𝟎, 𝟎)   (𝟏, 𝟎)   (𝟎, 𝟏)   (𝟎, 𝟏)
+as control delay may happen or not. More precisely:
+                                                                           σ3      σ1     σ2     σ1
+  • Equation (3) captures the case when CHANNELi  is            1     2     3     4     5
+    empty. Depending on whether or not control delay
+     occurs, there are two scenarios
+                                                                                           Fig. 2.  System G with Σ = {σ1, σ2, σ3}, Σuc = {σ3}
+      – Decision γ is received by ACTi without delay: then
+         the conﬁguration of ACTi will be updated to γ and     Now, let us consider how CHANNEL2 for event σ2 evolves
+         the conﬁguration of CHANNELi is still ∅;           under communication delays. Here we assume N2D = 2.
+      – Decision γ  is delayed in CHANNELi: then the    Initially, the conﬁguration for ACT2 is a2 = SUP2(ϵ) = 0
+         conﬁguration of ACTi  will be unchanged while   and the conﬁguration for CHANNEL2 is θ2 = ∅. When new
+         the conﬁguration of CHANNELi will be updated   event σ3 occur, the supervisor sends γ = SUP2(σ3) = 0 to
+          to {(γ, NiD )}, where NiD is the upper bound for  CHANNEL2 and we update the conﬁgurations to
+          delays.
+                                                 MoveD2 (0, ∅, 0) = {(0, ∅), (0, {(0, 2)})},  • Equation (4) captures the case when CHANNELi  is
+      full in the sense that there exists a control decision                                                     where (a2, θ2) = (0, ∅) corresponds to the case that the new-
+    γmin with only one unit  left,  i.e., nmin = 1. Since    ly issued 0 is received by ACT2 and (a2, θ2) = (0, {(0, 2)})
+   we consider FIFO channel, ACTi  will receive γmin   corresponds to the case that the newly issued 0 is delayed
+     deﬁnitely and the remaining times of all other decisions                                                                   in CHANNEL2 and ACT2 is still using the original disable
+     in CHANNELi will be decreased by one unit with new   decision 0. Let us assume that the second case happens
+     decision (γ, NiD ) plugged in.                         and the current conﬁgurations are (a2, θ2) = (0, {(0, 2)}).
+  • Equation (5) captures the case when CHANNELi  is   Then when event σ1 occurs, the supervisor will send γ =
+    non-empty but is also not full. Then the following two                                                    SUP2(σ3σ1) = 1 to CHANNEL2 and then we update the
+     scenarios are possible                                                           conﬁgurations to
+      – No decision  is received by ACTi. In  this case,
+                                           MoveD2 (0, {(0, 2)}, 1) = {(0, {(1, 2)}), (0, {(0, 1), (1, 2)})},         the actuator conﬁguration remains unchanged and
+         the channel conﬁguration is updated to NX(θi) ∪   where (i) (a2, θ2) = (0, {(1, 2)}) corresponds to the case
+         {(γ, NiD )}.                                               that the previous issued decision 0 in the channel is received
+      – Decision γmin is received by ACTi. In this case,   by ACT2 and the newly issued decision 1 is waiting in the
+         the actuator conﬁguration is updated to γmin and   channel; and (ii) (a2, θ2) = (0, {(0, 1), (1, 2)}) corresponds
+         the channel conﬁguration is updated by eliminating                                                                   to the case that both the previous issued 0 and the newly
+        γmin and adding γ. Still, no decision whose re-   issued 1 are delayed in CHANNEL2 and ACT2 is still using
+        maining time is greater than nmin can be received    the initial decision 0.
+        due to the FIFO property of the channel.
+  Remark 1: Note that, in Θi, the domain of each (γ, n) ∈   C. Communication Losses
+Θi  is {0, 1} × [1, NiD ]. Therefore, when NiD =  0,  i.e.,    Now we proceed to model communication losses in the
+CHANNELi is not suffering from control delay, the channel    control channel. As we mentioned earlier, we assume that
+conﬁguration is always empty,  i.e., θi = ∅. In this case,   communication losses can happen only when the supervisor
+operator MoveDi  is always in the form of                    sends a control decision to a communication channel. In
+                                                               other words, once a decision goes into the communication
+      MoveDi (ai, ∅, γ) = (γ, ∅), ∀ai, γ ∈{0, 1}.            channel, it will not be lost in between and will arrive at the
+                                                                 actuator eventually.
+This recovers the standard non-networked setting, where we
+                                                    To focus on the  effect of control  losses, we  ﬁrst do
+do not need to specify the actuator conﬁguration separately
+                                                             not consider control delays in this subsection. Therefore,
+because it is always the case that the actuator conﬁguration
+                                             we do not need the channel conﬁguration as a part of the
+is the same as the  latest control decision made by the
+                                                                        "state". However, to capture the assumption that CHANNELi
+supervisor. However, separating the roles of ACTi and SUPi                      L
+                                                           cannot have more than Ni  consecutive losses, we need to
+is crucial in our networked setting.                                                              introduce a “counter" component. We denote by NLi  :=
+  We illustrate the above concepts for the case of commu-            L                                                             {0, 1, · · · , Ni } the counter set.
+nication delays by the following example.                                                   Now, for controllable event σi ∈Σc, suppose that the
+  Example 1: Consider system G shown in Figure 2 with                                                                current actuator conﬁguration is ai ∈{0, 1} and the counter
+Σ =  {σ1, σ2, σ3}, Σc =  {σ1, σ2}. Suppose  that G  is                                                   number is ci ∈NLi . Suppose that SUPi sends a new decision
+controlled by a given supervisor SUP. Since we assume that                                                  γ ∈{0, 1}. We are also interested in what are the next
+the system is fully observed, the vector associated with each                                                                 actuator conﬁguration and the next counter number for σi.
+state denotes the control decision of SUP for each σi. For                                                  To this end, we deﬁne operator
+example, (0, 0) at state 1 represents that the initial control
+
+                                                                                                                                                                               idecisions are SUP1(ϵ) = 0 and SUP2(ϵ) = 0.                  MoveLi  : {0, 1} × NLi × {0, 1} →2{0,1}×NL
+
+
+                                                       319
+
+by: for any ai ∈{0, 1}, ci ∈NLi and γ ∈{0, 1}, we have        •  If θi = ∅and ci = NiL , then
+           L
+  •  If ci = Ni  , then
+                                                                                                   (γ, ∅, 0),
+                                              MoveDLi   (ai, θi, ci, γ) =         D             .    (8)             MoveLi (ai, ci, γ) = {(γ, 0)}.           (6)                                     (ai, {(γ, Ni )}, 0)
+
+           L
+  •  If ci < Ni  , then                                            •  If θi = ∅and ci < NiL , then
+        MoveLi (ai, ci, γ) = {(γ, 0), (ai, ci + 1)}.    (7)                  (ai, ∅, ci + 1),  
+   Intuitively, Equation (6) captures the case that there are     MoveDLi   (ai, θi, ci, γ) =       (γ, ∅, 0),       (9)
+already NiL consecutive losses for control decisions trans-                (ai, {(γ, NiD )}, 0) .
+missions. Therefore, the current decision γ will be received
+                                                                           L
+by ACTi deﬁnitely and the counter is reset to 0. On the other      •  If θi̸ = ∅, nmin = 1 and ci = Ni  , then
+hand, Equation (7) captures the case that the accumulated
+                                                     MoveDLi   (ai, θi, ci, γ) =                 (10)consecutive losses ci has not yet exceeded the upper bound.
+Then decision γ may either be received, which leads to                  (γmin, NX(θi) ∪{(γ, NiD )}, 0)   .
+(γ, 0), or be lost, which leads to (ai, ci + 1). Therefore,
+                                                                  •  If θi̸ = ∅, nmin = 1 and ci < Ni  , thenMoveLi  is still a non-deterministic function in general.                                  L
+  Remark 2: When NiL = 0, the above model also boils
+down  to the standard non-networked  case. In  this  case,           MoveDLi   (ai, θi, ci, γ) =                   (11)
+ci  is always equal to 0, and MoveLi  is only in the form                  (γmin, NX(θi) ∪{(γ, NiD )}, 0),                                                                                                                                                                          .
+of MoveLi (ai, 0, γ) = (γ, 0),  i.e., the control decision can                     (γmin, NX(θi), ci + 1})
+always be received by the actuator immediately.
+  We illustrate the above concepts for the case of commu-      •  If θi̸ = ∅, nmin > 1 and ci = NiL , then
+nication losses by the following example.
+  Example 2: We still consider system G shown in Figure 2      MoveDLi   (ai, θi, ci, γ) =                           (12)
+with Σ = {σ1, σ2, σ3}, Σc = {σ1, σ2}. We assume that          (γmin, NX(θi \ {(γmin, nmin)}) ∪{(γ, NiD )}, 0),                                                                                                                                                                                      .
+CHANNEL1 for σ1 is subject to communication losses with                       (ai, NX(θi) ∪{(γ, NiD )}, 0)
+N1L = 1 and we illustrate how CHANNEL1 evolves. Initially,
+the conﬁguration for ACT1 is a1 = SUP1(ϵ) = 0 and the      •  If θi̸ = ∅, nmin > 1 and ci < NiL , then
+counter  is c1 =  0. When the supervisor sends the ﬁrst
+control decision γ = SUP1(σ3) = 1 to CHANNEL1 upon      MoveDLi   (ai, θi, ci, γ) =                          (13)
+the occurrence of σ3, we update it according to                         (ai, NX(θi), ci + 1),       
+                                    (γmin, NX(θi \ {(γmin, nmin)}), ci + 1),  
+         MoveL1 (0, 0, 1) = {(0, 1), (1, 0)},                                     (ai, NX(θi) ∪{(γ, NiD )}, 0),                  .
+                                (γmin, NX(θi \ {(γmin, nmin)}) ∪{(γ, NiD )}, 0)where (i) (0, 1) corresponds to the case that the newly issued
+decision 1  is lost and therefore, ACT1  is  still using the                                                    The above deﬁned MoveDLi    boils down to MoveDi  or
+previous 0 and the countered is added to 1; and (ii) (1, 0)                          L       D                                            MoveLi , respectively, when Ni = 0 or Ni = 0. Speciﬁ-
+corresponds to the case that the newly issued decision 1 is             L
+                                                                         cally, when Ni = 0, Equations (8), (10) and (12) becomes
+received by ACT1 and the counter is reset to 0. Note that                                   D
+                                                           Equations (3), (4) and (5), respectively. When Ni = 0,
+if the ﬁrst case happen, then the second control decision                                                           Equations (8) and (9) becomes Equations (6) and (7), re-
+γ = SUP1(σ3σ1) = 0 to CHANNEL1 will not be lost for
+                            L                           spectively. However, Equations (11) and (13) capture the
+sure as the counter is already 1 = N2 .                                                               scenarios when delays and losses are combined. Speciﬁcally,
+                                                                the ﬁrst element in Equation (11) corresponds to the case thatD. General Case with Both Delays and Losses
+                                                    γmin is received by ACTi but γ is plugged in CHANNELi,
+  Now, we consider the general case in which both delays                                                           while the the second element corresponds to the case that
+and losses may happen in CHANNELi. In this case, we need                                                    γmin is received by ACTi but γ is lost. For Equation (13), it
+to track the channel conﬁguration θi ∈Θi, the actuator                                                              captures the four possible combinations of "γmin is received
+conﬁguration ai ∈ACTi and the counter number ci ∈NLi ;   by ACTi or not" and "γ is lost or not".
+these together constitute the "state" of the system, which
+are also referred to as the network conﬁguration. To capture
+                                                             IV. CLOSED-LOOP DYNAMICS OF THE OVERALL SYSTEMhow the state evolves upon the occurrence of new decision
+γ ∈{0, 1}, we deﬁne operator                                                                 In the previous section, we have discussed how to model
+                                                                the state and dynamic of each single channel. In this section,                                                                                      i , MoveDLi     : {0, 1} × Θi × NLi × {0, 1} →2{0,1}×Θi×NL
+                                             we aim to consider all (independent) channels together and
+which combines MoveDi  and MoveLi . Speciﬁcally, for any   provide the closed-loop behavior of the overall supervisory
+ai ∈{0, 1}, θi ∈Θ, ci ∈NLi and γ ∈{0, 1}, we have          control system with control delays and losses.
+
+
+                                                       320
+
+A. Multiple Channel System                    A set of extended string  is called an extended language.
+                                                              Therefore, a networked supervisory control system essen-  Since control channels are independent, the overall "state"
+                                                                            tially generates an extended language Le(SUP/G) deﬁnedof the systems is a vector in which each component reﬂects
+                                                                 recursively as follows:the status of a single channel. Formally, the actuator conﬁg-
+uration of the overall system is a |Σc|-dimensional vector        •  (ϵ, a0, θ0, c0) ∈Le(SUP/G);
+                                                                  • For any t = (s, a, θ, c) and σ ∈Σ, we have  t′ =
+          a = (a1, a2, . . . , a|Nc|) ∈{0, 1}|Σc|.                        (s′, a′, θ′, c′) ∈Le(SUP/G) iff
+We denote by A the set of all actuator conﬁgurations. For        –  t ∈Le(SUP/G);
+each actuator conﬁguration a ∈A, we denote by Γ(a) the        –  s′ = sσ ∈L(G);
+                                                          – σ ∈Γ(a) ∪Σuc;set of controllable events that are enabled, i.e.,
+                                                          –  (a′, θ′, c′) ∈Move(a, θ, c, γ(s′)), where γ(s′) :=
+              Γ(a) = {σi ∈Σc : ai = 1}.                           (SUP1(s′), . . . , SUP|Σc|(s′))
+                                                    The above deﬁnition is explained as follows. Essentially,Similarly, the channel conﬁguration of the overall system is
+                                                                                              it deﬁnes all extended strings that can be generated by thea |Σc|-dimensional vector
+                                                        system in an inductive manner. In the inductive step, the ﬁrst
+    θ = (θ1, θ2, . . . , θ|Nc|) ∈Θ1 × Θ2 × · · · × Θ|Σc|.         condition says that the preﬁx should be an extended string
+                                                            generated by the system. The second condition says that new
+We denote by Θ = Θ1 × · · · × Θ|Σc| the set of all channel   event σ should be feasible in the original plant G. The third
+conﬁgurations. Also, we deﬁne the overall consecutive losses                                                              condition says that event σ should be enabled by the current
+counter as                                                                 actuator conﬁguration a. Finally, the last condition captures
+  c = (c1, c2, · · · , c|Σc|) ∈NL1 × NL2 × · · · × NL|Σc| =: NL    how the network conﬁguration evolves upon the new control
+                                                              decision γ(s′). The effect of γ(s′) will be recorded in the
+The dynamics of the overall network conﬁguration is deﬁned   network conﬁguration and may determine the occurrence of
+by operator                                        some future events when it arrives at actuators as a.
+                                                       Based on the extended language, we can deﬁne the actual
+    Move : A × Θ × NL × {0, 1}|Σc| →2A×Θ×NL                                                          language generated by the closed-loop system in the net-
+such that: for any (a, θ, c), (a′, θ′, c′) ∈A × Θ × NL and   worked setting as the projection of the extended language
+                                                           onto the ﬁrst component, i.e.,γ ∈{0, 1}|Σc|  , we have (a′, θ′, c′) ∈Move(a, θ, c, γ) iff
+ ∀i = 1, . . . , |Σc| : (a′i, θ′i, c′i)∈MoveDLi   (ai, θi, ci, γi). (14)  L(SUP/G) = {s∈Σ∗: ∃a, θ, c s.t.(s, a, θ, c)∈Le(SUP/G)}.
+                                                           This completes our general model for networked supervisoryB. Closed-loop Language
+                                                                control system over multiple channel networks.
+  In order to specify the complete dynamics of the closed-
+loop system, the last piece is to specify the initial conﬁg-   C. Case of Shared Control Channels
+uration of the network. As we mentioned early, the initial                                                        Note that, in all the above developments,  it is assumed
+control decision can neither be delayed nor lost. In practice,                                                                     that each actuator uses  its own control channel. In some
+this means that the initial decisions are already embedded                                                                   applications, a group of actuators may share the same control
+in the actuators before the plant runs. Therefore, the initial                                                           channel because they are physically located together and
+actuator conﬁguration is given by                                                                the control decisions are sent as packages to each group
+                                                              of actuators. In such a scenario, we can assume that Σc is      a0 = (SUP1(ϵ), SUP2(ϵ), . . . , SUP|Σc|(ϵ)) ∈A.
+                                                                  partitioned as m groups
+Since the communication channels are all empty initially, the
+                                                            Σc = Σc,1 ˙∪Σc,2 ˙∪. . . ˙∪Σc,minitial channel conﬁguration is given by
+                                                         such  that actuators in each Σc,i share the same control               θ0 = (∅, ∅, . . . , ∅) ∈Θ.
+                                                           channel CHANNELi. Our framework and all previous de-
+Also, the initial counter is given by                         velopments can be easily adapted to the case. The only
+                                                                 differences is that the control decision in each CHANNELi is
+                 c0 = (0, 0, . . . , 0) ∈NL.                    then in the domain of {0, 1}|Σc,i| rather than in {0, 1}. In the
+                                                      most extreme case where all actuators share the same control  Note that, although our main purpose is to calculate the
+                                                              channel, this general setting boils down to the single channelactual  strings generated by the system,  to  this end, we
+                                                                    setting in the framework of Lin [8], where all decisions arealso need to track the conﬁgurations of the overall network
+                                                                 sent as a single package. Here, instead of formally presentingsimultaneously. This is captured by the concept of extended
+                                                                the generalization which is rather straightforward, we use thestrings. Formally, an extended string is a string augmented
+                                                             following example to illustrate our point.with the network conﬁguration in the form of
+                                                      Example 3: We still consider system G shown in Figure 2
+             t = (s, a, θ, c) ∈Σ∗× A × Θ × NL.              with Σc =  {σ1, σ2}. Now assume  that both events σ1
+
+
+                                                       321
+
+and σ2 share the same control channel, which is the single     Remark 3: In  the  proposed modeling  framework,  the
+channel denoted by CHANNEL. This actually corresponds to    state-space grows exponentially fast with the delay upper
+the setting in [8], where all control decisions are sent as a   bound NiD and the loss upper bound NiL due to the combina-
+package. Therefore, each control decision in the channel is    tion of conﬁgurations of control channels. However, in prac-
+in {0, 1} × {0, 1}. For instance, γ = (1, 0) at state 2 means    tice, NiD and NiL are usually very small and delays/losses
+that SUP1(σ3) = 1 and SUP2(σ3) = 0.                       occur very rarely. For the case of large delays and losses, one
+  Now, suppose that CHANNEL is subject to communication   may ﬁrst seek to improve the network hardware environment
+delays with N D = 2 and communication losses with N L =    rather than to improve the control algorithm.
+1. We still consider supervisor SUP as speciﬁed in Figure 2.
+Then the extended language generated by SUP/G can be              V. COMPARISON AND DISCUSSION
+computed as follows:                                                                 In  [8], Lin proposed a language-based framework  for
+  •  Initially, we have                                        supervisory control of networked discrete event systems.
+           (ϵ, a0, θ0, c0) = (ϵ, (0, 0), ∅, 0) ∈Le(SUP/G),        In this section, we compare the our model for networked
+                                                             supervisory control systems with the one proposed in [8] and
+    Note that the dimensions of θ0 and c0 are both one since   show that our model more precisely captures the practical
+     there is only one single channel.                                                                    situation compared with Lin’s model.
+  • Since σ3 is uncontrollable and σ3 ∈L(G), we compute                                                        Note that the framework in [8] considers delays and losses
+      Move(a0, θ0, c0, γ) =                                     in both control and observation channels. For the purpose of
+                                                          comparison, here we just review the part for delays and losses       {((0, 0), {((1, 0), 2)}, 0), ((0, 0), ∅, 1), ((1, 0), ∅, 0)}
+                                                                   in control channels. The basic setting of control delays and
+     with γ = (SUP1(σ3), SUP2(σ3)) = (1, 0). Therefore,    losses in [8] is as follows:
+     the following three extended strings are in Le(SUP/G):                                                                  • The control decision made by the supervisor is sent as
+      – (σ3, (0, 0), {((1, 0), 2)}, 0); and                         a package to the actuators; and
+      – (σ3, (0, 0), ∅, 1); and                                    • Communication delays in control are assumed to be
+      – (σ3, (1, 0), ∅, 0).                                    bounded by Nc steps and at least one control command
+    which represent the cases that the newly issued control         in the past Nc steps can be received by the supervisor.
+     decision (package) γ =  (1, 0)  is delayed,  lost and                                                                    Essentially, the ﬁrst setting assumes that a single control
+     neither delayed nor lost, respectively.                                                           channel is used in the feedback loop. However, our frame-
+  • When the  actuator conﬁguration  is  (0, 0), we have                                                   work captures the more general setting with multiple control
+     Γ((0, 0)) =  ∅, which means both σ1 and σ2  are                                                              channels. For the second setting, [8] proposes the following
+     disabled; therefore, no event can happen from state 2.                                                             deﬁnition of closed-loop language L(SUP/G) 1:
+    However, for Γ((1, 0)) = {σ1}, we can enable σ1 for
+                                                                  • ϵ ∈L(SUP/G);    extended string (σ3, (1, 0), ∅, 0). Then we compute
+                                                                  •  for any s ∈Σ∗, σ ∈Σ, we have sσ ∈L(SUP/G) iff
+      Move((1, 0), ∅, 0, γ) =                                                          – s ∈L(SUP/G); and
+       {((1, 0), {((0, 1), 2)}, 0), ((1, 0), ∅, 1), ((0, 1), ∅, 0)}          – sσ ∈L(G); and
+                                                          – σ∈Σuc∪SUP(s)∪SUP(s−1)∪· · ·∪SUP(s−Nc)     with γ =  (SUP1(σ3σ1), SUP2(σ3σ1)) =   (0, 1).
+     This  yields the following  three extended  strings  in   where s−k denotes the string obtained by removing the last
+    Le(SUP/G):                                    k events in s. This deﬁnition essentially handles control
+      – (σ3σ1, (1, 0), {((0, 1), 2)}, 0); and                   delays by roughly considering all possible control decision
+      – (σ3σ1, (1, 0), ∅, 1); and                                 in the past Nc steps. Since all possible control decisions are
+      – (σ3σ1, (0, 1), ∅, 0).                                   considered, control losses are handled implicitly as the case
+                                                              of no decision received is also included.  • For  the   last  extended   string  above,  we  have
+                                                                Therefore, such a deﬁnition does not precisely distinguish     Γ((0, 1))  =   {σ2},   i.e.,  event  σ2   is  enabled.
+                                                       between control delays and losses precisely as both are   By  computing  Move((0, 1), ∅, 0, γ)   for  γ  =
+                                                          handled roughly. As a consequence, L(SUP/G) is just an    (SUP1(σ3σ1σ2), SUP2(σ3σ1σ2)) =  (0, 1), we obtain
+                                                           over-approximation of the behavior of the closed-loop system     the following three extended strings:
+                                                      and  it may contain some behaviors that are physically not
+      – (σ3σ1σ2, (0, 1), {((0, 1), 2)}, 0); and
+                                                                  possible. We illustrate this point by the following example.
+      – (σ3σ1σ2, (0, 1), ∅, 1); and
+                                                      Example 4: We consider system G shown in Figure 2 with      – (σ3σ1σ2, (0, 1), ∅, 0).
+                                                Σc = {σ1, σ2}. We assume there is only one single control
+  •  Finally, since Γ((0, 1)) = {σ2} for each of the above
+                                                              channel, i.e., σ1 and σ2 shares the same channel as the case
+    extended string, we can no longer proceed to enable σ1,                                    D                                                              of Example 3. Also, we assume the delay bound is N = 2
+       i.e., no extended string can be deﬁned from σ3σ1σ2.
+                                                              or Nc = 2 using the notation of [8].
+Therefore, by  projecting  the  obtained  extended  strings
+above to  their ﬁrst components, we have L(SUP/G) =     1We used L(·) rather than L(·) to distinguish between the closed-loop
+{ϵ, σ3, σ3σ1, σ3σ1σ2}.                                               language deﬁned in [8] with our deﬁnition.
+
+
+                                                       322
+
+  According to the deﬁnition of closed-loop language in [8],      [2] M.V.S. Alves, Lilian K Carvalho, and J.C. Basilio. Supervisory control
+we can compute L(SUP/G) recursively by:                             of timed networked discrete event systems. In 56th IEEE Conference
+                                                                      on Decision and Control, pages 4859–4865, 2017.
+  • ϵ ∈L(SUP/G);                                                                                     [3]  S. Balemi. Input/output discrete event processes and communication
+  • σ3 ∈L(SUP/G) since σ3 ∈Σuc                                       delays. Discrete Event Dynamic Systems, 4(1):41–85, 1994.
+  • σ3σ1 ∈L(SUP/G) since σ1 ∈SUP(σ3);                         [4] C.G. Cassandras and S. Lafortune.  Introduction to Discrete Event
+                                                                                  Systems. Springer, 2nd edition, 2008.  • σ3σ1σ2 ∈L(SUP/G) since σ2 ∈SUP(σ3σ1);
+                                                                                     [5] Z. He, Z. Ma, and W. Tang.  Performance safety enforcement in
+  • σ3σ1σ2σ1 ∈L(SUP/G) since σ1 ∈SUP((σ3σ1σ2)−2).          strongly connected timed event graphs. Automatica, 128:109605, 2021.
+However, the last string σ3σ1σ2σ1 is not physically possible      [6] Y. Hu, Z. Ma, and Z. Li. Design of supervisors for active diagnosis
+because the enablement of the last σ1  relies on decision           in discrete event systems. IEEE Transactions on Automatic Control,
+                                                                             65(12):5159–5172, 2020.
+SUP((σ3σ1σ2)−2) = SUP(σ3) which  is received  at the
+                                                                                     [7]  J. Komenda and F. Lin. Modular supervisory control of networked
+instant of σ3. However, the occurrence of σ3σ1σ2 means that          discrete-event systems.  In 13th International Workshop on Discrete
+the actuator must have received SUP(σ3σ1) = σ2 without         Event Systems, pages 85–90, 2016.
+delay or loss. This means that SUP(σ3) has already been (i)      [8]  F. Lin.  Control of networked discrete event systems: dealing with
+                                                                         communication delays and losses.  SIAM Journal on Control and
+taken from the channel, (ii) received by the actuator; and (iii)          Optimization, 52(2):1276–1298, 2014.
+erased by new decision received by the actuator. Therefore,      [9]  F. Lin, L.Y. Wang, W. Chen, W. Wang, and F. Wang.  Information
+event σ1 after σ3σ1σ2 is not possible physically. However,          control in networked discrete event systems and  its application to
+this string is included in the deﬁnition of [8] because it only          battery management systems. Discrete Event Dynamic Systems, pages
+                                                                             1–26, 2020.
+considers an estimated possible control decisions, in which    [10] Z. Liu, X. Yin, S. Shu,  F. Lin, and S.  Li.   Online supervisory
+some may not be feasible.                                                     control of networked discrete-event systems with control delays. IEEE
+  However, as we have already discussed in Example 3          Transactions on Automatic Control, 2021.
+(assuming there is no control loss), string σ3σ1σ2σ1 is not    [11]  J. Lunze. Control Theory of Digitally Networked Dynamic Systems.                                                                                      Springer, 2014.
+included in L(SUP/G) because we precisely model the    [12] C.E.V. Nunes, M.V. Moreira, M.V.S. Alves, L.K. Carvalho, and J.C.
+state-space and the dynamics of the network. This example           Basilio. Codiagnosability of networked discrete event systems subject
+also justiﬁes the advantage of the proposed network model           to communication delays and intermittent loss of observation. Discrete
+                                                                            Event Dynamic Systems, pages 1–32, 2018.
+compared with the existing one in the literature in addition                                                                              [13]  S. Pruekprasert and T. Ushio. Supervisory control of communicating
+to the general multiple channel setting.                                timed discrete event systems for  state avoidance problem.  IEEE
+                                                                               Control Systems Letters, 4(1):259–264, 2019.
+                  VI. CONCLUSION                                                                              [14] A. Rashidinejad, M. Reniers, and L. Feng.  Supervisory control of
+  In this paper, we provide a new framework for modeling         timed discrete-event systems subject to communication delays and
+and analysis of networked supervisory control systems with         non-ﬁfo observations.  In 14th International Workshop on Discrete
+                                                                            Event Systems, pages 456–463, 2018.
+control delays and control losses over multiple communi-    [15]  S. Shu and F. Lin. Decentralized control of networked discrete event
+cation channel networks. Our approach follow a system         systems with communication delays.  Automatica, 50(8):2108–2112,
+theoretic perspective by identifying the state-space of overall         2014.
+                                                                              [16]  S. Shu and  F. Lin.   Deterministic networked control of discrete
+networked system and investigating the dynamic of the entire                                                                                  event systems with nondeterministic communication delays.  IEEE
+state-space. Compared with the language-based deﬁnition of          Transactions on Automatic Control, 62(1):190–205, 2017.
+networked DES, our framework more precisely captures the    [17]  S. Yang, J. Hou, X. Yin, and S. Li. Opacity of networked supervi-
+behavior of a networked DES that are physically feasible.          sory control systems over insecure communication channels. IEEE
+                                                                                 Transactions on Control of Network Systems, 8(2):884–896, 2021.
+Furthermore, our framework allows to handle the general                                                                              [18] Y. Yao, Y. Tong, and H. Lan. Initial-state estimation of multi-channel
+scenario where the supervisor may send control decisions to         networked discrete event systems.  IEEE Control Systems Letters,
+different actuators via different communication channels.            4(4):1024–1029, 2020.
+  Note that, throughout this paper, we investigate how the    [19] X. Yin and S. Lafortune.  A uniform approach for synthesizing
+                                                                                   property-enforcing supervisors for partially-observed discrete-event
+networked system evolves under a given supervisor and          systems. IEEE Transactions on Automatic Control, 61(8):2140–2154,
+deﬁne its closed-loop language appropriately. Two immediate         2016.
+problems arise within this framework:  (i) whether or not    [20] X. Yin and S. Lafortune. Synthesis of maximally-permissive supervi-
+                                                                                      sors for the range control problem. IEEE Transactions on Automatic
+there  exists a supervisor achieving a given speciﬁcation                                                                                    Control, 62(8):3914–3929, 2017.
+language; and (ii) how can we synthesize a supervisor whose    [21] X. Yin and S. Li. Opacity of networked supervisory control systems
+closed-loop behavior is a sub-language of the speciﬁcation.         over insecure multiple channel networks.  In 58th IEEE Conference
+The former is the supervisor existence problem and the latter        on Decision and Control, pages 7641–7646, 2019.
+                                                                              [22] M. Zgorzelski and J. Lunze. A model abstraction method for net-
+is the supervisor synthesis problem. We plan to investigate        worked discrete-event systems. In 18th European Control Conference,
+them within our framework in the future. Also, we would         pages 3976–3983, 2019.
+like to consider the issue of delays and losses in observation    [23] B. Zhao, F. Lin, C. Wang, X. Zhang, M.P. Polis, and L.Y. Wang.
+channels together with the control channels.                            Supervisory control of networked timed discrete event systems and
+                                                                                                               its applications to power distribution networks. IEEE Transactions on
+                 REFERENCES                                    Control of Network Systems, 4(2):146–158, 2017.
+                                                                              [24] Y. Zhu, L. Lin, S. Ware, and R. Su. Supervisor synthesis for networked
+ [1] M.V.S. Alves and J.C. Basilio.  State estimation and detectability of           discrete event systems with communication delays and lossy channels.
+     networked discrete event systems with multi-channel communication          In 58th IEEE Conference on Decision and Control, 2019.
+     networks. In American Control Conference, pages 5602–5607, 2019.
+
+
+
+
+                                                       323

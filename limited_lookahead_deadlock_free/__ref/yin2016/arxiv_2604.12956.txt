@@ -1,0 +1,608 @@
+                Output-Feedback Safe Control of Discrete-Time
+                    Stochastic Systems with Chance Constraints
+
+
+                                           Jianing Zhao, Zhuoting Cai and Xiang Yin
+
+
+            Abstract— In this paper, we investigate safety-critical control   tems and used them to synthesize safety-critical controllers
+         problem of discrete-time stochastic systems with incomplete   under diffusion-driven uncertainty.
+           information, where safety constraints must be enforced using                                                                  However, the aforementioned works are mainly developed
+            state estimates obtained from noisy measurements. We develop
+                                                                              for continuous-time systems. In practice, many real-world         an output-feedback control barrier function (CBF) framework
+          based on an expectation-based discrete-time barrier condition   systems are more naturally modeled and controlled in dis-
+           that explicitly incorporates estimation uncertainty through the    crete time due to sampling, scheduling, digital implemen-
+           evolving  belief over  the  state. To enable  real-time  imple-    tation, online optimization, model predictive control, and2026    mentation, we derive deterministic sufficient conditions that    discrete learning updates. This has motivated the develop-
+           conservatively enforce the expectation-based CBF by bound-
+                                                             ment of discrete-time CBFs for safety-critical control [10],           ing the expectation with computable functions of the belief
+             statistics using Jensen inequalities. The resulting safety filter is    [11]. For stochastic systems, related discrete-time barrier-Apr    formulated as a tractable optimization problem compatible with   function-based results have also been reported, including
+          standard online controllers. Numerical simulations demonstrate    finite-time probabilistic safety verification via barrier func-
+           that  the proposed  output-feedback approach  achieves  fast14                                                                       tions [12], expectation-based stochastic discrete-time CBFs
+           online computation while providing reliable safety performance
+                                                                    with Jensen-based reformulations and finite-horizon proba-            in the presence of process noise and measurement uncertainty.
+                                                                                      bility bounds [13]. Nevertheless, these works are still largely
+                                        I. INTRODUCTION                        limited to state-feedback settings or specific classes of safety
+                                                                               constraints, which motivates the study of output-feedback
+            Ensuring safety with formal guarantees is a central chal-                                                                           safe control for discrete-time stochastic systems.
+          lenge in autonomous systems. In recent years, control barrier                                                                           In this paper, we study safety-critical control for discrete-
+          functions (CBFs), originally introduced in [1], have attracted                                                                    time stochastic systems with incomplete state information. To[eess.SY]          considerable attention as a systematic framework for safe                                                                    handle the output-feedback setting, we incorporate Kalman
+           controller synthesis. By introducing a barrier function whose                                                                                      filtering into the CBF framework and construct an estimate-
+           superlevel set characterizes the safe region, CBFs enable                                                                   based safety function that links safety of the estimated state
+           the design of control policies that render this set forward                                                                              to that of the true state. On this basis, we develop a tractable
+            invariant, thereby ensuring that the system remains safe over                                                                            deterministic reformulation of the stochastic CBF condition
+           the operation time.                                                             by combining an expectation-based barrier condition with a
+            Building on this framework, various extensions have been                                                                       Jensen-type bound, and further derive explicit probabilistic
+          developed for systems subject to disturbances and uncer-                                                                            safety guarantees over a finite horizon.
+            tainty. For example, input-to-state safe CBFs were proposed        It is worth noting that [14] studies a related setting by
+           in [2], [3] to explicitly characterize the effect of perturbations    integrating Kalman filtering, worst-case CVaR, and CBFs.
+         on safety. Beyond the state-feedback setting, observer-based   In contrast, our approach is expectation-based and yields a
+       CBF frameworks have also been developed for safe control   Jensen-based deterministic reformulation. Since the worst-
+         under partial state information; see, e.g., [4]–[6]. However,   case CVaR method involves a min-max structure, it becomes
+           these approaches are mainly designed for deterministic sys-   much more expensive for complex safety constraints, while
+         tems or systems with bounded non-stochastic disturbances.    our approach directly gives a deterministic barrier constraint.arXiv:2604.12956v1
+          To address stochastic disturbances with unbounded sup-     The main contributions are summarized as follows:
+            port, stochastic extensions of CBFs have been developed      •  First, by formulating an expectation-based CBF condi-
+           for continuous-time systems. For example, [7] proposed a                                                                                   tion on the Kalman filter state estimates and relating
+           stochastic CBF framework for systems with process and                                                                                 estimated-state safety  to  true-state  safety, we estab-
+         measurement noise, showing that safety can  still be char-                                                                                          lish an explicit probabilistic safety bound for output-
+           acterized under stochastic uncertainty. Along this line, [8]                                                                        feedback control. This is in contrast to [14], where no
+          derived sufficient conditions for almost-sure safety and intro-                                                                                    theoretical safety probability guarantee is provided.
+         duced a stochastic zeroing CBF to characterize the probabil-      • Second, by exploiting the sufficient-statistic property
+            ity that a sample path remains within the safe set. Moreover,                                                                              of the Kalman state estimate, we derive conditional
+           [9] developed stochastic CBFs for nonlinear stochastic sys-                                                           moment properties of the estimation error and convert
+                                                                               the expectation-based stochastic CBF condition into a
+               All the authors are with the School of Automation and Intelligent Sens-
+              ing, Shanghai Jiao Tong University, Shanghai 200240, China. E-mail:         tractable Jensen-based deterministic CBF condition.
+         {jnzhao,marinasjtu,yinxiang}@sjtu.edu.cn.                   •  Finally, compared with [14], which only considers half-
+
+     space and ellipsoidal safety constraints, our approach     With the above preliminaries, now we formulate the main
+     applies to more general barrier functions, provided that   problem under investigation as follows.
+     the barrier function is twice continuously differentiable,
+                                                  Problem 1 (Output-Feedback Safe Control). Given sys-
+     has a uniformly bounded Hessian, and admits a global
+                                                      tem (1) satisfying Assumption 1 and a nominal controller
+    upper bound. Simulations further show that our ap-
+                                                                           ˆu0:T −1 :=  ˆu0ˆu1 · · · ˆuT −1  for a  finite horizon T ∈N,
+    proach can attain the same empirical safety probability
+                                                                synthesize an output-feedback controller of the form
+     as [14] with improved computational efficiency.
+                                                           uk = πk(y0:k, ˆu0:k),    k = 0, . . . , T −1,  The remaining part is organized as follows. In Section II,
+we formulate the problem under investigation and review the   such that u0:T −1 := u0u1 · · · uT −1 stays as close as possible
+expectation-based CBF framework. Section III presents our    to the nominal controller ˆu0:T −1 while guaranteeing safety
+solution to the output-feedback safe control problem. Sec-   over the entire horizon with probability at least 1 −ϵ, i.e.,
+tion IV provides simulation studies to validate the proposed                     T −1
+approach and compare it with existing related works. Finally,                                                        min X ∥uk −ˆuk∥22                    (3a)
+Section V concludes the paper.                                                  u0:T −1                                                                        k=0
+                                                                                                               s.t.  Ps(ξ(x0, u0:T −1)) ≥1 −ϵ.        (3b)                        II. PRELIMINARIES
+
+A. System Model                                            B. Expectation-based Control Barrier Function
+  Consider a discrete-time stochastic system                 To enforce safety for the stochastic systems, we adopt
+                                                                the expectation-based discrete-time stochastic control barrier
+             xk+1 = Akxk + Bkuk + wk            (1a)
+                                                              function framework [13] with slight modifications. We first
+                yk = Ckxk + vk                     (1b)   introduce several preliminary results as follows.
+where xk ∈Rn is the state, uk ∈Rm is the control input, wk ∈  Lemma 1 (Discrete-Time Stochastic CBF [13]). Consider
+Rnw is the disturbance, yk ∈Rny is the measurement, vk ∈   system (1a) and a continuous function h:Rn →R satisfying
+Rnv is the measurement noise at time instant k∈N. Given a
+                                          ∃M > 0, ∀x ∈Rn : h(x) ≤M.            (4)
+control sequence u0:K−1 := u0u1 · · · uK−1, we denote the
+corresponding system trajectory by                       The function h is called a discrete-time stochastic control
+                                                               barrier function if there exist α ∈(0, 1), δ ≤M(1 −α) and
+              ξ(x0, u0:K−1) := x0x1 · · · xK
+                                                    a control input sequence u0:K−1 such that
+where each  state xk  evolves according  to  (1a). Owing                                                    E[h(Akxk + Bkuk) | xk] ≥αh(xk) + δ, ∀xk ∈Rn.  (5)
+to the stochastic disturbances, ξ(x0, u0:K−1) is a random
+trajectory. Similarly, we denote by y0:K := y0y1 · · · yK the   Then, for any K ∈N, the K-step exit probability of the
+measurement output sequence generated by (1).               closed-loop trajectory Pex satisfies
+  Throughout this paper, we impose the following assump-      •  if δ < 0, we have
+tion on the stochastic processes.                                                  K
+                                                              M(1 −α) −δ                                 M −h(x0)
+                                                         αK +                                X αi−1                                            Pex ≤Assumption 1. The disturbances wk and the measurement         M        M
+                                                                                                            i=1
+noises vk are mutually independent zero-mean Gaussian
+                                                                  •  if δ ≥0, we have
+white-noise processes with finite second moments.
+  In this paper, we characterize safety by a function h:Rn →             Pex ≤1 −h(x0) Mα + δ K
+                                       M   MR. In particular, h(xk) ≥0 indicates that the system is safe
+                                                         However, the above expectation-based CBF is generallyat time k, whereas h(xk) < 0 indicates that the system is
+                                                                      intractable. To address this issue, we seek a deterministicunsafe. Since xk is a random variable due to the presence
+                                                              condition that upper bounds the expectation condition in aof stochastic disturbances, we adopt the following notion of
+                                                                    tractable manner. For this purpose, we recall a Jensen-typeK-step Exit Probability [13] to characterize the probability
+                                                                 inequality [15], which characterizes the relation between thethat the system leaves the safe set over a finite horizon K.
+                                                              expectation of a function and the function evaluated at the
+Definition 1 (K-step Exit Probability). Given a safety   expectation through a covariance-dependent correction term.
+function h:Rn →R and the random trajectory ξ(x0, u0:K−1)
+                                        Lemma 2 (Jensen’s Inequality). Consider a function h  :generated by system (1) under a control input sequence
+                                           Rn →R and a random variable x that takes values in Rnu0:K−1 over horizon K ∈N, the K-step exit probability
+                                                                    satisfyingis defined as
+                                                                                        i) h is twice-continuously differentiable;
+ P ex := Pe(ξ(x0, u0:K−1)) = P                            min   h(xk) < 0  .          ii) there is λmax >0 such that supx∈Rn∥∇2h(x)∥2 ≤λmax;                                      k∈{0,...,K}
+                                                                                          iii) E[∥x∥] < ∞and cov(x) < ∞.
+  Accordingly, the safety probability of the random trajec-
+                                                    Then we have
+tory ξ(x0, u0:K−1) is defined as
+    x                                                               E[h(x)] ≥h(E[x]) −1 P s := Ps(ξ(x0, u0:K−1)) = 1 −Pe(ξ(x0, u0:K−1)).  (2)                                2λmaxtr(cov(x))
+
+Proof. Since h is twice-continuously differentiable, based on   A. Kalman Filtering and Safety under State Estimation
+the second-order Taylor theorem, we have                                                    To handle the output-feedback control setting, we employ
+       h(x) = h(E[x]) + ∇h(E[x])T (x −E[x])              a Kalman filter [16] to estimate the state of system (1). Let
+               1
+        + 2(x −E[x])T ∇2h(ξx)(x −E[x])      (6)                         ˆxk := E[xk | y0, . . . , yk−1]
+where ξx := E[x] + θx(x −E[x]) for some θx ∈(0, 1).       denote the one-step state predictor. The filter is given by
+  By supx∈Rn∥∇2h(x)∥2 ≤λmax, we have                              ˆxk+1 = Akˆxk + Bkuk + Kk(yk −Ckˆxk)       (9)
+(x −E[x])T ∇2h(ξx)(x −E[x]) ≥−∥∇2h(ξx) ∥∥x−E[x]∥2   where the Kalman gain is
+                    ≥−λmax ∥x −E[x]∥2                                                Kk = AkPkC⊤k (CkPkC⊤k + Rk)−1,
+Taking expectation of both sides, we have                                                      and the prediction error covariance matrix Pk satisfies
+E[(x−E[x])T ∇2h(ξx)(x−E[x])] ≥−λmaxE ∥x−E[x]∥2                                                      Pk+1 = AkPkA⊤k + Qk
+                  = −λmaxtr(cov(x))   (7)
+                                              −AkPkC⊤k (CkPkC⊤k + Rk)−1CkPkA⊤k ,
+Substituting (7) into (6), we have                                                        P0 = E (x0 −ˆx0)(x0 −ˆx0)⊤  ,
+                   1
+                                                Qk = E[wkw⊤k ],    Rk = E[vkv⊤k ]. E[h(x)] = h(E[x]) + 2E[(x −E[x])T ∇2h(ξ)(x −E[x])]
+        ≥h(E[x]) −1                          We present two basic properties of the state estimator                     2λmaxtr(cov(x))                     concerning the mean and covariance of the estimation error
+The proof is thus completed.                                     [16], as well as its boundedness over a finite horizon [7].
+Remark 1. Here we would like to remark that we mainly   Proposition 1. Consider system (1) with Kalman filter (9)
+follow Lemma 1 in [13], but remove the concavity assump-   under Assumption 1. For all k ∈N, we have
+tion on h. In fact, as shown in the proof above, the concavity
+                                                             E[xk −ˆxk] = 0, cov[xk −ˆxk | y0:k] = Pkof h is not necessary for the stated bound to hold.
+                                                          Proposition 2. Consider system (1) with Kalman filter (9)  Now we present a tractable deterministic condition, de-
+                                                        under Assumption 1. For any σ > 0, there exists γ > 0 suchrived from the Jensen’s inequality, to enforce the expectation-
+                                                                   thatbased CBF condition. The following result adapts [13, The-
+                                                  P   sup  ∥xk −ˆxk∥2 ≤γ ≥1 −σ
+orem 6] from general nonlinear systems to the time-varying             0≤k≤K
+linear system considered in this paper.
+                                                                 In output-feedback setting, the exact state is not directly
+Lemma 3. Consider system (1a). Let h : Rn →R be          available, and therefore the CBF condition must be updated
+   i) twice-continuously differentiable; and                    using the state estimate rather than the true state. To this
+  ii) there is M >0 such that supx∈Rn h(x) ≤M.             end, we construct a new safety function whose nonnegativity
+Suppose that there exists α ∈(0, 1) such that                 implies the safety of the true state. Inspired by [7], we define
+     h(Akxk + Bkuk) −cJ ≥αh(xk), ∀xk ∈Rn,    (8)                                                     hγ = sup{h(x):∥x −x0∥≤γ for some x0 ∈h−1({0})}
+where
+        0 ≤cJ ≤λmax tr(cov[wk]) + M(1 −α)        Lemma 4 (Lemma 4 in [7]). If ∥xk−ˆxk∥2 ≤γ and h(ˆxk) >
+                  2                                 hγ hold, then we have h(xk) ≥0.
+Then we have δ = cJ −λmax2  tr(cov[wk]) such that           By the above construction, we define the state estimate-
+  E [h(Akxk + Bkuk) | xk] ≥αh(xk) + δ, ∀xk ∈Rn.      based safety function as
+  The above results are established under the assumption                          ˆh(x) = h(x) −hγ                 (10)
+of perfect state information. In contrast, when only partial
+                                                            Accordingly, the K-step exit probability associated with ˆhand noisy output measurements  are  available,  the exact
+                                                                              is defined asstate cannot be used to update the CBF condition (8). To
+this end, in what follows, we introduce an output-feedback           Peˆx := P   min    ˆh(ˆxk) < 0
+safe control framework that combines state estimation and                              k∈{0,...,K}
+stochastic barrier-based safety guarantees.                    Based on the above results, we can relate the exit probabil-
+                       III. MAIN RESULTS                           ity of the true state to that of the estimated state as follows.
+  In this section, we first review the Kalman filtering tech-   Proposition 3. Consider system (1) with Kalman filter (9)
+nique for state estimation and introduce the corresponding   under Assumption 1. Then, we have
+safety condition based on the estimated state. We then present                          x          ˆx                                                       Pe ≤Pe + σ
+our main result, which provides a tractable output-feedback
+                                                                Equivalently, we havesafe controller based on the Jensen’s inequality together with
+an explicit probabilistic safety guarantee.                            Psx ≥1 −Peˆx −σ
+
+Proof. By Lemma 4, we have                                then we have
+               (              )           E [h(ˆxk+1) | ˆxk] ≥αh(ˆxk) + δ′          (12)
+     min     ˆh(ˆxk) ≥0 ∩     sup   ∥xk −ˆxk∥2 ≤γ
+   k∈{0,1,...,K}                  k∈{0,1,...,K}                   where
+                                                                         δ′ ≤c′J −λmax                                                                   tr(Kkcov[vk]K⊤k )−λmax                                                                             tr(KkCkPkC⊤k K⊤k ) ⊆     min    h(xk) ≥0                                                               2                                                                                    2
+      k∈{0,1,...,K}                                                                                                     (13)
+Equivalently, we have                                                               Proof. By Lemma 2, we have
+     min    h(xk) < 0 ⊆                                E[h(ˆxk+1) | ˆxk]   k∈{0,1,...,K}
+               (              )  = E[h(Akˆxk + Bkuk + Kkvk + KkCk(xk −ˆxk)) | ˆxk]
+     min     ˆh(ˆxk) < 0 ∪                            sup    ∥xk −ˆxk∥2 >γ     ≥h(E[Akˆxk + Bkuk + Kkvk + KkCk(xk −ˆxk) | ˆxk])   k∈{0,1,...,K}                                  k∈{0,1,...,K}
+Taking probability of both sides, we have               −λmax tr(cov(Akˆxk+Bkuk+Kkvk+KkCk(xk−ˆxk) | ˆxk))                                                        2
+               "                    #
+     P ex ≤Peˆx + P     sup    ∥xk −ˆxk∥2 > γ          Given ˆxk, Akˆxk +Bkuk is deterministic instead of a random
+                          k∈{0,1,...,K}                               variable. Therefore, we have
+                           x          ˆx                              E[Akˆxk + Bkuk + Kkvk | ˆxk] = Akˆxk + Bkuk
+By Proposition 2, we have P e ≤P e + σ. By the definition
+of (2), we have P sx ≥1 −Peˆx −σ.                               cov[Akˆxk + Bkuk + Kkvk | ˆxk] = Akˆxk + Bkuk
+B. Output-Feedback Stochastic Control Barrier Function    By Proposition 1 and Lemma 5, we know that
+  In this subsection, we derive a tractable deterministic con-               E[KkCk(xk −ˆxk) | ˆxk] = 0
+trol barrier condition for system (1) by using a Jensen-type         cov[KkCk(xk −ˆxk) | ˆxk] = KkCkPkC⊤k K⊤k
+inequality to enforce the expectation-based CBF condition
+                                                   Then we have
+formulated in terms of the Kalman filter state estimate.
+  Before presenting the Jensen-based CBF condition, we      E[h(ˆxk+1) | ˆxk] ≥h(Akˆxk + Bkuk)
+first introduce a lemma showing  that, for a linear time-    −λmax tr(Kkcov[vk]K⊤k ) −λmax tr(KkCkPkC⊤k K⊤k )varying system (1), conditioning on the current estimate ˆxk         2                     2
+is sufficient to characterize the conditional covariance of the    = h(Akˆxk + Bkuk) −c′J + δ′
+Kalman estimation error, without explicitly conditioning on     ≥αh(ˆxk) + δ′
+the full measurement history y0:k.
+                                                  The proof is thus completed.
+Lemma 5. Consider system (1) with Kalman filter (9) under
+Assumption 1. Then, for all k ∈N, we have                        Finally, we present the main result, which combines the
+                 E[xk −ˆxk | ˆxk] = 0,                  Kalman filter-based state estimation and the Jensen-based
+                                         CBF reformulation to obtain an output-feedback controller
+                 cov[xk −ˆxk | ˆxk] = Pk.                                                           with a probabilistic safety guarantee.
+Proof. Under the linear-Gaussian setting, the Kalman filter                                               Theorem  1. Consider system (1) with Kalman  filter  (9).
+yields the posterior distribution                                                       Suppose h : Rn →R satisfies
+               xk | y0:k ∼N(ˆxk, Pk).                                i) h is twice-continuously differentiable;
+Since Pk is known from the Riccati recursion, this Gaussian       ii) there is λmax >0 such that supx∈Rn∥∇2h(x)∥2 ≤λmax;
+posterior is completely characterized by its mean ˆxk. Hence,      iii) h(x) ≤M, ∀x ∈Rn, M > 0;
+ˆxk is a sufficient statistic of y0:k for the posterior distribution   Given an initial state x0, a nominal controller ˆu0:T −1 for a
+of xk. Therefore, xk | ˆxk ∼N(ˆxk, Pk), which implies           finite horizon T ∈N, and ˆh : Rn →R defined in (10), the
+              xk −ˆxk | ˆxk ∼N(0, Pk).                    following controller
+                                                                           T −1
+The proof is thus completed.                               u∗0:T −1 = arg min X ∥uk −ˆuk∥22               (14a)
+                                                                  ut∈Rm
+  Based on the above result, now we present a Jensen-based                       k=0
+tractable sufficient condition for the expectation-based CBF      s.t. ˆh(Akˆxk + Bkuk) −c′J ≥αˆh(ˆxk)                (14b)
+under Kalman-filtered state estimates.                                                 λmax
+                                                        0 ≤c′J ≤(M −hγ)(1 −α) +     tr(Kkcov[vk]K⊤k )
+Proposition 4. Consider system (1) with Kalman filter based                                  2
+estimator (9). Consider a function h : Rn →R satisfying           + λmax tr(KkCkPkC⊤k K⊤k )            (14c)
+                                                                    2
+   i) h is twice-continuously differentiable;
+                                                        0 < α < 1                                     (14d)
+  ii) there is λmax >0 such that supx∈Rn∥∇2h(x)∥2 ≤λmax.
+If there exists c′J ≥0 such that                           makes the following hold:
+     h(Akˆxk + Bkuk) −c′J ≥αh(ˆxk), ∀x ∈Rn      (11)               Ps(ξ(x0, u∗0:T −1)) ≥1 −Peˆx −σ         (15)
+
+where P eˆx satisfies                                                                                               5.0
+  •  if δ′ < 0, we have                                                                                      2.5
+
+
+                                                                                                                                  0.0   M −hγ−ˆh(ˆx0)!                αT+(M −hγ)(1−α) −δ′ XT αi−1P eˆx ≤
+     M −hγ        M −hγ                                                 i=1                    −2.5
+                                                       (16)
+  •  if δ′ ≥0, we have                                                                         x2 −5.0
+                                           T
+                    ˆx           ˆh(ˆx0)  (M −hγ)α + δ′                                −7.5
+      P e ≤1 −                                    (17)
+         M −hγ   M −hγ
+                                                                                                              −10.0        Safe boundary (h=0)
+with δ′ defined in (13).                                                                                       NominalEstimated states (CVaR)
+                                                                                                              −12.5      CVaR
+Proof. By Proposition 4, we know that, under conditions i)                        EstimatedOurs      states (Ours)
+and ii) and (14b)–(14d), we have                                                       −15.0−2               0                2                4                6                8
+                                                                                                                                                               x1
+        E h ˆh(ˆxk+1) | ˆxk i ≥αˆh(ˆxk) + δ′         (18)
+                                                                  Fig. 1: One realization of the closed-loop trajectories by the
+Under condition iii), by Lemma 1 in which ˆh satisfies ˆh(x) ≤   two methods under the half-space safety constraint. Both
+M −hγ, ∀x ∈Rn and δ′ in (13) with (14c) satisfies        methods achieve the same empirical safety probability ˆPs =
+                                                                0.76, with parameters α = 0.7 and ϵ = 0.3 for the method in
+                     δ′ ≤(M −hγ)(1 −α)              (19)
+                                                                    [14], and α = 0.7 and c′J = 0.115 × cmaxJ    for our approach.
+we know that both (16) and (17) hold. Then, by Proposi-
+tion 3, we know that (15) holds.
+                                                                      u(x) = −15x1 −5x2.
+Remark 2. Beyond the conditions given in Theorem 1,  if      Since the Kalman filter-based CVaR-CBF approach pro-
+we further assume that h is concave, then the constraints   posed in [14] is developed only for half-space and ellipsoidal
+induced by (14b) are convex with respect to the decision    safety sets, in what follows, we focus our comparison on
+variables. Therefore, the optimization problem in (14)  is    these two types of safety constraints.
+convex. This ensures that any feasible local optimum is also     Comparisons under the half-plane safety constraint.
+a global optimum, and enables the use of efficient convex  We first consider the half-space safety set
+optimization algorithms with stronger guarantees on numer-                                                              C1 = {x ∈R2 : h(x) =  0.4  0.4 x + 1 ≥0},
+ical reliability and computational tractability. Nevertheless,
+                                                               since the simulation example in [14] is conducted only for aif h is not concave, the optimization problems may become
+                                                               half-space safety constraint. We adopt the initial conditionsnonconvex. In this case, Theorem 1  still holds as long as
+                                                      x0 =  7  0 ⊤, P0 = Q and the parameters α = 0.7, ϵ =the corresponding optimization problems are solved and
+                                                             0.3 from [14] to reproduce its simulation setting. We thentheir constraints are satisfied. However, one can no longer
+                                                               evaluate the two approaches over 100 Monte Carlo trials byguarantee that the obtained solution is globally optimal, and
+                                                              generating 100 realizations of the stochastic disturbances andthe numerical solution may depend on specific solvers used.
+                                                      measurement noises, and record the proportion of trajectories
+                    IV. SIMULATION                           that remain safe over the entire horizon as an estimate of Ps,
+                                                     which we denote by ˆPs. For the method in [14], we obtain  In this section, we validate our approach through two
+sets of simulations. We first compare our method with the    ˆPs = 0.76.
+                                                     Then we set the parameters in our approach as α = 0.7Kalman filter-based worst-case CVaR-CBF approach [14],
+                                                      and c′J = 0.115 × cmaxJ    , wherewith emphasis on computational time under matched empiri-
+                                                                             λmax
+cal safety probabilities. We then adopt the inverted-pendulum      cmaxJ   := (M −hγ)(1 −α) +     tr(Kkcov[vk]K⊤k )
+example from [13] to examine the proposed probabilistic                                2
+                                                              λmax
+safety bound, showing that the theoretical bound is providing        +     tr(KkCkPkC⊤k K⊤k ).                (21)
+                                                                 2a reliable characterization of the actual safety performance.
+                                                     With this choice, our approach achieves the same empirical
+A. Computational Comparison                                  safety probability ˆPs = 0.76 as [14]. This indicates that our
+  We consider the same linear system with [14]             approach can attain the same level of safety performance as
+                                                                    [14]. The resulting system trajectories, together with the cor-             1  0.05       0.0125
+      xt+1 =           xt +          ut + wt      (20a)   responding Kalman filter-based state estimation trajectories             0   1          0.05
+                                                            obtained by the two approaches, are shown in Figure 1.
+         yt = 0  1 xt + vt                        (20b)                                                              Next, we further tune the parameters in both approaches
+The disturbance and noise covariances are                   so that they achieve the same empirical safety probability ˆPs
+                                                among {0.4, 0.6, 0.76, 0.8, 0.9, 0.99} over 100 Monte Carlo
+            7.66 × 10−5  3.06 × 10−3
+   Q =                                             , R = 0.09           realizations of stochastic disturbances and noises, and record
+            3.06 × 10−3  1.23 × 10−1
+                                                                the average runtime  for each  case.  Specifically,  for our
+The nominal controller is given by                           approach, we tune α∈(0, 1) and kJ ∈[0, 1] in
+
+        5.0
+
+
+
+
+
+        2.5                                                                                                                               UnsafeSafeTrajectoriesStartGoal boundaryregion (h=0)                     5.02.5                                                                                                                      Unsafe                                                                                                                                                                                                                                                                                                          SafeTrajectoriesStartGoal boundaryregion (h=0)                     5.02.5                                                                                                                      Unsafe                                                                                                                                                                                                                                                                                                                                                                                                                                                                              SafeTrajectoriesStartGoal boundaryregion (h=0)                     5.02.5                                                                                                                      Unsafe                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   SafeTrajectoriesStartGoal boundaryregion (h=0)
+
+
+
+
+        0.0                                                                                                                                                                         0.0                                                                                                                                                                         0.0                                                                                                                                                                         0.0
+
+
+
+
+
+     −2.5                                                                                                                                                  −2.5                                                                                                                                                  −2.5                                                                                                                                                  −2.5
+
+
+
+ x2  −5.0                                                                                                                            x2  −5.0                                                                                                                            x2  −5.0                                                                                                                            x2  −5.0
+
+
+
+
+     −7.5                                                                                                                                                  −7.5                                                                                                                                                  −7.5                                                                                                                                                  −7.5
+
+
+
+
+
+    −10.0                                                                                                                                                −10.0                                                                                                                                                −10.0                                                                                                                                                −10.0
+
+
+
+
+
+    −12.5                                                                                                                                                −12.5                                                                                                                                                −12.5                                                                                                                                                −12.5
+
+    −15.0−2                       0                        2         x1           4                        6                        8              −15.0−2                       0                        2         x1           4                        6                        8              −15.0−2                       0                        2         x1           4                        6                        8              −15.0−2                       0                        2         x1           4                        6                        8
+
+            (a) Nominal                     (b) Nominal CBF                (c) Kalman-CVaR-CBF                    (d) Ours
+
+     4                                                                                          h = 0 (boundary)               4                                                                                          h = 0 (boundary)              4                                                                                            h = 0 (boundary)              4                                                                                            h = 0 (boundary)
+
+     3
+                                                                                                                             3                                                                                                                     3                                                                                                                      3
+     2
+
+
+     1                                                                                                                      2
+
+  h(x)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               h(x) 2                                                                                                                                                                                                                                                                                                                                                                                                                                                     h(x) 2     0                                                                                                                                                                                                                h(x)  1
+
+    −1
+                                                                                                                                                                                                                                                                                                                                                                           1                                                                                                                                                                                                                                                   1
+
+    −2                                                                                                                             0
+
+
+    −3
+    −4                                                                                                     −1                                                                                                                     0                                                                                                                      0
+
+             0.0           0.5           1.0           1.5      Time2.0 (s)        2.5           3.0           3.5           4.0                           0.0           0.5           1.0           1.5      Time2.0 (s)        2.5           3.0           3.5           4.0                         0.0           0.5           1.0           1.5      Time2.0 (s)        2.5           3.0           3.5           4.0                          0.0           0.5           1.0           1.5      Time2.0 (s)        2.5           3.0           3.5           4.0
+
+       (e) h(xk): Nominal               (f) h(xk): Nominal CBF       (g) h(xk): Kalman-CVaR-CBF            (h) h(xk): Ours
+
+Fig. 2: Closed-loop state trajectories and evolution of the safety function h(xk) over 100 Monte Carlo trials under the half-
+space safety constraint. The empirical safety probabilities of the four controllers are 0, 0.05, 0.76, and 0.76, respectively.
+
+
+
+
+
+      6
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    TrajectoriesStartGoal boundary (h=0)      4                                                                                                                                     SafeTrajectoriesStartGoal boundary (h=0)                 64                                                                                                                             Safe                                                                                                                                                                                                                                                                                                                                                        TrajectoriesStartGoal boundary (h=0)                 64                                                                                                                             Safe                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      TrajectoriesStartGoal boundary (h=0)                 64                                                                                                                             Safe
+
+
+
+
+      2                                                                                                                                              2                                                                                                                                              2                                                                                                                                              2
+
+
+
+
+      0                                                                                                                                              0                                                                                                                                              0                                                                                                                                              0
+
+
+
+ x2 −2                                                                                                                             x2 −2                                                                                                                             x2 −2                                                                                                                             x2 −2
+
+
+
+
+    −4                                                                                                                          −4                                                                                                                          −4                                                                                                                          −4
+
+
+
+
+    −6                                                                                                                          −6                                                                                                                          −6                                                                                                                          −6
+
+
+
+
+    −8                                                                                                                          −8                                                                                                                          −8                                                                                                                          −8
+
+    −10             −10                  −5                   x10                       5                       10                        −10             −10                  −5                   x10                       5                       10                        −10             −10                  −5                   x10                       5                       10                        −10             −10                  −5                   x10                       5                       10
+
+            (a) Nominal                     (b) Nominal CBF                (c) Kalman-CVaR-CBF                    (d) Ours
+
+               h = 0 (boundary)                                                                                                                    0.8                                                                                                                                       h = 0 (boundary)                                                                                                                    0.8                                                                                                                                                                                                                                                               h = 0 (boundary)                                                                                                                  0.8                                                                                                                                                                                                                                                                                                                                                                                     h = 0 (boundary)
+
+       0.5
+                                                                                                                                                      0.6
+                                                                                                                                                                                                                                                                                                     0.6                                                                                                                                                                                                                                                                                                                                                                                                                                                   0.6       0.0
+
+                                                                                                                                                      0.4
+    −0.5
+                                                                                                                                                                                                                                                                                                     0.4                                                                                                                                                                                                                                                                                                                                                                                                                                                   0.4
+                                                                                                                                                      0.2
+    −1.0
+  h(x)                                                                                                                                                                                                                            h(x)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               h(x)                                                                                                                                                      0.0                                                                                                                                                                                                             h(x)                                                                                                                                                                                                                                                                                                     0.2    −1.5
+                                                                                                                                                                                                                                                                                                                                                                                                                                                   0.2
+
+    −2.0                                                                                                                         −0.2
+    −2.5                                                                                                                         −0.4                                                                                                                                            0.0                                                                                                                                           0.0
+
+
+    −3.0
+             0                    2                    4 Time (s)           6                    8                            −0.6     0                    2                    4 Time (s)           6                    8                            −0.2     0                    2                    4 Time (s)           6                    8                                  0                    2                    4 Time (s)           6                    8
+
+       (e) h(xk): Nominal               (f) h(xk): Nominal CBF       (g) h(xk): Kalman-CVaR-CBF            (h) h(xk): Ours
+
+Fig. 3: Closed-loop state trajectories and evolution of the safety function h(xk) over 100 Monte Carlo trials under the
+ellipsoidal safety constraint. The empirical safety probabilities of the four controllers are 0, 0, 0.8, and 0.8, respectively.
+
+
+                                                                                                          c′J = kJ · cmaxJ    ,
+      6
+                                                           while for [14], we tune α and ϵ. The resulting parameters and
+      4                                                       runtimes are reported in Table I. We observe that, under the
+      2                                                            half-plane safety constraint, our approach achieves the same
+                                                              empirical safety probability as the method in [14], while
+      0                                                        maintaining a comparable level of computational time.
+  x2 −2                                                          Furthermore, with α = 0.7, we also compare our approach
+    −4                                                       with a nominal CBF controller defined by
+    −6        Safe boundary (h=0)                                                              ˆh(Akˆxk + Bkuk) ≥αˆh(ˆxk),           (22)
+               Nominal
+               Estimated                            states (CVaR)                                        with ˆh defined in (10), as well as the nominal controller             CVaR    −8
+               Estimated
+                            states (Ours)                                         without any safety constraint. For the method in [14], we               Ours
+   −10
+               −10            −5                                                   0                5               10         use the same parameters α = 0.7 and ϵ = 0.3 as before.
+                                                    x1
+                                        We again perform 100 Monte Carlo trials to estimate the
+Fig. 4: One realization of the closed-loop trajectories by the   empirical safety probability of each controller. The resulting
+two methods under the ellipsoidal safety constraint. Both   system trajectories, together with the evolution of the safety
+methods achieve the same empirical safety probability ˆPs =   function h(xk), are shown in Figure 2. The empirical safety
+0.8, with parameters α = 0.52 and ϵ = 0.27 for the method    probabilities of the four controllers are 0, 0.05, 0.76, 0.76,
+in [14], and α = 0.52 and c′J = 0.38×cmaxJ   for our approach.    respectively. We observe that, compared with the nominal
+                                                                   controller and the nominal CBF controller, both our approach
+
+  TABLE I: Statistical Results for Half-Plane Constraint      TABLE II: Statistical Results for Ellipsoidal Constraint
+
+                            Monte Carlo estimates ˆPs                                        Monte Carlo estimates ˆPs
+Method     Metric                                                 Method   Metric
+                         0.4      0.6     0.76     0.8      0.9     0.99                             0.4     0.6     0.7     0.8     0.9     0.99
+
+         α        0.55     0.7      0.7      0.7     0.75     0.8            α        0.3     0.45     0.5     0.52     0.6     0.8
+  [14]         ϵ         0.4     0.38     0.3     0.28     0.28     0.27         [14]       ϵ       0.29     0.3    0.297   0.27    0.25    0.28
+          time (ms)    9.00     7.43    10.21    7.87     7.71     7.64               time (ms)  2878.1  3253.9  2734.7  2839.1  3005.1  4981.2
+
+         α        0.55     0.7      0.7      0.7     0.75     0.8            α        0.3     0.45     0.5     0.52     0.6     0.8
+  ours       kJ       0.077   0.102   0.115   0.125    0.14     0.17        ours     kJ      0.258   0.31   0.353   0.38    0.44     0.7
+          time (ms)   13.67   11.17   15.22   11.58   11.09   11.16              time (ms)  44.71   57.84   47.10   46.18   53.86   59.76
+
+
+and [14] significantly improve the safety performance.        can achieve substantially higher safety probabilities. Fur-
+  Comparisons under the ellipsoidal safety constraint.   thermore, compared with [14], our approach can attain a
+We then consider the following ellipsoidal safety set         comparable level of safety performance with significantly im-
+                                                         proved computational efficiency, especially when the safety
+                          1/144    0
+    C2 = {x ∈R2 : 0.8 −x⊤            x ≥0}.         constraint becomes more complex. In fact, [14] only con-
+                            0    1/16
+                                                                   siders half-plane and ellipsoidal safety constraints, whereas
+In this setting, we increase the covariances of stochastic   our approach can be applied to more general safety speci-
+disturbances to                                                       fications, as long as the control barrier function h satisfies
+                   0.03  0.03                               conditions i)–iii) in Theorem 1. This demonstrates that our
+        cov[wk] =                      , cov[vk] = 0.09.
+                   0.03  0.03                            approach is not only computationally efficient, but also more
+                                                            broadly applicable for safe control of discrete-time stochastic
+The  initial and  target  states  are x0 =  5  0 ⊤, xg =                                                          systems with Kalman filtering-based state estimation.
+ −5  0 ⊤,  respectively. As  the nominal  controller, we
+                                                            B. Validation of Probabilistic Safety Guaranteechoose an LQR controller of the form
+                                                                 In this subsection, we evaluate the theoretical probabilistic
+u(x) = −Klqr (x −xg) , Qlqr = diag(1.0, 0.5), Rlqr = 0.1.                                                                 safety bound provided by Theorem 1 against the empirical
+  Similarly  to  the previous  set of  simulations, we  fur-    safety probability obtained from Monte Carlo simulations.
+ther tune the parameters  in the two approaches so  that   Since our approach is developed for linear systems, we adopt
+they achieve the same empirical safety probability among    the underactuated inverted-pendulum example in [13] and
+{0.4, 0.6, 0.7, 0.8, 0.9, 0.99} over 100 Monte Carlo realiza-    linearize  its dynamics around the upright equilibrium by
+tions of the stochastic disturbances and measurement noises.   approximating sin(θk) with θk within the range |θk| ≤π/6.
+One realization of the resulting closed-loop trajectories gen-    Letting xt :=  θk    ˙θk ⊤, the linearized system is given by
+erated by the two methods is shown in Figure 4, and the                                                                   1  ∆t        0
+corresponding parameters and average runtimes are reported         xk+1 =          xk +     uk + wk        (23a)                                                       ∆t   1      ∆t
+in Table II. We also compare the proposed approach with
+                                                                  yk = 1  0 xk + vk                      (23b)α = 0.52 and kJ = 0.38 against the nominal controller,
+the nominal CBF controller with α = 0.52, and the method   where we use the same disturbance covariance as in [13] and
+in [14] with α = 0.52 and ϵ = 0.27. The resulting system    set the measurement noise covariance as
+trajectories, together with the evolution of the safety function
+                                                             cov[wk] = diag(0.0052, 0.0252), cov[vk] = 0.0052.
+h(xk), are shown in Figure 3.
+   It is worth noting that, from Table  II, we observe that,   As the nominal controller, we choose an LQR controller of
+under the ellipsoidal safety constraint, our approach achieves    the form
+the same empirical safety probability as [14], while requiring        u(x) = −Klqrx, Qlqr = diag(12, 1), Rlqr = 0.2.
+substantially less computation time. This is mainly because                                        We define the same safety set as in [13],
+the worst-case CVaR approach in [14] involves a distribu-
+                                                                                1   3−12tionally robust min-max structure. While this complexity can       C =  x ∈R2 : 1 −62 x⊤          x ≥0   .
+                                                                                                                        2    1be simplified to a linear inequality for half-space safe sets,                        π2    3−1
+the ellipsoidal case leads to a quadratic-loss risk constraint    We first reproduce the Jensen-based CBF controller in [13]
+together with auxiliary variables and additional inequalities   under perfect state information, using the same parameters
+in the online optimization. By contrast, our Jensen-based   cJ = λmax2  tr(cov(wk)) and α = 1 −cJ, and perform 100
+reformulation directly yields an explicit deterministic barrier   Monte Carlo trials for different x0. For each x0, we compute
+constraint in terms of the control input. As a result, the   both the theoretical safety bound given by Lemma 1 and the
+computational advantage of our approach becomes much   Monte Carlo estimate of the safety probability.
+more significant in the ellipsoidal case.                        For our output-feedback approach, we use the same value
+  In summary, compared with the nominal controller and  α = 1 −cJ and set c′J = 0.2 × cmaxJ    , where cmaxJ    is defined
+the nominal CBF controller, both our approach and [14]    in (21). For Kalman  filtering, we choose σ = 0.05. We
+
+then again perform 100 Monte Carlo trials for each initial  By integrating Kalman filtering into the stochastic control
+state and compute the corresponding theoretical safety bound    barrier function framework, we construct an estimate-based
+from Theorem 1 together with the empirical safety estimate.    safety function and develop a Jensen-based deterministic
+Figure 5 presents the closed-loop trajectories starting from   reformulation that yields explicit finite-horizon probabilistic
+the initial state x0 = 0, together with the theoretical safety    safety guarantees for the resulting output-feedback controller.
+guarantees and the Monte Carlo estimates of the safety   Simulation results demonstrated that our approach achieves
+probability from different initial states x0.                       reliable safety performance, and can attain comparable em-
+  From Figure 5, we observe that, compared with the state-    pirical safety probabilities with improved computational ef-
+feedback CBF controller in [13] under perfect state informa-    ficiency,  especially  for more complex  safety  constraints.
+tion, our approach yields a slightly lower theoretical safety   Future work will consider extensions of the proposed frame-
+probability due to the additional estimation error introduced   work to model predictive control schemes and its application
+by Kalman  filtering and  its probability guarantee 1 −σ.    to more complex robotic systems.
+Nevertheless, the Monte Carlo estimates show that both the
+state-feedback controller [13] and our approach provide reli-
+able characterizations of the actual safety performance, in the
+                                                               REFERENCESsense that the empirical safety probabilities are consistently
+higher than the corresponding theoretical safety bounds.
+
+                                                             Safe boundary (h=0)                                                                          Safe boundary (h=0)          [1] A. Ames, X. Xu, J. Grizzle, and P. Tabuada, “Control barrier function
+        0.6                                                CBF-Jensen                                                                                                  0.6                                             Kalman-SCBF                                                                                                                                                                                (Ours)             based quadratic programs for safety critical systems,” IEEE Transac-                                                                     Start                                                                                                                                                                              Start
+                                                           Goal                                                                                      Goal
+        0.4                                                                                       0.4                                            tions on Automatic Control, vol. 62, no. 8, pp. 3861–3876, 2016.
+        0.2                                                                                       0.2                                        [2]  S. Kolathaya and A. D. Ames, “Input-to-state safety with control
+                                                                                           barrier functions,” IEEE control systems letters, vol. 3, no. 1, pp. 108–
+        0.0                                                                                       0.0                                       113, 2018.
+      −0.2                                                                          −0.2                                        [3] A. Alan, A. J. Taylor, C. R. He, G. Orosz, and A. D. Ames, “Safe
+      −0.4                                                                          −0.4                                            controller synthesis with tunable input-to-state safe control barrier
+      −0.6                                                                          −0.6                                            functions,” IEEE Control Systems Letters, vol. 6, pp. 908–913, 2021.
+               −0.6    −0.4    −0.2     0.0      0.2      0.4      0.6                              −0.6    −0.4    −0.2     0.0      0.2      0.4      0.6            [4] D. R. Agrawal and D. Panagou, “Safe and robust observer-controller
+                                                                                     synthesis using  control  barrier  functions,” IEEE Control Systems
+  (a) State-feedback trajectories   (b) Output-feedback trajectories           Letters, vol. 7, pp. 127–132, 2022.
+                                                                                                            1.00                                                                                                                     1.00       [5] Y. Wang and X. Xu, “Immersion and invariance-based disturbance
+            0.6                                                                                                                            0.6                                        observer and its application to safe control,” IEEE Transactions on
+            0.4                                                                                              0.75                     0.4                                                                                              0.75          Automatic Control, vol. 69, no. 12, pp. 8782–8789, 2024.
+            0.2                                                                                                                            0.2                                        [6] Y. S. Quan,  J. Zhou, E. Frisk, and C. C. Chung, “Observer-based
+
+
+
+            0.0                                                                                              0.50                                                                                                                                           0.0                                                                                              0.50                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               Probability                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            Probability          environment robust control barrier functions for safety-critical control
+         −0.2                                                                                                           −0.2                                       with dynamic obstacles,” IEEE Control Systems Letters, 2025.
+                                                                                     [7] A. Clark, “Control barrier functions for stochastic systems,” Automat-
+         −0.4                                                                                              0.25                 −0.4                                                                                              0.25
+                                                                                               ica, vol. 130, p. 109688, 2021.
+         −0.6                                                                                                           −0.6                                        [8] Y. Nishimura and K. Hoshino, “Control barrier functions for stochastic
+                    −0.6      −0.4      −0.2        0.0        0.2        0.4        0.6                 0.00                             −0.6      −0.4      −0.2        0.0        0.2        0.4        0.6                 0.00          systems and safety-critical control designs,” IEEE Transactions on
+                                                                             Automatic Control, vol. 69, no. 11, pp. 8088–8095, 2024.
+    (c) State-feedback bound        (d) Output-feedback bound
+                                                                                                            1.00                                                                                                                     1.00       [9] C. Wang, Y. Meng, S. L. Smith, and J. Liu, “Safety-critical control of
+            0.6                                                                                                                            0.6                                            stochastic systems using stochastic control barrier functions,” in 2021
+            0.4                                                                                              0.75                     0.4                                                                                              0.75           60th IEEE Conference on Decision and Control (CDC).  IEEE, 2021,
+                                                                                    pp. 5924–5931.
+            0.2                                                                                                                            0.2                                    [10] A. Agrawal and K. Sreenath, “Discrete  control  barrier functions
+
+            0.0                                                                                              0.50                     0.0                                                                                              0.50                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               Probability                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  Probability           for  safety-critical control of  discrete systems with application  to
+         −0.2                                                                                                           −0.2                                         bipedal robot navigation.” in Robotics: Science and Systems, vol. 13.
+         −0.4                                                                                              0.25                 −0.4                                                                                              0.25          Cambridge, MA, USA, 2017, pp. 1–10.
+         −0.6                                                                                                           −0.6                                    [11]  J. Zeng, B. Zhang, and K. Sreenath, “Safety-critical model predictive
+                    −0.6      −0.4      −0.2        0.0        0.2        0.4        0.6                 0.00                             −0.6      −0.4      −0.2        0.0        0.2        0.4        0.6                 0.00            control with discrete-time control barrier function,” in 2021 American
+                                                                                      control conference (ACC).  IEEE, 2021, pp. 3882–3889.
+   (e) State-feedback estimate        (f) Output-feedback estimate       [12] C. Santoyo, M. Dutreix, and S. Coogan, “Verification and control
+                                                                                          for finite-time safety of stochastic systems via barrier functions,” in
+Fig. 5: Comparison between the state-feedback controller and        2019 IEEE conference on control technology and applications (CCTA).
+our approach. The first row shows system trajectories over        IEEE, 2019, pp. 712–717.
+100 Monte Carlo trials starting from x0 = 0. The second row    [13] R. K. Cosner, P. Culbertson, A. J. Taylor, and A. D. Ames, “Robust                                                                                       safety under stochastic uncertainty with discrete-time control barrier
+shows the theoretical safety probability bounds over different          functions,” arXiv preprint arXiv:2302.07469, 2023.
+initial  states, and the third row shows the corresponding    [14] M. Kishida, “Risk-aware control of discrete-time stochastic systems:
+Monte Carlo estimates of the safety probability.                          Integrating kalman filter and worst-case cvar in control barrier func-
+                                                                                               tions,” in 2024 IEEE 63rd Conference on Decision and Control (CDC).
+                                                                        IEEE, 2024, pp. 2019–2024.
+                   V. CONCLUSION                              [15]  J. G. Liao and A. Berg, “Sharpening jensen’s inequality,” The Ameri-
+                                                                        can Statistician, 2019.
+  In  this paper, we study the safe control  for  discrete-    [16] B. D. Anderson and  J. B. Moore, Optimal  filtering.    Courier
+time stochastic systems with incomplete state information.          Corporation, 2005.

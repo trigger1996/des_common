@@ -1,0 +1,494 @@
+              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 63, NO. 12, DECEMBER 2018                                           4435
+
+
+   Synthesis of Maximally Permissive Nonblocking Supervisors for the
+               Lower Bound Containment Problem
+
+                Xiang Yin    , Member, IEEE, and St´ephane Lafortune    , Fellow, IEEE
+
+
+  Abstract—In this paper, we investigate the nonblocking super-      In general, maximally permissive supervisors are not unique in the
+visor synthesis problem for centralized partially observed discrete    partially observation setting; there may exist several incomparable lo-
+event systems. The goal is to synthesize a maximally permissive
+                                                                           cally maximal supervisors. In order to select a “good” locally maxi-nonblocking supervisor that not only satisﬁes a class of proper-
+ties, e.g., safety, but also contains a given lower bound behavior   mally permissive supervisor, one approach is to impose a lower bound
+described by a regular language. We show that this synthesis prob-   constraint and require that the closed-loop behavior of the synthesized
+lem can be effectively reduced to a synthesis problem that has been   supervisor must contain the given lower bound, which is described by
+solved in the literature. A new notion, called R-compatibility, is pro-
+                                                                  a regular language. This leads to the lower bound containment prob-
+posed for the purpose of reduction. Our result generalizes existing
+algorithms for supervisory synthesis of partially observed discrete   lem. The lower bound requirement can be used to model the desired
+event systems. This also leads to solutions of several synthesis   behavior the system must achieve; see, e.g., [13], [15] for applications
+problems that were open previously, e.g., the nonblocking range   of the lower bound requirement.
+control problem.                                                        In [25], we have investigated a special lower bound containment
+  Index Terms—Discrete event systems, lower bound containment,   problem, called the range control problem. Speciﬁcally, it only consid-
+non-blockingness, partial observation, supervisory control.           ers safety, which can be described by an upper bound language, rather
+                                                                    than the general class of IS-based properties. Also, [25] only considers
+                                                                        the preﬁx-closed case and the supervisor synthesized may be blocking.                                     I. INTRODUCTION
+                                                         The approach taken in [25] cannot be extended to the nonpreﬁx-closed
+  In this paper, we investigate the supervisor synthesis problem for   case or to arbitrary IS-based properties as it strictly depends on the
+partially observed discrete event systems (DESs) in the supervisory   preﬁx-closed assumption and the safety speciﬁcation considered; see
+control framework [16]. The goal is to synthesize a supervisor that   Section V-C for a more detailed discussion. Therefore, a new method-
+restricts the system’s behavior such that the closed-loop system satis-   ology is needed to solve the general lower bound containment problem
+ﬁes some properties. In the standard supervisory control problem [16],   for both nonblockingness and IS-based properties.
+the properties considered are safety and nonblockingness, where non-      In this paper, we tackle the lower bound containment problem in a
+blockingness means that the system does not contain a deadlock or a   more general setting. Speciﬁcally, instead of considering a safety spec-
+livelock, while safety requires that all strings executed by the system   iﬁcation (upper bound), we consider an arbitrary IS-based property.
+are legal.                                                        Moreover, we require that the supervisor synthesized must be non-
+  In our recent work, a uniform framework for synthesizing property-   blocking. Our approach is to effectively reduce this synthesis problem
+enforcing supervisors is proposed [22]–[24]. Instead of considering   to the supervisor synthesis problem for nonblockingness and IS-based
+only safety, a wide class of properties, called information-state-based   properties without a lower bound requirement, which has been solved
+(IS-based) properties, are considered. These properties include, but   in [22]–[24]. The general idea of our approach is to ﬁrst locally check
+are not restricted to, safety, opacity [10], diagnosability [28], and de-   whether or not the lower bound behavior can be fulﬁlled, and then
+tectability [18]. A ﬁnite structure called the nonblocking all enforce-    iteratively remove bad states to guarantee that the lower bound be-
+ment structure (NB-AES) that embeds all solutions is proposed, and   havior can be fulﬁlled globally. To this end, a new concept called the
+based on the NB-AES, we have shown how to synthesize a max-   R-compatibility is proposed for the purpose of reduction and a new
+imally permissive nonblocking supervisor that satisﬁes an IS-based   structure called the R-compatible nonblocking all enforcement struc-
+property.                                                                 ture (R-compatible NB-AES) is deﬁned. One of the difﬁculties in this
+                                                              problem is that we need to handle, simultaneously, the lower bound
+                                                                   requirement and the nonblockingness requirement, which may be cou-
+  Manuscript received September 24, 2017; revised January 29, 2018;   pled in general. However, our result reveals that these two require-
+accepted April 5, 2018. Date of publication April 18, 2018; date of current
+                                                             ments are actually independent, and we can ﬁrst restrict the solutionversion December 3, 2018. This work was supported in part by the U.S.
+National Science Foundation under Grant CCF-1138860 (Expeditions   space by considering the lower bound requirement before enforcing
+in Computing project ExCAPE: Expeditions in Computer Augmented   nonblockingness. Also, we identify that the notion of strict subau-
+Program Engineering) and Grant CNS-1446298. Recommended by As-   tomaton plays a crucial role in the correctness of reduction. To the
+sociate Editor K. Cai. (Corresponding author: Xiang Yin.)
+                                                                         best of our knowledge, there is no algorithm for ﬁnding an arbitrary
+  X. Yin is with the Department of Automation and Key Laboratory of
+System Control and Information Processing, Shanghai Jiao Tong Uni-   nonblocking safe supervisor that contains a given lower bound lan-
+versity, Shanghai 200240, China (e-mail: yinxiang@sjtu.edu.cn).         guage. Our paper solves this problem in a more general setting as
+  S. Lafortune is with the Department of Electrical Engineering and  we are able to ﬁnd a maximally permissive nonblocking supervisor
+Computer Science, University of Michigan, Ann Arbor, MI 48109 USA    that contains a given lower bound language subject to any IS-based
+(e-mail: stephane@umich.edu).
+                                                                          property.  Color versions of one or more of the ﬁgures in this paper are available
+online at http://ieeexplore.ieee.org.                                The rest of this paper is organized as follows. In Section II, we present
+   Digital Object Identiﬁer 10.1109/TAC.2018.2828098                   necessary preliminaries and formulate the lower bound containment
+
+
+
+               0018-9286 © 2018 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                  See http://www.ieee.org/publications standards/publications/rights/index.html for more information.
+
+4436                                                       IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 63, NO. 12, DECEMBER 2018
+
+
+
+problem. Section III reviews the uniform framework for supervisory   B. Problem Formulation
+control under partial observation proposed in our recent work. The
+                                                                    Since we consider partially observed systems, we deﬁne an informa-
+main result of this paper is presented in Section IV. Speciﬁcally, a new                                                                           tion state as a set of states and denote by I = 2X the set of information
+notion called the R-compatibility is proposed, and we show how to                                                                                   states. Let S be a supervisor and s ∈P (L(S/G)) be an observable
+leverage an existing algorithm to solve the lower bound containment
+                                                                                 string. We deﬁne
+problem by using this notion. In Section V, we further compare our
+new result with existing results in the literature. Finally, we conclude       ES (s) := {x ∈X : ∃t ∈L(S/G) s.t. δ(t) = x ∧P (t) = s}
+the paper in Section VI.
+                                                                      as the state-estimate upon the occurrence of s, which is the set of states
+                                                                        the system could be in by observing s.
+                             II. PROBLEM FORMULATION                    The goal of the supervisor is to restrict the system’s behavior such
+                                                                              that some speciﬁcation (or property) is satisﬁed. In this paper, we
+A. Preliminaries                                                                     consider a general class of properties called IS-based properties deﬁned
+  Throughout the paper, we use Σ to denote a ﬁnite set of events and   in [24].
+Σ∗is the set of ﬁnite strings over Σ including the empty string ϵ. For any      Deﬁnition 1: ([24]) An IS-based property is a predicate ϕ : I →
+string s ∈Σ∗, |s| denotes its length with |ϵ| = 0. A language L ⊆Σ∗   {0, 1}. We say that supervisor S enforces ϕ w.r.t. G, denoted by
+is a set of strings. Notation L denotes the preﬁx-closure of language L,  S |=G ϕ, if ∀s ∈P (L(S/G)) : ϕ(ES (s)) = 1, i.e., the state-estimate
+i.e., L = {u ∈Σ∗: ∃v ∈Σ∗s.t. uv ∈L}.                              of the system should always satisfy the predicate.
+  We consider a DES modeled as a ﬁnite-state automaton G =     Remark 1:  It was shown in [24] that many important properties in
+(X, Σ, δ, x0, Xm ), where X  is the ﬁnite set of states, Σ is the ﬁ-   the literature, e.g., safety, opacity, and K-diagnosability, can be formu-
+nite set of events, δ : X × Σ →X is the partial transition function,   lated as IS-based properties. Therefore, for the sake of generality, we
+x0 ∈X is the initial state, and Xm ⊆X is the set of marked states   investigate this general class of properties rather than studying a spe-
+(Xm can be omitted when marking is not considered). The transi-   ciﬁc property. For example, suppose that Xbad is a set of illegal states
+tion function δ is extended to X × Σ∗recursively by the following:   and the control objective is to avoid reaching illegal states; this is the
+For any s ∈Σ∗, σ ∈Σ, δ(x, sσ) = δ(δ(x, s), σ). For brevity, we will   safety speciﬁcation in the standard supervisory control problem [6]. To
+also write δ(x, s) as δ(s) if x = x0. The language generated by G is   enforce safety, it sufﬁces to enforce an IS-based property ϕsafe deﬁned
+L(G) := {s ∈Σ∗: δ(x0, s)!}, where “!” means “deﬁned”; the lan-   by ∀i ∈I : ϕsafe(i) = 1 ⇔i ∩Xbad = ∅. Throughout the paper, we
+guage marked by G is Lm (G) := {s ∈Σ∗: δ(x0, s) ∈Xm }. Let   will use safety as an example of the IS-based property. The reader
+A=(XA , Σ, δA , xA ,0) and B=(XB , Σ, δB , xB ,0) be two automata.    is referred to [24] for how to formulate more properties in terms of
+We say that A is a strict subautomaton of B, denoted by A ⊏B, if   IS-based properties.
+(i) ∀s∈L(A) : δA (s)=δB (s); and (ii) ∀s∈L(B) \ L(A) : δB (s) /∈      In [23] and [24], we have shown how to synthesize a maximally per-
+XA . The ﬁrst condition implies that A is a “subgraph” of B, while   missive (in terms of set inclusion) nonblocking supervisor that enforces
+the second condition implies that once a string leaves the state-space   an IS-based property ϕ. In general, such a supervisor is not unique,
+of A, it should never come back. Note that, if L(A) ⊆L(B), then     i.e., there may exist two maximally permissive, nonblocking, and ϕ-
+we can always reﬁne the state spaces of A and B such that A   enforcing supervisors whose closed-loop languages are incomparable.
+⊏B [7].                                                              In order to select a ‘meaningful’ maximally permissive supervisor, one
+  In the supervisory control framework [16], the event set Σ  is   approach is to impose a lower bound language [25] and to require that
+partitioned as follows:  (i) Σ = Σc ˙∪Σu c, where Σc and Σu c  are   the closed-loop behavior under control has to contain the given lower
+the sets of controllable and uncontrollable events, respectively; and   bound, which is a preﬁx-close language R = R ⊆L(G). This leads
+(ii) Σ = Σo ˙∪Σu o, where Σo and Σu o  are the sets of observable   to the maximally permissive nonblocking lower bound containment
+and unobservable events, respectively. We assume that the supervi-   problem for the IS-based property (MPLCP-NBIS).
+sor cannot disable uncontrollable events. Therefore, we denote by     Problem 1: (MPLCP-NBIS). Given system G, an IS-based prop-
+Γ := {γ ∈2Σ  : Σu c ⊆γ} the set of all control decisions. Also, we   erty ϕ : I →{0, 1} and lower bound language R ⊆L(G), synthesize
+assume that the supervisor can only observe the occurrences of ob-   a nonblocking and ϕ-enforcing supervisor S∗such that
+servable events [8], [12]. To this end, we deﬁne the natural projection    1) R ⊆L(S∗/G); and
+P  : Σ∗→Σ∗o by                                                       2) for any nonblocking and ϕ-enforcing supervisor S′ satisfying (i),
+                                                     we have L(S∗/G)̸ ⊂L(S′/G), i.e., S∗is maximally permissive.
+                                                                            Hereafter, we use R = (XR , Σ, δR , x0,R ) to denote the automaton
+                       P (s)σ       if σ ∈Σo
+      P (ϵ) = ϵ and P (sσ) =                                      .       (1)   generating R. We assume, without loss of generality, that R ⊏G.
+                       P (s)         if σ ∈Σu o             This assumption is needed for technical reasons; it will become clear
+                                                                           in Section IV.
+The projection P  is extended to 2Σ ∗by P (L) = {t ∈Σ∗o  : ∃s∈
+L s.t. t=P (s)} and P −1 denotes the inverse projection.                                                III. ALL ENFORCEMENT STRUCTURE
+ A supervisor is a function S : P (L(G)) →Γ that disables events                                                                         In this section, we review the structure of Bipartite Transition System
+dynamically based on its observations. We denote by L(S/G) the                                                           (BTS) and its variants from our recent work [23], [24]. First, we deﬁne
+language generated by the closed-loop system under control, which                                                                        the following operators. For any i ∈I, γ ∈Γ, and σ ∈Σo
+can be computed recursively by
+ 1) ϵ ∈L(S/G); and                                     URγ (i) = {x ∈X : ∃y ∈i, ∃s ∈(Σu o ∩γ)∗s.t. x = δ(y, s)} (2)
+ 2) sσ ∈L(S/G)⇔s∈L(S/G)∧sσ ∈L(G)∧σ ∈S(P (s)).                                                                 Nextσ (i) = {x ∈X : ∃y ∈i s.t. x = δ(y, σ)}.                   (3)
+  We deﬁne Lm (S/G) := L(S/G) ∩Lm (G). We say that supervi-
+sor S is nonblocking if Lm (S/G) = L(S/G).                    Now, we recall the notion of BTS from [23].
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 63, NO. 12, DECEMBER 2018                                                         4437
+
+
+
+
+
+Fig. 1.  System with Σc = {c1, c2} and Σo = {o}. (a) G. (b) R.
+
+
+   Deﬁnition 2: A BTS T w.r.t. G is a 7-tuple
+                                                                               Fig. 2.  R-compatible NB-AES. (a) AESϕ (G). (b) AESRϕ (G).
+           T = (QTY , QTZ , hTY Z , hTZ Y , Σo, Γ, y0)             (4)
+where QTY ⊆I is the set of Y -states, QTZ ⊆I × Γ is the set of Z-states,   by ∀i ∈I : ϕ(i) = 1 ⇔i ∩{13} = ∅, i.e., ϕ is a safety speciﬁcation
+and I(z) and Γ(z) denote, respectively, the information state and the   and 13 is the unique illegal state. Then, Fig. 2 (a) shows an example
+control decision components of a Z-state z, so that z = (I(z), Γ(z));   of a complete BTS for G. From the initial Y -state {1}, there are two
+hTY Z  : QTY × Γ →QTZ is the partial transition function from Y - to Z-   control decisions deﬁned, i.e., the BTS is not deterministic. If control
+states, which satisﬁes the following constraint: For any y ∈QTY , z ∈   decision {c1} is made,1 then we move to Z-state ({1, 2}, {c1}), where
+QTZ , and γ ∈Γ, we have                                             {1, 2} is the set of states the system could be in before the occurrence
+                                                                      of the next observable event and {c1} is a copy of the control decision
+        hTY Z (y, γ) = z ⇒[I(z)=URγ (y)] ∧[Γ(z) = γ]       (5)   leading to this state. For ({1, 2}, {c1}), observable event o can occur
+hTZ Y  : QTZ × Σo →QTY  is the partial transition function from Z- to Y -   and we move to Y -state {3, 4}, which is the set of states the system
+                                                                  could be in immediately after observing o, and so forth. For example,states, which satisﬁes the following constraint: For any y ∈QTY , z ∈
+                                                                                        let us consider a supervisor S deﬁned byQTZ , and σ ∈Σo, we have
+                                                                               S(ϵ) = {c1} and S(o) = Σu c.                 (7)        hTZ Y (z, σ) = y ⇔[σ ∈Γ(z)] ∧[y =Nextσ (I(z))]       (6)
+Σo is the set of observable events of G, Γ is the set of control decisions   Then, we know that S is included in the BTS shown in Fig. 2(a), and
+                                                                                    S (ϵ) = {1}, ISZS (ϵ) = ({1, 2}, {c1}), ISYS (o) = {3, 4},of G, and y0 ∈QTY  is the initial Y -state, where y0 = {x0}.         we have ISY
+                                                                               S (o) = ({3, 4}, ∅).  Let T be a BTS, for each Y -state y ∈QTY , we denote by CT (y) :=   and ISZ
+{γ ∈Γ : hTY Z (y, γ)!} the set of control decisions deﬁned at y. We      Deﬁnition 4: Given a BTS T , we say that a Y -state y is live in T
+say that T  is complete, if ∀y ∈QTY  : CT (y)̸ = ∅; we say that T  is     if, for any x ∈y, there exist a string sγ =1  ξ1σ1ξ2,σ 1   . . . , γσn2 −1ξn ,σwheren −1
+                                                                                    u o, σi ∈Σo, and a sequence y −→T z1 −→T y1 −→T · · · −−−→Tdeterministic, if ∀y ∈QTY  : |CT (y)| = 1. When T is deterministic, we    ξi ∈Σ∗γ n
+also use notation cT (y) to denote the unique control decision deﬁned at   yn −→T zn such that δ(x, s)∈Xm and ∀i ≤n : ξi ∈γ∗i .
+y ∈QTY . For simplicity, we also write y γ−→T z if z = hTY Z (y, γ) and      Deﬁnition 5: A Z-state z  is said to be deadlock-free  if for all
+z σ−→T y if y = hTZ Y (z, σ); we will drop subscript T when it is clear.  x ∈I(z) we have either (i) ∃s ∈(Γ(z) ∩Σu o)∗: δ(x, s) ∈Xm ; or
+We call γ0σ1γ1σ2 . . . σn γn a run, where γi ∈Γ, σi ∈Σo. A run also    (ii)∃s ∈(Γ(z) ∩Σu o)∗(Γ(z) ∩Σo) : δ(x, s)!. Otherwise, z is said to
+induces a sequence                                              be a deadlock Z-state.
+                                                                     Deﬁnition 6: A BTS T is said to be nonblocking if all Y -states in it
+              γ 0      σ 1      γ 1       γ n −1        σ n       γ n
+        y0 −→z0 −→y1 −→· · · −−−→zn −1 −→yn −→zn .            are live and all Z-states in it are deadlock-free. We say that T satisﬁes
+                                             ϕ if ∀z ∈QTZ  : ϕ(I(z)) = 1.We say that a run is generated by T if its induced sequence is deﬁned
+                                                                                     Intuitively, a Y -state is live if any state in it can reach a marked
+in T .
+                                                                                state under some control decision string allowed by the BTS. Also, a  Let S : P (L(G)) →Γ be a supervisor and s = σ1, . . . , σn ∈
+                                                                      Z-state is deadlock-free if any state in it can either unobservably reachP (L(S/G)) be an observed string. Then, the execution of s induces a
+                                                                  a marked state or can go outside of this Z-state. Nonlive Y -states and
+well-deﬁned sequence
+                                                                 deadlock Z-states are states that should be avoided, since both of them
+           S (ϵ)     σ 1     S (σ 1 )      σ n      S (σ 1 ,...,σ n )              cause blocking.       y0 −−→z0 −→y1 −−−→· · · −→yn −−−−−−−−→zn .
+                                                                     Deﬁnition 7: NB-AES for G and ϕ, denoted by AESϕ (G) =
+We  denote by ISYS (s) and ISZS (s)  the  last Y - and  Z-states  (QAY E S , QAZ E S , hAY EZ S , hAZ YE S , Σo, Γ, y0), is deﬁned as the largest (in
+in  y0z0y1z2 . . . zn −1yn zn ,  respectively,   i.e.,  ISYS (s) = yn  and   terms of graph-merger) complete and nonblocking BTS satisfying ϕ.
+ISZS (s) = zn . In particular, we have that I(ISZS (s)) = ES (s), i.e.,     Example 2: Let us return to the running example. In fact, the BTS
+the information component of I(ISZS (s)) is exactly the state-estimate   shown in Fig. 2(a) is the NB-AES for G. For example, Y -state {8, 9}
+by observing s under supervisor S.                                              is live, since state 8 can reach marked state 10 under control decision
+  With the above-mentioned notions, we can “decode” supervisors   {c2} and state 9 can reach marked state 11 under control decision {c1}.
+from a BTS as explained in the following deﬁnition.                    Also, all Z-states in it are deadlock-free. Since AESϕ (G) is the largest
+   Deﬁnition 3: A supervisor S is said to be included in a BTS T  if   complete and nonblocking BTS satisfying ϕ, no control decision can be
+for any s ∈P (L(S/G)), the control decision made by S is deﬁned at   added at any Y -state. For example, at Y -state {3, 4}, we cannot make
+the corresponding Y -state, i.e., S(P (s)) ∈CT (ISYS (s)). We denote
+by S(T ) the set of supervisors included in T .
+                                                                           1For the sake of simplicity, in the ﬁgure, we omit uncontrollable events in   Example 1: Let us consider system G shown in Fig. 1 (a), where
+Σc = {c1, c2}, Σo = {o} and marked states are denoted by double   each control decision, which are always enabled. Also, we omit events that are                                                                             not feasible in each control decision at the current Y -state. For example, we
+circles. This example will be used as the running example throughout   do not consider decisions {c2} and {c1, c2} at Y -state {1} as event c2 is not
+the paper. Suppose that we consider an IS-based property ϕ deﬁned    feasible within the unobservable reach.
+
+4438                                                       IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 63, NO. 12, DECEMBER 2018
+
+
+
+                                                            Algorithm 1:
+                                                                     input  : G, R, and ϕ
+                                                                       output: AESRϕ (G)
+                                                             1     Construct AESϕ (G) by the algorithm in [22];
+                                                             2   AESRϕ (G) ←AESϕ (G);
+                                                             3     for all Y -state y ∈QRZ do
+                                                             4            if ∃γ ∈CAESRϕ (G )(y) : ΓR (y)̸ ⊆γ then
+Fig.  3.  Closed-loop languages under  control.  (a) L(S∗/G).  (b)     5           Delete γ from CAESRϕ (G )(y) by removing its
+L(S/G).                                                                               associated transition;
+
+                                                             6     while AESRϕ (G) is not nonblockingdocontrol decision {c2}; otherwise the system may be blocked at state
+                                                                                               Z do12. Also, at Y -state {8, 9}, we cannot make control decision {c1, c2};     7         for all Y -state y ∈QR
+                                                             8                if y is not live in AESRϕ (G)thenotherwise the system may unobservably reach illegal state 13, which
+                                                             9                Delete y and all its predecessor Z-states andwill violate ϕ.
+                                                                                             the associated transitions;
+  The following result says that we can always synthesize a maximally
+permissive nonblocking supervisor satisfying ϕ when there exists a
+                                                            10       if y0 ∈QNZ B thencomplete and nonblocking BTS T satisfying ϕ.
+                                                            11        return AESRϕ (G) ;   Theorem 1: ([22]) For any complete and nonblocking BTS T that
+satisﬁes ϕ, there always exists a maximally permissive, nonblocking,             else
+and ϕ-enforcing supervisor S ∈S(T ) included in it, where maximal-    12        return “R-compatible NB-AES does not exist”;
+permissiveness means that there does not exist another nonblocking and
+ϕ-enforcing supervisor S′ ∈S(T ) such that L(S/G) ⊂L(S′/G).
+Moreover, such a supervisor S can be effectively synthesized by Algo-
+                                                                      as the set of events deﬁned at some state that can be reached unobserv-rithm NB-SOLU in [22].2
+                                                                    ably from some state in i.
+  To synthesize an arbitrary maximally permissive, nonblocking, and
+                                                                  Then, we introduce the notion of R-compatibility.
+ϕ-enforcing supervisor, one can use the NB-AES as the input of Al-
+                                                                     Deﬁnition 8: We say that a BTS T is R-compatible if
+gorithm NB-SOLU. However, this does not guarantee the containment
+of R. In this paper, we will only invoke Algorithm NB-SOLU from               ∀y ∈QYT , ∀γ ∈CT (y) : ΓR (y) ⊆γ.              (9)
+[22] in order to extract a maximally permissive, nonblocking, and
+ϕ-enforcing supervisor from a complete and nonblocking BTS that       Intuitively, R-compatibility requires that, for any Y -state y, any
+satisﬁes ϕ. Algorithm NB-SOLU has been implemented in the soft-   control decision deﬁned at this Y -state should contain events that are
+ware tool DPO-SYN3 [26]. The algorithm itself is rather technical and   feasible unobservably from a state x ∈y in R. Clearly, if two BTSs
+is beyond the scope of this paper; the reader is referred to [22] for more   are R-compatible, then their union (in terms of graph merger) is still
+details on this algorithm.                                            R-compatible. Therefore, the largest complete, nonblocking, and R-
+                                                                  compatible BTS satisfying ϕ is well deﬁned, and we term it as the
+                  IV. HANDLING THE LOWER BOUND                  R-compatible NB-AES.
+                                                                     Deﬁnition 9: The R-compatible NB-AES  for G, R, and ϕ,
+  Although Algorithm NB-SOLU in [22] can ﬁnd a maximally permis-
+                                                                 denoted by AESRϕ (G) = (QRY , QRZ , hRY Z , hRZ Y , Σo, Γ, y0),  is  de-sive, nonblocking, and ϕ-enforcing supervisor, it cannot guarantee that
+                                                           ﬁned as the largest complete, nonblocking, and R-compatible BTS
+the supervisor synthesized contains the desired lower bound language
+                                                                           satisfying ϕ.R = L(R). For example, supervisor S deﬁned in (7) is a maximally
+                                                                  Algorithm 1 shows how to construct the R-compatible NB-AES
+permissive nonblocking supervisor for system G shown in Fig. 1(a);
+                                             AESRϕ (G). First, we need to construct the NB-AES AESϕ (G) asits closed-loop language under control L(S/G) is shown in Fig. 3(b).
+                                             AESRϕ (G)  is a subsystem of AESϕ (G) by deﬁnition. Then, forIn fact, this is the supervisor returned by Algorithm NB-SOLU in [22]
+                                                                each Y -state, we need to remove all control decisions that violate R-when we use the NB-AES as its input. However, suppose that we
+                                                                         compatibility; this is implemented by lines 3–5. However, by removingconsider the lower bound language R shown in Fig. 1(b), then this
+                                                                such control decisions, the remaining BTS may not be nonblocking assupervisor fails to achieve this lower bound behavior. In this section,
+                                                                                                          it is possible that some state in a Y -state may not be able to reach awe show how to leverage Algorithm NB-SOLU in [22] to synthesize
+                                                           marked state. Therefore, we need to remove all Y -states that are nota maximally permissive, nonblocking, and ϕ-enforcing supervisor that
+                                                                                live in the new structure and then remove their predecessor Z-states toprovably contains the given lower bound language.
+                                                                    guarantee the completeness of the structure, and repeat this procedure
+                                                                                until the structure is nonblocking and complete. This is implemented
+A. R-Compatible NB-AES
+                                                           by the while-loop from line 6 to line 9.
+  Recall that R = (XR , Σ, δR , x0,R ) is the automaton generating R,     Let us illustrate the construction of the R-compatible NB-AES by
+which is assumed to be a strict subautomaton of G. Let i ∈I be an   the following example.
+information state. First, we deﬁne                                  Example 3: Let us return to our running example. The NB-AES
+                                                                                  (G)                                  G                                                                                                                                                    is not                                                                                                                     R-compatible.                                                                                                is shown                                                                                           in Fig.                                                                                                       2(a). However,                                                                      AESϕ  ΓR (i) = {σ ∈Σ : ∃x ∈i ∩XR , ∃w ∈Σ∗u o s.t. δR (x, wσ)!}   (8)   for
+                                                                For                                                                     example,                                                                                           for                                                                Y -states                                                                                 {3} and                                                                                                         {3, 4},                                                                                   we                                                                                                            have                                                                                            ΓR ({3}) =
+                                                   ΓR ({3, 4}) = {c2}. However, control decision ∅is deﬁned at both
+  2Algorithm NB-SOLU was originally presented in [23] for the case of safety                                                  Y -states and {c2}̸ ⊆∅. Therefore, we need to remove control decision
+speciﬁcations only. The new Algorithm NB-SOLU in [22] generalized the orig-
+                                                       ∅from {3} and {3, 4}. Since the only control decision is removed frominal one by combining it with the general IS-based framework proposed in
+[24].                                                                {3, 4}, this Y -state becomes nonlive. Therefore, we need to again re-
+  3https://gitlab.eecs.umich.edu/M-DES-tools/DPO-SYNT               move {3, 4} and its predecessor Z-state ({1, 2}, {c1}). This results in
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 63, NO. 12, DECEMBER 2018                                                         4439
+
+
+the structure shown in Fig. 2(b). Note that Y -state {3} does not need to     Lemma 2: Suppose that there exists a nonblocking and ϕ-enforcing
+be removed as control decision {c2}, which makes it live, is still deﬁned   supervisor S such that R ⊆L(S/G). Then, there must exist a non-
+at this state. Since the structure shown in Fig. 2(b) is nonblocking, we   blocking and R-compatible BTS T satisfying ϕ.
+terminate the while loop and this structure is indeed the R-compatible      Proof: Let S be a nonblocking and ϕ-enforcing supervisor such
+NB-AES (which will be formally proved next).                            that R ⊆L(S/G). Then, we construct a complete BTS T as follows:
+   Theorem 2: Algorithm 1 correctly constructs the R-compatible    1) QTY := {y ∈I : ∃s ∈P (L(S/G)) s.t. y = ISYS (s)}
+NB-AES.                                                              2) QTZ := {z ∈I×Γ : ∃s ∈P (L(S/G)) s.t. z = ISZS (s)}
+   Proof: Let T be the BTS returned by Algorithm 1. First, we know    3) For any y ∈QTY , CT (y) := {γ ∈Γ : ∃s ∈P (L(S/G)) s.t. y =
+that T is a complete BTS, since |CAESRϕ (G )(y)|̸ = ∅by construction,      ISYS (s) ∧γ = S(s)}.
+and whenever a Y -state is removed, its predecessor Z-states are re-    By construction, we have S ∈S(T ). Note that T need not be de-
+moved. Second, we know that T satisﬁes ϕ since its state-space is a   terministic since the control decision of S need not depend on the
+subset of that of the NB-AES, which satisﬁes ϕ. Also, T is nonblock-   information-state encountered. Next, we show that, under the assump-
+ing: (i) any Y -state in it is live by construction; and (ii) any Z-state in   tion that R ⊏G, T is a nonblocking and R-compatible BTS satisfying
+it is deadlock-free since it is also in the state-space of the NB-AES and   ϕ.
+none of its successor Y -states are removed according to line 9. Finally,    By the deﬁnition of ϕ-enforcing supervisor, we know that ∀s ∈
+we know that T is R-compatible since at any Y -state, any control de-  P (L(S/G)) : ϕ(I(ISZS (s))) = 1. Therefore, by the construction of
+cision violating this requirement is removed. Therefore, it remains to  T , we have ∀z ∈Q : ϕ(I(z)) = 1, i.e., T satisﬁes ϕ.
+show that T  is the largest BTS with the above properties. Next, we     To show that T is nonblocking, we need to show that ∀y ∈QTY  : y is
+show this by contradiction.                                                   live and ∀z ∈QTZ  : z is deadlock-free. First, let us consider an arbitrary
+  Let us assume that there exists another complete, nonblocking, and   y ∈QTY and an arbitrary x ∈y. Then, we know that there exists a string
+R-compatible T ′ satisfying ϕ, and T ′ is strictly larger than T . Let us   s ∈L(S/G) such that δ(s) = x. Since S is a nonblocking supervisor,
+consider what happens when the “while” loop is executed for the ﬁrst  we know that there exists a string t such that st ∈L(S/G) and δ(st) ∈
+time. Since T ′ is a subsystem of AESϕ (G) and T ′ is nonblocking, then  Xm . Then, let P (t) = σ1, . . . , σ|P (t)|, then
+we know that any Y -state in T ′ is also live in AESϕ (G). Also, since
+    ′                                                                                                                               ′                 S (P (s))       σ 1       S (P (s)σ 1 )        σ n       S (P (st))T  is a complete and R-compatible, for any Y -state y in T we have     y −−−−−→T z1 −→T y1 −−−−−−→T  · · · −→T yn −−−−−→T zn
+that (i) |CAESRϕ (G )(y)| ≥1, and (ii) ∀γ ∈CAESRϕ (G )(y) : ΓR (y) ⊆γ.                                                                  (10)
+Therefore, we know that no control decision at any Y -state in T ′ will be
+removed. Moreover, since T ′ is complete, we know that any Z-state in   yields a sequence that satisﬁes liveness, i.e., any y ∈QTY  is live. Next,
+T ′ can only reach Y -states in T ′. Since no Y -state in T ′ is removed, we    let us consider an arbitrary z ∈QTZ and x ∈I(z). Still, we know that
+know that no Z-state in T ′ will be removed. Overall, the ﬁrst execution   there exists a string s ∈L(S/G) such that δ(s) = x and ISZS (P (s)) =
+of the “while” loop can only remove states and transitions outside of T ′,   z. Since S is a nonblocking supervisor, we know that there exists a string
+which means that T ′ is still a subsystem of the resulting BTS with state    t such that st ∈L(S/G) and δ(st) ∈Xm . If t ∈Σ∗u o, then we know
+                                                                              that t ∈S(P (s))∗= Γ(z)∗and condition (i) in Deﬁnition 5 is satisﬁed.removal. Therefore, by the same reason, we know that for the second
+time the “while” loop is executed, no state in T ′ will be removed, and    If t /∈Σ∗u o, then we know that it must be in the form of t = wσw′,
+                                                            where w ∈Σ∗u o and σ ∈Σo, and wσ ∈S(P (s))∗= Γ(z)∗. Therefore,so forth. Overall, we know that the “while” loop will converge to a BTS
+that at least contains T ′. This contradicts the fact that T is returned by   condition (ii) in Deﬁnition 5 is satisﬁed. Overall, we know that any Z-
+the algorithm.                            ■    state in T is deadlock-free, which together with the fact that all Y -states
+                                                                        are live imply that T is nonblocking.
+                                                                                Finally, we show that T is R-compatible. Let us consider an arbitrary
+B. Properties of the R-compatible NB-AES                                                  Y -state y ∈QYT and an arbitrary control decision γ ∈CT (y) deﬁned at
+  Now, we show how the R-compatible NB-AES can be combined with   y. By the deﬁnition of T , we know that there exists a string s ∈L(S/G)
+Algorithm NB-SOLU to solve the lower bound containment problem.   such that ISYS (P (s)) = y and S(P (s)) = γ. Now, let us assume for
+First, we show that any supervisor included in AESRϕ (G) contains R.   the sake of contradiction that ΓR (y)̸ ⊆γ. Let σ ∈ΓR (y) \ γ. Then,
+  Lemma 1: Let T be an R-compatible BTS. Then, for any S ∈S(T ),  we know that there exist x ∈y ∩XR , w ∈Σ∗u o such that δR (x, wσ)!.
+we have R ⊆L(S/G).                                           For this x, there exists t ∈L(S/G) such that P (s) = P (t) and δ(t) =
+   Proof:  It sufﬁces to show that ∀s ∈R : s ∈L(S/G). We prove   x. Since x ∈XR and R ⊏G, we know that t ∈L(R). However,
+this by induction on the length of s.                                     since R ⊆L(S/G), we know that σ ∈S(P (t)); otherwise twσ /∈
+  For |s| = 0, we know that ϵ ∈L(S/G) by deﬁnition. Let us assume  L(S/G). This contradicts the fact that σ /∈γ = S(P (s)) = S(P (t)).
+that for any s ∈R such that |s| = k, we have s ∈L(S/G). We need   Therefore, we know that ∀y ∈QYT , ∀γ ∈CT (y) : ΓR (y) ⊆γ, i.e., T
+to show that for any sσ ∈R, where σ ∈Σ and |s| = k, we still have    is R-compatible.                          ■
+sσ ∈L(S/G). Let y = ISYS (P (s)) be the Y -state reached by P (s)     Based on Lemmas 1 and 2, Algorithm 2 is proposed to solve MPLCP-
+under S. Since S ∈S(T ), we know that S(P (S)) ∈CT (ISYS (P (s))).   NBIS. First, we need to construct the R-compatible NB-AES. If the
+Since T is R-compatible, we know that ΓR (y) ⊆S(P (s)). We write   R-compatible NB-AES does not exist, then by Lemma 2, we know
+string s in the form of s = s′w, where s′ ends with an observable    that MPLCP-NBIS does not have a solution, i.e., there does not exist a
+event and w ∈Σ∗u o. Then, we know that δ(s′) ∈y. Moreover, since   nonblocking and ϕ-enforcing supervisor whose closed-loop language
+s′ ∈R, we know that δ(s′) ∈XR . Since δR (δ(s′), wσ)!, we know   contains R. When the R-compatible NB-AES AESRϕ (G) exists, since
+that σ ∈ΓR (y) ⊆S(P (s)). Recall that, by the induction hypothesis,  AESRϕ (G) is a complete and nonblocking BTS, by Theorem 1, we
+s ∈L(S/G). This together with σ ∈S(P (s)) and sσ ∈R ⊆L(G)   can effectively synthesize a maximally permissive nonblocking su-
+implies that sσ ∈L(S/G), which completes the induction step.  ■   pervisor included in it. Moreover, since AESRϕ (G) is R-compatible,
+  Next, we show that the existence of the R-compatible BTS is nec-   by Lemma 1, we know that any supervisor synthesized based on
+essary for the existence of a nonblocking and ϕ-enforcing supervisor  AESRϕ (G) always achieves the lower bound language R. Therefore,
+that contains R.                                                  Algorithm 2 effectively solves MPLCP-NBIS in the sense that it is
+
+4440                                                       IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 63, NO. 12, DECEMBER 2018
+
+
+
+                                                                             TABLE I
+ Algorithm 2:                                                   STANDARD SUPERVISORY CONTROL UNDER PARTIAL OBSERVATION
+      input: G, R and ϕ
+     output: S
+  1     Construct AESRϕ (G) by Algorithm 1;
+  2        if R-compatible NB-AES does not existthen
+  3         return MPRCP-NBIS has no solution ;
+          else
+  4        Use Algorithm NB-SOLU in [22] to synthesize a           in L(S∗/G). Moreover, by Theorem 3, S∗is indeed a maximally
+            maximally-permissive nonblocking supervisor             permissive, nonblocking, and ϕ-enforcing supervisor that achieves R.
+        S∗∈AESRϕ (G) included in the R-compatible            Recall that supervisor S deﬁned in (7) is also a maximally permissive
+          NB-AES;                                                  supervisor, which results in closed-loop language shown in Fig. 3(b).
+  5         return S∗as the solution to MPRCP-NBIS;             These two supervisors are incomparable. However, S does not contain
+                                                                        the lower bound language R, while the synthesized supervisor S∗
+                                                                      includes R.
+                                                           Remark 3: We conclude this section by discussing the complexityboth sound and complete. Moreover, the existence of the R-compatible
+                                                                      of the proposed synthesis algorithm. To construct the R-compatibleNB-AES provides the necessary and sufﬁcient condition for the solv-
+                                                     NB-AES, Algorithm 1 requires quadratic complexity in the size ofability of the lower bound containment problem. The correctness of
+                                                                        the NB-AES, which contains at most 2|X | + 2|X |+ |Σ c | states and (1 +
+Algorithm 2 is formally stated in the following theorem.                              |+ |Σ c |                                                                     |Σo|)2|X       transitions. Algorithm NB-SOLU in [22] is polynomial   Theorem 3: Algorithm 2 effectively solves MPLCP-NBIS.
+                                                                           in the size of the input BTS. However, the input BTS here, AESRϕ (G),   Proof: First, Algorithm 2 is sound, i.e., the nonblocking and ϕ-
+enforcing supervisor S∗returned by Algorithm NB-SOLU based on   also contains at most 2|X | + 2|X |+ |Σ c | states and (1 + |Σo|)2|X |+ |Σ c |
+AESRϕ (G) is indeed a solution to MPRCP-NBIS. Note that Algo-    transitions. Hence, its size is exponential in the size of the original
+rithm NB-SOLU already guarantees that S∗is nonblocking and ϕ-   system G, and the overall complexity of Algorithm 2 is exponential in
+enforcing. Since AESRϕ (G) is R-compatible and S∗∈S(AESRϕ (G)),   the size of G. This exponential complexity is, in general, unavoidable
+by Lemma 1, we know that R ⊆L(S∗/G). It remains to show that S∗    to synthesize a supervisor under the partial-observation setting [21].
+is also maximally permissive. To this end, we assume, for the sake of
+contradiction, that there exists another nonblocking and ϕ-enforcing                   V. DISCUSSION AND COMPARISONS
+supervisor S′ such that                                                   In this section, we discuss and compare our result with existing
+ 1) R ⊆L(S′/G); and                                                     results in the literature.
+ 2) L(S∗/G) ⊆L(S′/G).
+  By Lemma 2, (i) implies that S′ ∈S(AESRϕ (G)). However, this                                                              A. Standard Supervisory Control Under Partial Observation
+together with (ii) implies that S∗is not a maximally permissive super-
+visor included in AESRϕ (G), which violates the property of Algorithm      In the standard supervisory control of partially observed DESs, the
+NB-SOLU.                                                          following problems have been investigated in the literature [8], [12]. Let
+  Next, we show that Algorithm 2 is complete. Suppose that MPRCP-  R and K be two preﬁx-closed languages such that R ⊆K ⊆L(G).
+NBIS has a solution. Then, by Lemma 2, we know that there exists   Find a supervisor S that satisﬁes
+a nonblocking and R-compatible BTS T satisfying ϕ. Therefore, the    1) the safety requirement: L(S/G) ⊆K; or
+R-compatible NB-AES exists and Algorithm 2 will not return “no    2) the range requirement: R ⊆L(S/G) ⊆K.
+solution” when a solution exists                   ■     Note that the safety requirement is a special case of the IS-based
+   Remark 2: As we claimed earlier, the assumption that R ⊏G is   property in this paper, since we can assume w.l.o.g. that language K is
+crucial to guarantee the correctness of Algorithm 2. In particular, this   realizes by a strict subautomaton of G, and therefore, transforming the
+assumption is used in the proof of Lemma 2 to show the existence of   safety requirement to an illegal state avoidance requirement discussed
+the R-compatible NB-AES when a solution to MPRCP-NBIS exists.   in Remark 1.
+Therefore, we have to preprocess automata G and R to fulﬁll this     For both the safety and the range requirements, one can further re-
+assumption before we use Algorithm 2. Otherwise, the synthesis algo-   quire that the supervisor synthesized is maximally permissive or non-
+rithm is only sound but may not be complete, i.e., it may return “no   blocking or both; existing results on all their combinations are listed
+solution” even when a solution exists.                                     in Table I. For example, to synthesize an arbitrary safe supervisor, it
+  Let us illustrate Algorithm 2 by the following example.              sufﬁces to compute language Σ∗u c ∩L(G), i.e., we disable all events,
+   Example 4: Let us still consider system G shown in Fig. 1(a) and   and test whether or not this language is in K. To synthesize an ar-
+the lower bound language shown in Fig. 1(b), where we have R ⊏G.   bitrary supervisor satisfying the range requirement (which could be
+Its R-compatible NB-AES is shown in Fig. 2(b). By applying Algo-   blocking), it sufﬁces to compute language R↓C O , the inﬁmal preﬁx-
+rithm NB-SOLU with AESRϕ (G) as its input, we obtain the following   closed controllable of observable superlanguage, and test whether or
+supervisor:                                                          not this language is in K. As we can see in Table I, how to synthesize a
+          ⎧                                          (maximally permissive) safe and nonblocking supervisor that contains
+          ⎪⎨ ∅           if s = ϵ                           a given lower bound was an open problem. Now, this problem can be
+            S∗(s) =   {c2}       if s = o2k + 1, k ≥0          (11)   solved by the new result in this paper.
+          ⎪⎩                      {c1}       if s = o2k , k ≥1
+which results in closed-loop language L(S∗/G) shown in Fig. 3(a).   B. Comparison With Other Methods
+Intuitively, S∗enables c1 when  it visits Y -state {8, 9} for 2k + 1     There are many other approaches in the literature for synthesizing
+times and it enables c2 when it visits Y -state {8, 9} for 2k times,   safe and nonblocking supervisors under the partial-observation set-
+k ∈N. Clearly, we see that the lower bound language R is contained   ting (without the lower bound constraint), e.g., the supermal normal
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 63, NO. 12, DECEMBER 2018                                                         4441
+
+
+
+solution [3], [7], [11], [14], the supremal weak normal solution [19], the     [3] R. Brandt, V. Garg, R. Kumar, F. Lin, S. I. Marcus, and W. M. Won-
+supremal relatively observable solution [1], [4], [5], and the solutions in        ham, “Formulas for calculating supremal controllable and normal sublan-
+                                                                                   guages,” Syst. Contr. Lett., vol. 15, no. 2, pp. 111–117, 1990.[9], [20]. For the nonpreﬁx-closed case, none of the above-mentioned
+                                                                                      [4] K. Cai, R. Zhang, and W. M. Wonham, “Relative observability of discrete-
+approaches result, in general, a maximally permissive supervisor and         event systems and its supremal sublanguages,” IEEE Trans. Automat.
+it may return “no solution” when a solution does exist.                          Control, vol. 60, no. 3, pp. 659–670, Mar. 2015.
+  In fact, for any solution synthesized by any of the above-mentioned     [5] K. Cai, R. Zhang, and W. M. Wonham, “Characterizations and effective
+methods, we can set it as the lower bound language R in MPRCP-NBIS.        computation of supremal relatively observable sublanguages,” Discrete
+                                                                              Event Dyn. Syst., Theory Appl., 2017, doi: 10.1007/s10626-017-0250-0.
+Therefore, solving MPRCP-NBIS provides a maximally permissive                                                                                      [6] C. G. Cassandras and S. Lafortune, Introduction to Discrete Event Systems,
+and nonblocking solution that strictly contains the original solution.        2nd ed. Berlin, Germany: Springer, 2008.
+For example, we can synthesize a nonblocking supervisor that strictly     [7] H. Cho and S. I. Marcus, “On supremal languages of classes of sublan-
+contains the supremal controllable and normal sublanguage [7] or the        guages that arise in supervisor synthesis problems with partial observa-
+                                                                                                 tion,” Math. Contr. Sig. Syst., vol. 2, no. 1, pp. 47–69, 1989.supremal controllable and relatively observable sublanguage [4] by
+                                                                                      [8] R. Cieslak, C. Desclaux, A. S. Fawaz, and P. Varaiya, “Supervisory con-
+setting these languages as the lower bound languages. In other words,           trol of discrete-event processes with partial observations,” IEEE Trans.
+the results in this paper can improve existing methods in the literature        Automat. Control, vol. 33, no. 3, pp. 249–260, Mar. 1988.
+in general (unless they are already maximally permissive, which is not     [9] M. Heymann and F. Lin, “On-line control of partially observed discrete
+always guaranteed).                                                              event systems,” Discrete Event Dyn. Syst., Theory Appl., vol. 4, no. 3,
+                                                                                     pp. 221–236, 1994.
+                                                                               [10] R. Jacob, J.-J. Lesage, and J.-M. Faure, “Overview of discrete event sys-
+C. Comparison With the Technique in [25]                              tems opacity: Models, validation, and quantiﬁcation,” Annu. Rev. Control,
+                                                                                              vol. 41, pp. 135–146, 2016.
+  In [25], we investigated how to synthesize a maximally permissive                                                                               [11]  J. Komenda, T. Masopust, and J. H. Van Schuppen, “Synthesis of control-
+safe supervisor that contains a given lower bound. However, the ap-          lable and normal sublanguages for discrete-event systems using a coordi-
+proach in [25] can only handle safety rather the general class of IS-based          nator,” Syst. Control Lett., vol. 60, no. 7, pp. 492–502, 2011.
+properties. Moreover, nonblockingness is not guaranteed. In fact, the    [12]  F. Lin and W. M. Wonham, “On observability of discrete-event systems,”
+                                                                                                         Inf. Sci., vol. 44, no. 3, pp. 173–198, 1988.approach [25] takes advantage from the restrictive setting. Speciﬁcally,
+                                                                               [13]  F. Lin and W. M. Wonham, “Decentralized control and coordination of
+it uses the fact that there exists a unique inﬁmal safe (but potentially          discrete-event systems with partial observation,” IEEE Trans. Automat.
+blocking) supervisor that contains R (if one exists). Therefore, we can         Control, vol. 35, no. 12, pp. 1330–1337, Dec. 1990.
+compare NB-AES with the BTS that realizes the unique inﬁmal super-    [14]  T. Moor, C. Baier, T.-S. Yoo, F. Lin, and S. Lafortune, “On the computation
+visor via a formal relationship called the control simulation relation         of supremal sublanguages relevant to supervisory control,” in Proc. 11th
+                                                                    IFAC WODES, 2012, pp. 175–180.
+(CSR). However, this nice property no longer holds when nonblock-                                                                               [15]  T. Moor and K. W. Schmidt, “Fault-tolerant control of discrete-event
+ingness or another IS-based property than safety is considered.                systems with lower-bound speciﬁcations,” in Proc. 5th Int. Workshop
+  In this paper, we do not try to compare the NB-AES with the inﬁmal       DCDS, 2015, pp. 161–166.
+supervisor (which does not even exist in general). We “compare” the    [16]  P. J. Ramadge and W. M. Wonham, “Supervisory control of a class of
+                                                                                           discrete event processes,” SIAM J. Control Opt., vol. 25, no. 1, pp. 206–NB-AES structure directly with the lower bound automaton R via the
+                                                                                 230, 1987.
+new notion of the R-compatibility. Essentially, the R-compatibility    [17] K. Rudie and W. M. Wonham, “The inﬁmal preﬁx-closed and observable
+captures the computational essence of the CSR, i.e., the iterative com-        superlanguange of a given language,” Syst. Control Lett., vol. 15, no. 5,
+putation of the R-compatible NB-AES in Algorithm 1 essentially         pp. 361–371, 1990.
+simulates the ﬁxed-point computation in [25] for the maximal CSR.    [18]  S. Shu, F. Lin, and H. Ying, “Detectability of discrete event systems,”
+                                                                 IEEE Trans. Automat. Control, vol. 52, no. 12, pp. 2356–2359, Dec.
+However, our new approach gets rid of the issue of nonexistence of                                                                              2007.
+the inﬁmal supervisor. Moreover, it is conceptually simpler than the    [19]  S. Takai and T. Ushio, “A modiﬁed normality condition for decentralized
+method in [25]: It only requires a problem reduction and an existing         supervisory control of discrete event systems,” Automatica, vol. 38, no. 1,
+algorithm in [22] can be leveraged thereafter.                                    pp. 185–189, 2002.
+                                                                               [20]  S. Takai and T. Ushio, “Effective computation of an Lm (G)-closed, con-
+                                                                                                  trollable, and observable sublanguage arising in supervisory control,” Syst.
+                         VI. CONCLUSION                                   Control Lett., vol. 49, no. 3, pp. 191–200, 2003.
+                                                                               [21]  J. N. Tsitsiklis, “On the control of discrete-event dynamical systems,”  We presented new results on supervisor synthesis for partially ob-
+                                                                           Math. Control, Signals Syst., vol. 2, no. 2, pp. 95–107, 1989.
+served DESs. A new supervisor synthesis algorithm is proposed to ﬁnd    [22] X. Yin, “Property Enforcement for Partially-Observed Discrete-Event
+a maximally permissive nonblocking supervisor that satisﬁes an arbi-         Systems,” Ph.D. thesis, Dept. EECS, Univ. Michigan, 2017. [Online].
+trary IS-based property. Moreover, the supervisor synthesized provably         Available: http://www-personal.umich.edu/ xiangyin/thesis.pdf
+contains a given lower bound language. To this end, a new notion called    [23] X. Yin and S. Lafortune, “Synthesis of maximally permissive supervi-
+                                                                                        sors for partially observed discrete event systems,” IEEE Trans. Automat.
+R-compatibility was proposed in order to effectively reduce this prob-                                                                                     Control, vol. 61, no. 5, pp. 1239–1254, May 2016.
+lem to a problem previously solved in the literature. Our results further    [24] X. Yin and S. Lafortune, “A uniform approach for synthesizing property-
+generalize the uniform framework of supervisory control in [23]–[25]         enforcing supervisors  for  partially-observed  discrete-event systems,”
+by allowing the simultaneous enforcement of the lower bound contain-       IEEE Trans. Automat. Control, vol. 61, no. 8, pp. 2140–2154, Aug. 2016.
+                                                                               [25] X. Yin and S. Lafortune, “Synthesis of maximally-permissive supervisorsment, nonblockingness, and IS-based property.
+                                                                                           for the range control problem,” IEEE Trans. Automat. Control, vol. 62,
+                                                                                     no. 8, pp. 3914–3929, Aug. 2017.
+                      REFERENCES                               [26] X. Yin, M. Morrison, S.-Y. Sheng, and S. Lafortune, “DPO-SYNT: Dis-
+                                                                                           crete control synthesis for partially-observed systems,” in Proc. 20th IFAC
+ [1] M. V. S. Alves, L. K. Carvalho, and J. C. Basilio, “New algorithms for ver-        World Congr., 2017, pp. 6026–6029.
+      iﬁcation of relative observability and computation of supremal relatively    [27]  T.-S. Yoo and S. Lafortune, “Solvability of centralized supervisory con-
+     observable sublanguage,” IEEE Trans. Automat. Control, vol. 62, no. 11,           trol under partial observation,” Discrete Event Dyn. Syst., Theory Appl.,
+     pp. 5902–5908, Nov. 2017.                                                           vol. 16, no. 4, pp. 527–553, 2006.
+ [2] N. Ben Hadj-Alouane, S. Lafortune, and F. Lin, “Centralized and dis-    [28]  J. Zaytoon and S. Lafortune, “Overview of fault diagnosis methods for
+      tributed algorithms for on-line synthesis of maximal control policies under          discrete event systems,” Annu. Rev. Control, vol. 37, no. 2, pp. 308–320,
+      partial observation,” Discrete Event Dyn. Syst., Theory Appl., vol. 6, no. 4,        2013.
+     pp. 379–427, 1996.

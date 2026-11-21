@@ -1,0 +1,1007 @@
+                                                            Automatica 108 (2019) 108476
+
+
+                                            Contents lists available at ScienceDirect
+
+                              Automatica
+
+
+                                         journal homepage: www.elsevier.com/locate/automatica
+
+
+
+Enforcing opacity by insertion functions under multiple energy
+constraints✩
+Yiding Ji a, Xiang Yin b,∗, Stéphane Lafortune a
+a Department of Electrical Engineering and Computer Science, University of Michigan, Ann Arbor, MI, USA
+b Department of Automation, Shanghai Jiao Tong University, Shanghai, China
+
+
+a r t i c l e    i n f o             a b s t r a c t
+
+
+Article history:                                  This paper investigates the enforcement of opacity by insertion functions subject to multiple quanti-
+Received 30 July 2018                             tative constraints capturing resource or energy limitations. There is a malicious intruder attempting
+Received in revised form 6 June 2019              to infer secrets of the system from its observations. To prevent the disclosure of secrets, the insertion
+Accepted 11 June 2019                          function inserts fictitious events to the output of the system to obfuscate the intruder. The system is
+Available online xxxx
+                                                    initialized with several types of resources, referred to as energy. The energy is consumed or replenished
+Keywords:                                 with event occurrences while always consumed with event insertions. The insertion function must
+Discrete event systems                         enforce opacity while ensuring that each type of resource is never depleted. This problem is then
+Opacity enforcement                         reduced to a two-player game between the insertion function and the system (environment), with
+Insertion function                             properly defined objectives. A game structure called the Energy Insertion Structure, denoted by EIS is
+Partial observation                            proposed, which provably contains solutions to the energy constrained opacity enforcement problem.
+Quantitative games
+                                      Then we further study the bounded cost rate insertion problem on the insertion function’s winning
+                                            region of EIS, which requires that the long run average rate of insertion cost be bounded. This problem
+                                                           is formulated as a multidimensional mean payoff game and a special method called hyperplane
+                                             separation technique is applied to efficiently solve it.
+                                                              © 2019 Elsevier Ltd. All rights reserved.
+
+
+
+
+1. Introduction                                                K-step opacity (Yin & Lafortune, 2017) and infinite-step opac-
+                                                                                ity (Zhang, Yin, & Zamani, 2019). Opacity has also been discussed
+   Opacity is an information-flow based property that charac-     in other models, like infinite state systems (Chédor, Morvan,
+terizes whether the secrets of a system can be inferred by an     Pinchinat, & Marchand, 2015), Petri nets (Tong,  Li, Seatzu, &
+outside intruder with malicious purposes. The outside intruder is     Giua, 2017), modular systems (Masopust & Yin, 2019) and timed
+typically modeled as an observer with knowledge of the structure    systems (Cassez, 2009). Opacity under the so-called Orwellian
+                                                                  observation is studied in Mullins and Yeddes (2014). Addition-of the system; its intention is to infer system secrets by observing
+                                                                                     ally, many works investigate opacity quantitatively in stochasticsystem outputs. The system is opaque if the intruder is never able
+                                                                            settings, e.g., Bérard, Mullins, and Sassolas (2015), Chen, Ibrahim,to unambiguously determine any of the system secrets from its
+                                                         and Kumar (2017), Keroglou and Hadjicostis (2018), Yin, Li, Wang,
+observations.
+                                                         and Li (2019). The review paper (Jacob, Lesage, & Faure, 2016)
+   Opacity has received significant attention in the context of Dis-
+                                                                 provides a comprehensive summary of research topics on opacity
+crete Event Systems (DES). Different notions of opacity have been
+                                                                        in DES.
+proposed and studied for finite-state automata, e.g., language-
+                                                                         Violations of opacity give rise to the problem of opacity en-
+based opacity (Lin, 2011), current-state opacity (Saboori & Hadji-                                                                 forcement, see,  e.g., Barcelos and Basilio (2018), Falcone and
+costis, 2007), initial-state opacity (Saboori & Hadjicostis, 2013),                                                        Marchand (2015), which has been investigated under various
+                                                           mechanisms. Supervisory control can be used to disable non-
+ ✩Research supported in part by the US National Science Foundation under    opaque  behaviors,  thereby  preventing  disclosure  of  secrets
+grant CNS-1738103,  also by National Natural Science Foundation  of China     (Dubreil, Darondeau, & Marchand, 2010; Takai & Oka, 2008; Tong,
+under grants 61803259 and 61833012. The material in this paper was partially      Li, Seatzu, & Giua, 2018; Yin & Lafortune, 2016; Zhang, Shu, & Lin,
+presented  at the 14th  International Workshop on Discrete Event Systems,    2015). Another popular framework is sensor activation (Cassez,
+May 30–June 1, 2018, Sorrento Coast, Italy. This paper was recommended for     Dubreil, & Marchand, 2012; Yin & Lafortune, 2019), which dy-
+publication in revised form by Associate Editor Christoforos Hadjicostis under
+the direction of Editor Christos G. Cassandras.                              namically changes the observability of certain events but does not
+ ∗     Corresponding author.                                             intervene with the operation of the system. Differently from these
+     E-mail addresses:  jiyiding@umich.edu (Y. Ji), yinxiang@sjtu.edu.cn (X. Yin),    approaches, Ji, Wu and Lafortune (2018) study opacity enforce-
+stephane@umich.edu (S. Lafortune).                               ment using insertion functions, which may insert fictitious events
+
+
+https://doi.org/10.1016/j.automatica.2019.06.028
+0005-1098/© 2019 Elsevier Ltd. All rights reserved.
+
+2                                                             Y.  Ji, X. Yin and S. Lafortune / Automatica 108 (2019) 108476
+
+                                                        consumes or gains resources. So the system’s resource levels
+                                                               dynamically change, which are reflected in EIS.
+                                                               Based on EIS, we  first find the strategies of the insertion
+                                                                       function, which enforce opacity while not violate the energy level
+                                                                         constraints. Among them, we are particularly interested in the
+                                                                         strategies working in an ‘‘economical" way. In other words, there
+                                                               should exist an upper bound for the rate of insertion cost so that
+             Fig. 1. Location-based service and insertion mechanism.             only a reasonable amount of resource is consumed per step of
+                                                                          insertion. Motivated by this requirement, we further formulate
+                                                                 the bounded insertion cost rate problem as a multidimensional
+into the system’s output to modify the intruder’s observation for   mean payoff game and solve  it by leveraging the hyperplane
+obfuscation purposes. This method is further generalized to edit     separation technique originally proposed in Chatterjee and Velner
+functions (Ji, Yin, & Lafortune, 2019; Mohajerani, Ji, & Lafortune,     (2017).
+2018) which may erase events from the output of the system,      Our work is inspired by some results on quantitative two-
+along with event insertions.                                        player games in theoretical computer science, specifically, energy
+   All the above works concentrate on logical properties of opac-    games and mean payoff games (Apt & Grädel, 2011; Ehrenfeucht
+ity enforcement. However, in many applications, the execution of   & Mycielski, 1979). In some cases, one player only has imper-
+system events may gain or consume certain types of resources of     fect information about the game and thus is not informed of
+the system, which we refer to as ‘‘energy". Besides, secrecy obfus-    some moves of its opponent. Under imperfect information, energy
+cation may also consume some types of resources so that some    games are decidable and known to be ACK-complete (Pérez,
+strategies may be preferred due to lower costs. Those resources    2017) with fixed amount of initial energy, while mean payoff
+may be interpreted as budget for insertion of fictitious events,    games are in general undecidable (Degorre, Doyen, Gentilini,
+processing time, storage space, power supply, and so forth. Mo-     Raskin, & Toruńczyk, 2010). Another generalization is multidi-
+tivated by this practical situation, it is meaningful to investigate    mensional game (Chatterjee & Velner, 2017), where both players
+opacity enforcement under quantitative constraints. We assume    have several quantitative objectives. The above works also in-
+that the system has several types of resources whose amounts     spired the work (Pruekprasert & Ushio, 2017), which studies
+are all fixed. The system’s energy levels may change due to event    supervisory control for DES using energy games with partial
+occurrences and defense of secrets. Under this framework, our     observation. We adapt some methodology from Pruekprasert and
+objective is to guarantee that secrets are not disclosed to the    Ushio (2017) to the different problem of opacity enforcement by
+intruder while each type of resource is never depleted in the     obfuscation. To the best of our knowledge, this paper is the first
+process of enforcing opacity.                                         to investigate opacity enforcement under multiple quantitative
+   In this work, we consider opacity enforcement by leveraging     objectives.
+the technique of insertion functions  (Ji, Wu, et  al., 2018) and      The rest of this paper is organized as follows. Section 2 de-
+further investigate it under a quantitative setting. This problem     scribes our system model. Section 3 formulates the energy con-
+is inspired by the rapidly growing application of location-based     strained opacity enforcement problem. Section 4 introduces EIS
+services (LBS). Suppose there is a device providing LBS, which    and presents  its construction algorithm. Section 5 solves the
+sends personalized information to the user by exploiting the    energy constrained opacity enforcement problem based on EIS.
+user’s real time location. There may be a malicious eavesdropper    Section 6 formulates the bounded cost rate insertion strategy
+which intends to infer some critical information of the user from     synthesis problem and solves  it by the hyperplane separation
+the queries sent by the device, through the open communication    technique. Finally, Section 7 concludes the paper.
+network. To prevent the disclosure of secrets, some fictitious     A preliminary version of this paper appears in  Ji, Yin and
+queries may be inserted to the ongoing queries if they are going    Lafortune (2018) and the improvement is three-fold. First, Ji, Yin,
+to reveal the user’s critical information. Then the resulting query     et  al. (2018) only show the soundness of obtaining insertion
+sequences must be made consistent with some existing queries     functions from EIS, while this work also shows the completeness.
+not revealing any secret information. This mechanism is shown    Second, we extend the one-dimensional quantitative objective
+in Fig. 1. Since inserting queries may cost certain resources like     in Ji, Yin, et al. (2018) to the multidimensional case. Finally, we
+electricity, bandwidth and money, the insertion functions may     solve the bounded cost rate insertion strategy synthesis problem,
+not insert arbitrary long or arbitrary many queries for obfuscation    which was not treated in Ji, Yin, et al. (2018).
+in practice. They should be properly designed so that the resource
+budget requirements are not violated. In addition, the resources     2. System model
+should not be consumed too sharply so that the insertion func-
+tions work economically, i.e., the rate of insertion cost should be     We consider opacity and its enforcement in a quantitative DES
+bounded from above.                                       modeled as a weighted finite-state automaton:
+   These requirements lead us to study opacity enforcement
+                                                 G = (X, E, f , x0, ω)
+by insertion functions with multiple quantitative objectives. This
+problem  is discussed under imperfect information due to the    where X is the finite set of states, E is the finite set of events, f  :
+insertion function’s partial observation of the system,  i.e., it is   X×E →X is the partial state transition function, and x0 ∈X is the
+only aware of the occurrence of observable events. The insertion    unique initial state. We denote by XS ⊂X the set of secret states
+function aims to enforce opacity under the constraint that each     that should remain opaque. The transition function is extended to
+type of resource of the system never drops below zero, for all    domain X × E∗in the standard manner (Cassandras & Lafortune,
+possible system behaviors (worst-case analysis). We transfer this    2008) and we still denote it by f . The language generated by G is
+problem to a two-player game between the insertion function    defined as L(G) = {s ∈E∗: f (x0, s)!} where ! means ‘‘is defined".
+and the environment, then solve  it by constructing a discrete   We write s ≤u if string s is a prefix of string u; also s < u
+game structure called Energy Insertion Structure, denoted by EIS.       if s ≤u and  s̸ =  u. We also denote by t ∈s if string t is a
+The insertion function plays by inserting events, which consumes     substring of s. The multidimensional function ω : E →Zk assigns
+resources, while the system plays by executing events, which    a k-dimensional weight vector to each event in E where k is a
+
+                                                               Y.  Ji, X. Yin and S. Lafortune / Automatica 108 (2019) 108476                                          3
+
+(fixed) positive integer and each entry reflects the gain or cost of     states composed of only secret states and then taking the acces-
+a certain type of resource associated with the occurrence of an     sible part, see  Ji, Wu, et al. (2018). Here Xd ⊆Xobs is the state
+event. We denote by ω(i)(e) the ith component of ω(e) for e ∈E.     space, Eo is the set observable events, δd  : Xd × Eo →Xd is the              −→
+In this work, we let 0 be the k-dimensional vector of all 0s. The    same transition function as δ with restricted domain Xd × Eo, xd,0
+function ω is additive, whose domain is extended to E∗by letting      is the initial state and we omit the weight function in Obsd(G). It
+     −→
+ω(ϵ) = 0  , ω(se) = ω(s) + ω(e) where s ∈E∗, e ∈E.                      is easy to see that Obsd(G) generates exactly Lsafe.
+   Given an automaton G, for x1, x2 ∈X and e ∈E, we denote by       Opacity may not always hold and an insertion function may
+x1 e−→x2 if f (x1, e) = x2. A run in G is a sequence of alternating    be used to enforce opacity. The insertion function is an interface
+                                      e1        e2        en−1                   between the output of the system and the external environment
+states and events: r = x1 −→x2 −→· · · −−→xn and it may be                                                                   including the intruder.  It may insert fictitious events into the
+infinitely long. We denote the set of runs in G by Run(G) and x ∈r
+                                                               output stream of the system to obfuscate the intruder; see Ji, Wu,
+if x is a state in r. A run is initial if its initial state is the initial state
+                                                                        et al. (2018) for more details of this concept.
+of the system. Also, a run forms a cycle if x1 = xn and the cycle
+is simple if ∀i, j ∈{1, 2, . . . , n −1},   i̸ =  j ⇒xi̸ =  xj. If r is a
+                                                                  Definition 2 (Insertion Function). An insertion function is defined
+cycle, there is a corresponding loop e1e2 · · · en−1 starting from and                                                                          as:  fin  : E∗o × Eo →E∗o Eo such that for  l ∈E∗o and eo ∈Eo,ending in x1. We further call the loop simple if the cycle is simple.
+                                                                                                  fin(l, eo) = sIeo where sI ∈E∗o .  We refer to the set of quantitative resources associated with
+the operation of the system as energy. The system is granted      By definition, the insertion function inserts sI before the next
+with initial energy vector v0 ∈  Nk to support its operation.    observable event eo given that l has been observed, then it outputs
+Given s = e0e1 · · · en−1 ∈L(G), the energy level of the system      sIeo. It is likely that sI is ϵ when no event is inserted. An insertion
+after s is V(s) = v0 + ∑n−1i=0 ω(ei). We also denote by V (i)(s) the    function fin may be encoded as an input/output (I/O) automaton
+ith component of the k-dimensional vector V(s). Then we make     IA = (Xia, Eo, E+o , δia, δoa, xia,0). Here Xia is the state space; Eo is
+the following important assumption that the energy level vector    the set of input events; E+o = E∗o Eo is the set of output strings;
+should always be nonnegative in every dimension and we will      δia : Xia×Eo →Xia is the transition function; δoa : Xia×Eo →E+o  is
+explain it in the next section.                                     the output function such that δoa(xia, eo) = sIeo where δia(xia, eo)!
+                                                         and δia(xia,0, s) = xia, if fin(s, eo) = sIeo; xia,0 ∈Xia is the initial
+Assumption 1.  ∀s ∈L(G), V(s) ≥−→0  .                                   state.
+                                           We also define a string-based version of fin and with a slight   System G is partially observable, i.e., E = Eo ∪Euo, where Eo
+                                                             abuse of notation, denote it by fin as well (it will be clear from the
+is the set of observable events and Euo is the set of unobservable                                                          argument which form of fin is being considered): fin(ϵ) = ϵ andevents. Given t = t′e ∈E∗, its natural projection under P : E∗→
+                                                                                          fin(leo) = fin(l)fin(l, eo).E∗o  is recursively defined as P(t) = P(t′)P(e) where t′ ∈E∗and
+e ∈E. The projection of an event is P(e) = e if e ∈Eo and P(e) = ϵ      An insertion function inserts strings based on the observable
+                                                                behavior of the system. However, unobservable events do occurif e ∈Euo ∪{ϵ}, where ϵ is the empty string.
+                                                         between two observable events. As a convention, when we need   Given a set of states q ⊆X, the unobservable reach, denoted
+by UR(q), is defined as: UR(q) =  {x′ ∈ X   :  ∃x ∈  q, ∃s ∈     to discuss unprojected strings with insertion, we assume without
+E∗uo,  s.t.  f (x, s) =  x′}. The observable reach under observable     loss of generality that the inserted string is placed right before
+event eo, denoted by Nexteo(q), is defined as: Nexteo(q) = {x′ ∈    the next observable event in an unprojected string.
+X  : ∃x ∈q, eo ∈Eo,  s.t.  f (x, eo) =  x′}. Then the observer of
+G is: Obs(G) =  (Xobs, Eo, δ, xobs,0, ωobs) where Xobs ⊆2X  is the    Convention 1.   Given s =  ξ0e0 · · · ξn−1en−1ξn ∈L(G) where
+                                                                       ∀j ≤n, ξj ∈E∗uo and ej ∈Eo, if fin(e0e1 · · · ej−1, ej) = θjej wherestate space; δ  : Xobs × Eo →Xobs is the transition function and
+                                                                       ∀j ≤n, θj ∈E∗o , then s is mapped to s′ = ξ0θ0e0 · · · ξjθiej · · · ξnθnen∀xobs ∈Xobs, δ(xobs, eo) = UR(Nexteo(xobs)); xobs,0 = UR(x0) is the
+initial state; ωobs : Eo →Zk is the same as ω over the restricted    where P(s′) ∈P[L(G)].
+domain Eo. An observer state can be viewed as a (current) state           It is possible that s′ /∈L(G), but what matters is that P(s′) ∈
+estimate of the system, which is a subset of X.                       P[L(G)], since the intruder only observes strings in P[L(G)] for its
+                                                                    inference of secrets.
+3. Problem formulation                                                                      Next, we present the notion of private safety from Ji, Wu, et al.
+                                                                     (2018), which indicates that every string in P[L(G)] is mapped to
+   In this section, we first review the notion of current-state opac-
+                                                               a safe string under certain insertion choices.
+ity and the mechanism of insertion functions. Then we formulate
+the energy constrained opacity enforcement problem.
+                                                                  Definition 3 (Private Safety). Given system G with projection P
+                                                         and safe language Lsafe, insertion function fin is privately safe if
+Definition 1 (Current-State Opacity (CSO)). Given system G, pro-
+                                                               ∀s ∈P[L(G)], fin(s) ∈Lsafe.
+jection P, and secret state set XS, G is CSO if ∀t ∈LS := {t ∈L(G) :
+f (x0, t) ∈XS}, ∃t′ ∈LNS := {t ∈L(G) : f (x0, t) ∈(X \ XS)} such     We assume that event insertion always costs energy and de-
+that P(t) = P(t′).                                                        fine the insertion weight function ωin  : Eo →(Z \ N+)k, which
+                                                                     assigns a k-dimensional weight vector to each inserted event,
+  A system is current-state opaque  if for every string reach-
+                                                       where all components are non positive. Function ωin is additiveing  a  secret  state,  there  exists  another  string  reaching  a                                            −→
+non-secret state which shares the same projection, thereby pro-    and its domain is extended to E∗o by letting ωin(ϵ) =  0 and
+viding deniability of the secret. CSO can be verified by building     ωin(seo) = ωin(s)+ωin(eo) for s ∈E∗o , eo ∈Eo. Equivalently, we may
+the observer and checking whether an observer state contains    use −ωin to stand for insertion−→ costs. Without loss of generality,
+solely secret states. Based on CSO, we define the safe language,   we assume that ωin(eo)̸ =  0  for all eo ∈Eo, i.e., insertion of
+which is the prefix-closure of the projected non-secret strings:    an observable event always costs energy. The ith component of
+Lsafe = P[L(G)] \ {[P[L(G)] \ P(LNS)] E∗o}. We also define the unsafe     ωin(eo) for eo ∈Eo is denoted by ωin(i) (eo).
+language Lunsafe = P[L(G)] \ Lsafe.                                       Next, we define the system’s energy level after insertion as Vm :
+   Given system G and its observer Obs(G), the desired observer    L(G) × E∗→Zk. Given s =  ξ0e0ξ1e1 · · · ξn−1en−1ξn ∈L(G)
+Obsd(G) = (Xd, Eo, δd, xd,0) is obtained by removing all observer    where ∀j ≤n, ξj ∈E∗uo and ej ∈Eo, suppose s is mapped to
+
+4                                                             Y.  Ji, X. Yin and S. Lafortune / Automatica 108 (2019) 108476
+
+s′ =  ξ0θ0e0ξ1θ1e1 · · · ξn−1θn−1en−1ξn by Convention 1 by some    one is the (true) system’s estimate. They are usually different
+insertion function; then we let Vm(s, s′) = V(s)+∑n−1j=0 ωin(θj). We    as insertion functions obfuscate the intruder by manipulating its
+will denote s′ by sfin  if s is mapped to s′ by fin. Hence, Vm(s, sfin)     observation.
+is the energy level of the system after string s is modified by
+insertion function fin.                                              Definition 4 (Verifier Parallel Composition). The verifier parallel
+   Given a non-opaque system G with initial energy vector v0,    composition ∥v is a special parallel composition between Obsd(G)
+we aim to design an insertion function fin which enforces opacity    and Obsf (G): Gv = Obsd(G)∥vObsf (G) where transition functions
+but never forces the system’s energy level to drop below zero     δvs and δvd are defined for synchronization: δvs((xd, xf ), e)  :=
+in the component-wise sense. That  is, the insertion function     (δd(xd, e), δ(xf , e)) and δvd((xd, xf ), e) :=  (δd(xd, e), δsl(xf , e)) =
+is constrained by the energy level of the system,  i.e., ∀s ∈     (δd(xd, e), xf ).
+P[L(G)], Vm(s, sfin) ≥−→0  . Since insertion always costs energy, we      The transition function δvs captures actual event occurrences,
+made Assumption 1 earlier to ensure some energy margins for    thus both the intruder’s and the system’s estimates change with
+the insertion function. We now formally formulate the energy    such transitions; while δvd captures event insertions, thus only
+constrained opacity enforcement problem.                         the intruder’s estimate is updated. This is consistent with the
+                                                       mechanism of the insertion function, which is an interface be-
+Problem 1.  Given system G with initial energy vector v0, the    tween the output of the system and the outside environment.
+energy constrained opacity enforcement problem is to find an      It only changes the intruder’s observations but not the system’s
+insertion function fin such that: (i) fin is privately safe; (ii) ∀s ∈     behavior. Here xd ∈Xd and xd /∈2XS by definition, so what
+L(G), Vm(s, sfin) ≥−→0  .                                             the intruder observes does not reveal the system’s secrets. For
+                                                                completeness, we define δvd(xv, ϵ) = xv for all xv ∈Xv.
+  Due to partial observation of the system, we need to estimate
+both current states and energy levels of the system so that inser-
+                                                                                   4.2. Energy information states
+tion functions may make proper decisions to enforce opacity. This
+issue will be discussed in the following sections. Also notice that
+                                           We aim to synthesize an insertion function which enforces
+if there exists an insertion function solving Problem 1 with initial
+                                                                   opacity and maintains nonnegative energy level in all dimensions.
+energy vector v0, then the same insertion function also solves the                                                          To achieve these goals, we integrate the information of state esti-
+problem with any initial energy vector v′0 ≥v0. We will see later    mates and energy levels into properly defined Energy Information
+that this simple monotonicity property allows us to define a finite                                                                                States. Here we let |·| be the cardinality of a set.
+structure to embed solutions to Problem 1.
+
+                                                                  Definition 5 (Energy Information State). Given G, an energy in-
+4. Energy insertion structure                                                               formation state is: qe =  ((xd, xf ), [v(1), . . . , v(|xf |)]) ∈  Xv ×
+                                                                            ∪|X|i=1Zk×|i|. Let I(qe) and EL(qe) denote the state estimate and   In this section we define energy information states and En-
+                                                              energy level components, respectively, so qe = (I(qe), EL(qe)).
+ergy Insertion Structure, which is denoted by EIS. By introducing
+these concepts, we transform Problem 1 into a reachability game     We denote by Q E the set of energy information states, which
+with perfect information between the insertion functions and     track the system’s estimate xd, the intruder’s estimate xf and the
+environment. Then we solve Problem 1 on EIS.                    energy levels of the system at each state in xf . Besides, each
+                                                                          qe ∈Q E induces a belief function hqe   : X →Zk. Specifically,
+4.1. Building the verifier                                                 for qe ∈Q E where I(qe) =  (xd, xf ) ∈Xv, we have EL(qe) =
+                                                                            {hqe(x)  : x ∈xf }. We usually put EL(qe) in a column vector’s
+  We first review the concept of verifier proposed in Ji, Wu, et al.    form: [hqe(x1), . . . , hqe(x|xf |)]. By convention, elements in EL(qe)
+(2018). It serves as an intermediate structure for constructing EIS     are placed in an increasing order w.r.t. state names in xf . Our
+here and encodes potentially feasible insertion choices for opacity     definition is inspired by the belief function in Degorre et al. (2010)
+enforcement without considering the energy constraints.          and the observation function in Pruekprasert and Ushio (2017). In
+   Given system G, in order to build the verifier, we first in-    the following discussion, we use h (i)qe(x) to denote the ith element
+troduce the feasible observer  (Ji, Wu, et  al., 2018). The feasi-     in hqe(x).
+ble observer is obtained by adding self-loops for all observable      To compare energy level vectors, we extend the measure
+events at each state in observer Obs(G). Formally, it is defined   ≤from scalars to vectors as follows: given two vectors v1 =
+as Obsf (G) =  (Xf , Eo, δ, δsl, xf0) where Xf =  Xobs  is the state     [v1(1), v1(2), . . . , v1(k)], v2 = [v2(1), v2(2), . . . , v2(k)] ∈Zk, we
+space; Eo is the set of observable events; δ is the same transition    denote by v1 ≤  v2 (respectively v1 ≥  v2)  if ∀1 ≤   i ≤
+function as in the observer; δsl  : Xf × Eo →Xf  is the self-loop     k, v1(i) ≤v2(i) (respectively v1(i) ≥v2(i)). Then we further
+transition function such that ∀xf ∈Xf , ∀eo ∈Eo, δsl(xf , eo) = xf ;    extend it to a measure on matrices: given two matrices m1 =
+x f0 =  xobs,0 is the initial state. Thus at a state xf , there may be     [v1, v2, . . . , vn], m2 =  [v′1, v′2, . . . , v′n] ∈Zk×n, we denote by
+two transitions labeled by eo defined: (i) the normal transition   m1 ≤m2 if vi ≤v′i for all 1 ≤i ≤n.
+δ representing the occurrence of an observable event and  (ii)      An energy information state qe ∈Q E is energy safe (or simply
+transition δsl representing potential event insertion.                    safe) if ∀x ∈xf where I(qe) = (xd, xf ), hqe(x) ≥−→0  . We define an
+   Then we synchronize desired observer Obsd(G) and feasible    order ≼over the set of energy information states: for qe1, qe2 ∈Q E,
+observer Obsf (G) by the verifier parallel composition (Ji, Wu, et al.,     qe1 ≼qe2 if I(qe1) = I(qe2) and EL(qe1) ≤EL(qe2). We also say that qe2
+2018) to obtain the verifier, defined as Gv = (Xv, Eo, δvd, δvs, xv0).    subsumes qe1 if qe1 ≼qe2, i.e., qe1 and qe2 share the same verifier state
+Here Xv ⊆Xd × Xf  is the state space, Eo is the set of observable    component but the energy level vector of qe2 is no less than that
+events; δvs : Xv×Eo →Xv is the transition function corresponding     of qe1 at every possible current state in I(qe2). By Dickson’s lemma
+to normal transitions in both Obsd(G) and Obsf (G); δvd : Xv×Eo →     (see Levy (2002)), the order ≤on Nm is a well-quasi-ordering for
+Xv is the transition function corresponding to normal transitions    any m ∈N. In addition, the Cartesian product of two well-quasi-
+in Obsd(G) and added self-loop transitions in Obsf (G); xv0 =    ordered sets S ⊆Nm and T ⊆Nm by using ≤is also a well-quasi
+(xobs,0, xobs,0) is the initial state. A state xv = (xd, xf ) ∈Xv has two    ordered set (Nash-Williams, 1963), i.e., (s, t) ≤(s′, t′) ⇔[s ≤
+components: the left one is the intruder’s estimate and the right      s′] ∧[t ≤t′] for s, s′ ∈S, t, t′ ∈T. Thus we can further argue that
+
+                                                               Y.  Ji, X. Yin and S. Lafortune / Automatica 108 (2019) 108476                                          5
+
+≼on safe energy information states is also a well-quasi ordering,    the feasible observer and the string θ1e1 · · · θn−1en−1 after in-
+i.e., for any infinite sequence of states qe1, qe2 · · · ∈Q E, ∃i, j ∈N,     sertion is defined in the desired observer. This result further
+s.t. i < j and qei ≼qej .                                               implies that the string after insertion is always a safe one, so
+  We call qae ∈ Q E × Eo an augmented energy information     private safety is not violated following the insertion choices in
+state, i.e., qae is an energy information state augmented with an    any insertion-execution sequence.
+observable event. Let IE(qae), E(qae) denote the energy information      The following theorem shows that the belief function always
+state and observable event components of qae, respectively. So we    returns the minimum energy level at every dimension by strings
+have qae = (IE(qae), E(qae)). With a slight abuse of notation, we use     that have the same observation and reach some state in the esti-
+hqae to stand for hqe where qe = IE(qae). Besides, qae is (energy) safe    mate, under certain insertion choices. By convention, we denote
+                                                                                                               e1       θ1       e2           ej−1         θj−1if ∀x ∈xf where I(IE(qae)) = (xd, xf ), hqae(x) ≥−→0  . Then we define    by ρj = ye1 −→ze1 −→ye2 −→ze2 · · · −−→zej−1 −−→yej for 1 ≤j ≤n
+the following two concepts to characterize the update of energy    the jth prefix of ρ. Also we let V m(i) (s, s′) denote the ith component
+and augmented energy information states with event insertion     of the k-dimensional vector Vm(s, s′).
+and execution.
+   For eo ∈Eo, we say that qae ∈Q E × Eo is an eo-execution                                                                                            e1                         E                                     Theorem 1.   Given an insertion-execution sequence ρ = ye1 −→
+successor of qe ∈Q   if IE(qae) = qe and qae = (qe, eo). In other           θ1        e2          en−1         θn−1                                                 f
+words, we simply combine an energy information state qe with an     ze1 −→ye2 −→ze2 · · · −−→zen−1 −−→yen, let I(yei ) = (xdi , x i ) for all
+observable event eo to create an augmented energy information    1 ≤i ≤n and let  l = e1 · · · en−1, then ∀x ∈x fn, ∀1 ≤i ≤k,
+state qae.                                                                   m                                                                                                                                                                          (i) (s, s′)  :  ∃x′ ∈x f1, s ∈P−1(l),  s.t.  f (x′, s) =                                                          h (i)yen(x) = mins{V                                                     E   For θ ∈E∗o , eo ∈Eo, we say                                     qe ∈Q   is a (θ, eo)-insertion     x, δd(xd1, P(s′)) =  xdn} where string s  is mapped to  s′ following                                          E
+successor of qae = (IE(qae), eo) ∈Q × Eo if: (i) I(qe) = (x′d, x′f ) =    Convention 1 under insertions indicated by ρ.
+δvs(δvd((xd, xf ), θ), eo) where I(IE(qae)) =  (xd, xf ); (ii) ∀x′ ∈x′f ,
+∀1 ≤i ≤k, h (i)qe(x′) = minξ∈E∗uo{h (i)qae(x)+ω(i)(eo)+ω(i)(ξ)+ω in(i) (θ) :    Proof.  Proof by induction on the length of  l. Suppose s =
+∃x ∈xf ,  s.t. f (x, eoξ) = x′}.                                           ξ1e1 · · · ξn−1en−1ξn, P(s) =  l = e1 · · · en and s is mapped to s′ =
+   Intuitively, a (θ, eo)-insertion successor indicates the update of     ξ1θ1e1 · · · ξnθnenξn+1 where θj ∈E∗o and P(s′) = θ1e1 · · · θnen = l′.
+state estimates and energy levels after string θ is inserted before     Let lj = e1 · · · ej and l′j = θ1e1 · · · θjej be the jth prefix of l and l′, re-
+observable event eo. Since event insertion does not change the     spectively. Let l0 = ϵ and sj = ξ1e1 · · · ξj−1ejξj+1, with s0 = ϵ. We
+system’s estimate, the system’s estimate gets updated after eo     also suppose  δvd(δvs(· · · δvs(δvd((xd1, xf1), θ1), e1) · · · , ej−1), θj) =
+occurs. While the intruder’s estimate is updated with both θ and      (x′dj , x′fj ) and δvs((x′dj , x′fj ), ej) = (xdj+1, x fj+1) in Gv.eo. For a current state x′ in the system’s estimate x′f , it may be                                                                        Induction Basis: n = 0, the result holds immediately.
+reached through strings starting from some state(s) x in xf and                                                                          Inductive Hypothesis: Assume that the result holds when n =
+those strings may have different unobservable strings as suffixes.                                                                                                                j −1, i.e., for ρj.
+In this case, hqe(x′) indicates the minimum energy level at every                                                                                                                                     f
+                                                                                                                                                         , x j ), θj) =                                                                                                                                                                                                                                                                                        jdimension at x′ with the occurrence of eo and unobservable string        Induction Step: consider n =    j.  First,  δvd((xd                                                                                                                                                                                                                                                                               f
+                                                                  and δvs(δvd((x′dj+1, x′fj+1), θj), ej) =  (xdj+1, x j+1) hold byξ from some x ∈xf  s.t. x′ = f (x, eoξ). We also take into account      (x′dj+1, x′fj+1)
+the cost of inserted string θ (potentially ϵ). Intuitively, if the worst    the definition of the verifier. Then in ρj+1, zej  is an ej-execution
+case energy level is nonnegative, then the system’s energy level    successor of yej and yej+1 is a (θj, ej)-insertion successor of zej . So by
+is always nonnegative.                                                   definition, ∀x′ ∈x fj+1, ∀1 ≤i ≤j, h (i)yej+1(x′) = minξj+1∈E∗uo{hye(i)j (x) +
+  An insertion-execution sequence is a sequence of alternating                                                     (i)                          f
+states, inserted strings and executed observable events of the      ω(i)(ej) + ω(i)(ξj+1) + ω in (θj) : ∃x ∈x j ,  s.t. f (x, ejξj+1) = x′}. From
+                                                                                                                                                                         yej+1(x′)    =form: ρ = ye1 −→zee1   1 −→yeθ1    2 −→zee2   2 · · · −−→zeen−1   n−1 −−→yeθn−1    n where    the   inductive   hypothesis,  we   have   h (i)
+∀i ≤n, θi ∈E∗o , ei ∈Eo, yei ∈Q E, zei ∈Q E ×Eo, zei is an ei-execution     minsj−1 minξj+1∈E∗uo{V m(i) (sj−1, s′j−1) + ω(i)(ej) + ω(i)(ξj+1) + ωin(i) (θj) :
+successor of yei and yei+1 is a (θi, ei)-insertion successor of zei . Such      ∃x′′ ∈  x f1, x ∈  x fj ,  s.t.  f (x′′, sj−1) =  x, δd(xd1, P(s′j−1)) =  xdj ,
+a sequence may be finite or infinite.                                                                                                                         (i)                                  (i)
+                                                                                          m (sj, s′j)  :  ∃x′′ ∈                                                                                                            f (x, ejξj+1) =  x′}. That is, h yej+1(x′) = minsj{V
+Lemma 1.   Given an insertion-execution sequence ρ =  ye1 −→e1     xf1, sj ∈P−1(lj), s.t. f (x′′, sj) = x′, δd(xd1, P(s′j)) = xdj+1}. Thus the
+     θ1        e2           en−1          θn−1                                                   f          result holds when n = j, completing the whole proof. □
+ze1 −→ye2 −→ze2 · · · −−→zen−1 −−→yen, let I(yei ) = (xdi , xi ) for
+all 1 ≤i < n and let l = e1e2 · · · en−1 and  l′ = θ1e1 · · · θn−1en−1,       Given an energy information state ye ∈Q E, for every x ∈xf
+then δd(xd1, l′) = xdn in Obsd(G) and δ(x f1, l) = x fn in Obsf (G).          where I(ye) =  (xd, xf ), each component of hye(x) may be due
+                                                                     to different strings with the same projection but different unob-
+                                                      e1      θ1                      servable substrings. This can be interpreted as follows: since theProof. By induction. First, consider ye1 −→ze1 −→ye2. Since ze1 is an
+                                                                       insertion function does not know the occurrence of unobservable
+e1-execution successor of ye1 and ye2 is an (θ1, e1)-insertion succes-
+                                            f                                     f                                   strings,  it should be ‘‘conservative" and take into account the
+sor of ze1, then                 (xd2, x 2)            = δvs(δvd((xd1, x 2), θ1), e1). So δd(xd1, θ1e1) =    system’s worst-case energy level in every dimension.                       f                                             f
+xd2 and δ(x 1, e1) = x 2 by definitions of δvd and δvs in the verifier
+parallel composition.                                                                                   4.3. Building the energy insertion structure
+                                                             e1          θ1          e2
+   Then suppose the result holds for ye1 −→  ze1 −→  ye2 −→
+        ek−1        θk−1                               We now formally define EIS by construction in Algorithm 1.ze2 · · · −−→zek−1 −−→yek. When n = k + 1, by a similar argument,
+                                                                                                     f                    f               EIS  is a two-player game structure which reflects the update
+we can show that δd(xdk, θkek) = xdk+1 and δ(x k, ek) = x k+1. Com-     of energy and augmented energy information states with event
+bining the inductive                     hypothesis,                      we know δd(xd1, θ1e1 · · · θkek) =     insertion and execution. It is of the form: EIS = (QY                                                                                                                                                       E , QZE , Eo, f yz,E                            f                                                             f
+xd                             so the                                         result also holds at k + 1,                           · · ek) k+1 and         δ(x 1, e1 ·             = xk+1,                                                       QlE ) where                                                              QYE ⊆Q E is the set of energy information                                                                                                            fzy,E  ye0, v0,                       □which      completes                the                  whole                             proof.                                                                                                 E                                                                                                         E
+                                                                           states; QZ ⊆Q × Eo is the set of augmented energy information
+  Lemma 1 illustrates that in an insertion-execution sequence,     states; f yzE  : QYE ×Eo →QZE is the transition function from QYE states
+the ‘‘original string" e1e2 · · · en−1 before insertion is defined in     to QZE states; fzyE  : QZE × E∗o →QYE is the transition function from
+
+6                                                             Y.  Ji, X. Yin and S. Lafortune / Automatica 108 (2019) 108476
+
+QZE states to QYE states; Eo is the set of observable events; ye0 ∈QYE     the verifier and the δvd transition is followed by a δvs transition
+is the initial state; v0 ∈Nk is the initial energy vector; and QlE is     labeled by some observable event eo. That means θ can be in-
+the set of leaf states. We call a QYE state as Y-state and a QZE state     serted before eo without considering the energy constraint. So we
+as Z-state. A Z-state ze is deadlocking  if ∄θ ∈E∗o , s.t. f zy(ze,E     θ)!.     create a (θ, eo)-insertion successor y′e and define a f zyE transition
+Deadlocking Z-states are undesirable and will be pruned away in    out of ze, indicating that θ has been inserted before eo. Since the
+constructing EIS.                                                                initial energy vector is fixed and insertion is costly, there may
+                                                                only be a finite set of finite-length inserted strings that lead to
+                                                              nonnegative energy levels. When y′e  is safe,  i.e., θ  is inserted
+Algorithm 1: Construction of EIS
+                                                                  before eo without violating the energy constraint, we proceed to
+ Input: Obs(G), Gv, v0                                          check the condition in Line 16. If there exists an initial run re
+ Output: EIS = (QYE , QZE , E, f yz,E   fzy,E  Eo, ye0, v0, QlE )                   ending in y′e and yej ∈re for some j < n, s.t. y′e subsumes yej , then
+ 1: QYE = {ye0} where I(ye0) = (xobs,0, xobs,0), ∀x ∈xobs,0, ∀i ≤k,   we know the state estimate I(yej ) is reached again, i.e., I(yej ) =
+                                                                                      then we know there exists a simple                                                                                            I(ye                                                                                                                                                                                                                 j , x fj ),                                                                                                                                                                                              j ) = (xd                                                        Z                                                             F = ∅, QlE = ∅;             I(y′e). Let    hiye0(x) = ξ∈E∗uomin {V i(ξ) : f (x0, ξ) = x}, and Q                                                                                                           en−1                                                                                                                                                                                                                     f                                                                                                                                                                          f                                                                                                                                                                                       f                                                                                     ej−→x j+1 · · · −−→x j in the feasible observer Obsf (G) (also 2: EISpre = DoDFS(ye0, Obs(G), Gv);                                   cycle x j
+ 3: EIS = Prune(EISpre);                                                in the observer Obs(G)). There also exists a cycle starting from and
+ 4: procedure DoDFS(ye, Obs(G), Gv)                             ending in xdj in the desired observer, whose corresponding loop
+ 5:    for eo ∈Eo, s.t. δ(xf , eo)! in Obs(G), where I(ye) = xv =      is l = θjej · · · θn−1en−1. It is also the case that ∀x ∈xdj , ∀s ∈P−1(l),
+    (xd, xf ) do                                                                                 s.t. f (x, s) =  x, we have V(s) + ∑n−1i=j  θi ≥−→0  . In words, even
+ 6:         let ze be an eo-execution successor of ye;                    after considering the cost of inserting θj, . . . , θn−1 into the original
+ 7:      add transition ye eo−→ze to f yz;E                                   string, the system’s energy level vector is still nondecreasing in
+ 8:          if ze /∈ZE then                                         every dimension.
+ 9:       QZE = QZE ∪{ze};                                    Even though the structure may be further expanded, we ter-
+10:          for θ ∈E∗o , s.t. ∃˜xv = δvd(xv, θ), δvs(˜xv, eo)! do         minate searching from y′e and define Sub(y′e) to store the state
+11:                let y′e be an (θ, eo)-insertion successor of ze;       subsumed by  y′e. Note that  y′e and yej  share the same state
+                                                       E                       estimate while the energy level at y′e  is no less than that of12:           add transition ze θ−→y′e to fzy;                                                                           yej in component-wise sense. No matter what decision is made                                E
+13:                  if y′e /∈QY then                               by the environment at y′e,  if the insertion function makes the
+14:                       if y′e is energy safe then                               E       E                             same decision at the succeeding state of y′e as  it does at the
+15:              QY = QY ∪{y′e};                           succeeding state of yej , then all the new succeeding states created
+                                                                           e0        θ0
+16:                           if there exists a run re = ye0 −→ze0 −→     in this manner are energy safe as well. This is consistent with the
+            en−1        θn−1                                         monotonicity property discussed at the end of Section 3. Later on,
+    ye1 · · · −−→zen−1 −−→y′e and ∃j ≤n, s.t. yej ≼y′e then         we will see this observation ensures finiteness of EIS.
+17:                            let Sub(y′e) = yej , stop searching from           If no cycle is detected, we call DoDFS again in Line 18 to con-
+     y′e, QlE = QlE ∪{y′e};                                            tinue searching until no more states are added to the structure.
+18:                    else DoDFS(y′e, Obs(G), Gv);              On the other hand, if y′e is not energy safe, system’s energy level
+19:                       if y′e is not energy safe then                           is below 0 at some dimension. Then we stop searching from y′e
+20:              QYE = QYE ∪{y′e}, QlE = QlE ∪{y′e}, stop     in Line 20 and discard longer string θ′ where θ <  θ′. Since
+   searching from y′e, ignore all θ′ s.t. θ < θ′;                         ωin(θ′) < ωin(θ) ≤0, insertion of θ′ would inevitably drop the
+                                                              energy level vector below 0 at certain dimension.
+21: procedure Prune(EISpre)
+                     E                                            DoDFS may result in some deadlocking Z-states where no
+22:    for ze ∈QZ that is deadlocking do
+                                            E       E                           insertion can be made. We denote by EISpre the intermediate
+23:      remove ze and all ye ∈QY , s.t. fyz(ye, eo) = ze for some     structure obtained after DoDFS, then remove deadlocking Z-states
+    eo ∈Eo;                                                         and their preceding Y-states recursively in Procedure Prune since
+24:       take the accessible part of the structure;
+                                                                 the observable events from Y-states cannot be blocked from
+                                                               happening. More reasoning can be found in Ji, Wu, et al. (2018),
+   Algorithm 1 builds the state space of EIS recursively by adding                                                       where a similar pruning process is conducted. Prune works like
+(θ, eo)-insertion successors and eo-execution successors into the     calculating the supremal controllable sublanguage (Cassandras &
+structure. In general, EIS represents a game with full observa-                                                                      Lafortune, 2008) by viewing the environment’s winning states
+tion between the insertion function and the environment. The                          E                                        E                                                                   as undesirable, fyz transitions as uncontrollable, f zy transitions as
+environment plays at Y-states and the insertion function plays                                                                         controllable, and Y-states as marked. Next, we show Algorithm 1
+at Z-states. The procedure DoDFS builds the state space of EIS                                                                   stops after a finite number of steps and returns a finite structure,
+in a depth-first search like process. The game is initiated from                                                              namely, EIS.
+ye0 where the system plays first by executing observable events.
+The state estimate component of ye0 contains the initial states   Theorem 2.  The state space of EIS is finite.
+of the observer and the desired observer. For the energy level
+matrix EL(ye0), we track the minimum energy level of the system    Proof. By contradiction. Suppose that EIS is infinite. The number
+by unobservable strings. In Line 5, the environment plays by                                                                        of outgoing transitions at each state is finite since Eo is finite
+executing eo  if eo  is defined from the system’s estimate xf  in    and there are only a finite number of insertion choices defined
+observer Obs(G). Then we create an eo-execution successor ze and     at a Z-state due to energy constraints. Then by König’s lemma
+define a  f yzE  transition out of ye. Note that no string has been                                                                                  e1       θ1
+inserted yet and we create ze simply to indicate that some string     (see, e.g., Levy (2002)), there exists an infinite run ye1 −→ze1 −→
+                                                                                                     e2         θ2
+may be inserted before observable event eo.                            ye2 −→ze2 −→ye3 · · · in EIS. From Algorithm 1, every state in
+   After that, the games goes on and it is the insertion function’s    the run is energy safe and it is never the case that ∃i <  j, s.t.
+turn to play by inserting stings. In Line 10, θ is a logically feasible     yei ≼yej . However, this contradicts the well-quasi ordering ≼on
+insertion choice if a δvd transition labeled with θ  is defined in     safe energy information states. □
+
+                                                               Y.  Ji, X. Yin and S. Lafortune / Automatica 108 (2019) 108476                                          7
+
+   The size of EIS is bounded by Ackermann function (Rackoff,
+1978) following a similar augment as in Degorre et al. (2010),
+which also presented a procedure of ‘‘unfolding" the game graph
+until some simple cycles are formed or the energy level drops
+below 0. The complexity of EIS exceeds its counterpart without
+energy constraint (Ji, Wu, et al., 2018).
+   In EIS, we call a leaf state ye ∈QlE as a good leaf state if ye
+is energy safe, otherwise, we call it a bad leaf state. We denote
+the sets of good and bad leaf states by QlgE and Qlb,E  respectively.
+In order to win the game and solve Problem 1, the insertion
+function should make decisions such that only good leaf states are
+reached. The environment just does the opposite to prevent the                         Fig. 2. System G with secret states x7, x8, x10.
+insertion function from winning, thus the game on EIS is a zero
+sum reachability game. We elaborate the reasoning and discuss
+both players’ strategies in the next section.
+
+Example 1.   Let the automaton G in Fig. 2 be with observable
+events Eo =  {a, b, c, d}, unobservable events Euo =  {u1, u2,
+u3, u4, u5, u6, u7}, and secret states XS = {x7, x8, x10}. The system
+is granted with initial energy v0 = [9, 9]T where T stands for
+the transpose of a matrix. The weight function in this example is
+2-dimensional and the weight vector of each event is shown in
+Fig. 2. Additionally, the insertion weight function ωin is defined
+as follows: ωin(a) = [−3, −6]T , ωin(b) = [−1, −3]T , ωin(c) =                                   Fig. 3. The observer Obs(G).
+[−2, −2]T , ωin(d) = [−3, −1]T .
+   The observer is shown in Fig. 3 with states: A = {x0, x3, x4, x9},
+B = {x1}, C = {x2}, D = {x5, x6}, E = {x7, x8} and F = {x10}. The
+system is not current state opaque due to states E and F, thus we
+apply insertion functions to enforce opacity. The desired observer
+Obsd(G) is obtained by removing E and F from Obs(G) and taking
+the accessible part, while the feasible observer Obsf (G) is obtained
+by adding self-loops for every event in Eo at every state in Obs(G);
+their figures are omitted here due to space limitations. Next
+we build the verifier Gv in Fig. 4 following Definition 4, where
+dashed lines indicate δvd transitions and solid lines indicate δvs
+transitions. Gv contains all potentially feasible insertion choices.
+                                                                                                Fig. 4. The verifier Gv where dashed transitions are δvd transitions and solid
+   Then we follow Algorithm 1 to build EIS in Fig. 5, where square
+                                                                                          transitions are δvs transitions.
+states stand for Y-states while oval states stand for Z-states. In
+DoDFS, the game is initiated from ye0 where the environment plays
+first: it can execute events a, b or c. For example, if b is executed,
+then b-execution successor ze0 =  (ye0, b) is reached where it is
+the insertion function’s turn to play; while if a is inserted, then
+a-insertion successor ye1 is reached. We have I(ye1) = (C, D) as
+δvd((A, A), a) =  (B, A) and δvs((B, A), b) =  (C, D) in Gv. Also
+
+                                                            in                                                           (1) (a), h (1)ye0 (x4) + ω(1)(b) +h (1)ye1 (x5) = min{h (1)ye0 (x3) + ω(1)(b) + ω
+
+                                                                            in                                                                           (2) (a), h (2)ye0 (x4) +ωin(1) (a)} = 5, h (2)ye1 (x5) = min{h (2)ye0 (x3) + ω(2)(b) + ω
+ω(2)(b) + ωin(2) (a)} = 3, h (1)ye1 (x6) = min{h (1)ye1 (x5) + ω(1)(u4), h (1)ye1 (x5) +
+ω(1)(u5)} = 0 and h (2)ye1 (x6) = min{h (2)ye1 (x5) + ω(2)(u4), h (2)ye1 (x5) +
+                         [5,  0]
+ω(2)(u5)} = 0. Hence ye1 = {(C, D),  3,  0  }. The other states are
+calculated similarly.
+   The first component of h (2)ye1 (x5) = [5, 3]T comes from string                  Fig. 5. Energy Insertion Structure (without dashed states).
+u2u3b and insertion of a, while the second component comes from
+string u1u3b and insertion of a. Since the insertion function does
+not know whether u2u3b or u1u3b occurs when it observes b,
+                                                                             5. Solution to the opacity enforcement problem
+it has to estimate the worst case energy level, which is consis-
+tent with Theorem 1. We list the energy and augmented energy
+information states obtained from DoDFS in Table 1.                      In this section, we discuss the strategies for both players to
+   After DoDFS, we find ye2 ≼ye4, ye21 ≼ye19 and ye23 ≼ye19, so we    win the game on the Energy Insertion Structure. We also show
+stop searching from ye4, ye21 and ye23. Besides, ye5, ye7, ye8, ye9, ye10, ye11,     that the insertion function’s winning strategies in EIS lead to
+ye12, ye16, ye17, ye18, ye24 are not energy safe so they are the bad leaf    sound solutions to Problem 1.
+states. Furthermore, Z-state ze5 is deadlocking since no transition      The runs in EIS are finite insertion-execution sequences and
+is defined out of  it. Then we prune away ze5 and its preceding   we denote the set of runs in EIS by Run(EIS). Given re ∈Run(EIS),
+Y-state ye13 in process Prune of Algorithm 1. The final EIS is shown   we denote by ye ∈re and ze ∈re  if ye (respectively ze) is a
+in Fig. 5, where the dashed lines represent deleted states in the     Y-state (respectively Z-state) in re. Let LastY (re) and LastZ(re) be
+pruning process from EISpre to EIS.                                 the last Y-state and Z-state of re, respectively, and denote by
+
+8                                                             Y.  Ji, X. Yin and S. Lafortune / Automatica 108 (2019) 108476
+
+
+                              Table 1
+                             Energy and augmented energy information states.
+                                   [ 9,   10,   7,   7]                             [ 9,   10,   7,   7 ]
+                                      ye0 = {{A, A},  9,   10,   9,   8  }                            ze0 = {{A, A},  9,   10,   9,   8  , b}
+
+                                    [ 5,   0 ]                                      [ 5,   0 ]
+                                      ye1 = {(C, D),  3,   0  }                                         ze1 = {(C, D),  3,   0  , c}
+
+                                   [ 2,   1]                                      [ 2,   1 ]
+                                      ye2 = {(B, E),  2,   1  }                                         ze2 = {(B, E),  2,   1  , c}
+
+                                   [ 3,   2]                                      [ 1,   0 ]
+                                      ye3 = {(B, E),  1,   0  }                                         ze3 = {(B, E),  3,   2  , c}
+
+                                   [ 2,   1]                                      [ 4,   3 ]
+                                      ye4 = {(B, E),  2,   1  }                                         ye5 = {(B, E),  0,  −1  }
+
+                                   [ 1,   0]                                      [ 3,   2 ]
+                                      ye6 = {(B, E),  3,   2  }                                         ze4 = {(B, E),  1,   0  , c}
+
+                                   [ 0,  −1 ]                                     [ −4,  −5]
+                                      ye7 = {(B, E),  4,   3   }                                       ye8 = {(B, E),   0,   −1  }
+
+                                   [ −2,  −3]                                    [ −3,  −4]
+                                      ye9 = {(B, E), −2,  −3  }                                     ye10 = {(B, E), −1,  −2  }
+
+                                    [ −1,  −2]                                   [ 2,   −3]
+                                      ye11 = {(B, E), −3,  −4  }                                    ye12 = {(C, D), −2,  −5  }
+
+                                    [ 8,   9 ]                                     [8,   9 ]
+                                      ye13 = {(D, D),  3,   6  }                                        ze5 = {(D, D),  3,   6  , c}
+
+                                   [ 9,   10,   7,   7]                              [ 5]
+                                      ze6 = {(A, A),  9,   10,   9,   8  , c}                         ye14 = {(B, F), 1  }
+
+                                    [ 3 ]                                          [ 2 ]
+                                      ye15 = {(B, F), 3  }                                             ye16 = {(B, F), −4  }
+
+                                    [ 0 ]                                        [ −2]
+                                      ye17 = {(B, F), −2  }                                           ye18 = {(B, F),  0   }
+
+                                   [ 9,   10,   7,   7]                              [ 1]
+                                      ze7 = {(A, A),  9,   10,   9,   8  , a}                         ye19 = {(B, B), 1  }
+
+                                   [ 1]                                           [ 2]
+                                      ze8 = {(B, B), 1  , b}                                            ye20 = {(C, C), 1  }
+
+                                   [2 ]                                          [ 4]
+                                      ze9 = {(C, C), 1  , c}                                           ye21 = {(B, B), 3  }
+
+                                    [ 1 ]                                          [ 1]
+                                      ze10 = {(B, B), 1  , d}                                           ye22 = {(C, C), 2  }
+
+                                    [ 1]                                          [ 3]
+                                      ze11 = {(C, C), 2  , c}                                          ye23 = {(B, B), 4  }
+
+                                    [ 0,   −1]
+                                      ye24 = {(B, E), −4,  −5  }
+
+
+Runy(EIS) (respectively Runz(EIS)) the set of runs whose last states     A strategy πi ∈Πi for player  i ∈{in, en} in EIS  is called
+are Y-states (respectively Z-states).                                     positional  if the decisions only depend on the current energy
+   Given an initial run re = ye0 −→zee0   0 −→·θ0    · · yen−1 −−→zeen−1   n−1 −−→θn−1     (augmented energy) information state. In other words, πi ∈Πi
+                                                                                                                                                                                                                               f ) for all  rf , r′f ∈  Run(EIS) suchyen, the edit projection Pe  : Run(EIS) →P[L(G)] is defined such      is positional  if πi(rf ) =  πi(r′
+that Pe(re) = e0e1 · · · en−1. So Pe just returns the original string     that Last(rf ) = Last(r′f ). Therefore, positional strategies for the
+before any insertion takes place. For re ∈Run(EIS), we denote it     insertion Efunction and the environmentE      can be represented as
+by re(l) if Pe(re) = l. We call θ0e0θ1e1 · · · θn−1en−1 as the generated     πin   : QZ →  E∗o and πen   : QY →  Eo, respectively. From
+string of re and denote it by lg(re), i.e., lg(re) is the string after     results in Apt and Grädel (2011) and Ehrenfeucht and Mycielski
+insertion. By Lemma 1, δd(xobs,0, lg(re)) is defined in Obsd(G), so     (1979), positional strategies are sufficient for players to win a
+lg(re) ∈L(Obsd(G)) =  Lsafe, i.e.,  l is mapped to a safe string by     reachability game, thus we simply assume both players’ strategies
+insertion decisions in EIS.                                          are positional in the rest of this section.
+   Then we define strategies for both players in EIS. The in-           If the insertion function plays πin while the environment plays
+sertion function’s strategy (insertion strategy) is defined as πin  :     πen from the initial state ye0, then a unique initial run, denoted by
+Runz(EIS) →E∗o and the environment’s strategy as πen : Runy(EIS)     re(πin, πen), is generated. We also define Run(πin, ye) = {ye −→e1
+→Eo. When it is a player’s turn to play, it selects a transition           θ1           en−1         θn−1                                      e1       θ1
+                                                                            ze1 −→ye2 · · · −−→zen−1 −−→yen  : ∀i < n, θi = πin(ye −→ze1 −→according to its strategies. Since the insertion function does not
+know the occurrence of unobservable events and makes decisions     ye2 · · · yei ei−→zei )} as the set of runs starting from ye and consistent
+from  its observations,  its strategy  is called observation based.    with insertion strategy πin, i.e., insertion decisions in the run are
+Denote the set of all insertion strategies by Πin and the set of     specified by πin. The set of runs consistent with an environment’s
+all environment’s strategies by Πen. From an insertion strategy,     strategy πen are defined analogously.
+we know exactly the decisions of an insertion function, so from        In EIS, we say that the insertion function wins the game if
+now on, we use ‘‘insertion strategy" and ‘‘insertion function"    only good leaf states are reached while the environment wins
+interchangeably.                                                                              if bad leaf states are reached. Thus they play a finite-duration
+
+                                                               Y.  Ji, X. Yin and S. Lafortune / Automatica 108 (2019) 108476                                          9
+
+zero sum reachability game. By defining the energy information    defined in Algorithm 1. Intuitively, we assume that the game
+states, we have constructed a game under full observation on EIS.    continues at the leaf states of EISw, which share the same state
+Therefore, either the supervisor or the environment has a winning    estimate with the state subsumed by them. We denote the re-
+strategy (Apt & Grädel, 2011). Formally speaking, πin ∈Πin is     sulting structure by EISm and extend concepts of runs and both
+winning from ye if ∀re ∈Run(πin, ye), LastY (re) ∈QlE ⇒LastY (re) ∈     players’ strategies to EISm. Besides, the energy level vector at each
+Qlg,E  i.e., πin is a winning strategy for the insertion function if all     leaf state is no less than that at the state subsumed by the same
+runs consistent with it end in a good leaf state. In other words,     leaf state. Thus  if every leaf state is energy safe, the system’s
+the insertion function wins if private safety is satisfied and the    energy level vector never contains a negative element when
+energy level of the system is never below 0 in every dimension.     their state estimates are reached again. In this way the game is
+  We define the insertion function’s winning region Winin in EIS    extended to be infinite-duration without loss of generality since
+as the set of states where it has a strategy to reach a good leaf   we assume that the insertion functions in EISw always make the
+state no matter what strategy the environment plays. This is a    same decisions at each leaf state and the state subsumed by it.
+commonly used concept in graph game theory, see., e.g. (Apt &     Therefore, if the insertion function plays according to strategies
+Grädel, 2011). Then we present Algorithm 2 to compute Winin.       in EISm, it will always maintain the system’s energy level above 0
+                                                                           in each dimension. This is an implication of the monotonicity of
+                                                              energy game discussed at the end of Section 3: if the insertion
+Algorithm 2: Compute the insertion function’s winning region
+                                                                   function wins the game from some state with energy level vector
+ Input: EIS                                                  v ∈Nk, it also wins the game from the same state with any energy
+ Output: Winin                                                          level vector v′ ≥v.
+ 1: Remove all bad leaf states from EIS;                                 In EISm, we define the unmodified language Lu(EISm) =  {l ∈
+ 2: while ∃ze ∈QZF , s.t. ze is deadlocking do                        P[L(G)]  :  ∃re ∈Run(EISm),  s.t. Pe(re) =  l}, where Run(EISm)
+ 3:   Remove ze and all ye ∈QYE , s.t. fyz(ye,E     eo) = ze for some    denotes the set of runs in EISm. Lu(EISm) just ‘‘retrieves" the
+    eo ∈Eo;                                                             original language before any insertion takes place. Then we prove
+ 4:    Take the accessible part of the structure;                    a property of Lu(EISm) in Lemma 3.
+ 5: Denote the remaining structure by EISw;
+ 6: if EISw is not empty then                          Lemma 3.   If Winin̸ = ∅, then Lu(EISm) = P[L(G)].
+ 7:    Return all states in EISw;
+ 8: else Return ∅;                                                 Proof. By the definition of Lu(EISm), Lu(EISm) ⊆P[L(G)] holds
+                                                                immediately. Thus we only need to show P[L(G)] ⊆Lu(EISm) and
+                                               we proceed by contradiction. Assume that Lu(EISm) ⊈P[L(G)]
+   In Algorithm 2, we prune away bad leaf states and calculate
+                                                         and ∃l ∈P[L(G)] but  l  /∈  Lu(EISm). Then by construction of
+the winning region for the insertion function in an iterative man-                                                                         EIS and EISm, there exists a finite prefix  l′ <  l, s.t. ∀πin ∈Πin,
+ner. We first remove all bad leaf states from EIS. If the removal                                                                   E                                                                        ∀re ∈Run(πin, ye0) with Pe(re) =  l′, LastY (re) ∈Qlb. That is, thereof bad leaf states results in some deadlocking Z-states, then we                                                                          exists a finite string in P[L(G)] such that no insertion strategy in
+know all transitions from such Z-states lead to bad leaf states,
+                                                                   EISm can map it to a safe string without reaching a bad leaf state.
+where the insertion function loses the game for sure. Thus we
+                                                           However, that means Winin = ∅by Lemma 2, which contradicts
+further remove those Z-states and their preceding Y-states where
+                                                                 the assumption. □
+the environment has a way to reach the deadlocking Z-states.
+This process continues until no more states are removed and we     Now we are now ready to state one of the main results in this
+denote the resulting structure by EISw. The pruning process works     paper. Given a winning insertion strategy in EIS, we can always
+in a fixed-point iteration manner.                                    construct an insertion function solving Problem 1. Conversely,
+   By definition, a privately safe insertion function (strategy)       if there exists an insertion function solving Problem 1, we can
+maps every string in P[L(G)] to a safe one. However, state pruning    always find a winning insertion strategy in EIS.
+may remove all potentially feasible insertion choices for a partic-
+ular string if they all violate energy constraints. Thus we need to   Theorem 3.  There exists an insertion function solving Problem 1 if
+guarantee that all strings in P[L(G)] are still preserved in the EISw    and only if there exists a winning strategy for the insertion function
+after the pruning. Before proving that assertion, we present the     in EIS.
+following result from Algorithm 2.
+                                                                   Proof.  The ‘‘only if" part: by contrapositive, i.e., if no winning
+Lemma 2.     If Winin̸ =  ∅, then ∄l ∈P[L(G)],  s.t. ∀πin ∈Πin,     insertion strategy exists in EIS, then no insertion function solves
+∀re ∈Run(πin, ye0) with Pe(re) = l, LastY (re) ∈QlbE in EIS.             Problem 1. If no strategy exists for the insertion function to reach
+                                                         good leaf states in EIS, then we know the winning set Winin is
+Proof. By contradiction. Assume ∃l ∈P[L(G)], s.t. ∀πin ∈Πin,    empty, i.e., Algorithm 2 returns an empty set. So by Lemma 2,
+∀re ∈Run(πin, ye0) with Pe(re) = l in EIS, LastY (re) ∈Qlb.E Suppose    ∃s ∈L(G) with P(s) =  l = e0 · · · en−1, s.t. for all initial re(l) ∈
+
+                                                                                                                                                                                                                                         l                                                                                                                       E ⇒LastY (re(l)) ∈Qlb,E   i.e., all runsl = e0 · · · en−1 and re = ye0 −→zee1   1 −→yeθ1   2 · · · −−→zeen−1   n−1 −−→yeθn−1   n ∈     Run(EIS), LastY (re(l)) ∈Q                                         E                               with original string l end in bad leaf states. Then by the pruning
+Run(πin, ye0). Since LastY (re) ∈Qlb holds for all re ∈Run(πin, ye0)    process in Algorithm 2, every initial run re(l) is removed, thus the
+with Pe(re) =  l and for all πin ∈Πin, the last Y-state of every
+                                                                                    initial state of EIS is also removed and EISw becomes empty. From
+run in Run(πin, ye0) with Pe(re) =   l is pruned in Algorithm 2.    the construction process in Algorithm 1, for all feasible insertion
+Then we know the last Z-state of each run in Run(πin, ye0) with    choices θ0, . . . , θn−1  s.t. s is mapped to s′ by Convention 1 and
+Pe(re) =  l becomes deadlocking so those zen−1 are pruned away                                         −→                                                                      θ0e0 · · · θn−1en−1 ∈Lsafe, we have that Vm(s, s′) <  0  . In otheras well. Furthermore, we also prune away all preceding Y-states
+yen−1 such that fyz(yeE  n−1, en−1) = zen−1 by Algorithm 2. This process    words, no matter what string is inserted into  l, the system’s
+continues until the initial state ye0 is pruned, so EISw is empty. □    energy level would drop below 0 at some dimension. Thus no                                                                       insertion function solves Problem 1.
+   Next we slightly modify EISw: merge ye with Sub(ye) by letting      The ‘‘if" part. Suppose that πin is a winning insertion strategy
+all transitions going to ye reach Sub(ye) instead,  if Sub(ye)  is     in EIS. Since we follow Algorithm 2 to obtain Winin and EISw, then
+
+10                                                            Y.  Ji, X. Yin and S. Lafortune / Automatica 108 (2019) 108476
+
+
+
+
+
+                                                                                                               Fig. 7. An insertion function that solves Problem 1.
+
+
+
+                                                                             6. Bounded cost rate insertion strategies
+
+                                                                          In the last section, we have solved the opacity enforcement
+                                                          problem so that the system’s energy level at every dimension
+                                                              never drops below 0. Since event insertion always costs energy, it
+                                                                                       is beneficial to explore an economical way of insertion for prac-
+                                                                                  tical purposes. Motivated by this requirement, we propose the
+                                                               concept of bounded cost rate insertion strategies and investigate
+Fig. 6. EISw with a winning insertion strategy indicated by blue  lines. (For
+interpretation of the references to color in this figure legend, the reader  is     their synthesis in this section.
+referred to the web version of this article.)
+                                                                                   6.1. Motivation and problem formulation
+
+πin is also in EISw. Then we extend EISw to EISm by merging states.      The structure EISw obtained in the last section usually con-
+                                                                        tains more than one insertion strategies that solve Problem 1.
+By definition of EIS, the state estimate component of each state
+                                                                     Generally, there exist cycles in the original system thus insertion
+is in Xv ⊆Xobsd ×Xobs so the intruder’s estimate is always in Xobsd.
+                                                                    functions may need to insert fictitious events infinitely often
+Since by the definition of the desired observer, ∀xobsd ∈Xobsd,                                                                     to enforce opacity, in which case event insertion consumes an
+xobsd /∈2XS , we know πin maps every string in P[L(G)] into a safe     infinite amount of energy. From a practical point of view, it is
+string.                                                               desirable to require that the insertion function’s long run rate of
+   Besides, ∀s ∈L(G) with P(s) = l = e0e1 · · · en−1, suppose that    energy consumption be bounded so that the designer may control
+                                            e0        θ0         e1              en−1
+there exists a run re(l) = ye0 −→ze0 −→ye1 −→· · · yen−1 −−→    the energy consumed per insertion step.
+        θn−1                                                    To facilitate our discussion, we proceed as before and merge
+zen−1 −−→  yen consistent with πin in EISm, denoted by  rπin(l).    each leaf state of EISw with the state subsumed by it, resulting in
+Every ye ∈rπin(l) is energy safe and the belief function in each     EISm. As was discussed earlier, the same decision is made at the
+energy information state returns the minimum energy level of the     leaf state and at the state subsumed by it; also, the same game
+system at every dimension under certain insertion choices. Then     starts from the leaf states as from the subsumed states. Thus we
+from Theorem 1, we know that ∀s ∈P−1(l) ∩L(G), Vm(s, sπin) ≥    are able to discuss infinite-duration games on EISm.−→
+ 0  , therefore πin solves Problem 1. □                            To explore the rate of insertion cost, we first define Vc   :
+                                                                 Run(EISm) →(Z \ N)k as the accumulative insertion cost function
+                                                                                                                                          e1      θ1          en−1        θn−1
+   The above theorem shows the completeness and soundness of     for runs in EISm. Given rm = ye0 −→ze1 −→ye2 · · · −−→zen−1 −−→yen,
+Algorithms 1 and 2. Therefore, Problem 1 can be solved by first     Vc(rm) = ∑ni=1 ωin(θi). We also define Vmc  : Runinf (EISm) →Rk
+building EIS and then finding the insertion function’s winning    as the limit mean insertion weight function for infinite runs in
+                                                                                                                               e1        θ1         e2        θ2
+strategies if they exist. As was shown in the last section, the state     EISm. Given rm = ye1 −→ze1 −→ye2 −→ze2 −→· · ·, Vmc(rm) =
+space of EIS  is bounded by Ackermann function, which is not    lim infn→∞ 1n ∑ni=1 ωin(θi). Then we propose the bounded cost rate
+primitive recursive. Also, both the winning set and strategies for     insertion strategy synthesis problem.
+a reachability game can be computed in linear time with respect
+to the size of EIS from results in Apt and Grädel (2011). Therefore    Problem 2.   Synthesize a bounded cost rate insertion strategy
+we have the complexity bound for solving Problem 1. We end this     πin such that for any infinite initial run rm ∈Runinf (πin, ye0),
+section by revisiting our running example.                       −Vmc(rm) ≤vb for some threshold vector vb ∈Nk.
+
+                                                                                 Intuitively, we require the long run average of insertion cost be
+Example 2.                                                below a threshold under bounded rate cost insertion strategies, so
+  We revisit Example 1 and synthesize insertion functions to     that the rate of insertion cost does not blow up. This problem is
+solve Problem 1. We follow Algorithm 2 and build EISw in Fig. 6.    discussed on EISm and is meaningful when the original system G
+In Algorithm 2, all bad leaf states are removed and the winning      is cyclic, i.e., there are infinite runs in G and the EISm. Problem 2
+region Winin  is the set of states in EISw. Here we use dashed    can be viewed as a multidimensional mean payoff game (Chat-
+lines to connect each good leaf state with the state subsumed by     terjee & Velner, 2017) between the insertion function and the
+it. Observe that condition Lu(EISm) = P[L(G)] holds for EISm in    environment. Specifically, the insertion function tries to main-
+                                                                        tain multidimensional mean payoff vectors bounded by a givenFig. 6 so that every string in P[L(G)] may be mapped to some safe
+                                                                  threshold vb while the antagonistic environment tires to spoil
+strings. From EISw, we find one winning insertion strategy, which                                                                 the goal. Furthermore, this game is with complete information
+solves Problem 1 and is indicated by blue lines in Fig. 6.  Finally,                                                                   as inserted events and insertion cost are known to both players.
+we encode this selected insertion function as an I/O automaton    Due to this fact, we may ignore the state information but only
+in Fig. 7, where the insertion decisions are explicitly shown.         focus on weights associated with fzy transitions in EISm.
+
+                                                               Y.  Ji, X. Yin and S. Lafortune / Automatica 108 (2019) 108476                                         11
+
+  We add a minus sign on both sides of the inequality in Prob-    payoff game after applying the hyperplane separation technique.
+lem 2 and obtain lim infn→∞ 1n ∑ni=1 ωin(θi) ≥−vb. Equivalently,    Then we derive solutions to Problem 2.
+                             ≥−→0       Denote by Winem (respectively Winim) the winning region ofwe may show whether lim infn→∞ 1n ∑ni=1(ωin(θi) + vb)
+holds. Hence, we add vb to each insertion weight vector in EISm    the environment (respectively the insertion function) in the mul-
+and discuss the equivalent mean payoff objective. For simplicity,    tidimensional mean payoff game with weight function ωin; fur-
+we still denote the game graph by EISm. We further let W =     ther denote by Winλem (respectively Winλim) the winning region
+max{−ωin(i) (θ) : ∃ze ∈QZE , θ ∈E∗o,  s.t. f zy(ze,E     θ)!, 1 ≤i ≤k} be the     of the environment (respectively the insertion function) in the
+maximal absolute value of elements in insertion weight functions    one-dimensional mean payoff game with weight function ωTin · λ.
+in EISm. Obviously, W is a positive integer.                     From now on, we focus on the environment’s winning strategies.
+                                                                   Since a mean payoff game under complete information is deter-
+                                                           mined (Ehrenfeucht & Mycielski, 1979), i.e., from any vertex in
+6.2. Hyperplane separation technique
+                                                                 the game graph, exactly one player has a winning strategy, we
+                                                 may directly obtain the insertion function’s winning strategies
+  A multidimensional mean payoff game is more challenging                                                                    afterwards.
+to solve than a one-dimensional game since the objectives in                                                               Given a vector λ ∈Rk, we do the inner product between λ
+different dimensions may be in conflict. In this section, we apply a
+                                                         and each insertion weight vector in EISm to obtain a game with
+recently-proposed method called hyperplane separation technique                                                                         scalar insertion weights, while we do not consider the weights
+from Chatterjee and Velner (2017) to solve Problem 2. Originally,                                                                    associated with event occurrence anymore. In the new game, we
+this technique was developed for general multidimensional mean                                                         hope to achieve a nonnegative mean payoff objective. We repeat
+payoff games. The main idea is to reduce the multidimensional                                                Lemma 1 and Lemma 2 of Chatterjee and Velner (2017) here: (i)
+mean payoff game in Problem 2 to a one-dimensional mean                                                                     For every λ ∈Rk, we have Winλem ⊆Winem; also if Winλem̸ = ∅,
+payoff game on the same graph and then solve it. It can be further                                                                  then Winem̸ = ∅; (ii)  If for all λ ∈Rk we have Winλem =  ∅,
+shown that there is close relation between the winning regions                                                                  then Winem = ∅. These results establish the relation between the
+of both players in the original game and the induced game.                                                           winning regions for both players in the original game and the new
+   Since the algebraic mean of a set of vectors can always be
+                                                           game.
+expressed as a convex combination of those vectors, we have the
+                                                                These results illustrate a potential way to determine whether
+following observation: if there exists a convex combination of the
+                                                                 the environment player has a non-empty winning region in the
+cost vectors such that some dimensions remain negative, then
+                                                               multidimensional mean payoff game: we just need to check all
+there exists a strategy for the environment to spoil the goal of                                                     λ ∈Rk to determine whether the environment wins the one-
+the insertion function in Problem 2. Intuitively, we are going to
+                                                               dimensional mean payoff game with weight function ωTin · λ. The
+‘‘separate" the convex combinations leading to each player to win
+                                                                  readers are referred to Chatterjee and Velner (2017) for detailed
+the game. By linear space theory, a hyperplane may also be used
+                                                                        proofs.
+to separate vectors in a linear space.
+                                                                        Therefore, the key point is to search for a hyperplane and
+   In a linear space, a vector v lies above a hyperplane H with
+                                                             then determine the winner of the induced one-dimensional mean
+normal vector λ if vT  · λ ≥0; otherwise, it lies below H; see,
+                                                                   payoff game. However, it seems that we need to check infinitely
+e.g., Boyd and Vandenberghe (2004). Furthermore, if the mean                                                  many vectors in Rk, which is not feasible in practice. Fortunately,
+payoff vector resulted from a game lies below a hyperplane
+                                                          by Lemma 3 in Chatterjee and Velner (2017), we only need to
+containing the origin, then it has at least one negative element.
+                                                             check a finite number of vectors in a k-dimensional space. Let
+Therefore, if such a hyperplane exists, then the insertion function                                    M = (k · n · W)k+1, where W is the maximal absolute value in
+fails to enforce its multidimensional mean payoff objective and
+                                                                       insertion weight functions defined in EISm, n is the number of
+loses the game. On the other hand, if the insertion function is
+                                                                         states in EISm, and k is the number of dimensions. For a positive
+able to achieve mean payoff vectors that lie above all possible
+                                                                     integer  i, we denote by Z±i =  {j ∈Z  : −i ≤j ≤i} (resp.
+hyperplanes, then it can ensure its objective and win the game.    Z+i = {j ∈N : 1 ≤j ≤i}) the set of integers (positive integers)   Given a k-dimensional insertion weight vector ωin(θ) for some                                                          from −i to i (resp. from 1 to i). Lemma 3 of Chatterjee and Velner
+insertion decision θ and a vector λ ∈Rk, we denote by ωin(θ)T ·λ                                                                (2017) is stated here: There exists λ ∈Rk such that Winλem̸ = ∅ifthe inner product between ωin(θ) and λ. With a slight abuse of                                                          and only if there exists λ′ ∈(Z±M )k such that Winλ′em̸ = ∅. The proofnotation, we also use ωTin · λ when there is no need to specify the                                                                                       is omitted.
+insertion decision θ.
+                                                            To summarize and strengthen the above results, we repeat
+   Then we assign ωTin·λ to the edge labeled with insertion weight                                                Lemma 4 in Chatterjee and Velner (2017) as a theorem here.
+function ωin in EISm and transfer a game with multidimensional
+objective to one with one-dimensional objective. From the above
+                                                    Theorem 4.   Given the multidimensional mean-payoff game on
+discussion, the insertion function achieves a mean payoff vector
+                                                                         EISm, we have that: (1) ⋃ λ∈(Z+M )k Winλem ⊆Winem; (2) if ⋃λ∈(Z+M )kthat lies above H or a mean payoff vector with all nonnegative
+elements if and only if it ensures that the one-dimensional mean    Winλem = ∅, then Winem = ∅.
+payoff objective remains nonnegative, with weight function ωTin·λ        This theorem illustrates that if the environment wins the one-
+in EISm. Therefore, our goal is to search for such hyperplanes,                                                               dimensional mean payoff game with weight vector ωTin · λ at awhich transfers the problem of solving a multidimensional mean                                                                       certain state in EISm for some λ ∈  (Z+M )k, then  it also has apayoff game to one of finding a proper normal vector in the
+                                                   way to beat the insertion function and win the multidimensional
+k-dimensional integer space.
+                                                  mean payoff game from the same state; conversely, if the inser-
+                                                                      tion function wins any one-dimensional mean payoff game with
+6.3. Synthesize bounded cost rate insertion strategies                weight vector ωTin · λ where λ ∈(Z+M )k at a state in EISm, then
+                                                                 the insertion function also wins the original multidimensional
+  We establish the relation between the original multidimen-   game from that state. This theorem suggests that we can restrict
+sional mean payoff game and the induced one-dimensional mean     attention to vectors in (Z+M )k and determine which player wins
+
+12                                                            Y.  Ji, X. Yin and S. Lafortune / Automatica 108 (2019) 108476
+
+the transformed one-dimensional game. More details concerning
+the proof of the theorem can be found in Chatterjee and Velner
+(2017).
+   Based on the above results, we present Algorithm 3 to solve
+Problem 2. We first assume that states in EISm are numbered from
+1 to n. At each state, we sequentially iterate over vector λ ∈(Z+M )k
+to see  if there exists a winning strategy for the environment
+with weight function ωTin · λ by the pseudo-polynomial algorithm
+proposed in Brim, Chaloupka, Doyen, Gentilini, and Raskin (2011)
+for mean payoff games. Then we define the attractor for each
+player in EISm. Let Q be a set of states in EISm, then for the
+environment (‘‘em" for short), Attrem(Q ) is defined recursively as
+follows: Q0 = Q , Qj+1 =  Qj ∪{ye ∈QYE   :  ∃ze ∈Qj, eo ∈
+Eo  s.t.  f yz(ye,E     eo) =  ze} ∪{ze ∈QZE   :  ∀ye ∈QYE   :   [∃θ ∈
+E∗o,  s.t. fzy(ze,E    θ) = ye] ⇒[ye ∈Qj]} and Attrem(Q ) = ⋃ j≥0 Qj. The
+environment ensures to reach Qi from Qi+1 within one transition
+regardless of the insertion function’s strategies, so it may reach
+states in Q from states in Attrem(Q ) within a finite number of                                Fig. 8. EISm after merging states.
+transitions regardless of the insertion function’s strategies. On
+the other hand, the environment may avoid reaching Q  if it is
+at states outside of Attrem(Q ). Similarly, we define the attractor                                                                       insertion function has winning strategies for Problem 2 against
+for the insertion function.
+                                                                                       all environment’s strategies  if the remaining structure  is not
+                                                             empty. Otherwise, no solution exists for Problem 2 if all states
+Algorithm 3: Find solutions to Problem 2                            of EISm are removed. Besides, as positional strategies suffice to
+ Input: EISm                                             win a mean payoff game with perfect information (Ehrenfeucht &
+ Output: Insertion strategies solving Problem 2                      Mycielski, 1979), we simply let strategies returned by Algorithm
+ 1: for j = 1 : n do                                         3 be positional so that a finite number of strategies are returned.
+ 2:      if qj is still in the remaining structure then                The correctness of Algorithm 3 is from Theorem 4 and more
+ 3:       Consider qj ∈QYE ∪QZE in EISm;                               details concerning solving a one-dimensional mean payoff game
+ 4:       for λ ∈(Z+M )k do                                         are available in Brim et al. (2011).
+ 5:              if there exists an environment’s winning strategy         Finally, we briefly discuss the complexity of Algorithm 3 fol-
+   from qj to achieve a negative mean payoff in the transformed    lowing a similar argument as in Chatterjee and Velner (2017).
+   one-dimensional game with weight function ωTin · λ by the   When running the algorithm, we need n iterations under the
+   method in Section 5 of Brim et al. (2011) then                                                             worst case and in each iteration we solve at most Mk one-
+ 6:           Remove Attrem({qj}) from EISm;
+                                                               dimensional mean payoff games. Thus the iterative algorithm
+ 7: if the remaining structure is not empty then                                                            needs to solve O(n·Mk) one-dimensional mean payoff games with
+ 8:    Return insertion strategies in the structure;                                      m edges, n vertexes, and the maximal weight being at most k·W ·
+ 9: else No solution exists for Problem 2.
+                                    M (as the maximum element in all λ ∈(Z+M )k is M, the maximum
+                                                             weight in every dimension of ωin is W, and we sum k dimensions).   In Algorithm 3, we apply the method in Brim et al. (2011)
+                                                                   Since one-dimensional mean payoff games with n vertexes, mto solve the induced one-dimensional mean payoff game and
+this method outperforms any other known method in terms of    edges and maximal weight W can be solved in time O(n·m·W) by
+complexity. If at the current state in EISm, there exists a winning    the method proposed in Brim et al. (2011), the overall complexity
+strategy for the environment for the one-dimensional mean-     of the algorithm is O(n2 · m · k · W  · (k · n · W)k2+2k+1), which
+payoff objective with weight function ωTin ·λ, then we remove the      is polynomial in terms of the number of vertexes when k is
+attractor of the current state and proceed to the next iteration.     fixed.
+The reason is that  if the environment wins the mean payoff
+game from a vertex in the game graph, it also wins the game    Example 3.
+from the attractor of the current vertex.1 Thus the game graph     We revisit Example 2 and further discuss Problem 2 based on
+may be shrinking when the algorithm is running. However,  if    the solutions of Problem 1. We show EISm in Fig. 8 after merging
+the environment is unable to win the one-dimensional game for                                                                 the leaf states with states subsumed by them in EISw. Then we
+any λ ∈(Z+M )k at the current state,  i.e., the insertion function     investigate the bound of insertion cost rate by starting with
+has a winning strategy to enforce a nonnegative mean payoff
+                                                                  threshold vb = [3, 3]T and see if Problem 2 has a solution. It is
+from the current state for all λ ∈  (Z+M )k, then the insertion                                                              seen that EISm contains cyclic runs and this problem is discussed
+function may enforce a mean payoff vector with all nonnegative
+                                                       on them. We add vb to each insertion cost vector in EISm to obtainelements. Thus this state should be included in the winning
+                                                                 the new weight vectors ωin(b)+vb = [2, 0]T , ωin(d)+vb = [0, 2]T ,region of the insertion function for the multidimensional mean
+                                                                        ωin(ϵ) + vb =  [3, 3]T and those events are inserted in cyclicpayoff game. Therefore, after all states in EISm are checked, the
+                                                                       runs. After running Algorithm 3, we find that there exist insertion
+                                                                         strategies solving Problem 2. The detailed process is tedious and
+  1 The pruning here  is  similar  to  calculating  the supremal  controllable                                                                                       is omitted here. For example, one feasible insertion strategy is to
+sublanguage (Cassandras & Lafortune, 2008) by viewing the environment’s
+                                                             choose to insert b at Z-state ze2. Then it is easy to see that thiswinning states as undesirable,  fyzE  transitions as uncontrollable,  f zyE  transitions
+as controllable, and Y-states as marked.                                     strategy achieves a positive mean payoff value.
+
+                                                               Y.  Ji, X. Yin and S. Lafortune / Automatica 108 (2019) 108476                                         13
+
+   However, if we change the threshold vector to v′b = [1, 1]T ,          Ji, Y., Wu, Y.-C., & Lafortune, S. (2018). Enforcement of opacity by public and
+then Problem 2 has no solution. From Fig. 8, we see that two          private insertion functions. Automatica, 93, 369—378.
+simple cycles ye2 c−→ze2 −→ye{b}   3 c−→ze3 −→ye{d}   2 and ye2 c−→ze2 −→ye{d}   6 c−→          Ji, Y.,underYin, X.,energy& Lafortune,constraints.S. (2018).In ProceedingsOpacity enforcementof the 14th internationalby insertion workshopfunctions
+     {b}
+ze4 −→ye2 both have weight vector ωin(b) + ωin(d) = [−4, −4]T .        on discrete event systems (pp. 302–308).
+        −ωin(b)−ωin(d)                                                                                                  Yin, X., & Lafortune,                                                                                                                                           S. (2019). Opacity                                                                                                                   enforcement                                                                                                                                        using                                                                                                                                              nondeterministicSince           =  [2, 2]T >  vb, no insertion strategy can          Ji, Y.,              2                                                                                 publicly-known                                                                                                                edit functions.                                                                                                                        IEEE Transactions                                                                                                                       on                                                                                                                                      Automatic                                                                                                                                                                        Control, (in
+enforce mean payoff threshold [1, 1]T .
+                                                                                                  press). http://dx.doi.org/10.1109/TAC.2019.2897553.
+                                                                                   Keroglou, C., & Hadjicostis, C. N. (2018). Probabilistic system opacity in discrete
+7. Conclusion                                                                  event systems. Discrete Event Dynamic Systems: Theory and Applications, 28(2),
+                                                                               289–314.
+   This work investigated opacity enforcement by insertion func-      Levy, A. (2002). Basic set theory (Vol. 13). Courier Corporation.
+tions under multiple quantitative constraints for the first time       Lin, F. (2011). Opacity of discrete event systems and its applications. Automatica,
+in discrete event systems. The system is initialized with certain          47(3), 496–503.
+types of energy and the energy levels change dynamically with     Masopust,  T., &  Yin,  X.  (2019).  Complexity  of  detectability,  opacity and
+event insertion and execution. Our goal is to synthesize an in-          A-diagnosability  for modular  discrete  event  systems.  Automatica,  101,
+sertion function that enforces opacity as well as ensures that        290–295.
+                                                                                 Mohajerani, S., Ji, Y., & Lafortune, S. (2018). Efficient synthesis of edit functions
+the system’s energy level in every dimension is never below
+                                                                                                 for opacity enforcement using bisimulation-based abstractions. In Proc. of
+zero. We transferred the constrained opacity enforcement prob-         57th IEEE conf. on decision and control (pp. 4849–4854).
+lem to a two-player game between the insertion function and      Mullins,  J., & Yeddes, M. (2014). Opacity with Orwellian observers and intran-
+the environment. A bipartite information structure called Energy           sitive non-interference. In Proceedings of the 12th international workshop on
+Insertion Structure was defined to characterize the game. It also           discrete event systems (pp. 344–349).
+provides a sound and complete characterization of the solution     Nash-Williams,  C.   S.    J.  A.  (1963).  On  well-quasi-ordering  finite  trees.
+space. Then we subsequently considered the rate of insertion cost         Mathematical Proceedings of the Cambridge Philosophy Society, 59(4), 833–835.
+and formulated the bounded cost rate insertion strategy synthesis      Pérez, G. A. (2017). The fixed initial credit problem for partial-observation energy
+problem, which was characterized as a multidimensional mean        games is ack-complete. Information Processing Letters, 118, 91–99.
+                                                                                     Pruekprasert,  S., & Ushio, T. (2017). Supervisory control of partially observed
+payoff game. A method called hyperplane separation technique
+                                                                                           quantitative discrete event systems for fixed-initial-credit energy problem.
+was applied to reduce the multidimensional game to a one-                                                                                              IEICE Transactions on Information and Systems, 100(6), 1166–1171.
+dimensional game on the same graph. Additional analysis showed      Rackoff, C. (1978). The covering and boundedness problems for vector addition
+that by solving the induced game, we obtain valid solutions for         systems. Theoretical Computer Science, 6(2), 223–231.
+the original problem.                                                             Saboori, A., & Hadjicostis, C. (2007). Notions of security and opacity in discrete
+                                                                                  event systems. In Proceedings of the 46th IEEE conference on decision and
+References                                                                                control (pp. 5056–5061). IEEE.
+                                                                                        Saboori, A., & Hadjicostis, C. (2013). Verification of initial-state opacity in security
+Apt, K. R., & Grädel, E. (2011). Lectures in game theory for computer scientists.          applications of discrete event systems. Information Sciences, 246, 115–132.
+   Cambridge University Press.                                                         Takai,  S., & Oka,  Y.  (2008). A formula  for the supremal  controllable and
+Barcelos, R. J., & Basilio, J. C. (2018). Enforcing current-state opacity through shuf-        opaque sublanguage arising in supervisory control. SICE Journal of Control,
+     fle in event observations. In Proceedings of the 14th international workshop         Measurement, and System Integration, 1(4), 307–311.
+   on discrete event systems (pp. 100–105).                                        Tong, Y., Li, Z., Seatzu, C., & Giua, A. (2017). Decidability of opacity verification
+Bérard, B., Mullins,  J., & Sassolas, M. (2015). Quantifying opacity. Mathematical        problems in labeled Petri net systems. Automatica, 80, 48–53.
+    Structures in Computer Science, 25(Special issue 2), 361–403.                    Tong, Y., Li, Z., Seatzu, C., & Giua, A. (2018). Current-state opacity enforcement
+Boyd, S., & Vandenberghe, L. (2004). Convex optimization. Cambridge University          in discrete event systems under incomparable observations. Discrete Event
+    Press.                                                                    Dynamic Systems: Theory and Applications, 28(2), 161–182.
+Brim,  L., Chaloupka,  J., Doyen,  L., Gentilini,  R., & Raskin,  J.-F. (2011). Faster      Yin, X., & Lafortune, S. (2016). A uniform approach for synthesizing property-
+    algorithms for mean-payoff games. Formal Methods in System Design, 38(2),         enforcing supervisors  for partially-observed discrete-event systems. IEEE
+   97–118.                                                                               Transactions on Automatic Control, 61(8), 2140–2154.
+Cassandras, C. G., & Lafortune, S. (2008). Introduction to discrete event systems                                                                                            Yin, X., & Lafortune, S. (2017). A new approach for the verification of infinite-step
+   – 2nd edition. Springer.                                                                          and K-step opacity using two-way observers. Automatica, 80, 162–171.
+Cassez, F. (2009). The dark side of timed opacity. In International conference on
+                                                                                            Yin, X., & Lafortune, S. (2019). A general approach for optimizing dynamic sensor
+    information security and assurance (pp. 21–30). Springer.
+                                                                                             activations for discrete event systems. Automatica, 105, 376–383.
+Cassez, F., Dubreil,  J., & Marchand, H. (2012). Synthesis of opaque systems with
+                                                                                            Yin, X., Li, Z., Wang, W., & Li, S. (2019). Infinite-step opacity and K-step opacity
+    static and dynamic masks. Formal Methods in System Design, 40(1), 88–115.
+                                                                                              of stochastic discrete-event systems. Automatica, 99, 266–274.
+Chatterjee, K., & Velner, Y. (2017). Hyperplane separation technique for multidi-
+                                                                               Zhang, B., Shu, S., & Lin, F. (2015). Maximum information release while ensuring   mensional mean-payoff games. Journal of Computer and System Sciences, 88,
+                                                                                        opacity in discrete event systems. IEEE Transactions on Automation Science   236–259.
+Chédor, S., Morvan, C., Pinchinat, S., & Marchand, H. (2015). Diagnosis and opac-        and Engineering, 12(3), 1067–1079.
+    ity problems for infinite state systems modeled by recursive tile systems.     Zhang, K., Yin, X., & Zamani, M. (2019). Opacity of nondeterministic transition
+    Discrete Event Dynamic Systems: Theory and Application, 25(1–2), 271–294.           systems: A (bi) simulation relation approach. IEEE Transactions on Automatic
+Chen,  J., Ibrahim, M., & Kumar, R. (2017). Quantification of secrecy in partially          Control, (in press). http://dx.doi.org/10.1109/TAC.2019.2908726.
+   observed stochastic discrete event systems. IEEE Transactions on Automation
+    Science and Engineering, 14(1), 185–195.
+Degorre, A., Doyen, L., Gentilini, R., Raskin, J.-F., & Toruńczyk, S. (2010). Energy
+                                                                                                     Yiding Ji received his Bachelor of Engineering degree of
+   and mean-payoff games with imperfect information. In Computer science logic
+                                                                                                                           Electrical Engineering from Tianjin University, Tianjin,
+    (pp. 260–274). Springer.
+                                                                                                              China, in 2014, Master of Science degree and Doctor’s
+Dubreil, J., Darondeau, P., & Marchand, H. (2010). Supervisory control for opacity.                                                                                                     degree of Electrical and Computer Engineering both
+    IEEE Transactions on Automatic Control, 55(5), 1089–1100.                                          from the University of Michigan, USA, in 2016 and
+Ehrenfeucht,  A., & Mycielski,  J. (1979). Positional strategies for mean payoff                             2019, respectively. His research interests include theory
+   games. International Journal of Game Theory, 8(2), 109–113.                                                  of discrete event systems, security and privacy in cyber
+Falcone,  Y., & Marchand, H. (2015). Enforcement and validation (at runtime)                         and cyber–physical systems, formal methods and game
+    of various notions of opacity. Discrete Event Dynamic Systems: Theory and                               theory.
+    Applications, 25(4), 531–570.                                                             He  is now a member of the IEEE Control Sys-
+Jacob, R., Lesage, J.-J., & Faure, J.-M. (2016). Overview of discrete event systems                          tems Society Technical Committee on Discrete Event
+    opacity: Models, validation, and quantification. Annual Reviews in Control.       Systems.
+
+14                                                            Y.  Ji, X. Yin and S. Lafortune / Automatica 108 (2019) 108476
+
+
+
+                     Xiang Yin was born in Anhui, China,  in 1991. He                          Stéphane Lafortune received the B.Eng. degree from
+                        received the B.Eng. degree from Zhejiang University in                              Ecole Polytechnique de Montréal in 1980, the M.Eng.
+                       2012, the M.S. degree from the University of Michigan,                            degree from McGill University in 1982, and the Ph.D.
+                   Ann Arbor, in 2013, and the Ph.D. degree from the                            degree from the University of California at Berkeley
+                         University  of Michigan, Ann Arbor,  in 2017,  all  in                                in 1986, all in electrical engineering. Since September
+                            electrical engineering.                                                           1986, he has been with the University of Michigan, Ann
+                            Since 2017, he has been with the Department of                               Arbor, where he is a Professor of Electrical Engineering
+                       Automation, Shanghai Jiao Tong University, where he                         and Computer Science.
+                                is an Associate Professor.                                                              Lafortune is a Fellow of the IEEE (1999) and of IFAC
+                           His  research  interests  include  formal  methods,                               (2017). He received the Presidential Young Investigator
+                         control of discrete-event systems, model-based fault                        Award from the National Science Foundation in 1990
+diagnosis, security and their applications to cyber and cyber–physical systems.     and the George S. Axelby Outstanding Paper Award from the Control Systems
+    Dr. Yin received the Outstanding Reviewer Awards from Automatica, the      Society of the IEEE in 1994 (for a paper co-authored with S.-L. Chung and F.
+IEEE Transactions on Automatic Control and the Journal of Discrete Event      Lin) and in 2001 (for a paper co-authored with G. Barrett).
+Dynamic Systems. Dr. Yin also received the IEEE Conference on Decision and          Lafortune’s research interests are in discrete event systems and include
+Control (CDC) Best Student Paper Award Finalist in 2016.                           multiple problem domains: modeling, diagnosis, control, optimization, and appli-
+   He is the co-chair of the IEEE CSS Technical Committee on Discrete Event      cations to computer and software systems. He co-authored, with C. Cassandras,
+Systems.                                                                         the textbook Introduction to Discrete Event Systems — Second Edition (Springer,
+                                                                                   2008). Lafortune is Editor-in-Chief of the Journal of Discrete Event Dynamic
+                                                                              Systems: Theory and Applications.

@@ -1,0 +1,416 @@
+1598                                      IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS: SYSTEMS, VOL. 46, NO. 11, NOVEMBER 2016
+
+       Reliable Decentralized Fault Prognosis of Discrete-Event Systems
+
+                                     Xiang Yin and Zhaojian Li
+
+
+
+
+  Abstract—We investigate the problem of reliable decentralized fault   the coordinator always has access to all local prognostic decisions.
+prognosis of partially-observed discrete-event systems. In this problem, n   However, this assumption may not hold in many systems due to the
+local prognosers are deployed to send their local prognostic decisions to                                                                    following reasons. First, as depicted in Fig. 1, in many distributed
+a coordinator that calculates the ﬁnal prognostic decision. However, only
+k (1 ≤k ≤n) local prognostic decisions are guaranteed to be available   system, the local decisions are sent to the coordinator via a communi-
+to the coordinator due to possible failures or communication losses of at   cation network in which communication delays or signal losses may
+most n −k local prognosers. We propose the notion of k-reliable decen-   occur [14], [22]. Therefore, one must take these issues into account.
+tralized prognoser in order to address this reliability issue. A necessary   Second, each local prognoser itself may not be reliable due to local
+and sufﬁcient condition for the existence of a k-reliable decentralized
+                                                               hardware or software errors. In order to evaluate the robustness orprognoser, which predicts faults prior to their occurrences, is presented.
+This condition is termed as k-reliable coprognosability. A polynomial-time   the reliability of the system, many different approaches were pro-
+algorithm for the veriﬁcation of k-reliable coprognosability is presented.   posed in [1], [2], [14]–[17], [19]–[22], and [26]–[28]. In particular,
+We also demonstrate how to compute the k-reliable reactive bound prior   in [16] and [26], the problem of reliable decentralized supervisory
+to any occurrence of faults.
+                                                                        control was studied by assuming that certain amount of local con-
+  Index  Terms—Decentralized  fault  prognosis,  discrete-event    trol decisions may be lost. This approach was also extended to the
+systems, reliable coprognosability, reliable prognosers.              decentralized fault diagnosis problem in [1], [17], and [28].
+                                                                   Motivated by the reliable control and diagnosis techniques men-
+                                I. INTRODUCTION                           tioned above, in this paper, we consider the problem of reliable
+  Fault prognosis is an important task for safety critical systems.   decentralized fault prognosis. More speciﬁcally, we assume that there
+In many complex large-scale systems, the information structure is   are n local prognosers sending their local prognostic decisions to the
+decentralized. In this correspondence paper, we consider the decen-   coordinator, but the coordinator is only guaranteed to receive k local
+tralized fault prognosis problem of discrete event systems (DESs). In   decisions, where k ≤n is a non-negative integer. In other words,
+this problem, the plant is monitored by a set of local agents (or local  we consider the scenario in which at most n −k local prognostic
+prognosers) that make local prognostic decisions based on their own   decisions may be lost. The contributions of this paper are as follows.
+observations. The local prognostic decisions are sent to the fusion site    First, we provide the necessary and sufﬁcient condition, termed as
+(or the coordinator) in order to calculate a global prognostic decision.    k-reliable coprognosability, for the existence of a k-reliable decentral-
+The goal is to predict any fault of the system prior to its occurrence   ized prognoser. Second, we develop a polynomial-time algorithm for
+with no missed alarm and no false alarm.                              the veriﬁcation of k-reliable coprognosability. We show that, when
+  The    problem    of     fault    prognosis    has     recently   using the approach proposed, the veriﬁcation of k-reliable coprog-
+attracted   considerable    attention    in   the  DES    literature   nosability is not more computationally difﬁcult than the veriﬁcation
+(see  [4]–[6], [8]–[13], [18], [23]–[25], [29]).  Fault  prognosis  of   of coprognosability under reliable decisions. Furthermore, when the
+DESs was initialed in [8], where the notion of uniformly bounded   system is k-reliably coprognosable, a method for the computation of
+prognosability, which is termed as predictability in [8], was proposed.    k-reliable reactive bound is presented. The k-reliable reactive bound
+Roughly speaking, a DES  is prognosable  if: 1) any fault can be   quantitatively speciﬁes the amount of time the prognoser can react
+alarmed prior to its occurrence, i.e., no missed alarm and 2) once an   prior to the occurrence of a fault.
+alarm is issued, a fault will occur for sure within a ﬁnite number of      In [23], the problem of robust fault prognosis was studied. Our
+steps, i.e., no false alarm. In [12], the problem of fault prognosis was   paper is clearly different from the above mentioned work due to
+extended to the decentralized setting and the notions of coprognos-   the following reasons. First, we study the decentralized prognosis
+ability and uniformly bounded coprognosability were introduced. It   problem while [23] considers the centralized setting. Second, the
+was shown that these two notions are equivalent when the languages   robustness in [23] is deﬁned in the sense that there are a set of
+under consideration are regular. In [10], [11], and [24], decentral-   possible models of the system, which is also clearly different from
+ized fault prognosis under different architectures was studied. More   the notion of reliability investigated in this paper.
+recently, the problem of fault progosis of DES was further investi-    The remainder of this paper is organized as follows. In Section II,
+gated for distributed systems [25], [29], timed systems [4], stochastic  we describe some preliminaries and notations used in this paper. In
+systems [5], [6], [18], and systems modeled by Petri-nets [13].        Section III, the problem of reliable decentralized prognosis is for-
+  Previous  studies on  decentralized  fault prognosis  rely on  the   mulated and the notion of k-reliable coprognosability is presented.
+implicit assumption that the system  is reliable in the sense that   Section IV provides a polynomial-time algorithm for the veriﬁcation
+                                                                      of k-reliable coprognosability. The computation of k-reliable reactive
+  Manuscript received June 28, 2015; accepted September 26, 2015. Date of   bound is studied in Section V. Finally, we conclude the paper in
+publication November 26, 2015; date of current version October 13, 2016.   Section VI.
+This paper was recommended by Associate Editor I. Makki.
+  X. Yin is with the Department of Electrical Engineering and Computer
+Science,  University  of Michigan, Ann  Arbor, MI 48109 USA  (e-mail:                                                                                                                    II. PRELIMINARIES
+xiangyin@umich.edu).
+  Z. Li  is with the Department of Aerospace Engineering, University of   A. System Model
+Michigan, Ann Arbor, MI 48109 USA (e-mail: zhaojli@umich.edu).
+                                              We ﬁrst review some common notations of DES; the reader is  Color versions of one or more of the ﬁgures in this paper are available
+online at http://ieeexplore.ieee.org.                                          referred to [3] for more details. Let  ∗be the set of all ﬁnite strings
+   Digital Object Identiﬁer 10.1109/TSMC.2015.2499178                    over a ﬁnite set of events    , including the empty string ϵ. A language
+
+                    2168-2216 c⃝2015 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                         See http://www.ieee.org/publications_standards/publications/rights/index.html for more information.
+
+IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS: SYSTEMS, VOL. 46, NO. 11, NOVEMBER 2016                                         1599
+
+
+                                                                  only δ(s) ∈QH and string s ∈L(G) is a fault string if and only
+                                                                        δ(s) ∈Q \ QH.
+                                                                         In the decentralized fault prognosis framework [12], the system is
+                                                                monitored by a set of agents (or local prognosers). We assume that
+                                                                         there are n local prognosers and we denote by I = {1, . . . , n} the
+                                                                  index set. For each prognoser i ∈I,    o,i is the set of events it can
+                                                                      observe. Also, for any i ∈I, Pi : ∗→   o,i∗  is the natural projection
+                                                            deﬁned by
+
+                                                                                                      Pi(s)σ     if σ ∈   o,i
+                                                                               Pi(ϵ) = ϵ  Pi(sσ) =                                   (1)
+                                                                                                           Pi(s)       if σ̸ ∈   o,i.
+                                                           Each local prognoser i ∈I is deﬁned as a function Di : Pi(L(H)) →
+                                                                         {0, 1}, where “1” means a fault will occur in a ﬁnite number of steps,
+                                                                                                    i.e., a fault is inevitable, and “0” means a fault is not guaranteed to
+                                                                  occur within a ﬁnite number of steps. Each local prognoser sends
+                                                                                             its local prognostic decision to a coordinator in order to calculate a
+                                                                      global prognostic decision. In this paper, we consider the disjunctive
+Fig. 1.  Decentralized fault prognosis architecture.                            architecture,  i.e., the global decision is “1” if one local prognoser
+                                                                    says “1.” Therefore, under this architecture, the decentralized prog-
+                                                                    noser is the function {Di}i∈I  : L(H) →{0, 1} deﬁned as follows.
+L ⊆  ∗is a subset of  ∗and L is the preﬁx-closure of language   For any s ∈L(H)
+L deﬁned by L = {t ∈  ∗: ∃u ∈   ∗s.t. tu ∈L}. Given a language                                                                                 {Di}i∈I(s) = 1 ⇔∃i ∈I  : Di(Pi(s)) = 1.           (2)
+L and a string s ∈L, we denote by L/s the post-language of s, i.e.,
+L/s := {t ∈  ∗: st ∈L}.                                              In [12], two  criteria, no missed alarm and no false alarm, were
+ A DES is modeled by a deterministic ﬁnite-state automaton G =   proposed  in order  to  evaluate  the  validation of a  decentralized
+(Q,   , δ, q0, Qm), where Q is the ﬁnite set of states,     is the ﬁnite   prognoser.
+set of events, δ : Q× →Q is the partial transition function, q0 ∈Q     Deﬁnition 1: A decentralized prognoser {Di}i∈I is said to be valid
+is the initial state and Qm is the set of marked states. We denote by    if the following two properties hold.
+G = (Q,   , δ, q0) an automaton if marking is not considered. The      1) No missed alarm, that is
+transition function δ  is extended to Q ×  ∗in the usual manner
+                                                                          (∀s ∈L(G) \ L(H)) ∃t ∈{s} ∩L(H)  {Di}i∈I(t) = 1 .   (3)
+(see [3]). For brevity, we write δ(q0, s) as δ(s), i.e., δ(s) is the state
+reached via s from the initial state. The language generated by G      2) No false alarm, that is
+from state q is deﬁned by L(G, q) = {s ∈  ∗: f(q, s)!}, where !
+                                                                    ∀s ∈L(H) :  {Di}i∈I(s) = 1 ⇒
+means “is deﬁned.” We write L(G, q) as L(G) when q = q0, i.e.,
+                                                             (∃m ∈N)(∀t ∈L(G)/s) |t| ≥m ⇒st ∈L(G) \ L(H) .  (4)L(G) is the language generated by G. The language marked by G is
+Lm(G) = {s ∈  ∗: δ(q0, s) ∈Qm}. The system G is said to be live        It was shown in [12] that the notion of coprognosability, whose
+if ∀q ∈Q, ∃σ ∈      : δ(q, σ)!. Hereafter, we assume that G is live.   deﬁnition is recalled next, provides the necessary and sufﬁcient condi-
+This assumption is without loss of generality (w.l.o.g.), since we can   tion for the existence of a valid decentralized prognoser that predicts
+add self-loop at each state in G from which no transition is deﬁned.    faults with no error.
+  Given  two  automata G  =   (Q,   , δ, q0)  and H  =     Deﬁnition 2 (Coprognosability): A speciﬁcation L(H) is said to
+(QH,   , δH, q0,H), we  say  that H  is  a  sub-automaton  of  G,   be coprognosable with respect to L(G) and   o,i, i ∈I if
+denoted by H ⊑G, if: 1) q0,H = q0; 2) QH ⊆Q; and 3) for any
+q ∈QH, σ ∈     , we have that δH(q, σ) = δ(q, σ)  if δH(q, σ)!.          (∃m ∈N)(∀s ∈L(G) \ L(H)) ∃t ∈{s} ∩L(H)
+We say that H is a strict sub-automaton of G, denoted by H < G,                (∃i ∈I) ∀u ∈P−1i  Pi(t) ∩L(H) (∀v ∈L(G)/u)
+if: 1) H ⊑G and 2) ∀s ∈L(G) \ L(H) : δ(q0, s)̸ ∈QH. In other
+                                                                                                      |v| ≥m ⇒uv ∈L(G) \ L(H) .                      (5)words, strict sub-automaton requires that once a string leaves the
+state space of H,  it should never go back.  It was shown in [7]
+that  if L(H) ⊆L(G), then we can always construct two new            III. RELIABLE DECENTRALIZED FAULT PROGNOSIS
+automata G′ and H′ such that 1) H′ < G′ and 2) L(H) = L(H′)      In this section, we ﬁrst introduce the notion of k-reliable prognoser.
+and L(G) = L(G′). Therefore, we can always assume w.l.o.g. that   Then we present the necessary and sufﬁcient condition, under which
+H < G when L(H) ⊆L(G).                                            there exists a k-reliable prognoser.
+                                                                                       First, we note that, in the standard decentralized fault prognosis
+                                                                framework, it is assumed that the decentralized system is reliable in
+B. Decentralized Fault Prognosis                                      the sense that the coordinator can always receive all the local prog-
+  Let G be the system automaton and H be the speciﬁcation automa-   nostic decisions. However, as we discussed earlier, this assumption
+ton,  i.e., L(H) is a nonempty preﬁx-closed speciﬁcation language  may not hold due to communication losses or errors at the local sites.
+that represents the normal behavior of the system. Then strings in   Therefore, in order to take this reliability issue into account, hereafter,
+L(G) \ L(H) are considered as fault behaviors and we want to pre-  we assume that there are only k local prognostic decisions available
+dict the occurrence of any string in L(G) \ L(H). As we mentioned   to the coordinator at each step, where 1 ≤k ≤n. In other words, at
+earlier, hereafter, we assume w.l.o.g. that the speciﬁcation automa-   most n −k local prognostic decisions may be lost. We ﬁrst propose
+ton H = (QH,   , δH, q0,H) is a strict sub-automaton of the system   the notion of k-reliable prognoser that can predict the occurrences of
+automaton G = (Q,   , δ, q0),  i.e., H < G. Therefore, under this    faults even if only k local prognostic decisions are available to the
+assumption, we know that string s ∈L(G) is a nonfault string if and   coordinator at each time.
+
+1600                                      IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS: SYSTEMS, VOL. 46, NO. 11, NOVEMBER 2016
+
+
+   Deﬁnition 3 (k-Reliable Prognoser): A valid decentralized prog-
+noser {Di}i∈I is said to be k-reliable if
+
+(∀s ∈L(G)\ L(H))(∃t ∈{s} ∩L(H))
+                                                                                          (a)                                    (b)
+                            [|{i ∈I  : Di(Pi(s)) = 1}| ≥n −k + 1].     (6)
+
+                                                                                    Fig. 2.   Speciﬁcation is coprognosable but not one-reliably coprognosable.
+   Before we present the necessary and sufﬁcient condition for the
+                                                                                          (a) G. (b) H.
+existence of a k-reliable decentralized prognoser, we ﬁrst introduce
+some necessary notions. In [12], the notions of boundary strings,
+indicator strings and nonindicator strings were introduced. Since we    sets ϒ(H, G) and ℑ(H, G) are disjoint. Therefore, (4) holds. Overall,
+have assumed w.l.o.g. that H is a strict sub-automaton of G, we deﬁne  we know that {Di}i∈I is a valid k-reliable decentralized prognoser.
+three similar notions, in terms of states rather than strings, as follows.    (⇒) Consider a string s ∈L(G)\L(H). By (6), we know that there
+   Deﬁnition 4: Let H be the speciﬁcation automaton and G be the    exists t ∈{s} ∩L(H) such that |{i ∈I : Di(Pi(s)) = 1}| ≥n −k + 1.
+system automaton with H < G.                                     Let P = {i1, . . . , i|P|}, |P| ≥n −k + 1 be the set of agents whose
+   1) A boundary state is a state in H, from which an event that   decisions are “1.” By (4), we know that ∀s ∈L(H) : {Di}i∈I(s) =
+       violates the speciﬁcation can occur. We denote by ∂(H, G)   1 ⇒δH(s) ∈ℑ(H, G). Then, for any agent  i ∈P, since ∀t ∈
+      the set of boundary states, i.e., ∂(H, G) = {q ∈QH  : ∃σ ∈  P−1i  (Pi(s)) : Di(Pi(t)) = Di(Pi(s)) = 1, which means {Di}i∈I(t) =
+             s.t. δ(q, σ)! ∧δH(q, σ)̸  !}.                                       1, we know that δH(t) ∈ℑ(H, G). Therefore, we know that for any
+   2) An indicator state is a state in H, from which a string that     i ∈P, EHi (s) ⊆ℑ(H, G), i.e., |ID(s)| ≥|P| ≥n −k + 1. Hence,
+       violates the speciﬁcation will occur for sure within a ﬁnite num-  L(H) is k-reliably coprognosable.
+      ber of steps. We denote by ℑ(H, G) the set of indicator states,    Remark 1:  It  is easy  to  verify  that, by using the notions of
+         i.e., ℑ(H, G) = {q ∈QH  : ∃m ∈N, ∀t ∈L(G, q) s.t. |t| ≥   boundary state and indicator state, (5) can be rewritten as (∀s ∈
+    m ∧δ(q, t) ∈Q \ QH}.                                   L(G)\L(H))(∃t ∈{s}∩L(H))[|ID(t)| ≥1]. Hence, by taking n = k,
+   3) A nonindicator state is a state in H, from which an arbitrar-    k-reliable coprognosability reduces to coprognosability. Therefore,
+       ily long nonfault behavior can occur,  i.e., ϒ(H, G) = QH \   Theorem 1 generalizes the results in [12] to the case where n −k
+     ℑ(H, G) = {q ∈QH : ∀m ∈N, ∃t ∈   ∗s.t. |t| ≥m∧δH(q, t)!}.   local prognostic decisions are not unreliable.
+For each local prognoser i ∈I, we also denote by EHi (s) agent i’s      Clearly, we see that L(H) k-reliably coprognosable implies that
+state estimate of s under    o,i with respect to the state space of H,  L(H) is coprognosable. However, the converse relation needs not
+that is                                                                  hold, which is illustrated by the following example.
+  EHi (s) := {q ∈QH  : ∃t ∈L(H) s.t. Pi(s) = Pi(t) ∧δH(t) = q}. (7)     Example 1: Consider the system automaton G and the speciﬁca-                                                                            tion automaton H in Fig. 2. We have that ∂(H, G) =  {4}, ℑ=
+Then for any string s ∈L(H), we denote by ID(s) the set of agents   {2, 3, 4}, and ϒ =  {1}. Suppose that there are two local prog-
+whose state estimates only consist of indicator states, that is           nosers with observable events   o,1 = {a, b, o} and   o,2 = {a, o},
+                                                                             respectively. Clearly, we see that L(H) is coprognosable and a valid
+             ID(s) :=   i ∈I  : EHi (s) ⊆ℑ(H, G)  .              (8)   decentralized prognoser {Di}i∈{1,2} is deﬁned as follows:
+With the notions introduced above, we deﬁne the notion of k-reliable                      1 if s ∈  o∗a, o∗ab, o∗b, o∗bo
+                                                                          D1(s) =                                           (11)coprognosability as follows.                                                       0 otherwise
+   Deﬁnition 5 (k-Reliable Coprognosability): A speciﬁcation L(H)                                                                              1 if s ∈  o∗a
+is said to be k-reliably coprognosable with respect to L(G) and              D2(s) =                                           (12)                                                                              0 otherwise.
+   o,i, i ∈I if
+                                                              However, {Di}i∈{1,2} is not a one-reliable prognoser. For example,
+    (∀s ∈L(G) \ L(H)) ∃t ∈{s} ∩L(H) [|ID(t)| ≥n −k + 1].  (9)   for string bo, if the agent 1s decision, i.e., D1(P1(bo)) = 1, is lost,
+                                                                    then the global decision is “0,” since D2(P2(bo)) = 0. Therefore, no
+  The following result reveals that k-reliable coprognosability pro-
+                                                                 alarm is provided before the occurrence of fault string bof.
+vides the necessary and sufﬁcient condition for the existence of a
+valid k-reliable decentralized prognoser.
+                                                                           IV. VERIFICATION OF RELIABLE COPROGNOSABILITY  Theorem 1 (Existence Condition): There exists a valid k-reliable
+decentralized prognoser {Di}i∈I, if and only if, L(H) is k-reliably      In this section, we present a polynomial-time algorithm for the
+coprognosable with respect to L(G) and   o,i, i ∈I.                   veriﬁcation of  k-reliable coprognosability by constructing a new
+   Proof: (⇐) By construction. Let us consider a decentralized prog-   automaton called the k-veriﬁer.
+noser {Di}i∈I deﬁned as follows. For each local prognoser i ∈I, for     Let G =  (Q,   , δ, q0)  be  the  system  automaton, H =
+any string s ∈L(H), we have                                (QH,   , δH, δ0,H) be the speciﬁcation automaton, where H < G,
+                                                                                           o,i, and i ∈I be the set of locally observable events. The k-veriﬁer
+               Di(Pi(s)) = 1 ⇔EHi (s) ⊆ℑ(H, G).             (10)  V is deﬁned as the deterministic ﬁnite state automaton
+
+Under  the above prognostic  strategy, we know  that |ID(s)| =              V = XV,  V, fV, x0,V, Xm,V                 (13)
+|{i ∈I  : Di(Pi(s)) = 1}|. Therefore, the condition that L(H) is
+k-reliably coprognosable,  i.e., (9) holds, implies that (3) and (6)   where
+hold for {Di}i∈I. Next, we show by contradiction that (4) holds.      1) XV = (QH × · · · × QH ) ∪{Dead} is the set of states;
+Assume that (4) does not hold, we know that (∃s ∈L(H))(∃i ∈                  (n+1) times
+I  : Di(Pi(s)) = 1)(∀m ∈N)(∃t ∈L(G)/s)[|t| ≥m ∧st ∈L(H)].      2)   V = (  ∪{ϵ}) × · · · × (  ∪{ϵ}) is the set of events;
+First, we know  that δH(s) ∈ϒ(H, G), since (∀m ∈N)(∃t ∈                        (n+1) times
+L(G)/s)[|t| ≥m ∧st ∈L(H)]. Second, by Di(Pi(s)) = 1, we know      3) x0,V = (q0, . . . , q0 ) is the initial state;
+that δH(s) ∈EHi (s) ⊆ℑ(H, G). However, this is a contradiction since               n+1 times
+
+IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS: SYSTEMS, VOL. 46, NO. 11, NOVEMBER 2016                                         1601
+
+
+  4)  fV  : XV ×  V →XV  is the partial (deterministic) transition
+      function deﬁned below. For any σ ∈    , we have the following
+     two types of transitions as follows.
+        a) The single transition
+                                                                                   Fig. 3.   Part of the k-veriﬁer for H and G in Fig. 2 with k = 1,  o,1 =
+              fV((q, q1, . . . , qn), (σ, e1, . . . , en))                          {a, b, o}, and   o,2 = {a, o}.
+          = (δH(q, σ), δH(q1, e1), . . . , δH(qn, en))    (14)                                                                                                          t in {s} ∩L(H), i.e., δH(t) ∈∂(H, G). Since |ID(t)| < n −k + 1, we
+                              σ,    if Pi(σ)̸ = ϵ                know that there exists a set of agents P ⊆I such that:                                                                                    .         where ∀i ∈I, ei =
+                                  ϵ,     if Pi(σ) = ϵ                                                                         1) ∀i ∈P  : EHi  (t)̸ ⊆ℑ(H, G);
+        b) The following transition for each i ∈I s.t. Pi(σ) = ϵ:        2) |P| ≥k.
+
+                                                  By condition 1), we know that
+             fV  (q, q1, . . . , qn),  ϵ, ϵ, . . . , ϵ, (i+1)th,σ    ϵ, . . . , ϵ                                                                              (∀i ∈P)(∃ti ∈L(H))[Pi(t) = Pi(ti) ∧δH(ti) ∈ϒ(H, G)].
+         =  q, q1, , . . . , qi−1, δH(qi, σ), qi+1 . . . , qn  .  (15)
+                                                                  Let us consider string w = (t, w1, . . . , wn), where wi = ti if i ∈P and
+  5) Xm,V is the set of marked states deﬁned by                    wi = t if i ∈I\P. Such a string is deﬁned in V, since ∀i ∈I : Pi(t) =
+                                                                        Pi(wi), and we denote by xw = (q, w1, . . . , wn) = fV(x0,V, w) the
+     Xm,V := {(q, q1, . . . , qn) ∈XV  :                                     state reached upon w in V. Since ∀i ∈P  : δH(ti) ∈ϒ(H, G), by
+           q∈∂(H, G) ∧|{i∈I : qi ∈ℑ(H, G)}| < n −k + 1}.      condition 2), we know that
+                                                                 (16)          |{i∈I  : qi ∈ℑ(H, G)}| ≤n −|P| < n −k + 1.
+
+This completes the deﬁnition of the k-veriﬁer.                       Moreover, since q = δH(t) ∈∂(H, G), we know that xw ∈Xm,V,
+  Remark 2: Let s = (s0, s1, . . . , sn) ∈L(V) be a string in V.     i.e., Lm(V)̸ = ∅.
+Intuitively, the k-veriﬁer tracks one string s0 representing the sys-     Example 2: Let us return to Example 1 and consider automata
+tem’s execution and n  strings  s1, . . . , sn  that look  identical  for  G and H shown in Fig. 2. First, we  still suppose that there are
+agents 1, . . . , n under their own observations. Formally, for any string   two local prognosers whose observations are   o,1 = {a, b, o}, and
+s = (s0, s1, . . . , sn) ∈L(V), we have that Pi(s0) = Pi(si), ∀i ∈I.      o,2 = {a, o}, respectively. Let k =  1. Then part of the corre-
+Conversely, for strings s0, s1, . . . , sn ∈L(H),  if Pi(s0) = Pi(si),   sponding k-veriﬁer constructed from H and G is shown in Fig. 3.
+∀i ∈I, then string (s0, s1, . . . , sn) is deﬁned in V from the initial   For example, at the initial state (1, 1, 1), event (b, b, ϵ) is deﬁned
+state, i.e., state (δH(s0), δH(s1), . . . , δH(sn)) is reachable in V.        according  to  (14) and  state  (3, 3, 1)  is reached  via  this  event.
+  The following result states that the speciﬁcation is not k-reliably  From state (3, 3, 1), state (4, 4, 1)  is reached via event (o, o, o).
+coprognosable if and only if a marked state is reached from the initial   However, state {4, 4, 1} is a marked state, since 4 ∈∂(H, G) and
+state in V.                                                                   |{4, 1} ∩ℑ(H, G)| = |{4}| = 1 < 2 −1 + 1 = 2. Therefore, we
+  Theorem 2: A speciﬁcation language L(H) is k-reliably coprog-  know that L(H) is not one-reliably coprognosable with respect to
+nosable [with respect to L(G) and    o,i, i ∈I],  if and only  if,   L(G),   o,1, and   o,2.
+Lm(V) = ∅.                                              One way to resolve this unreliability issue is to add more local
+  Proof: (⇒) By contraposition. Suppose that Lm(V)̸ = ∅. We   prognosers in order to increase the reliability of the entire system.
+know that there exists a string s = (s0, s1, . . . , sn) ∈L(V) such   Suppose that there is still only one unreliable local prognostic deci-
+that fV(x0,V, s) = (q, q1, . . . , qn) ∈Xm,V, where q = δH(s0) and   sion at each step, but we add a new local prognoser with observable
+qi = δH(si), ∀i ∈I. We deﬁne P := {i ∈I  : qi ∈ϒ(H, G)}. By the   events set   o,3 = {b, o}. Therefore, we are interested in verifying
+deﬁnition of Xm,V, we know that q ∈∂(H, G) and |P| ≥k. By the   whether or not the new system with three local prognosers is two-
+construction of V, we know that ∀i ∈I : Pi(s0) = Pi(si). Therefore,   reliably coprognosable. In order to do so, we construct the complete
+we know that {q, qi} ⊆EHi (s0). Since ∀i ∈P  :  qi̸ ∈ℑ(H, G), we   k-veriﬁer for G, H,   o,i, i ∈{1, 2, 3}, and k = 2, which is shown
+know that |ID(s0)| ≤n −|P| < n −k + 1.                              in Fig. 4. We see that there is no marked state in V, since for each
+  Next, we show by contradiction that ∀t ∈{s0} ∩L(H) : |ID(t)| <    state whose ﬁrst component is 4, i.e., the unique boundary state, there
+n −k + 1. Let us assume that ∃t ∈{s0} ∩L(H) : |ID(t)| ≥n −k + 1,   are at least two state components that are indicator states. Therefore,
+i.e., there exists a set Q ⊆I such that ∀i ∈Q : EHi  (t) ⊆ℑ(H, G) and  we know that L(H) is two-reliably coprognosable with respect to
+|Q| ≥n−k+1. By the deﬁnition of ℑ(H, G), we know that any state   L(G),  o,1,   o,2, and   o,3.
+reached from an indicator state is an indicator state. Therefore, we     Remark 3: In the k-veriﬁer V, there are at most |Q|n+1 states and
+know that ∀i ∈Q : EHi (s0) ⊆ℑ(H, G), which implies that |ID(s0)| ≥   (1 + n)|  ||Q|n+1 transitions. Moreover, the complexity of checking
+|Q| ≥n −k + 1. This is a contradiction. Hence, we know that ∀t ∈   whether or not Lm(V) is linear in the number of states and the number
+{s0} ∩L(H) : |ID(t)| < n −k + 1.                                    of transitions in V. Therefore, we know that the total worst-case
+   Finally, since q is a boundary state, we know that there exists   complexity of verifying k-reliable coprognosability is O(n|  ||Q|n+1),
+an event σ ∈    such that string s0σ ∈L(G) \ L(H) violates the   which is the same as the complexity of the algorithm in [12] for
+speciﬁcation. Note that {s0σ} ∩L(H) = {s0} ∩L(H). Therefore,   checking coprognosability. In other words, by using the k-veriﬁer
+we have that                                                       proposed, we can verify k-reliability in addition to the veriﬁcation of
+                                                                      coprognosability without spending additional cost.
+  (∃s0σ ∈L(G)\L(H)) ∀t∈{s0σ} ∩L(H) [|ID(t)| < n −k + 1]
+i.e., L(H) is not k-reliably coprognosable.                                       V. COMPUTATION OF REACTIVE BOUND
+  (⇐) By contrapositive. Suppose that L(H) is not k-reliably coprog-    So far, we have studied the notion of k-reliable coprognosabil-
+nosable. We know that there exists a string s ∈L(G) \ L(H) such    ity and  its veriﬁcation. Note that, k-reliable coprognosability only
+that ∀t ∈{s}∩L(H) : |ID(t)| < n−k+1. Let us consider the longest   guarantees that faults can be predicted prior to their occurrences.
+
+1602                                      IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS: SYSTEMS, VOL. 46, NO. 11, NOVEMBER 2016
+
+
+                                                                                state expect q. Formally, we have that
+
+                                                                 η(q) =  s ∈L(H, q) :δH(q, s) ∈∂(H, G) ∧
+                                                                                                 ∀t ∈{s} s.t. δH(q, t)̸ ∈  (H, G)  .    (19)
+
+                                                            Note that η(q) may be empty for some q ∈   (H, G). Now, we
+                                                                        are ready to present the key theorem that reveals how the k-reliable
+                                                                           reactive bound can be computed.
+                                                            Theorem 3: Let H be the speciﬁcation automaton and G be the
+                                                               system automaton. We have that
+
+                                                                    ρ(H, G) =     min       −1}.             (20)                                                                                    q∈  (H,G),s∈η(q){|s|
+
+                                                                       Proof: We prove this theorem by the following two parts.
+                                                    LHS≥RHS: Suppose that (18), i.e., the LHS of (20), attains mini-
+                                           mum by string  ˆs ∈L(H) and  ˆt is the corresponding string such that
+                                                                                                                                  |ˆs \ ˆt| = maxt∈{ˆs} : |ID(t)|≥n−k+1 |ˆs \ t|.
+                                              We claim that any preﬁx of  ˆs containing  ˆt reaches a prognosable
+                                                                                     state, i.e., (∀ˆtv ∈{ˆs} : v ∈   ∗)[δH(ˆtv)̸ ∈  (H, G)]. To see this, we
+                                                            assume that δH(ˆtv) is an unprognsable state. Then, we know that
+                                                          ∃u ∈L(H) :δH(u) = δH(ˆtv)
+                                                                                      [|ID(u)| < n −k + 1 ∧δH(u(ˆs \ (ˆtv))) ∈∂(H, G).
+
+                                                                  This implies that the k-realiable reactive bound for string u(ˆs\(ˆtv)) is
+                                                                                 at most |ˆs\ˆt|−1, which is strictly smaller than |ˆs\ˆt|. This contradicts
+Fig.  4.    Complete  k-veriﬁer  for H and G  in  Fig. 2 with k =  2,
+                                                                        the fact that (18) attains minimum at  ˆs ∈L(H). Therefore, we know  o,1 = {a, b, o},  o,2 = {a, o}, and   o,3 = {b, o}.
+                                                                              that (∀ˆtv ∈{s} : v ∈   ∗)[δH(ˆtv)̸ ∈  (H, G)].
+                                                                  Moreover, we write string  ˆt in the form of  ˆt = t′σ, σ ∈    , i.e., σ
+                                                                                        is the last event in  ˆt. Then we know that |ID(t′)| < n−k +1, since  ˆt
+However, in many applications, this condition may not be enough,                                                                                        is the shortest preﬁx of s such that |ID(ˆt)| ≥n −k + 1. This implies
+since we need to predict faults “as early as possible” such that some                                                                              that δH(t′) is an unprognosable state. Since ∀ˆtv ∈{ˆs}, v ∈   ∗, δH(ˆtv)
+actions can be taken in order to protect the system or to prevent faults                                                                                        is a prognsable state, by considering q = δH(t′), s =  ˆs \ t′ for the
+from happening. Therefore, if the system is k-reliably coprognosable,                                             RHS of (20), we know that
+one may also be interested in knowing how early the prognoser can
+react to the occurrences of faults. In order to address this issue, we           min      −1} ≤|ˆs \ t′| −1 = |ˆs \ ˆt| = ρ(H, G).                                                                 q∈  (H,G),s∈η(q){|s|
+introduce the notion of k-reliable reactive bound.
+  For any string s ∈L(H) such that δH(s) ∈∂(H, G), we denote by    LHS≤RHS: Suppose that the RHS of (20) attains minimum at ˆq ∈
+ρ(s) the number of steps between the time when the ﬁrst fault alarm    (H, G), ˆs ∈η(ˆq). Since ˆq is an unprognosable state, we know that
+is reliably issued and the time when the ﬁrst fault occurs, that is       there exists a string w ∈L(H) such that δH(w) = ˆq and |ID(w)| <
+                                                           n −k + 1. We write  ˆs in the form of σs′, σ ∈     , i.e., σ  is the ﬁrst
+               ρ(s) =      max          |s \ t|              (17)   event of string  ˆs. Clearly, we know that ∀v ∈  ∗: wσv ∈{s} ⇒
+                             t∈{s} : |ID(t)|≥n−k+1                       |ID(wσv)| ≥n −k + 1. For otherwise, if ∃wσv ∈{s} : |ID(wσv)| <
+                                                           n −k + 1, then it contradicts the fact that ID(wσv) is a prognosable
+where s \ t denotes the string in s after  t,  i.e., t(s \ t) =  s. We    state. Moreover, since  ˆs ∈η(ˆq), we know that δH(wˆs) ∈∂(H, G).
+call ρ(s) the k-reliable reactive bound of string s. We note that, if   Therefore, by considering s = wˆs and t = wσ for the LHS of (20),
+|ID(t)| ≥n −k + 1, then for any of its extensions tv ∈{s}, v ∈   ∗,     i.e., (18), we know that
+we have that |ID(tv)| ≥n−k+1. Then, the k-reliable reactive bound
+                                                           ρ(H, G) ≤|wˆs \ wσ| = |ˆs| −1 =     min       −1}.for H and G, denoted by ρ(H, G), is deﬁned as the worst (minimal)                                   q∈  (H,G),s∈η(q){|s|
+k-reliable reactive bound of strings in L(H), that is
+                                                                  Since LHS≤RHS and RHS≤LHS, we know that (20) holds.
+                                                           Remark 4: The above theorem says that, in order to compute the
+           ρ(H, G) :=       min         ρ(s).           (18)
+                       s∈L(H) : δH(s)∈∂(H,G)                          k-reliable reactive bound, it sufﬁces to ﬁnd the shortest path from an
+                                                                 unprognosable state to a boundary state via some prognosable states.
+Next, we show that how to compute the k-reliable reactive bound.   Note that determining set  (H, G) can be done in O(|  ||Q|n+1) by
+First, we introduce some necessary notions.                           searching the state space of the k-veriﬁer V. The complexity of the
+  Let q ∈QH be a state in H. We say that q is an unprognosable   shortest path search problem is linear in the size of H. Therefore, the
+state  if there exists a state (q, q1, . . . , qn) ∈XV  in V, such that    k-reliable reactive bound ρ(H, G) can be computed in O(|  ||Q|n+1).
+|{i ∈I  : qi ∈ϒ(H, G)}| ≥k. We denote by   (H, G) ⊆QH the     The following example illustrates how the k-reliable reactive bound
+set of unprognosable states in H. We say that q is a prognosable   ρ(H, G) is computed.
+state if it is not an unprognosable state. The notion of unprognosable     Example 3: Let us revisit automata G and H shown in Fig. 2 and
+state is a generalization of the notion of unprognosable state deﬁned   assume that there are three local prognosers whose observations are
+in [12]. Clearly, we know that, if q ∈  (H, G), then there exists a      o,1 = {a, b, o},  o,2 = {a, o}, and   o,3 = {b, o}, respectively.
+string s ∈L(H) : δH(s) = q such that |ID(s)| < n −k + 1. Then, for   Let k = 2. We have shown in Example 2 that L(H) is two-reliably
+any unprognosable state q ∈  (H, G), we denote by η(q), the set of   coprognosable with respect to G and   o,i, i ∈{1, 2, 3} and the com-
+strings from q to a boundary state without visiting any unprognosable   plete k-veriﬁer has been shown in Fig. 4. By searching states in V,
+
+IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS: SYSTEMS, VOL. 46, NO. 11, NOVEMBER 2016                                         1603
+
+
+we know that   (H, G) = {1}, since for state q = (1, q1, q2, q3) =     [9] T. Jéron, H. Marchand, S. Genc, and S. Lafortune, “Predictability of
+(1, 1, 1, 2), we have that |{i ∈I  : qi ∈ϒ(H, G)}| = 2 ≥k. And we        sequence patterns in discrete event systems,” in Proc. 17th IFAC World
+                                                                                    Congr., Seoul, Korea, 2008, pp. 537–543.know that states 2 −4 in H are all prognosable state. Therefore, the
+                                                                               [10] A. Khoumsi and H. Chakib, “Multi-decision decentralized prognosis
+shortest path from the unique unprognosable state 1 to the unique         of failures in discrete event systems,” in Proc. Amer. Control Conf.,
+boundary state 4 via prognosable states is ab or bo whose lengths          St. Louis, MO, USA, 2009, pp. 4974–4981.
+are both 2. Therefore, we know that ρ(H, G) = 2 −1 = 1, i.e., all    [11] A. Khoumsi and H. Chakib, “Conjunctive and disjunctive architectures
+faults are guaranteed to be reliably predicted one step before their          for decentralized prognosis of failures in discrete-event systems,” IEEE
+                                                                                    Trans. Autom. Sci. Eng., vol. 9, no. 2, pp. 412–417, Apr. 2012.
+occurrences.                                                                               [12] R. Kumar and S. Takai, “Decentralized prognosis of failures in discrete
+                                                                                   event systems,” IEEE Trans. Autom. Control, vol. 55, no. 1, pp. 48–59,
+                                                                                         Jan. 2010.
+                      VI. CONCLUSION                               [13] D. Lefebvre, “Fault diagnosis and prognosis with partially observed
+  In this correspondence paper, we studied the problem of reliable          Petri nets,” IEEE Trans. Syst., Man, Cybern., Syst., vol. 44, no. 10,
+decentralized fault prognosis of discrete-event systems. The notion of         pp. 1413–1424, Oct. 2014.
+                                                                               [14]  F. Lin, “Control of networked discrete event systems: Dealing with com-
+k-reliable coprognosability was introduced as the necessary and suf-        munication delays and losses,” SIAM J. Control Optim., vol. 52, no. 2,
+ﬁcient condition for the existence of a decentralized prognoser under         pp. 1276–1298, 2014.
+the presence of unreliable local prognostic decisions. Both the veriﬁ-    [15]  F. Liu and Z. Dziong, “Reliable decentralized control of fuzzy discrete-
+cation of k-reliable coprognosability and the computation of k-reliable         event systems and a test algorithm,” IEEE Trans. Cybern., vol. 43, no. 1,
+                                                                                     pp. 321–331, Feb. 2013.
+reactive bound were investigated. These results extend previous stud-                                                                               [16]  F. Liu and H. Lin, “Reliable supervisory control for general architecture
+ies on decentralized fault prognosis, in which all local prognostic         of decentralized discrete event systems,” Automatica, vol. 46, no. 9,
+decisions are assumed to be reliable.                                            pp. 1510–1516, 2010.
+  In this paper, reliability was deﬁned in the sense of decision losses.    [17] S. Nakata and S. Takai, “Reliable decentralized failure diagnosis of dis-
+                                                                                           crete event systems,” SICE J. Control Meas. Syst. Integr., vol. 6, no. 5,However, in some applications,  it is possible that a local prognos-
+                                                                                     pp. 353–359, 2013.
+tic decision may arrive at the coordinator after some ﬁnite delay.    [18]  F. Nouioua, P. Dague, and L. Ye, “Probabilistic analysis of predictability
+Therefore, investigating the effect of decision delays is an important          in discrete event systems,” in Proc. 25th Int. Workshop Principle Diagn.,
+issue in the future. Also, in this paper, we adopted the disjunctive        Graz, Austria, 2014.
+architecture for the decentralized prognosis problem. Investigating the    [19]  S.-J. Park, “Robust and nonblocking supervisory control of nondeter-
+                                                                                       ministic discrete event systems with communication delay and partial
+reliability issue under other decentralized architectures, e.g., conjunc-                                                                                       observation,” Int. J. Control, vol. 85, no. 1, pp. 58–68, 2012.
+tive architecture [11] or inference-based architecture [24], is also an    [20]  S.-J. Park and K.-H. Cho, “Supervisory control of discrete event systems
+interesting future direction.                                                   with communication delays and partial observations,” Syst. Control Lett.,
+                                                                                             vol. 56, no. 2, pp. 106–112, 2007.
+                                                                               [21] A. Saboori and S. H. Zad, “Robust nonblocking supervisory control
+                    REFERENCES                                       of discrete-event systems under partial observation,” Syst. Control Lett.,
+                                                                                             vol. 55, no. 10, pp. 839–848, 2006.
+ [1]  J. C. Basilio and S. Lafortune, “Robust codiagnosability of discrete event    [22] S. Shu and F. Lin, “Decentralized control of networked discrete event
+     systems,” in Proc. Amer. Control Conf., St. Louis, MO, USA, 2009,        systems  with communication  delays,”  Automatica,  vol.  50,  no.  8,
+     pp. 2202–2209.                                                                pp. 2108–2112, 2014.
+ [2] L. K. Carvalho,  J. C. Basilio, and M. V. Moreira, “Robust diagno-    [23] S. Takai, “Robust prognosability for a set of partially observed discrete
+      sis of discrete event systems against intermittent loss of observations,”         event systems,” Automatica, vol. 51, pp. 123–130, Jan. 2015.
+     Automatica, vol. 48, no. 9, pp. 2068–2078, 2012.                         [24] S. Takai and R. Kumar, “Inference-based decentralized prognosis in
+ [3] C. Cassandras and S. Lafortune, Introduction to Discrete Event Systems,          discrete event systems,” IEEE Trans. Autom. Control, vol. 56, no. 1,
+    2nd ed. New York, NY, USA: Springer, 2008.                                  pp. 165–171, Jan. 2011.
+ [4]  F. Cassez and A. Grastien, “Predictability of event occurrences in timed    [25] S. Takai and R. Kumar, “Distributed failure prognosis of discrete event
+     systems,” in Formal Modeling and Analysis of Timed Systems. Berlin,        systems with bounded-delay communications,” IEEE Trans. Autom.
+    Germany: Springer, 2013, pp. 62–76.                                           Control, vol. 57, no. 5, pp. 1259–1265, May 2012.
+ [5] M. Chang, W. Dong, Y.  Ji, and L. Tong, “On fault predictability in    [26] S. Takai and T. Ushio, “Reliable decentralized supervisory control of
+      stochastic discrete event systems,” Asian  J. Control, vol. 15, no. 5,          discrete event systems,” IEEE Trans. Syst., Man, Cybern. B, Cybern.,
+     pp. 1458–1467, 2013.                                                                vol. 30, no. 5, pp. 661–667, Oct. 2000.
+ [6]  J. Chen and R. Kumar,  “Stochastic  failure  prognosability  of  dis-    [27] S. Takai and  T. Ushio, “Reliable decentralized supervisory control
+      crete event systems,” IEEE Trans. Autom. Control,  vol. 60, no.  6,          for marked language speciﬁcations,” Asian J. Control, vol. 5, no. 1,
+     pp. 1570–1581, Jun. 2015.                                                     pp. 160–167, 2003.
+ [7] H. Cho and  S.  I. Marcus, “On supremal languages of  classes of    [28] T. Yamamoto and S. Takai, “Reliable decentralized diagnosis of discrete
+     sublanguages that arise in supervisor synthesis problems with partial         event systems using the conjunctive architecture,” IEICE Trans. Fund.
+      observation,” Math. Control Signal Syst., vol. 2, no. 1, pp. 47–69, 1989.         Electron. Commun. Comput. Sci., vol. 97, no. 7, pp. 1605–1614, 2014.
+ [8] S. Genc and  S. Lafortune,  “Predictability of event occurrences  in    [29] L. Ye, P. Dague, and F. Nouioua, “Predictability analysis of distributed
+      partially-observed discrete-event systems,” Automatica, vol. 45, no. 2,          discrete event systems,” in Proc. 52nd Conf. Decis. Control, Firenze,
+     pp. 301–311, 2009.                                                                          Italy, 2013, pp. 5009–5015.

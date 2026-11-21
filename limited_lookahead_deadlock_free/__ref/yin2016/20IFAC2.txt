@@ -1,0 +1,420 @@
+             Maximally Permissive Supervisory Control
+                  of Timed Discrete-Event Systems under
+                                               ⋆                          Partial Observation
+
+                             Ziteng Yang ∗Xiang Yin ∗∗Shaoyuan Li ∗∗
+
+                     ∗Department of Computer Science and Engineering, Shanghai Jiao
+                              Tong University, Shanghai 200240, China.
+                        ∗∗Department of Automation, Shanghai Jiao Tong University,
+                           Shanghai 200240, China. (E-mail: yinxiang@sjtu.edu.cn)
+
+
+          Abstract: In this paper, we investigate the supervisory control problem for timed discrete-
+           event systems (TDES) under partial observation. In the timed setting, the system consists
+             of both standard logical events and time event, where the former can be disabled directly
+          by the supervisor  if it is controllable while the latter can only be preempted by forcing the
+           occurrences of forcible events. We consider a general control mechanism where the supervisor
+          can choose which events to force dynamically online at each instant. The design objective is to
+            synthesize a maximally-permissive supervisor to restrict the behavior of the system such that
+           the closed-loop language is within a safe speciﬁcation language. Eﬀective procedure is presented
+            to synthesize such a supervisor. To our knowledge, how to synthesize a maximally-permissive
+            partial-observation supervisor has not been solved for timed DES. We provide a solution to this
+          problem under a general control mechanism.
+
+          Keywords: Timed Discrete Event Systems, Supervisory Control, Partial Observation.
+
+                    1. INTRODUCTION                      et  al. (2017); Rashidinejad et  al. (2018); Pruekprasert
+                                                  and Ushio (2019) considered how to control a TDES in a
+The supervisory control theory (SCT) of Discrete Event   networked environment. State-based control for TDES was
+Systems (DES) is a formal framework for the synthesis   also investigated by Rahnamoon and Wonham (2018). The
+of correct-by-construction control logic for complex au-   authors in Zhang and Cai (2019) studied the supervisor
+tomated systems. In the SCT, one of the central prob-   localization problem for TDES. Also, decentralized control
+lems  is how to synthesize a maximally-permissive safe    of TDES was investigated by Miura and Takai (2018).
+supervisor. Furthermore, we want that the synthesized
+                                                   Based on the original framework of Brandin and Wonham,
+supervisor works in a least-restrictive manner. The super-
+                                                                in Takai and Ushio (2006), a generalized framework for
+visor synthesis problem is particularly challenging in the
+                                                         the control of TDES was proposed. This framework allows
+partial-observation setting as the property of observability
+                                                         the supervisor to choose which events to force dynamically
+is not preserved under union. Many diﬀerent approaches
+                                                            at each instant, where in the original framework events
+have been proposed in the literature to handle this prob-
+                                                          that are forced are “static”. However, in both the original
+lem; see, e.g., Ben Hadj-Alouane et al. (1996); Takai and
+                                                    framework of Brandin and Wonham and the generalized
+Ushio (2003). Particularly, in our recent works (Yin and
+                                                    framework of Takai and Ushio, the maximally-permissive
+Lafortune, 2016a,b; Yin, 2017; Yin and Lafortune, 2017,
+                                                            supervisor synthesis problem has not yet been solved even
+2018), a uniform framework was proposed for synthesizing
+                                                                   for safety speciﬁcations only.
+maximally-permissive partial-observation supervisors.
+                                                          In this paper, we tackle the safe supervisor synthesis
+In many real-world systems, timing information is crucial
+                                                    problem for TDES under the partial-observation setting.
+as the occurrence of an event may be within a designated
+                                               More speciﬁcally, we adopt the general framework of Takai
+time bound. Therefore, in Brandin and Wonham (1994),
+                                                  and Ushio so that the supervisor can choose  forcible
+the framework of timed discrete events systems (TDES)
+                                                           events dynamically online. We propose a new information
+was proposed to capture this temporal speciﬁcation. The
+                                                             structure that captures all safe control decisions, and based
+SCT has also been developed extensively in the timed
+                                                  on such a structure, a maximally-permissive supervisor
+setting; see, e.g., Lin and Wonham (1995); Takai (2000). In
+                                                     can be synthesized. The proposed approach is motivated
+the control of TDES, a new event tick representing a time
+                                                  by our recent work on supervisory control of untimed
+unit is introduced in addition to standard logic events;
+                                        DES (Yin and Lafortune, 2016a,b). However, the control
+such an event cannot be disabled directly and it can only
+                                                   mechanisms of the timed setting and the untimed setting
+be preempted via some forcible events. Recently, Alves
+                                                            are quite diﬀerent as the former also needs to handle
+⋆This work was supported by the National Natural Science Foun-    forcible events appropriately to “control” the time event.
+dation of China (61803259, 61833012) and Shanghai Jiao Tong Uni-   Therefore, new plant and control operators, as well as
+versity Scientiﬁc and Technological Innovation Funds.
+
+their properties, are proposed to handle this issue. To our   Therefore, a supervisor S is deﬁned as a function
+knowledge, how to synthesize a maximally-permissive safe             S : P(L(G)) →2Σact × 2Σfor            (1)
+supervisor in the timed setting was not solved before.
+                                                       such that for any α ∈P(L(G)), S(α) = (Sa(α), Sf(α))
+                                                                satisﬁes the following two conditions
+ 2. PRELIMINARY AND PROBLEM FORMULATION
+                                                       • Σuc ⊆Sa(α); and
+                                                       • Sf(α) ⊆Sa(α) ∩Σfor.2.1 System Model
+                                                 That is, a supervisor should always enable uncontrollable
+A Timed Discrete Event System (TDES) in the framework   events and can only force forcible events that are enabled.
+of Brandin and Wonham is modeled as a deterministic   Event set S(α) satisfying the above two conditions is also
+ﬁnite state automaton                                        referred to an admissible control decision and we denote
+                                                  by Γ the set of all admissible control decisions.           G = (X, Σ, δ, x0),
+where X  is the ﬁnite set of states, Σ is the ﬁnite set of  Then the closed-loop language of TDES G under supervi-
+events, δ : X × Σ →X is partial transition function, x0 ∈   sor S, denoted by L(S/G), is deﬁned recursively as follows:
+X is the initial state. The event set is further partitioned
+                                                       • ϵ ∈L(S/G);
+as Σ := Σact ∪{tick}, where Σact is the set of usual events                                                       • For any s ∈L(S/G) and σ ∈Σ
+in untimed systems and tick is a special event representing
+                                                                                                           ·  if σ ∈Σact, thena “time unit”. Let Σ∗be the set of all ﬁnite strings over Σ
+                                                              sσ ∈L(S/G) ⇔σ ∈EL(G)(s) ∩Sa(P(s))including the empty string ϵ. Then the transition function
+is also extended to δ : X × Σ∗→X in the usual manner;                 ·  if σ = tick, then
+see, e.g., Cassandras and Lafortune (2008). The language             sσ ∈L(S/G) ⇔
+generated by G is deﬁne by L(G) = {s ∈Σ∗: δ(x0, s)!},                [σ ∈EL(G)(s)] ∧[EL(G)(s) ∩Sf(P(s)) = ∅].
+where  ! means “is deﬁned”. We also deﬁne EL(G)(s) :=
+                                              The intuition of the above deﬁnition is as follows. For any{σ ∈Σ : sσ ∈L(G)} as the set of events deﬁned upon the
+                                                       standard event in Σact, it can happen if it is feasible and isoccurrence of string s in G. For any language L ⊆Σ∗, we
+                                                        enabled by S. However, for event tick, it can happen onlydeﬁne L = {s ∈Σ∗: ∃w ∈Σ∗s.t. sw ∈L} as the preﬁx-
+                                               when it is feasible and no feasible events are forced, i.e.,
+closure of L; we call L preﬁx-closed if L = L. Similarly, for
+                                                          event tick is not preempted.
+any state x ∈X, we deﬁne EG(x) := {σ ∈Σ : δ(x, σ)!} as
+the set of events deﬁned at state x ∈X in G.                                                            2.3 Supervisor Synthesis Problem
+
+2.2 Supervisory Control of TDES                     The goal of the supervisor  is to restrict the behavior
+                                                                  of the system such that the closed-loop system satisﬁes
+We assume that event set Σact is partitioned as           some desired property. In this paper, we consider safety
+                                                            as the control objective. Formally, we consider a preﬁx-                    Σact = Σc ˙∪Σuc,
+                                                             closed sub-language K = K ⊆L(G) as the  safety
+where Σc is the set of controllable events and Σuc is the                                                             speciﬁcation. Then the maximally-permissive supervisor
+set of uncontrollable events. That is, we can disable the                                                             synthesis problem that we solve in this paper is formulated
+occurrences of events in Σc. In the timed setting, however,                                                            as follows.
+event tick cannot be disabled directly. Instead, it can be
+                                                    Problem 1. Given a TDES G and a safety speciﬁcationpreempted by forcible events. We denote by Σfor ⊆Σact
+                               K ⊆L(G), ﬁnd a partial-observation supervisor S   :the set of all forcible events. The reader  is referred to
+                                                 P(L(G)) →Γ such thatBrandin and Wonham (1994) for the physical meaning of
+forcible events as well as how a TDES is modeled.            • S is safe, i.e., L(S/G) ⊆K; and
+                                                       • S is maximally-permissive, i.e., for any S′ that is safe,Furthermore, we assume that the system  is  partially-
+                                                  we have L(S/G)̸ ⊂L(S′/G).observed. To this end, event set is also partitioned as
+             Σ = Σo ˙∪Σuo,                       For the sake of simplicity, we assume that the speciﬁcation
+where Σo is the set of observable events and Σuo is the set   language K is recognized by a strict sub-automaton H =
+of unobservable events. The natural projection P  : Σ∗→   (XH, Σ, δH, x0) of G,  i.e., L(H) = K, such that the
+Σ∗o is deﬁned recursively by:                                 following conditions hold:
+                           P(s)σ if σ ∈Σo              • ∀s ∈L(H) : δH(x0, s) = δ(x0, s); and      P(ϵ) = ϵ and P(sσ) =                                 .
+                            P(s)   if σ ∈Σuo             • ∀s ∈L(G) \ L(H) : δ(x0, s) /∈XH.
+Natural projection is also extended to P  : 2Σ∗→2Σ∗o by   Note that this assumption is without loss of generality as
+for any L ⊆Σ∗, we have P(L) := {P(s) : s ∈L}.         we can always reﬁne the state space of H such that the
+                                                     above conditions hold. Therefore, XH ⊆X is essentially
+In this paper, we consider a general class of supervisors for                                                         the set of legal states and a supervisor is safe if and only
+TDES proposed by Takai and Ushio (2006). In this setting,                                                                                           if ∀s ∈L(S/G) : δ(x0, s) ∈XH.
+a supervisor needs to make the following two decisions at
+                                                Remark 2. In some applications, one wants to synthesizeeach instant
+                                                     a supervisor that exactly achieves K. This problem  is
+  • what events need to be enabled; and                    referred to as the supervisor existence problem and it has
+  • what events need to be forced (to preempt tick).      been shown by Takai and Ushio (2006) that controllability
+
+together with weak observability provide necessary and                               o
+suﬃcient conditions for the supervisor existence problem.                       o                      tick                                                                  1     3      5      7
+However, the supervisor synthesis problem considered here
+                                                                                       a
+is more challenging. Partial solutions have been provided                          o     c
+                                                                  0in Takai and Ushio (2006) and Cai et al. (2016), but none of                                                                                   o     tick
+the solutions is maximally permissive. To our knowledge,                   b
+how to synthesize a maximally-permissive safe supervisor                 2  o  4      6   c   8
+has not yet been solved in the timed setting.                                            o
+
+   3. UNOBSERVABLE REACH AND OBSERVABLE      Fig. 1. A TDES G with Σo = {o}, Σc = {c} and Σfor =
+               REACH                                {o}. States 7 and 8 are illegal states.
+                                                      hand, if tick ∈Σuo, then the observable reach is the same
+In this section, we ﬁrst focus on investigating how the   as the untimed setting, while the unobservable reach is
+information about the system, i.e., state estimate, evolves   not. Our deﬁnitions aim to capture both cases in a general
+during the control process in the timed setting.            manner.
+
+Speciﬁcally, when a supervisor controls a TDES, there are                                              The following results establish some of the properties of
+two instants the information about the plant should be                                                         the proposed operators. The ﬁrst lemma shows that the
+updated:                                                         unobservable reach deﬁned indeed yields a reachability
+  • when a new observable event occurs; and                closure.
+  • when a new control decision is issued.            Lemma 5. For any set of states ı ⊆X and any control
+                                                              decision γ ∈Γ, we have URγ(ı) = URγ(URγ(ı)).
+The ﬁrst scenario  is captured by the observable reach
+                                          Lemma 6. For any state x ∈URγ(ı), there  exists adeﬁned as follows.
+                                                               state  x′ ∈  ı and a sequence  of unobservable events
+Deﬁnition 3. (Observable Reach) Let ı ⊆X be a set of                                                     u1u2 . . . um ∈Σ∗uo such that x = δ(x′, u1u2 . . . um) and
+states, γ = (γa, γf) be a control decision that is applied    δ(x′, u1u2 . . . ui) ∈URγ(ı) for any i ≤m.
+currently and σ ∈Σo be a new observable event. Then
+the observable reach of ı upon the occurrence of σ under  The following example illustrates how the observable reach
+control decision γ, where σ ∈γa ∪{tick}, denoted by   and the unobservable reach are computed.
+ORσ(ı  |  γ),  is the set of states that can be reached                                                  Example 7. Let us consider TDES G shown in Figure 1.
+immediately. Formally,                                                       Let ı0 = {0, 1, 2}, i.e., the system is possibly at states 0, 1
+  • If σ ∈Σact, then                                       or 2, and the control decision is γ0 = (Σuc, ∅),  i.e., all
+                                                               controllable events are disabled and no event is forced.
+           ORσ(ı | γ) := {δ(x, σ) ∈X : x ∈ı}.
+                                         When new observable event o ∈Σo occurs, we have
+  • If σ = tick, then                                                ı1 = ORo(ı0  | γ0) = {3, 4}. From state ı1,  if we pick
+    ORσ(ı | γ) := {δ(x, σ) ∈X : x ∈ı ∧EG(x) ∩γf = ∅}.   control decision γ1 = (Σuc ∪{c}, {o}), then we have
+                                                      URγ1(ı1) = {3, 4, 5} since event o is feasible and forced
+Now, suppose that the state estimate of the system  is   at state 4 which preempts event tick. On the other hand,
+ı ⊆X. When the supervisor makes a new control decision     if we pick control decision γ2 = (Σuc ∪{c}, ∅), then we
+γ, the system may reach a set of new states via some   have URγ2(ı1) = {3, 4, 5, 6, 7, 8}.
+unobservable strings; such a set of states  is called the
+unobservable reach. However, unlike the untimed case,                  4. INCLUSIVE CONTROLLER
+where the enablement status of an event is ﬁxed within its
+unobservable reach, the enablement status of event tick is   In this section, we introduce the notion of Inclusive Con-
+dynamic within its unobservable reach in the timed setting    troller (IC) that combines the observable reach and the
+as whether or not it is preempted depends on the existence   unobservable reach in order to describe the entire control
+of a feasible forcible event at that point. Therefore, we   process.
+propose the following new deﬁnition of unobservable reach.
+Deﬁnition 4. (Unobservable Reach) Let ı ⊆X be a set of   4.1 Deﬁnition of the Inclusion Controller
+states and γ = (γa, γf) ∈2Σact ×2Σfor be control decision.
+Then the unobservable reach of  ı under γ, denoted by   Deﬁnition 8. (Inclusive Controller) An inclusive controller
+URγ(ı), is deﬁned recursively as follows:               T w.r.t. G is a 5-tuple
+                                                         T = (QT , Σo, Γ, hT , Q0,T ),  •  ı ⊆URγ(ı);
+  • For any x ∈URγ(ı), σ ∈γa ∩Σuo such that δ(x, σ) =   where
+      x′, we have x′ ∈URγ(ı);                              • QT ⊆2X × Γ is the set of states in T, where each
+  • For any x ∈URγ(ı) such that EG(x) ∩γf =  ∅,        Q-state q is in the form of (ı, γ) = (ı, (γa, γf));
+     δ(x, tick) = x′ and tick ∈Σuo, we have x′ ∈URγ(ı).     • Σo is the set of observable events in G;
+Remark 1. In general, event tick can be either observable     • Γ ⊆2Σact × 2Σfor  is the set of admissible control
+or unobservable depending on whether or not the system        decisions of G;
+has a clock. According to Deﬁnitions 3 and 4, if tick ∈Σo,     • hT  : QT × Σo →2QT  is the partial non-deterministic
+then the unobservable reach is the same as the untimed        transition function from a state to a set of states satis-
+setting, while the observable reach is not. On the other        fying the following constraints: for any q1 = (ı1, γ1) =
+
+      (ı1, (γ1,a, γ1,f)), q2 = (ı2, γ2) = (ı2, (γ2,a, γ2,f)) ∈QT
+    and σ ∈Σo such that q2 ∈hT (q1, σ), we have                        o   {3, 4, 5, 6, 7, 8},({uc, c},{})
+           · σ ∈γ1,a ∪{tick}                                                                                o          o
+                                                                                                       o     o     o
+           · ı2 = URγ2(ORσ(ı1 | γ1))                                                      o   o
+  • Q0,T ⊆QT  is the set of initial states in T, which                 o
+                                                                                                                                                                         {3, 4, 5},({uc, c},{o})
+     satisﬁes the following constraint: for any q = (ı, γ) ∈                               o                          o
+    Q0,T , we have ı = URγ({x0}).                                                             {0, 1, 2},({uc},{})                      o        o
+                                                                                                                             {0, 1, 2},({uc, c},{})                                                        {3, 4},({uc},{})
+A state (ı, γ) in T  is also referred to as an information                  {0, 1, 2},({uc},{o})                      {3, 4, 6},({uc},{})
+state, which captures the following two information. The                {0, 1, 2},({uc, c},{o})         o                      o
+                                                                                                                                        o
+ﬁrst component of ı captures the current-state estimate                                               o
+of the system, i.e., all possible states the system can be
+in currently, and the second component γ captures the                                               o
+current control decision applied. Therefore, a transition
+q2 ∈h(q1, σ) denotes that a new event σ  is observed   Fig. 2. Inclusive Controllers T1 (depicted with both solid
+at state q1 and a new control decision γ2, which is the         lines and dashed lines) and T2 (depict with only solid
+second component of q2,  is issued, which yields a new         lines) w.r.t. G1. For the sake of simplicity, we use uc
+state estimate  ı2 = URγ2(ORσ(ı1   |  γ1)) as the ﬁrst        to denote all uncontrollable events here. Also, the dot
+component of q2. Note that the transition function is non-      on the right hand side of initial states means that
+deterministic in general as the choice of control decision          all states on the two sides of the dot are pairwise
+upon the occurrence of an observable event is not unique       connected.
+and we would like to investigate the eﬀects of all possible                                                         Figure 2, it in fact is the total inclusive controller T (G)
+control decisions in a single structure. For convenience,                                                                   for system G in Figure 1.
+hereafter, for each state q ∈QT , we denote by I(q) its
+state estimate component and denote by C(q) its control                                                            4.2 Properties of the Inclusive Controller
+decision component with C(q) = (Ca(q), Cf(q)).
+In the deﬁnition of the IC, an event σ can occur from   In this subsection, we show that the inclusive controller
+state q only when σ ∈Ca(q) or σ = tick. Moreover, by the   and the transition rules deﬁned indeed give the state
+deﬁnition the observable reach, such an event should also   estimate of the closed-loop control system.
+be feasible from some plant state in I(q). For the purpose                                               As we discussed  earlier, transition function h   : Q ×
+of control, a supervisor should be able to react to all such                                                Σo →2Q is non-deterministic as we may choose diﬀerent
+feasible events. This leads to the concept of completeness.
+                                                             control decisions after the same observation. Therefore, by
+Deﬁnition 9. (Completeness) An inclusive controller T =   incorporating the information of the control decision, the
+(QT , Σo, Γ, hT , Q0,T )  is said to be complete  if, for any   transition function becomes deterministic. To this end, we
+q ∈QT and σ ∈Σo, we have                            deﬁne a control-couple as a pair of an observable event and
+                                                     a control decision in the form of (σ, γ) ∈(Σo × Γ). Then,  • If σ ∈Σact, then
+                                                                   for an inclusive control T, we deﬁne another transition
+       hT (q, σ)! ⇔∃x∈I(q) : [δ(x, σ)!] ∧[σ ∈Ca(q)].       function
+                                                    HT  : Q × (Σo × Γ) →Q
+  • If σ = tick, then                                                            by: for any  q, q′ ∈Q, σ ∈Σo and γ ∈Γ, we have
+    hT (q, σ)! ⇔∃x∈I(q) : [δ(x, σ)!]∧[EG(x)∩Cf(q)=∅].  HT (q, (σ, γ)) = q′ if q′ ∈hT (q, σ) and γ = C(q′). Function
+                                         HT can also be extended to HT  : Q × (Σo × Γ)∗→Q
+As examples, consider G in Figure 1, two complete ICs T1    recursively.
+and T2 w.r.t. G are shown in Figure 2.                                                Now, let S : P(L(G)) →Γ be a supervisor for TDES G and
+Deﬁnition 10. (Subsystem) Given two inclusive controllers  α = σ1 . . . σn ∈P(L(S/G)) be a string of observable events
+Ti =  (QTi, hTi, Σo, Γ, Q0,Ti), i =  1, 2, we say T1  is a   where σi ∈Σo. Then α induces the following sequence of
+subsystem of T2, denoted by T1 ⊑T2, if                     control-couples
+  • Q1 ⊆Q2 and Q0,1 ⊆Q0,2; and                          ξα,S := (σ1, S(σ1))(σ2, S(σ1σ2)) . . . (σn, S(α)) ∈(Σo × Γ)∗
+  • ∀q ∈Q1, γ ∈Γ, hT1(q, γ) ⊆hT2(q, γ).                                                                            (2)
+                                                   Note that the above sequence of control-couples does not
+Recall that the transition function hT is non-deterministic   contain the initial control decision S(ϵ). To encode this
+in general,  i.e., when hT (q, σ)  is deﬁned,  its successor   information, we deﬁne the initial state under S by
+states may not be unique. Note that, in Deﬁnition 8, we                                                                                    q0,S = (URS(ϵ)({x0}), S(ϵ)).            (3)
+just require that any transition in h should satisfy the
+transition constraints; but not all transitions satisfying   Clearly, q0,S  is also an initial state in T (G). Therefore,
+the constraints have to be deﬁned. We call an inclusive   starting from q0,S and by executing ξα,S, we reach state
+controller T  total  if it contains all transitions satisfying   qα,S := HT (q0,S, ξα,S) in the inclusive controller.
+the constraints. We denote by T (G) = (Q, Σo, Γ, h, Q0)   Example 11. Recall the total inclusive controller T1 in Fig-
+the total inclusive controller for G, where we drop the   ure 2. Let us consider a supervisor S that works as follows.
+subscript  for the sake of simplicity. Clearly, the total    Initially, S neither enable nor force any events, and then
+inclusive controller T (G) is complete and for any inclusive   enable event c and force event o after o is observed, i.e.,
+controller T, we have T ⊑T (G). For example, T1 in   S(ϵ) = (Σuc, ∅) and S(o) = (Σuc∪{c}, {o}). Let us consider
+
+α =  o. Then we have q0,S =  ({0, 1, 2}, (Σuc, ∅)) and         CT (q, σ) := {C(q′) ∈Γ : q′ ∈hT (q, σ)}
+qα,S = HT (q0,S, (o, S(o))) = ({3, 4, 5}, (Σuc ∪{c}, {o})).     as the set of control decisions that may be issued upon
+                                                         the occurrence of σ from state q. Then we can relate a
+The following result reveals that such a state reached is
+                                                            supervisor and an inclusive controller with the help of the
+indeed the state estimate of the closed-loop system.
+                                                              following deﬁnition.
+Theorem 12. Let S  : P(L(G)) →Γ be a supervisor for
+                                                       Deﬁnition 16. Given a complete inclusive controller T, aTDES G and α ∈P(L(S/G)) be an observable string.
+                                                            supervisor S is said to be included in T  ifThen we have
+     I(qα,S)={δ(x0, s)∈X : s∈L(S/G) ∧P(s)=α}.          • q0,S ∈Q0,T ; and
+                                                       • for any ασ ∈P(L(S/G)), where α ∈Σ∗o and σ ∈Σo,
+      5. SUPERVISOR SYNTHESIS PROCEDURE          we have S(ασ) ∈CT (HT (q0,S, ξα,S), σ).
+
+                                              The set of all supervisors included in T is denoted by S(T).5.1 All Inclusive Controller for Safety
+
+                                              The following result shows that the AIC-Safe includes all
+By Theorem 12, we know that I(qα,S) essentially captures                                                                 safe supervisors.
+all possible states reachable in the closed-loop system.
+                                                 Theorem 17. A supervisor S is safe iﬀS ∈S(A(G)).Then the following theorem says that, to guarantee safety
+for a supervisor, it suﬃces to make sure that it will not
+                                                            5.3 Extract a Supervior from AIC-Safereach a state whose ﬁrst component contains an illegal
+state.
+                                           By Theorem 17, to synthesize a safe supervisor, it suﬃces
+Theorem 13. Supervisor S is safe if and only if                                                            to “extract” a subsystem from A(G). Speciﬁcally, we want
+         ∀α ∈P(L(S/G)) : I(qα,S) ⊆XH.               to extract a subsystem that enables as many events as
+                                                              possible at each instant. To this end, let q = (ı, (γa, γf)) ∈The above theorem suggests an approach for synthesizing
+                                              2X × Γ be a state in the inclusive controller. We deﬁnea safe controller. In order to maintain safety, it suﬃces
+to make sure that any information state reached in the   Feas(q) =                                             (4)
+inclusive  controller  is  safe. Formally, we say that an                              (σ ∈Σact ∧σ ∈γa) or
+inclusive controller T = (QT , hT , Σo, Γ, Q0,T ) is safe if for    σ ∈Σ : x ∈ı ∧δ(x, σ)! ∧ (σ = tick ∧EG(x) ∩γf =∅)
+any q ∈QT , we have I(q) ⊆XH. Then we deﬁne the All
+                                                            as the set of events that are feasible under control decisionInclusive Controller for Safety (AIC-Safe) as the “largest”
+                                                                (γa, γf) at state ı. Therefore, when comparing the permis-safe inclusive controller as follows.
+                                                               siveness of two control decisions, we should not just com-
+Deﬁnition 14. (All Inclusive Controller for Safety) The                                                        pare these sets directly since some enabled events may not
+all inclusive controller for safety is a complete and safe                                                    be feasible. Instead, we should compare the corresponding
+inclusive controller                                                                 set of feasible events under each control decision.
+          A(G) = (QA, hA, Σo, Γ, Q0,A)
+                                                   Based on the above discuss, we propose the following
+such that, for any complete inclusive controller T that is
+                                                      approach for exacting a subsystem of A(G).
+safe, we have T ⊑A(G).
+                                                       • Initially, we choose an initial state q0 ∈Q0,A that
+The AIC-Safe can be constructed as follows. First, starting        contains the maximum number  of  feasible events
+from all possible initial-states, we expend the entire state-      among all initial states, i.e.,
+space in which all states are subsets of XH. Then, we                                                                            ∀q′0 ∈Q0,A : |Feas(q′0)| ≤|Feas(q0)|.iteratively remove states that violates the completeness
+                                                       • At each state q reached, upon the occurrence ofrequirement, i.e., a state from which some feasible events
+are not deﬁned (in order to guarantee safety). Note that        observable event σ ∈Σo, we choose a successor state
+removing incomplete state may introduce new incomplete          q′ ∈hA(q, σ) that contains the maximum number of
+states; hence this step needs to be performed iteratively         feasible events among all successor states,
+until the resulting subsystem is complete. Such a construc-                ∀q′′ ∈hA(q, σ) : |Feas(q′′)| ≤|Feas(q′)|.
+tion procedure is the same as the untimed case and the     • We repeat the above procedure until all reachable
+reader is referred to Yin and Lafortune (2016b) for more        states are visited (either by a depth-ﬁrst search or
+details. Here, we use an example to illustrate the AIC and       a breath-ﬁrst search) and denote by T ∗⊑A(G) the
+how it is constructed.                                              resulting inclusive controller.
+Example 15. Still, we consider TDES G shown in Figure 1
+                                                                Clearly, T ∗includes a unique supervisor as the successor
+with X \ XH = {7, 8}. Then the inclusive controller T2 in
+                                                               state upon the occurrence of each event is unique, andFigure 2 it is in fact the AIC-Safe A(G) for G. Compared
+                                               we denote by S∗such a supervisor. Then the following
+with the total inclusive controller T1 = T (G) in the same                                                    theorem shows that S∗indeed solves Problem 1.ﬁgure, the dashed-line states and transitions are removed
+since 7, 8 /∈XH. By removing this state, the remaining   Theorem 18. S∗solves Problem 1, i.e., S∗is a maximally-
+structure is already complete, which is the AIC-Safe.        permissive safe supervisor.
+
+5.2 Property of the AIC-Safe                    We illustrate how to synthesize a safe and maximally-
+                                                           permissive supervisor by the following example.
+Let T be an inclusive controller, q ∈QT be a state and   Example 19. Again, we consider our running example. To
+σ ∈Σo be an observable event. We deﬁne                   extract a supervisor from A(G) in Figure 2, we apply the
+
+                        o                                    vation. Discrete Event Dyn. Syst.: Theory Appl., 6(4),
+           {0, 1, 2},({uc, c},{o})           {3, 4, 5},({uc, c},{o})                                                          379–427.
+                                                        Brandin, B. and Wonham, W. (1994). Supervisory control
+                                                                    of timed discrete-event systems. IEEE Trans. Automatic
+                                  o              o
+                                                              Control, 39(2), 329–342.
+                                                            Cai, K., Zhang, R., and Wonham, W. (2016).  Relative
+                                               {3, 4, 6},({uc},{})                 observability and coobservability of timed discrete-event
+                                                            systems. IEEE Trans. Automatic Control, 61(11), 3382–
+                                                             3395.Fig. 3. The IC T3 where the supervisor extracted by our
+                                                        Cassandras, C. and Lafortune, S. (2008). Introduction to    methods from A(G) was uniquely included in.
+                                                              Discrete Event Systems. Springer, 2nd edition.
+                                 o                           Lin, F. and Wonham, W. (1995). Supervisory control of
+                     o         c       o               1     3      5        3’                  timed discrete-event systems under partial observation.
+                   a               o                     IEEE Trans. Automatic Control, 40(3), 558–562.
+                                                       Miura, S. and Takai, S. (2018). Decentralized control of
+               0                                                       timed discrete event systems with conditional decisions
+                b               o
+                                                                     for enforcement of forcible events. In IEEE Conference                             o          tick
+               2  o  4      6        4’                 on Decision and Control, 3956–3961.
+                                o                          Pruekprasert, S. and Ushio, T. (2019). Supervisory control
+                                                                    of communicating timed discrete event systems for state
+Fig. 4. Automaton that generates the closed-loop language     avoidance problem. IEEE Control Systems Letters, 4(1),
+    L(S∗/G).                                             259–264.
+                                                Rahnamoon, S. and Wonham, W. (2018).  State-based
+method mentioned above and thus obtain T3 ⊑A(G)
+                                                                control of timed discrete-event systems. In IEEE Con-
+shown in Figure 3. Initially, for any q ∈Q0, we have
+|Feas(q)| =  1; thus we can choose  ({0, 1, 2}, (Σuc ∪      ference on Decision and Control, 4833–4838.
+                                                          Rashidinejad, A., Reniers, M., and Feng, L. (2018). Super-{c}, {o})) as the initial state. Then after observing o, we
+                                                               visory control of timed discrete-event systems subject
+choose ({3, 4, 5}, (Σuc ∪{c}, {o})) as the successor state.
+                                                              to communication delays and non-ﬁfo observations. InAgain,  if o  is observed, we can choose successor state
+                                                           14th International Workshop on Discrete Event System-
+({3, 4, 6}, (Σuc, ∅)). This results in the inclusive controller
+                                                                                s, 456–463.T ∗shown in Figure 3. Let S∗be the unique supervisor
+                                                            Takai, S. (2000). Robust supervisory control of a class ofincluded in T ∗. The closed-loop language under control
+                                                       timed discrete event systems under partial observation.L(S∗/G) is shown in Figure 4.
+                                                        Systems & Control Letters, 39(4), 267–273.
+Remark 2. Note that solution to Problem 1 is not unique                                                            Takai, S. and Ushio, T. (2003). Eﬀective computation of an
+since for each set of successor states hA(q, σ), there may                                                          Lm(G)-closed, controllable, and observable sublanguage
+have two diﬀerent maximal control decisions such that                                                                   arising  in supervisory  control.   Systems & Control
+|Feas(q)| = |Feas(q′)| but Feas(q)̸ = Feas(q′). Our                                                                    Letters, 49(3), 191–200.
+algorithm just randomly choose a successor state with                                                            Takai, S. and Ushio, T. (2006). A new class of supervisors
+the maximum number  of  feasible events without any                                                                     for timed discrete event systems under partial observa-
+additional criterion.                                                                     tion. Discrete Event Dynamic Systems, 16(2), 257–278.
+                                                         Yin, X. (2017).  Supervisor synthesis for mealy automa-
+                      6. CONCLUSION                                                              ta with output functions: A model transformation ap-
+                                                            proach. IEEE Trans. Automatic Control, 62(5), 2576–
+In  this paper, we solved the problem  of synthesizing                                                             2581.
+maximally-permissive safe supervisors for TDES under                                                         Yin, X. and Lafortune, S. (2016a). Synthesis of maximally
+partial observation. We considered a general setting where                                                             permissive supervisors for partially observed discrete
+the supervisor can choose the set of events to force. We                                                            event systems. IEEE Trans. Automatic Control, 61(5),
+investigate how information evolves in the closed-loop sys-                                                          1239–1254.
+tem in the timed setting. A new automaton containing pos-                                                         Yin, X. and Lafortune,  S. (2016b).  A uniform ap-
+sible safe control decisions called the AIC-safe was deﬁned.                                                         proach for synthesizing property-enforcing supervisors
+We showed how to synthesize a maximally-permissive safe                                                                     for partially-observed discrete-event systems.  IEEE
+supervisor from the AIC-safe. Our results generalize pre-                                                           Trans. Automatic Control, 61(8), 2140–2154.
+vious synthesis techniques from the untimed setting to the                                                         Yin, X. and Lafortune, S. (2017). Synthesis of maximally-
+timed setting. In the future, we plan to investigate the                                                             permissive supervisors for the range control problem.
+non-blocking control problem for TDES.                                              IEEE Trans. Automatic Control, 62(8), 3914–3929.
+                                                         Yin, X. and Lafortune, S. (2018). Synthesis of maximally
+             REFERENCES
+                                                             permissive nonblocking supervisors for the lower bound
+Alves, M., Carvalho, L., and Basilio, J. (2017). Supervisory     containment problem. IEEE Trans. Automatic Control,
+  control of timed networked discrete event systems. In      63(12), 4435–4441.
+  56th IEEE CDC, 4859–4865.                          Zhang, R. and Cai, K. (2019). Supervisor localization of
+Ben Hadj-Alouane, N., Lafortune, S., and Lin, F. (1996).     timed discrete-event systems under partial observation.
+  Centralized and distributed algorithms for on-line syn-    IEEE Trans. Automatic Control.
+  thesis of maximal control policies under partial obser-

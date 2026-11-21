@@ -1,0 +1,551 @@
+2021 60th IEEE Conference on Decision and Control (CDC)
+December 13-15, 2021. Austin, Texas
+
+
+  Supervisory Control for Stabilization under Multiple Local Average
+                          Payoff Constraints
+
+
+                                   Yiding Ji, Xiang Yin, Wei Xiao
+
+
+  Abstract— This work  investigates  stabilization  of  discrete   a heating, ventilation and air-conditioning (HVAC) system
+event systems via supervisory control under a series of quanti-   which is designed to convey a heat transfer ﬂuid to multiple
+tative constraints. Every event in the system model is weighted                                                                          air handlers, providing cooling or heating loads in a building.
+by a vector which represents payoffs of quantitative variables
+                                                                Ultimately, the system should be controlled to operate stably.associated by the event. Multidimensional weight ﬂows are
+generated when events occur successively. The supervisor aims   The primary goals of controllers in an HVAC system are two
+to drive the generated strings to a reach set of target states    fold: to drive/stabilize the system to a well functioning mode
+to  stabilize  the system. Meanwhile,  the supervisor  is  also   and regulate some ﬂows, e.g., air ﬂow and water ﬂow, so as
+responsible for regulating the weight ﬂows so as to guarantee                                                                   to maintain the temperature, moisture and air quality in the
+that at each dimension, the average weight every a certain
+                                                             conditioned spaces. After the initial phase of fast cooling ornumber of events does not fall below a given threshold. Next,
+the formulated supervisory control problem is transformed to a    heating, ﬂows should maintain a relatively stable/steady rate
+two-player game between the supervisor and the environment   without much ﬂuctuation as operation continues, which is
+on a specially deﬁned game structure. Then we specify the    essential for the safe and smooth operation of the system.
+objective of the game and synthesize game winning supervisors,                                                      Here the ﬂow rate is deﬁned as the average payload every
+which turn out to provably solve the proposed problem.
+                                                           a certain number of time unites. The rate should not go  Index Terms— discrete event systems, automata, supervisory
+control, stabilization, local average payoffs                   beyond a predeﬁned range so that the HVAC system may
+                                                              operate safely and smoothly. When there is a potential risk
+                          I. INTRODUCTION                        of violating the range, the controllers should issue commands
+                                                                   to regulate the ﬂows and prevent the violation in advance.
+  Supervisory control is a central theme in the context of
+                                                                  Inspired by the above situation, we investigate supervisory
+discrete event systems (DES). There is a plant under control
+                                                                control for DES stabilization under multiple average payoff
+and a speciﬁcation is given to model the desired behavior
+                                                                  constraints in this paper. We consider a weighted automaton
+of the plant. The supervisor issues control actions to restrict
+                                                    model where each event is associated with a weight vector to
+the behavior of the plant within the speciﬁcation [3], [27].
+                                                                represent all types of resources or payloads. A predeﬁned set
+  Supervisory control theory has been comprehensively dis-
+                                                              of target states indicate completion of important tasks and a
+cussed in various DES models, among which automata and
+                                                        system is stable if all its generated strings visit target states
+Petri nets are most commonly used. Many mechanisms of
+                                                                       after a ﬁnite number of transitions. In addition, a system
+supervisory control have been developed so far: control under
+                                                                              is live  if  it does not terminate after any given number of
+partial observation [31], [32], networked control [24], [35],
+                                                                  events. Supervisors are employed to enforce these properties
+decentralized control [13], [30], control of timed DES [21],
+                                                when necessary. Moreover, the major task of supervisors is
+[34], learning based control [28], [33], compositional con-
+                                                                   to guarantee that the average weight (payoff) over a ﬁxed
+trol [6], [18], robust control [1], [17], online control [15],
+                                                   number of transitions be above a given threshold at each
+[22], supervisory control  for DES with nondeterministic
+                                                        dimension of the system, thus the ﬂows are also “stable”.
+speciﬁcations [25], [29], to name a few. The conventional
+                                                                        Intuitively, the horizon to evaluate the mean weight may be
+framework of qualitative supervisory control is also extended
+                                                                  interpreted as a “window” that rolls when new events occur.
+to quantitative settings, where supervisors are designed to
+                                                        Next we formulate the problem of supervisory control for
+achieve some measures deﬁned over states and transitions.
+                                                                    stabilization under stable-ﬂow constraints and solve  it in
+This topic has drawn considerable attention and been inves-
+                                                           sequence: the qualitative issues are addressed ﬁrst, followed
+tigated under various frameworks, see, e.g., [7], [8], [10],
+                                                    by quantitative ones. At the ﬁrst phase, we introduce window
+[16], [19], [20], [26] for some recent advances.
+                                                             information states to compactly encompass necessary infor-
+  Requirement for stability is ubiquitous in control engi-
+                                                        mation on states and local payoffs under control decisions
+neering applications. As a motivating example, we consider
+                                                      and observations. Based on this concept, window bipartite
+  Second author’s research supported in part by the National Natural    transition system (WBTS) is deﬁned, allowing us to trans-
+Science Foundation of China, under grants 61803259, 61833012.         form the automaton model to a two-player game where the
+  Yiding Ji is with Systems Hub, Hong Kong University of Science and   supervisor plays against the environment. After introducing
+Technology (Guangzhou), Guangzhou, China, also with Department of
+Electronic and Computer Engineering, Hong Kong University of Science    the generic deﬁnition, we construct the largest WBTS that
+and Technology, Kowloon, Hong Kong, China. {jiyiding}@ust.hk   only contains stabilizing and live supervisors. At the second
+  Xiang Yin  is with Department of Automation, Shanghai Jiao Tong   phase, we formulate a B¨uchi manner game [2] on the largest
+University, Shanghai, China. {yinxiang}@sjtu.edu.cn
+  Wei Xiao is with Division of Systems Engineering, Boston University,  WBTS, by taking stable-ﬂow constraints into consideration.
+Boston, Massachusetts, United States. {xiaowei}@bu.edu            In the end, we leverage well established algorithms to syn-
+
+978-1-6654-3658-8/21/$31.00 ©2021 IEEE                    1054
+
+thesize winning supervisors from the game and completely   which is a run by itself. Furthermore, we let r(j,m) stand
+solve the original supervisory control problem.                 for the run fragment starting from xj and ending in xm+1.
+  This work generalizes the framework of stabilization in   A set of states XT ⊆X  is of particular interests and is
+DES [14], [23] and is an extension of our prior works [11],   termed as the target state set. We call the system stable if
+[12] which explore supervisory control under single local    all feasible strings will eventually reach target states. We also
+average payoff constraint. In contrast to [11], we propose a   consider the (weak) liveness property: G is live if ∀s ∈L (G),
+distinct game structure based on window information states   ∃u ∈E, s.t. su ∈L (G), i.e., there is a transition deﬁned out
+and apply a different game theoretic approach to solve the   of any state in G so that every ﬁnite run may be extended
+problem. The setting of this work also differs from the one    to be inﬁnite. Weak liveness is without loss of generality as
+in [12] where supervisory control is studied under partial     it can be relaxed by adding observable self-loops at terminal
+observation. Moreover, the problem in [12] is solved under    states where no active events are deﬁned. When it comes to
+another game framework, namely, safety game. Therefore,    “liveness” in the following context, we mean weak liveness.
+the method in this work is signiﬁcantly different and gener-     The system is controlled by a supervisor which dynami-
+ally incomparable with the ones in [11], [12]. More recently,    cally enables and disables events to achieve the given speciﬁ-
+[9] solves an optimal stabilization problem for stochastic    cation [3]. Formally, a supervisor is a function S : L (G) →Γ.
+DES under a different framework. Our approach  is also   The event set E  is partitioned as E = Ec ∪Euc, where Ec
+inspired by results in algorithmic game theory, especially   and Euc are the set of controllable and uncontrollable events,
+mean payoff games [2], [4]. As far as we know, this work    respectively. A control decision γ ∈2E is admissible if Euc ⊆
+is the ﬁrst one to investigate supervisory control for DES    γ, i.e., no uncontrollable event is disabled. We only consider
+stabilization under multiple local average payoff constraints.   admissible control decisions and let all events be observable
+  The following sections are organized as follows. Section II    in this work. We use S/G to represent the controlled system
+introduces the DES model and some preliminaries of this   under S. Accordingly, we denote by L (S/G) the language
+work. Section  III formulates the stable-ﬂow  stabilization   generated in S/G and Run(S/G) the set of runs in S/G. We
+problem. In Section IV, a game theoretic approach is devel-    call a supervisor S live if the controlled system S/G is live.
+oped to solve the supervisory control problem of Section III.      In this work, supervisors are also employed to stabilize
+Finally we conclude the work in Section V.                   the system. A stabilizing supervisor drives every string in
+                                                                the supervised system to reach target states eventually.
+                        II. SYSTEM MODEL                       Deﬁnition 1 (Stabilizing Supervisor): Given G and target
+                                                                      states XT, a supervisor S is stabilizing if ∀s ∈L (S/G), ∃t ∈
+  We consider a quantitative discrete event system modeled  E∗and Mt ∈N+ such that |t| ≥Mt ⇒f(x0,st) ∈XT.
+by a weighted ﬁnite-state automaton:                                                           Apart from stabilization and liveness, we also consider
+                                                                   quantitative properties of generated weight ﬂows when events
+            G = (X,E, f,x0,ω)
+                                                           occur consecutively in G. Speciﬁcally, we discuss the sta-
+where X is the ﬁnite state space, E is the ﬁnite set of events,    bility of weight ﬂows via local average weights (payoffs)
+ f  : X × E →X  is the partial transition function, x0 ∈X  is   per a limited number of transitions, which differs from the                                                                                                                                                              e1
+the initial state and ω : E →Zk is the k-dimensional weight   asymptotic mean weights in [9], [20]. Given a run r = x1 −→
+                                                                                       e2       en
+function that assigns an integer vector to each event. The    x2 −→··· −→xn+1 in G, its total payoff  is ∑ni=1 ω(ei) and
+vector reﬂects payloads or payoffs of quantitative variables   average payoff  is  1n ∑ni=1 ω(ei). Both types of payoffs are
+associated with the event. Additionally, we say that G is of    vectors when G is multidimensional. Given a vector v ∈Zk,
+dimension k if ω is a k-dimensional function. Given e ∈E,  we also let v(i) be the i-th element in v for 1 ≤i ≤k. We
+we let ω(i)(e) be the i-th element of ω(e). The domain of  f   may imagine that local average payoffs are evaluated within
+can be extended to X × E∗in the standard manner [3] and   a “window”. The weight ﬂows have less ﬂuctuation and are
+we  still denote the extended function by  f. The language    therefore more stable when the local average payoffs always
+generated by G is L (G) = {s ∈E∗: f(x0,s)!} where ! means   remain in an appropriate range. The window size is ﬁxed as
+“is deﬁned”. The function ω is additive and its domain can be   a positive integer N in the following discussion.
+extended to E∗by letting ω(ε) = 0, ω(se) = ω(s)+ω(e) for      Deﬁnition 2 (Stable-Flow Windows): Given G of dimen-
+all s ∈E∗and e ∈E. We denote by W the maximum absolute   sion k, window size N ∈N+ and threshold v ∈Zk, a run x1 −→e1
+                                                                              eN
+value of event weights in G, i.e., W = max max               x2 ··· −→xN+1 in G forms an N-step stable-ﬂow window if                                      e∈E 1≤i≤k|ω(i)(e)|.                                             1                                                 ∀1 ≤j ≤k, ∃1 ≤ℓ≤N such that ℓ∑ℓi=1 ω(j)(ei) ≥v(j).  For simplicity, we write x1 e−→x2 if f(x1,e) = x2 for some                                     A run is an (N-step) stable-ﬂow window if at any dimen-
+x1,x2 ∈X and e ∈E. A run in G is a ﬁnite or inﬁnite sequence                                                                   e1      e2    sion of G, the local average payoff turns to be no less than a
+of alternating                states and events in the form: r = x1 −→x2 −→   threshold within at most N events. In other words, if the local     en
+··· −→xn+1. A run is called initial if it starts from the initial   mean payoff at dimension  j is below v(j), it should be com-
+state of G. We denote by Run(G) and Runin f (G) the set of   pensated before the window reaches its end. The inequality
+runs and inﬁnite runs                       in G, respectively. For index                                         1 ≤i ≤n,    in Deﬁnition 2 is the same as 1ℓ∑i=ℓi=1(ω(j)(ei) −v(j)) ≥0,                      en                                                          e1we call xi ei−→··· −→xn+1 a sufﬁx of r and x1 −→··· ei−→xi+1 a     i.e., we may subtract vector v from each event weight vector
+preﬁx of r. In addition, for indexes  j and m such that 1 ≤j <   and equivalently evaluate whether the mean payoff is above
+                          ej         e j+1      em
+m ≤n, we call xj −→xj+1 −−→··· −→xm+1 a fragment of r,   0 at every dimension. Without loss of generality, we assume
+
+                                                       1055
+
+that v be a zero vector throughout the remainder of the work.    is formed at certain dimension m, i.e., ∑ji=1 ω(m)(ei) ≥0 and
+  The windows are “sliding” when new events occur. It is    ∑j′i=1 ωma(ei) < 0 for all  j′ < j. By some simple derivation,
+reasonable to require that stable-ﬂow windows appear inﬁnite                                                                                               ) ≥0 > ∑j′−1i=1 ω(m)(ei) holds for                                             we know that ∑ji=j′ ω(e(m)ioften so that weight ﬂows remain stable. When the system
+                                                       any  j′ <  j, otherwise  it contradicts with xj being the ﬁrst
+is live and never terminates,  it is tolerable that stable-ﬂow
+                                                              place where a stable-ﬂow window is formed. So any run
+windows begin to appear after the system has been operating                                                          fragment  r(j′, j)  also forms a stable-ﬂow window. This
+for a while. Then we introduce stable-ﬂow inﬁnite runs.
+                                                                  indicates that we are safe to evaluate local average payoffs
+  Deﬁnition 3 (Stable-Flow Inﬁnite Runs): Given G of di-
+                                                      from position  j, thus skip the positions before  j. We call thismension k with set of target states XT  , window size N ∈N+
+                                                           e1      e2          observation as inductive property of stable-ﬂow windows,and zero vector v ∈Zk, we say that r = x1 −→x2 −→··· ∈                                                     which is leveraged in the next section to solve Problem 1.
+Runinf (G) is a stable-ﬂow inﬁnite run if ∃i ≥1 such that                                                      Example 1: We consider a two-dimensional system G in
+∀j ≥i, r(j, j +N) forms a stable-ﬂow window.
+                                                            Figure 2. The event set is partitioned as Ec = {a,b,c} and
+  Note that we only require that stable-ﬂow windows be
+                                                            Euc = {u1,u2,u3,u4,u5}. The set of target states  is XT =
+perpetually formed from certain position xi (not necessarily                                                          {x3,x6} which are marked in blue. The event weight vectors
+the initial state) of the run in Deﬁnition 3. That is, a stable-
+                                                                are drawn next to the corresponding events in the ﬁgure. The
+ﬂow inﬁnite run is independent of its ﬁnite preﬁxes. When
+                                                 window size is set to be N = 3. Apparently, G is not stable
+there are non stable-ﬂow inﬁnite runs in the system, we apply
+                                                          because of the self-loop at x7, which never reaches XT. In
+supervisory control to address the issue.                                           u4                   u3     u4                                                                  addition, x6 −→x1 a−→x4 b−→x5 −→x6 −→x1 a−→x4 b−→x5 ··· is not
+                 III. PROBLEM FORMULATION                                                                                                                                      u4    a−→x4 b−→                                                           a stable-ﬂow inﬁnite run since its fragment x6 −→x1
+  In  this  section, we formulate the key problem  to be    x5 is not a 3-step stable-ﬂow window due to ω(1)(u4) < 0,
+studied: supervisory  control  for DES  stabilization under   ω(2)(u4) < 0, ω(1)(u4a) < 0, ω(2)(u4a) < 0, ω(1)(u4ab) < 0
+stable-ﬂow constraints, which aims to design a supervisor   and ω(2)(u4ab) < 0. Our goal is to solve Problem 1 on G
+for state and weight ﬂow stabilization. Both qualitative and   and this example is used throughout the work.
+quantitative conditions are involved in the problem. Then a
+useful property is introduced, which will contribute to the
+ﬁnal solution of the problem.
+  Problem 1 (Stabilization under Stable-Flow Constraints):
+Given system G of dimension k with set of target states XT
+and window size N ∈N+, design a supervisor S such that:
+(i) S/G is both stable and live; (ii) any inﬁnite run in S/G
+is a stable-ﬂow inﬁnite run.
+  The scenario in Problem 1 is illustrated in Figure 1, where
+the window size is N = 3. The supervisor’s decisions regulate
+the local mean payoffs in every dimension of the system
+within the local horizon and drive the system to target states.
+                                                                                      Fig. 2.  The two-dimensional weighted automaton G in Example 1
+Within the window, we calculate the average payoff over 1,2
+and 3 events to see if the corresponding values are above
+or equal to the threshold. When an event happens at the     IV. A GAME APPROACH FOR SUPERVISOR SYNTHESIS
+current state, the horizon rolls one step ahead to the reached                                                             This section presents a game theoretic approach to solve
+state where the supervisor issues new commands. One open                                                      Problem 1. As an intermediate step, the automaton model
+question is whether we need to evaluate local average payoffs                                                                   in Section  II  is  ﬁrst transformed  to a two-player game
+at every state of a run to determine stable-ﬂow windows.                                                                     structure, where the supervisor plays against the system (aka
+                                                            environment). We introduce window information states as
+                                                                the building block for the game structure termed window
+                                                                    bipartite transition system (WBTS). Then we formulate a
+                                                game with properly deﬁned objectives on a special WBTS.
+                                                                Finally we analyze the game and synthesize the supervisor’s
+                                                        winning strategies which in turn correctly solve Problem 1.
+
+                                                            A. Window Bipartite Transition System
+
+                                                    The critical challenge ahead is to redeﬁne the requirements
+                                                              of Problem 1 and ﬁnd a succinct way to incorporate qualita-
+                                                                       tive and quantitative information for the decision making of
+       Fig. 1.   State stabilization with local mean payoff constraints         players on the game. For this purpose, we have Deﬁnition 4.
+                                                             Deﬁnition 4 (Window Information States): Given G of di-
+                                              e1      e2
+  Remark 1: Given a run r = x1 −→x2 −→···, suppose xj   mension k and ﬁxed window size N, a window information
+with  j ≤N is the ﬁrst position where a stable-ﬂow window    state is a tuple: qw = (x,(cw1 ,cl1),(cw2 ,cl2),··· ,(cwk ,clk)) ∈X ×
+
+                                                       1056
+
+(Z × [0,1,··· ,N])k where x is a state in G and ∀1 ≤i ≤k,    states (Z-states for short) by executing enabled events. For
+cwi  is the weight sum counter and cli  is the window length   a Y-state y, we denote by CT(y) the set of control decisions
+counter for dimension i, respectively.                      deﬁned at y. In essence, we characterize control decisions
+  We denote by Qwd the set of window information states   and event occurrences separately by deﬁning these two types
+whose components include a state from automaton G and   of transitions. Here fyz transitions remember the most recent
+N pairs of “counters”. Given qw ∈Qwd, we use Sta(qw) to    (admissible) decisions of the supervisor .
+stand for the state from G, i.e., Sta(qw) = x. Note that there    On the other hand, fzy transitions are more involved, which
+are exactly k pairs in qw, corresponding to the dimensions    represent the update of reachable states and accumulative
+of G. Speciﬁcally, for a pair (cwi ,cli) in qw, cwi  reﬂects the   payoffs within windows under event occurrences. Our goal
+current weight sum in dimension i when qw is reached, and cli     is to keep track of the remaining window length before a
+represents the remaining length of the window to potentially   nonnegative weight sum is achieved. There are three possible
+achieve a nonnegative weight sum in dimension i from qw.   cases when a newly enabled event e occurs. First, once the
+We call that cwi  is paired with cli and vise versa. The window   weight sum turns nonnegative (within at most N events) at
+length counter cli is no greater than the window size N and   dimension i, we reset the i-th sum to 0 and the i-th window
+we sill specify the range of weight sum counter cwi  later.      length counter to N, respectively. Then we start counting the
+   If we augment window  information  states with con-   weight sum of a new sequence of events from the current
+trol  decisions, we  denote by Qawd ⊆Qwd × Γ  the  set   window information state. Second, if the current weight sum
+of  augmented  window  information  states.  For  qaw =    is still negative and the remaining window length is at least
+(x,(cw1 ,cl1),(cw2 ,cl2),··· ,(cwk ,clk),γ) ∈Qawd, we let Is(qaw) and   1  at dimension  i, we update the  i-th weight counter by
+Ctr(qaw) be the window information state and control de-   adding the  i-th element of the event weight vector ω(e)
+cision in qaw, respectively, so that qaw = (Is(qag),Ctr(qaw)).   and then reduce the i-th window length counter by 1. This
+With a slight abuse of notation, we also denote by Sta(qaw)   implies that it is still possible to achieve a nonnegative weigh
+the state component from G, i.e., Sta(qaw) = x.            sum within N events. Third,  if the current weight sum is
+  Next we formulate a two-player game between the su-   negative and the remaining window length is 0 at certain
+pervisor and the environment. For  this purpose, a game   dimension  i, we set the i-th weight counter as ω(i)(e) and
+arena named window  bipartite transition system (WBTS)    set the i-th window length counter to N −1, i.e., we restart
+is introduced to systematically characterize the update of   counting both the weight sum and the remaining window
+window information states with control decisions and event   length after the i-th window length counter turns 0 with a
+occurrences, after the game is initiated. The generic deﬁni-   negative i-th weight sum counter. Thus, for a pair of counters
+tion is given as follows and a special WBTS is constructed    in a state of a WBTS, the minimum value of the weight
+as the basis for solving Problem 1 afterwards.                counter is −W · N and the maximum value is W where W
+  Deﬁnition 5 (Window Bipartite Transition System (WBTS)):  is the maximum absolute value of event weights mentioned
+A WBTS with respect to G of dimension k and window    in Section  II. Event weight function ω  is inherited from
+size N is a tuple T = (QY,QZ,E,Γ, fyz, fzy,ω,y0) where    G and labels  fzy transitions. Finally, the initial state y0  is
+   • QY ⊆Qwd is the set of window information states;       (x0,(0,N),(0,N))···(0,N)) where all weight counters are set
+   • QZ ⊆Qawd is the set of augmented window information   0 and all length counters are set N before any event occurs.
+      states;                                                 For a state in a WBTS T, if one of its weight sum counters
+   • E is the set of events of G;                                      is negative while its paired window length counter equals 0,
+   • Γ is the set of (admissible) control decisions;                  i.e., the window already reaches its maximum length N, we
+   •  fyz : QY × Γ →QZ  is the transition function from QY    call this state undesirable as it implies that an unstable-ﬂow
+     states to QZ states where for y ∈QY, γ ∈Γ and z ∈QZ,   window is formed. Furthermore, if a state in T contains a
+   we have fyz(y,γ) = z ⇒z = (y,γ);                           target state of G, we name it a target state of T.
+   •  fzy  : QZ × E →QY    is   the   transition  function      In a WBTS, we call a Y-state y terminal  if  it has no
+    from  QZ    states   to  QY    states   where   for   successor states. When no active events are deﬁned at Sta(y)
+     za = (x,(cw1 ,cl1),(cw2 ,cl2),··· ,(cwk ,clk),γ) ∈QZ,  e ∈E    in G, the supervisor is unable to make any control decision
+    and  y = (x′,(˜cw1 , ˜cl1),(˜cw2 , ˜cl2),··· ,(˜cwk , ˜clk)) ∈QgY, we   and y is terminal. If a WBTS has no terminal Y-states, we
+    have fzy(z,e) = y if and only if e ∈γ, x′ = f(x,e) and    call it complete. Additionally, a Z-state is called terminal if
+    one of the following conditions hold:                 no transition is deﬁned out of it as the supervisor disables all
+                                                                  events. Terminal states should be avoided if we are to solve
+      ˜cwi = 0, ˜cli = N if cwi +ω(i)(e) ≥0                     Problem 1, otherwise the supervised system is not live.
+      ˜cwi = cwi +ω(i)(e), ˜cli = cli −1 if cwi +ω(i)(e) < 0,cl ≥1;    When the supervisor and environment take turns to play,
+                                                             runs are generated in a WBTS T and a run is of the form r =
+      ˜cwi = ω(i)(e), ˜cli = N −1 if cwi +ω(i)(e) < 0,cl = 0;                γ1      e1          γn      en
+                                                                y1 −→z1 −→y2 ··· −→zn −→yn+1. We denote by Run(T) and
+   • ω is the k-dimensional event weight function inherited   Runinf (T) the set of runs and inﬁnite runs in T, respectively.
+    from G and labels  fzy transitions;                We also denote by Runy(T) (respectively Runz(T)) the set
+   • y0 = (x0,(0,N),···(0,N)) ∈QY is the initial state.         of runs whose last states are Y-states (respectively Z-states).
+  The supervisor plays from QY states (Y-states for short) by     Example 2: In Figure 3 we present a window bipartite
+making control decisions and the environment plays from QZ    transition system with respect to G in Figure 2. Here we
+
+                                                       1057
+
+use rectangular and round to represent Y-states and Z-states,    is realized by an automaton GT = (QY,E,ξ,y0). We have
+respectively. Control decisions from γ1 to γ8 label transitions   ξ : QY ×E →QY as the transition function where ∀y ∈QY,
+from Y-states to Z-states, and enabled events label transitions   ∀e ∈E: ξ(y,e) = fzy(fyz(y,γ),e) if γ is chosen at y and e ∈γ.
+from Z-states to Y-states. To simplify the graph, we do not    y0 is the initial Y-state of T. The language of the supervised
+draw event weights and omit pairs of weight and window   system is L (ST/G) = L (ST ×G) where × is the standard
+length counters in each state.                                product operation between automata [3].
+  As is seen, the supervisor has two choices γ1 and γ2 at      In a WBTS T, we recursively deﬁne the supervisor’s
+Y-state y0. If γ1 is chosen, then Z-state z1 is reached, where    attractor with respect to a set of states Q in T:
+the environment has two choices: a and u1. When event a
+                                                               AttrTs,0(Q) = Qoccurs from z1, Y-state y1 is reached. Both weight counters
+and window length counters are updated when new states   AttrTs,i+1(Q) = {y ∈QY \AttrTs,i(Q) : ∃y γ−→z s.t. z ∈AttrTs,i(Q)}
+are added. The remaining part of the structure is interpreted
+in a similar manner.                                ∪{z ∈QZ \AttrTs,i(Q) : ∀z e−→y,y ∈AttrTs,i(Q)}
+                                                               AttrTs (Q) = [ AttrTs,i(Q)                                  (1)
+                                                                                 i≥0
+
+                                                  The above deﬁnition indicates that the supervisor is able to
+                                                               take certain actions to reach AttrTs,i(Q) from AttrTs,i+1(Q),
+                                                           while the environment  is forced to enter AttrTs,i(Q) from
+                                                               AttrTs,i+1(Q). Therefore, AttrTs (Q) returns the largest set of
+                                                                      states where Q is reached for sure by the supervisor within
+                                                           a ﬁnite number of  transitions, no matter what strategies
+                                                            taken by the environment. In other words,  it is impossible
+                                                                   for the supervisor to reach Q from states not in AttrTs (Q).
+                                                  The environment’s attractor with respect to Q  is deﬁned
+                                                           analogously and denoted by AttrTe (Q). It is known that the
+                                                                      attractor can be computed in linear time provided the game
+                                                         graph is ﬁnite [2], thus it takes O(n(T)) to compute AttrTs (Q)
+                                                     where n(T) denotes the number of transitions in T.
+                                                        Given two WBTSs T1 = (Q1Y,Q1Z,E,Γ, f yz,1   f zy,ω1,y11      0) and
+                                                             T2 = (Q2Y,Q2Z,E,Γ, f yz,2   f zy,ω2,y22       0), we say T1 is a subgame
+                                                               of T2, denoted by T1 ⊑T2, if Q1Y ⊆Q2Y, Q1Z ⊆Q2Z and for
+                                                                              all y ∈Q1Y, z ∈Q1Z, γ ∈Γ, e ∈E, we have  f yz(y,γ)1   = z ⇒
+                     Fig. 3. A WBTS for Example 2                              f yz(y,γ)2   = z and  f zy(z,e)1   = y ⇒f zy(z,e)2   = y. Given a WBTS
+                                               T and a set of states Q ⊆QY ∪QZ, we denote by T ′ = T ⇂Q
+   Generally, both players make decisions based on their     if T ′ ⊑T and Q is the state space of T ′, i.e., the game on T
+history of observations and decisions and  it  is natural to    is restricted to a subgame with states in Q.
+consider  their  strategies  in a WBTS T. A  supervisor’s                                          Now we are ready to solve Problem 1 in two steps. First
+strategy (control strategy) in T is deﬁned as πs : Runy(T) →Γ  we present Algorithm 1 to construct the biggest complete
+and an environment’s strategy is deﬁned as πe : Runz(T) →  WBTS Tb = (QbY,QbZ,E,Γ, f yz,b   f zy,ω,y0)b         that encloses only
+Eo. Given a control strategy πs and a Y-state y, we deﬁne    stabilizing and live supervisors. Here being the biggest is                           γ1      e1         γn−1         en−1
+Run(πs,y,T) = {y −→z1 −→y2 ··· −−→zn−1 −−→yn : ∀i <    in the graph merging sense,  i.e., for any complete WBTS
+                 γ1      e1          γi−1         ei−1
+n,γi = πs(y −→z1 −→y2 ··· −−→zi−1 −−→yi)} as the set of   T  that encloses only stabilizing and live supervisors, we
+runs starting from y and consistent with πs, i.e., every control   have T ⊑Tb. By building Tb, we address stabilization and
+decision in a run r ∈Run(πs,y) is speciﬁed by πs. Since    liveness issues of Problem 1. Then we formulate a game on
+a control strategy preserves the mechanism of a standard   Tb by taking stable-ﬂow constraints into consideration and
+supervisor in supervisory control theory [3], we will not  we postpone the discussion to the next subsection.
+distinguish between the terms “supervisor” and “supervisor’s     Algorithm 1 recursively builds the state space of Tb in
+strategy (control strategy)” in the following discussion. We   a depth-ﬁrst search manner following Deﬁnition 5. It is an
+denote by πs/G the supervised system under πs and call πs    extension of the algorithm of building the weighted bipartite
+stabilizing live if πs/G is stabilizing/live.                        transition system in [11], where the major discrepancy lies
+  Roughly speaking, a strategy has memory  if the player    in the  state space and  transition functions. We consider
+makes different decisions when the same state is reached   window information states here and the way of deﬁning
+again, otherwise, it is memoryless. The readers may refer to    transition functions  is  different from  [11]. In Procedure
+[2] for more details concerning the memory of strategies.     Extend, we iteratively add window information states to
+   It is possible to explicitly “extract” a unique supervisor    track states and accumulative payoffs within windows. We
+from a complete WBTS T  if a control decision is speciﬁed   denote by Qta and Qaud the set of target states and undesirable
+at each Y-state of T. This supervisor is denoted ST which    states, respectively. Notice that only non-terminal Z-states
+
+                                                       1058
+
+ Algorithm 1: Build the WBTS for supervisor synthesis          “If”: Given a control strategy πs in Tb and for any inﬁnite
+                                                                                                 γ1      e1       γ2      e2
+   Input       : G, N                                        run y1 −→z1 −→y2 −→z2 −→··· consistent with πs, there
+  Output     : Tb = (QbY,QbZ,E,Γ, f yz,b   f zy,ω,y0)b          w.r.t. G         exists n ≥1 such that yn ∈Q′ta and Sta(yn) ∈XT by Algo-
+ 1 QbY = {y0}, QbZ = /0, Qud = /0, Qta = /0;                     rithm 1 which involves computing the supervisor’s attractor
+ 2 Extend(y0,G,N);                                        with respect to target states. Thus XT  is eventually visited
+ 3 while there exist Y-states without successors do           and πs is stabilizing. Besides, πs is also live as every state
+ 4    remove all such Y-states and their predecessor           in Tb has successors so πs/G never terminates.
+       Z-states, take the accessible part;                     Remark 2: Given G of dimension k and window size
+ 5 denote by Tpre the resulting structure and Q′ta the states    N,  the  state  space  of  Tb  is  of  size  O(|X| × ({−W ·
+  from Qta that remain in Tpre, calculate AttrTpres  (Q′ta) ;       N,··· ,−1,0,1,··· ,W} × {0,1,···N})k) + O(|X| × 2|E| ×
+                                           ({−W  · N,··· ,−1,0,1,··· ,W} × {0,1,···N})k) = O(|X| · 6 return Tb = Tpre ⇂AttrTpres  (Q′ta);                                                                          2|E| ·N2k ·W k). The ﬁrst term (respectively second term) on   Procedure: Extend(y,G,N)
+                                                                the left side of the equation represents the maximal possible
+ 7 for γ ∈Γ do
+             b                                         number of Y-states (respectively Z-states) in Tb. The range of
+ 8     z = f yz(y,γ) by Deﬁnition 5;                                                          weight sum counter values is {−W · N,··· ,−1,0,1,··· ,W}
+                        b 9    add y γ−→z to  f yz;                                  and comes from the second paragraph after Deﬁnition 5.
+10       if y ∈Qud then                                    Example 3: We continue Example 1 and build Tb with
+11       Qud = Qud ∪{z};                                     respect to G following Algorithm 1.  It turns out that af-
+12            if z /∈QZ and z is not terminal then                    ter procedure Extend and removal of states by the While
+13         QZ = QZ ∪{z};                                loop of Algorithm  1,  the intermediate window  bipartite
+14                 if Sta(z) ∈XT then                                 transition system Tpre  is exactly the structure in Figure 3.
+15               Qta = Qta ∪{z};                     Two shaded  states  y10 = (x5,(−1,0),(−2,0)) and  z15 =
+16            for e ∈γ do                                  (x5,(−1,0),(−2,0),γ5) in Figure 3 are undesirable since
+                           b17                     y′ = f zy(z,e) by Deﬁnition 5, write down      their weigh counters are negative and window length coun-
+                       y′ as (x′,(c′w1 ,c′l1),(c′w2 ,c′l2),··· ,(c′wk ,c′lk ))       ters are 0 by calculation. Two states y7 and z7 contain a non-
+                                     b18              add z e−→y′ to  f yz;                               target state x7 from G and it is possible for the supervisor
+19                      if y′ /∈QbY then                                to reach these two states from y0. Then by calculating the
+20               QbY = QbY ∪{y′};                           supervisor’s attractor in line 5 of Algorithm 1 and restricting
+21                           if ∃1 ≤i ≤k s.t. c′wi < 0 and               Tpre to  its subgame, we obtain Tb in Figure 4 where the
+                               c′li = N  then                            supervisor is sure to reach target states of G and stabilize
+22                    Qud = Qud ∪{y′};                     the system. Note that any control strategy in Tb is also live
+23                  Extend(y′,G,N);                         as there are no terminal states in Tb.
+
+
+
+
+are added, so the resulting structure after Extend may entail
+terminal Y-states without successors. We prune away such
+Y-states as well as their preceding Z-states in line 4, so
+ that Tpre is complete and supervisors in Tpre are live. After
+removal of states, we calculate the supervisor’s attractor with
+respect to target states remaining in Tpre and return Tb as the
+subgame of Tpre restricted to AttrTpres  (Q′ta). In this manner,
+supervisors in Tb are guaranteed to reach target states Q′ta,
+thus stabilizing. Note that it is possible that the initial state y0
+ is not included in Tb. Then there does not exist a supervisor
+ that stabilizes G from the initial state, so there is no solution
+ to Problem 1. We continue our discussion for supervisor
+synthesis to resolve Problem 1 if y0 is included in Tb.
+  Theorem 1: Given G, a control strategy is stabilizing and
+ live if and only if it is in Tb.
+     Proof: “Only if”: By contradiction. Suppose a control
+ strategy (supervisor) πs is stabilizing and live, but it is not in                              Fig. 4.  Tb for Example 3
+ Tb. There should be a WBTS T such that πs is in T, which
+ further implies that there exists a run consistent with πs such
+                                                             B. Game Winning Supervisor Synthesis that it is not in Tb. If it is the case, the union of T and Tb
+ is strictly larger than Tb in the graph merging sense, which    We have shown that supervisors in Tb are stabilizing and
+ contradicts with Tb being the biggest WBTS.                      live, thus Problem 1 is partially solved. In what follows, we
+
+                                                       1059
+
+consider a game on Tb where the supervisor aims to achieve     Theorem 2 implies that if a supervisor achieves Wsf (Tb)
+the stable-ﬂow window objective and the environment aims   and solves Problem 1 by “eventually always” visiting desir-
+to falsify the objective. Then we prove that winning strategies   able states. Clearly, this is a co-B¨uchi objective, which is the
+of the supervisor result in solutions to Problem 1.             dual of standard B¨uchi objective [2]. Then we may leverage
+  Given a WBTS T, we deﬁne stable-ﬂow windows of T in    the divide and conquer manner algorithm in Section 3.2
+parallel with their counterparts of G:                          of [2] to calculate the (supervisor’s) winning region, a set of
+                               γ1      e1          eaN                          states from which the supervisor achieves Wsf (Tb). The rough
+  Runsf (T) = {r = y1 −→z1 −→y2 ··· −→yN+1 ∈Run(T) :      idea for the procedure of computing the supervisor’s winning
+                         1  ℓ                            region is as follows. We inductively compute increasing over
+  ∀1 ≤t ≤k,∃1 ≤ℓ≤N,  s.t.                                                           approximations of the supervisor’s winning region at each                              ℓ ∑ ω(t)(ei) ≥0}         (2)
+                                   i=1                         round of iteration, “shrink” the game graph by removing
+                                                    eN                                   γ1                                          e1                                                   e2                                                                      states not in the last round’s approximation result before the                              −→···                                                                     is aIt  is obvious that  if y1 −→z1                      −→y2                               −→yN+1
+                                                   e1             e2       eaN   new iteration, then start a new round of computation. The
+stable-ﬂow window in T, then Sta(y1) −→Sta(y2) −→··· −→                                                         approximated winning region is reﬁned at each round and
+Sta(yN+1) is a stable-ﬂow window in G. On the contrary,                                                           guaranteed to converge after a ﬁnite number of iterations [2].    γ1      e1        eN
+y1 −→z1 −→y2 ··· −→yN+1 is called an unstable-ﬂow window     To this end, we restrict the game on Tb to the supervisor’s
+in T  if ∃1 ≤t ≤k, ∀1 ≤ℓ≤N, such that ∑ℓi=1 ω(t)(ei) < 0.    winning region, from which we choose a control decision at
+  Then we consider inﬁnite runs of T and deﬁne stable-ﬂow                                                         each Y-state and synthesize a strategy that provably solves
+window objective for both players as:                                                      Problem 1. Existing algorithms and tools abound for winning
+                           γ1      e1                                      strategy synthesis of B¨uchi manner games, see,  e.g., [5]. Wsf (T) = {r = y1 −→z1 −→y2 ··· ∈Runin f (T) : ∀1 ≤t ≤k,
+                                                             Technical details are omitted here and the readers may refer
+                          1 ℓ−1                                                                   to [5] for a more comprehensive argument. Finally we extract ∃i ≥1 s.t. ∀j ≥i,∃1 ≤ℓ≤N,                                     ω(e(t)j+p) ≥0}       (3)             ∑                               ℓ                                                           a supervisor from the game graph following the argument in                               p=0
+                                                              subsection IV-A as a unique decision has been speciﬁed at                                                                     γ1      e1
+Simple observation shows that  if inﬁnite run y1 −→z1 −→   each Y-state. Notice that the resulting supervisor may have
+     γ2                                           e1             e2
+y2 −→···  is in Wsf (T), then Sta(y1) −→Sta(y2) −→···  is a   memory with respect to the state space of G since different
+stable-ﬂow inﬁnite run in G. The supervisor is said to achieve    control decisions may be issued  at the same state of G
+Wsf (T)  if there exists a control strategy πs such that any   when local average payoffs are considered for the stable-ﬂow
+inﬁnite run consistent with πs is included in Ws f (T).           constraints. We end this section with the following example.
+  We claim that if undesirable states in Tb are not visited     Example 4: We continue the discussion in Example 3 to
+inﬁnitely often under a control strategy, the strategy achieves   synthesize a supervisor which completely solves Problem 1.
+Wsf (Tb) and leads to a supervisor satisfying the stable-ﬂow   Using the platform developed in [5], we obtain a winning
+constraints. Then we leverage results from co-B¨uchi games    strategy of the supervisor, which is indicated by green lines
+to synthesize supervisors and completely solve Problem 1.     in Figure 5 and achieves the stable-ﬂow window objective
+  Theorem 2:  If a control  strategy  in Tb does not  visit   Wsf (T). If the supervisor plays this strategy, then it will not
+undesirable states inﬁnitely often, then  it achieves Wsf (Tb)    visit the shaded states inﬁnitely often. Finally we follow
+and solves Problem 1.                                         the discussion in subsection IV-A and convert the control
+     Proof: Suppose πs is a control strategy in Tb such that    strategy to a supervisor S shown in Figure 6 (the states are
+all inﬁnite runs consistent with πs do not contain inﬁnite   renamed to be consistent with G), which is live and stabilizes
+undesirable states. Then given such a run  r, there exists    the system G in Figure 2 by driving all strings to reach
+a Y-state  yi  in r such  that  all Y-states  after  yi  are not    target states. We may also verify that all inﬁnite runs in S/G
+undesirable. Next, we argue that from any Y-state y j with    are stable-ﬂow inﬁnite runs since stable-ﬂow windows are
+ j ≥i in r, a stable-ﬂow window is formed every N events,   formed every three transitions. The supervisor has memory
+i.e., a nonnegative weight sum is achieved within the next N    as it alternates between enabling and disabling b at state x1.
+events at every dimension. We apply the inductive property
+mentioned at the end of Section III to show this argument.                                                                              V. CONCLUSION
+Assume that yaj  is with cwt = 0 for some dimension 1 ≤
+t ≤k and yaj′  is the next state with cwt = 0 after ygj. From    We extended our prior results to consider a stabilization
+Algorithm 1, we know that weight sum counters of the states   problem by supervisory control, which simultaneously re-
+in Tb will get reset within at most N event occurrences,    quires multiple local mean payoffs fulﬁll some given bounds,
+otherwise an undesirable state will be reached. Since the    for the ﬁrst time in DES. Based on the concept of window
+reset happens immediately after the weight sum counter turns   information states, the stabilization problem was redeﬁned as
+nonnegative,  all sufﬁxes of the run fragment between yaj   a two-player game between the supervisor and the environ-
+and yaj j′ has a nonnegative weight sum. Therefore, for all   ment on a specially built window bipartite transition system.
+ j < j′′ < j′ and dimension t, a stable-ﬂow window is formed.   After analyzing the game and deﬁning proper objectives, we
+Consequently, r is in Ws f (Tb) and the supervisor achieves the   synthesized winning strategies of the supervisor, which were
+stable-ﬂow window objective. Since πs is already stabilizing   then converted to solve our proposed problem. For future
+and live by Theorem 1, it solves Problem 1.               work directions, we will explore more efﬁcient representation
+
+                                                       1060
+
+                                                                              [11] Y. Ji, X. Yin, and S. Lafortune. Local mean payoff supervisory control
+                                                                                          for discrete event systems. IEEE Transactions on Automatic Control,
+                                                                    DOI: 10.1109/TAC.2021.3075186, 2021.
+                                                                              [12] Y. Ji, X. Yin, and W. Xiao. Local mean payoff supervisory control
+                                                                            under partial observation.  In 15th IFAC International Workshop on
+                                                                                   Discrete Event Systems, pages 390–396, 2020.
+                                                                              [13]  J. Komenda and T. Masopust.   Computation of controllable and
+                                                                                coobservable sublanguages in decentralized supervisory control via
+                                                                           communication. Discrete Event Dynamic Systems: Theory and Appli-
+                                                                                         cations, 27(4):585–608, 2017.
+                                                                              [14] R. Kumar, V. Garg, and  S.  I. Marcus.   Language  stability and
+                                                                                                stabilizability of discrete event dynamical systems. SIAM Journal on
+                                                                               Control and Optimization, 31(5):1294–1320, 1993.
+                                                                              [15] Z. Liu, X. Yin, S. Shu, F. Lin, and S. Li. Online supervisory control
+                                                                                    of networked discrete-event systems with control delays. IEEE Trans.
+                                                                      on Automatic Control, DOI: 10.1109/TAC.2021.3080495, 2021.
+                                                                              [16] Z. Ma, M. Zou, J. Zhang, and Z. Li. Design of optimal control se-
+                                                                            quences in petri nets using basis marking analysis. IEEE Transactions
+                                                                      on Automatic Control, DOI: 10.1109/TAC.2021.3106883, 2021.
+                                                                              [17] R. Meira-G´oes, S. Lafortune, and H. Marchand. Synthesis of super-
+                                                                                       visors robust against sensor deception attacks. IEEE Transactions on
+                                                                             Automatic Control, DOI: 10.1109/TAC.2021.3051459, 2021.
+                                                                              [18]  S. Mohajerani, R. Malik, and M. Fabian. Compositional synthesis of
+                                                                                    supervisors in the form of state machines and state maps. Automatica,
+                                                                            76:277–281, 2017.
+   Fig. 5. A winning strategy of the supervisor marked in green lines       [19] V. Pantelic and M. Lawford. Optimal supervisory control of probabilis-
+                                                                                                        tic discrete event systems. IEEE Transactions on Automatic Control,
+                                                                             57(5):1110–1124, 2012.
+                                                                              [20]  S. Pruekprasert, T. Ushio, and T. Kanazawa. Quantitative supervisory
+                                                                                      control game  for  discrete event systems.  IEEE Transactions on
+                                                                             Automatic Control, 61(10):2987–3000, 2016.
+                                                                              [21] A. Rashidinejad, M. Reniers, and L. Feng.  Supervisory control of
+                                                                            timed discrete-event systems subject to communication delays and
+                                                                      non-FIFO observations.  In 14th IFAC International Workshop on
+                                                                                   Discrete Event Systems., pages 456–463, 2018.
+                                                                              [22] A. Sakakibara and T. Ushi. On-line permissive supervisory control of
+                                                                                          discrete event systems for scLTL speciﬁcations. IEEE Control Systems
+                 Fig. 6. A supervisor solving Problem 1
+                                                                                            Letters, 4(3):530–535, 2020.
+                                                                              [23] K. W. Schmidt and C. Breindl. A framework for state attraction of
+                                                                                          discrete event systems under partial observation. Information Sciences,
+of the game structure and extend the framework of local         281:265–280, 2014.
+                                                                              [24]  S. Shu and F. Lin. Supervisor synthesis for networked discrete event
+average payoff supervisory control into stochastic settings.          systems with communication delays. IEEE Transactions on Automatic
+                                                                                    Control, 60(8):2183–2188, 2015.
+                 REFERENCES                                 [25]  S. Takai. Synthesis of maximally permissive supervisors for nondeter-
+                                                                                      ministic discrete event systems with nondeterministic speciﬁcations.
+ [1] M. V. S. Alves, J. C. Basilio, A. E. C. da Cunha, L. K. Carvalho,        IEEE Transactions on Automatic Control, 66(7):3197 – 3204, 2021.
+     and M. V. Moreira.  Robust supervisory control of discrete event    [26] B. J. C. van Putten, B. van der Sanden, M. Reniers, J. Voeten, and
+     systems against intermittent loss of observations. International Journal         R. Schiffelers.  Supervisor synthesis and throughput optimization of
+      of Control, pages 1–13, 2019.                                                     partially-controllable manufacturing systems. Discrete Event Dynamic
+ [2] K. R. Apt and E. Gr¨adel.  Lectures in game theory for computer         Systems:Theory and Applications, 31:103–135, 2020.
+      scientists. Cambridge University Press, 2011.                            [27] W. M. Wonham and K. Cai.  Supervisory control of discrete-event
+ [3] C. G. Cassandras and S. Lafortune.  Introduction to discrete event          systems. Springer, 2019.
+     systems – 2nd Edition. Springer, 2008.                                  [28] B. Wu, X. Zhang, and H. Lin.  Permissive supervisor synthesis for
+ [4] K. Chatterjee, L. Doyen, M. Randour, and J.-F. Raskin.  Looking        Markov decision processes through learning. IEEE Transactions on
+      at mean-payoff and total-payoff through windows.  Information and         Automatic Control, 64(8):3332 – 3338, 2019.
+     Computation, 242:25–52, 2015.                                         [29] X.  Yin.   Supervisor  synthesis  for Mealy automata with  output
+ [5] C.-H. Cheng, A. Knoll, M. Luttenberger, and C. Buckl.  Gavs+:          functions: A model transformation approach. IEEE Transactions on
+    An open platform for the research of algorithmic game solving.  In         Automatic Control, 62(5):2576–2581, 2017.
+      International Conference on Tools and Algorithms for the Construction    [30] X. Yin and S. Lafortune.  Decentralized supervisory control with
+     and Analysis of Systems, pages 258–261, 2011.                                intersection-based  architecture.  IEEE Transactions on Automatic
+ [6] D. A. Ciolek, V. Braberman, N. DIppolito, S. Sardi˜na, and S. Uchi-          Control, 61(11):3644–3650, 2016.
+       tel.  Compositional supervisory control via reactive synthesis and    [31] X. Yin and S. Lafortune. Synthesis of maximally permissive supervi-
+     automated  planning.   IEEE  Transactions on Automatic  Control,          sors for partially-observed discrete-event systems. IEEE Transactions
+     65(8):3502–3516, 2020.                                             on Automatic Control, 61(5):1239–1254, 2016.
+ [7]  F. Hagebring and B. Lennartson. Time-optimal control of large-scale    [32] X. Yin and S. Lafortune.  A uniform approach for synthesizing
+     systems of systems using compositional optimization. Discrete Event          property-enforcing supervisors for partially-observed discrete-event
+    Dynamic Systems:Theory and Applications, 29(3):411–443, 2019.             systems. IEEE Trans. on Automatic Control, 61(8):2140–2154, 2016.
+ [8] X. Han, Z. Chen, and R. Su.  Synthesis of minimally restrictive    [33] H. Zhang, L. Feng, and Z. Li. A learning-based synthesis approach to
+     optimal stability-enforcing supervisors for nondeterministic discrete          the supremal nonblocking supervisor of discrete-event systems. IEEE
+     event systems. Systems & Control Letters, 123:33–39, 2019.                  Transactions on Automatic Control, 63(10):3345–3360, 2018.
+ [9] Y. Ji and X. Yin. Optimal stabilization of discrete event systems with    [34] R. Zhang, K. Cai, Y. Gan, Z. Wang, and W. M. Wonham. Supervision
+     guaranteed worst cost.  In 21st IFAC World Congress, pages 1741–           localization of timed discrete-event systems. Automatica, 49(9):2786–
+     1746, 2020.                                                             2794, 2013.
+[10] Y.  Ji, X. Yin, and S. Lafortune.  Optimal supervisory control with    [35] Y. Zhu, L. Lin, S. Ware, and R. Su. Supervisor synthesis for networked
+    mean payoff objectives and under partial observation.  Automatica,           discrete event systems with communication delays and lossy channels.
+     123:109359, 2021.                                                            In 58th IEEE Conf. on Decision and Control, pages 6730–6735, 2019.
+
+
+                                                       1061

@@ -1,0 +1,391 @@
+2019 IEEE 58th Conference on Decision and Control (CDC)
+Palais des Congrès et des Expositions Nice Acropolis
+Nice, France, December 11-13, 2019
+
+  Abstraction-Based Synthesis of Opacity-Enforcing Controllers using
+                   Alternating Simulation Relations
+
+
+                       Junyao Hou, Xiang Yin, Shaoyuan Li and Majid Zamani
+
+
+  Abstract— Opacity is an important information-ﬂow security     Most of the existing works on opacity-enforcing controller
+property that captures the plausible deniability for some “se-    synthesis are based on the original model of the system.
+cret” of a system. In this paper, we investigate the problem                                                       However, in many real-world applications, the size of the
+of synthesizing  controllers that enforce opacity  for labeled
+                                                        system is very large, which makes synthesizing controller-transition  systems  (LTS). Most  of  the  existing works on
+synthesis  of opacity-enforcing controllers are based on the    s using original models computationally very challenging.
+original system model, which may contain a large number of   Therefore, one must look into ﬁnite abstractions of such
+states. To mitigate the complexity of the controller synthesis   systems to mitigate the synthesis complexity. In the context
+procedure, we propose an  abstraction-based approach  for                                                              of DES,  several  abstraction-based techniques have been
+controller synthesis. Speciﬁcally, we propose notion of opacity-
+                                                         proposed very recently for the purpose of verifying opacity;preserving alternating (bi)simulation relation for the purpose of
+abstraction. We show that,  if the abstract system is opacity-    see, e.g., [16]–[21]. However, these abstraction techniques
+preserving alternatingly simulated by the original system which    are not directly applicable for the purpose of synthesis. In
+may be signiﬁcantly smaller, then we can synthesize an opacity-    [16], the authors proposed an abstraction-based approach for
+enforcing controller based on the abstract system and then                                                              synthesizing edit functions to enforce opacity. However, an
+reﬁne it back to a controller enforcing opacity of the original
+                                                                     edit function can only change the external behavior of thesystem. We investigate both initial-state opacity and inﬁnite-
+step opacity. We also show the effectiveness of the proposed   system, while a controller can restrict the internal behavior
+approach by a set of examples.                                 of the system,
+                                                                 In this paper, we investigate the abstraction-based syn-
+                          I. INTRODUCTION
+                                                                     thesis of opacity-enforcing controllers. Speciﬁcally, we use
+  Opacity  is an information-ﬂow property arising in the    labeled transitions systems (LTSs), which is a fundamental
+security analysis of cyber-physical systems. As a conﬁden-   model for the veriﬁcation and control of hybrid systems, as
+tiality property, opacity describes the plausible deniability of    the underlying model of the system. We employ the notion
+the system’s secret in the presence of an intruder, modeled   of alternating (bi)simulation relation to connect original
+as a passive observer,  that  is potentially malicious. The   systems with abstract ones. This notion has been shown to
+concept of opacity was originally introduced in the computer   be very suitable for computing symbolic models of control
+science literature [1]; later it was extended to discrete-event   systems  [22],  [23]. However,  the  standard  deﬁnition  of
+systems (DES) modeled by transition systems [2]. Due to its    alternating (bi)simulation relation does not preserve opacity.
+importance, opacity has drawn considerable attention in the    We propose a new concept of opacity-preserving alter-
+DES literature in the past years; see, e.g., [3]–[11].            nating (bi)simulation relation. In particular, we show that,
+  In many situations, the original system may not be opaque     if there exists an opacity-preserving alternating simulation
+directly. Therefore,  it  is desirable to design a controller    relation from the abstract system to the original one, then
+(or a supervisor) that restricts the behavior of the system  we can synthesize an opacity-enforcing controller based on
+such that the closed-loop system under control is opaque.    the abstraction ﬁrst and then reﬁne  it back to the original
+This problem is referred to as the opacity-enforcing control   system to enforce opacity. We investigate this notion for both
+synthesis problem and has also drawn many attentions in    initial-state opacity and inﬁnite-step opacity. Furthermore,
+the literature [12]–[15]. For example, in [12], the authors  we show that if there exists an opacity-preserving alternating
+investigated the scenario where the intruder’s observation is   bisimulation relation between the abstract system and the
+a subset of the controller’s observation. In [15], the authors    original one, then the opacity synthesis problem is solvable
+dropped the assumption on the observation of the intruder but    for the original system if and only if  it is solvable for the
+assumed that the intruder does not know the implementation    abstract one.
+of the controller.
+                                                                                           II. SYSTEM MODEL AND OPACITY
+  This work was supported by the National Natural Science Foundation of
+China (61803259, 61833012).                                      A. Preliminaries
+   J.  Hou,  X.  Yin  S.  Li  are  with  Department  of  Automation      In this paper, we consider a system modeled by a labeled
+and  Key  Laboratory  of  System  Control  and  Information  Process-
+ing, Shanghai  Jiao Tong  University, Shanghai 200240, China. E-mail:    transition system (LTS)
+{houjunyao,yinxiang,syli}@sjtu.edu.cn.                   -
+  M. Zamani  is with the Computer Science Department, University of                 (X, X0, U,           , Y, H),
+Colorado Boulder, CO 80309, USA. M. Zamani is also with the Computer
+Science Department, Ludwig Maximilian University of Munich, 80539   where X is a ﬁnite set of states, X0 ⊆X is the set of initial                                          -Munich, Germany. Email: majid.zamani@colorado.edu.          states, U  is a ﬁnite set of inputs,    ⊆X × U × X
+
+978-1-7281-1397-5/19/$31.00 ©2019 IEEE                    7653
+
+is a transition relation, Y  is a ﬁnite set of outputs, and H :
+X →Y  is an output mapping. For the sake of simplicity,
+                 -      u-we also denote a transition (x, u, x′) ∈      by x       x′,
+where we say that x′ is a u-successor, or simply successor,
+of x. Note that the u-successor is not unique in general as the
+transition relation is non-deterministic. For each state x ∈X,                                           (a) T2
+we denote by U(x) the set of all inputs deﬁned at x, i.e.,
+                       u-U(x) = {u ∈U  : ∃x′ ∈X s.t. x        x′}. We denote
+by U ∗the set of all ﬁnite sequences of inputs including the
+empty sequence ϵ; sets X∗and Y ∗are deﬁned analogously.
+We assume that the system investigated in this paper is non-
+blocking, i.e., ∀x ∈X : U(x)̸ = ∅.                                                        (b) T1                           (c) Tc for T1
+ A (ﬁnite) internal behavior generated from state x ∈X     Fig. 1.  T1 ⪯IOPAS  T2. Both T1 and T2 are not initial-state opaque, but
+under input sequence u1 · · · un ∈U ∗is a sequence of    both can be enforced to be opaque.
+             u1-     u2-      un-
+transition x0      x1           · · ·       xn, where x0 = x.                u′1-       u′2-         u′n-                                                                      x′0        x′1            · · ·        x′n such that H(xi) =Note that the internal behavior generated may not be unique
+                                                     H(x′i), ∀i = 0, 1, . . . , n;under the same input as the system is non-deterministic in
+                                                                  •  inﬁnite-step opaque  if for any x0 ∈X0 and ﬁnite
+general. Then the external behavior of the above internal                                                                u1-     u2-     un-
+                                                             sequence x0       x1            · · ·      xn such thatbehavior is a sequence of outputs H(x0)H(x1) · · · H(xn) ∈
+Y ∗. We only consider ﬁnite behaviors throughout the paper.       xk ∈S for some k = 0, . . . n, there exist x′0 ∈X0 and
+               -                                                             u′1-       u′2-         u′n-  Let Ta =  (Xa, Xa0, Ua,              , Y, Ha) and Tb =        ﬁnite sequence x′0        x′1            · · ·        x′n such
+                                a
+                                                                           that H(xi) = H(x′i), ∀i = 0, 1, . . . , n and x′k /∈S.(Xb, Xb0, Ub,                                , Y, Hb) be two LTSs with the same          b-                                                                           Intuitively, initial-state opacity requires that the intruder
+output set. Let I ⊆Xa×Xb×Ua×Ub be an interconnection
+                                                        can never determine that the system was initialized from a
+relation such that ∀(xa, xb) ∈πX(I)  : H(xa) = H(xb),
+                                                                   secret state based on the external behavior, while inﬁnite-
+where πX(·) denotes the projection to Xa × Xb. The com-
+                                                                 step opacity requires that the intruder can never determine
+position of Ta and Tb with interconnection relation I is a
+                                                                     that the system was at a secret state at any speciﬁc instant.
+new LTS
+                                                                   Clearly, inﬁnite-step opacity is strictly stronger than initial-
+      Ta ×I Tb = (Xab, Xab0, Uab,           , Y, Hab),            state opacity.                                   ab-
+                                                      Example 1: Let    us    consider   LTS   T1    =
+                                    -where Xab =  πX(I), Xab0 =  Xab ∩(Xa0 × Xb0),                                                      (X1, X1,0, S1, U1,                                                                                                                                       , Y, H1) shown  in  Fig.  1(b),
+Uab = Ua × Ub, Hab((xa, xb)) = Ha(xa) = Hb(xb)                           1
+                                                     where X1 =  {x1,0, x1,1, x1,2, x1,3}, U1 =  {a, b, c} and                (ua,ub)-                     ua
+and (xa, xb)                                                 x′a; and  (ii)  Y = {1, 2}. The output mapping is speciﬁed by the value                 ab                       (x′a, x′b)  if (i) xa  a-
+xb          x′b; and (iii) (xa, xb, ua, ub) ∈I. The subscript I    associated with each state. An initial state is marked by a     ubb-
+                                                               sourceless arrow and we mark a secret state by red color,will be dropped when it is clear from the context.
+                                                                                        i.e., X1,0 = {x1,0, x1,2} and S1 = {x1,0}.
+B. Opacity                                                          Clearly, system T1 is not initial-state opaque. For example,
+  In this paper, we consider internal behaviors as the infor-     if output 1 occurs twice successively, then the intruder knows
+mation available to the system, while external behaviors are   immediately that the system must start from secret state x1,0.
+considered as the information available to the outside of the   Therefore, T1 is also not inﬁnite-step opaque.
+system (for example, an intruder). That is, the information of                                                                                    III. OPACITY-ENFORCING CONTROLLERS
+the system is released by the output mapping H : X →Y .
+                                                            A. Feedback Composition  In many applications, the system may have some “secret”
+that does not want to be revealed via the external behavior.    When an LTS T does not satisfy some property,  e.g.,
+We adopt a state-based formulation of secret. Speciﬁcally, we    opacity, we can synthesize a controller for T such that the
+assume that S ⊆X is a set of secret states, and hereafter,   closed-loop system meets the speciﬁcation. There are several
+                    -we write an LTS in the form of (X, X0, S, U,          , Y, H).    (equivalent) deﬁnitions for controllers in the literature. In this
+Then opacity captures the plausible deniability of the sys-    paper, we adopt the deﬁnition of controller in [24], in which
+tem’s secret under the information leakage. In this paper,   a controller is considered also as a system that is composable
+we discuss two important types of opacity called initial-state    to the original one with alternating simulation relation.
+opacity and inﬁnite-step opacity.                               Deﬁnition 2: (Alternating Simulation Relation) Let Ta =
+                                                                                                                                                                                    ,                                                                                                                            , Y, Ha) and Tb = (Xb, Xb0, Ub,  Deﬁnition 1: Let T = (X, X0, S, U,  -, Y, H) be an   (Xa, Xa0, Ua,  a-                                                                                     b-
+LTS with secret states. We say that T is                     Y, Hb) be two LTSs with the same output set. A relation
+  •  initial-state opaque  if  for any x0 ∈X0 ∩S and  R ⊆Xa ×Xb is said to be an alternating simulation relation
+                   u1-                          u2-                                  un-                                                                  · · ·     ﬁnite sequence x0                            x1                                                   xn,   from Ta to Tb if the following conditions hold:
+     there  exist  x′0 ∈ X0 \ S  and  a  ﬁnite  sequence     1) ∀xa0 ∈Xa0, ∃xb0 ∈Xb0 : (xa0, xb0) ∈R;
+
+                                                       7654
+
+  2) ∀(xa, xb) ∈R : Ha(xa) = Hb(xb);                      B. Abstraction and Controller Reﬁnement
+  3) ∀(xa, xb) ∈R, ∀ua ∈Ua(xa), ∃ub ∈Ub(xb) such that     The opacity-enforcing  control problem considered has
+          ub-         ua-
+    ∀xb       x′b, ∃xa       x′a : (x′a, x′b) ∈R.               already been solved in the literature [12]–[15]; the reader
+                                                                              is referred to these works for detailed synthesis algorithms.We say that Ta  is alternatingly simulated by Tb  (or Tb
+                                                       However, the computation complexity is still a big burdenalternatingly simulates Ta), denoted by Ta ⪯AS Tb, if there
+                                                when the size of the original system is very large. To mitigateexists an alternating simulation relation from Ta to Tb.
+                                                             complexity, a natural approach is to construct an abstract
+  An alternating simulation relation R ⊆Xa × Xb from
+                                                        system for the purpose of synthesis.
+Ta to Tb can also be extended to an interconnection relation
+                                                                                        It is well-known that alternating simulation relations canRe ⊆Xa×Xb×Ua×Ub deﬁned by: (xa, xb, ua, ub)∈Re if
+                                                              serve as an abstraction  relation for control synthesis by
+  (i) (xa, xb) ∈R; and                                       capturing control non-determinism [22]. This is formalized
+  (ii) ua ∈Ua(xa), ub ∈Ub(xb); and                      by the following result.
+          ub-         ua-
+ (iii) ∀xb       x′b, ∃xa       x′a : (x′a, x′b) ∈R.                 Proposition 1:  [24] Let T1, T2 and Tc be systems with
+Intuitively, Re  explicitly speciﬁes which inputs we need    the same output set. Suppose that Tc is feedback composable
+                                                           with T1 under alternating simulation relation Rc1 ⊆Xc×X1.to choose in order to maintain the alternating simulation
+                                                                              If there exists an alternating simulation relation R12 ⊆X1 ×relation.
+                                          X2 from T1 to T2, then Tc ×F T1 is feedback composable   If Ta ⪯AS Tb, then we can consider Ta as a controller
+                                                           with T2 under alternating simulation relation deﬁned by:for Tb if Ta ⪯AS Tb. Speciﬁcally, assume that Ta × Tb is at
+state (xa, xb) ∈R. First, controller Ta offers an input ua ∈                     ((xc, x1), x2)          (xc, x1) ∈Rc1
+                                                              R(c1)2 =Ua(xa); this input is then transferred to Tb as a matching           ∈(Xc × X1) × X2   and  (x1, x2) ∈R12
+input ub ∈Ub(xb) via the interconnection relation Re. Due                                                                (1)
+to the non-determinism, Tb may go to any successor of ub.      Proposition 1 essentially says that, if T1 ⪯AS T2, then any
+Once Tb measures the successor state, Ta will update  its    controller Tc designed for T1 can be reﬁned to a controller
+state by matching the successor in Tb, and then offer a new    for T2. We denote by Tref = Tc ×F T1 the reﬁned controller
+input, and so forth. The above discussion is summarize by   with the interconnection relation deﬁned in Equation (1). In
+the following deﬁnition.                                            particular, the reﬁned controller has the following property
+  Deﬁnition 3: (Feedback Composition) An LTS Tc is said                                                                             Tref × T2 ⪯S Tc × T1,                (2)
+to be feedback composable with an LTS T  if there exists an
+alternating simulation relation R from Tc to T. When Tc is   where ⪯S denotes the standard simulation relation [24].
+feedback composable with T, the feedback composition of   Therefore, we say that T1 is an abstraction of T2, if T1 ⪯AS
+Tc and T is given by                                        T2. Throughout the paper, we denote the original system by
+                                                     T2 and the abstract system is denoted by T1.
+  Tc ×F T = (Xc × X, Xc0 × X, Uc × U,           , Y, H),       However, alternating simulation relation does not neces-                             F-
+                                                                      sarily preserve the enforcement of opacity. Therefore, we
+where the interconnection relation F = Re is the extended    are interested in ﬁnding a new type of opacity preserving
+alternating simulation relation. For the sake of simplicity,    alternating simulation relation, so that  it can be applied to
+we still denote the output mapping by H as we always have    the opacity-enforcing control problem.
+H×F ((xc, x)) = H(x).                                                             IV. INITIAL-STATE OPACITY PRESERVING ALTERNATING
+  Therefore, we refer to Tc as a controller for T  if  it is                                                             SIMULATION RELATION
+feedback composable. Furthermore, we require that Tc ×F
+                                                                 In this section, we propose the initial-state opacity pre-T should also be non-blocking. In this paper, our interest
+                                                              serving (InitSOP) alternating simulation relation. Speciﬁcal-is to design a controller Tc for T such that Tc ×F T  is
+                                                                                 ly, we want that the new relation from T1 to T2 satisﬁes theopaque. More speciﬁcally, we say that Tc enforces initial-
+                                                             followings requirements:state opacity for T  if for any (xc0, x0) ∈Xc0 × (X0 ∩S)
+and any ﬁnite sequence                                          •  it is still an alternating simulation relation, so that con-
+                                                                                 trol non-determinism can be captured in the abstraction;
+           (u1c,u1)-                                (u2c,u2)-                                           (unc,un)-                                                      · · ·(x0c, x0)                  (x1c, x1)                                                (xnc, xn),      • enforcing opacity for T1 implies the enforcement of
+         F            F         F                      opacity for T2 after controller reﬁnement.
+there exist x′0 ∈X0 \ S and a ﬁnite sequence              To this end, we propose the following deﬁnition.
+                                                             Deﬁnition 4: (InitSOP       Alternating      Simulation
+                      u′1-       u′2-        u′n-                     Relation)  Let  T1,  T2  be  two  LTSs,  where  Ti  =              x′0       x′1           · · ·       x′n                 -
+                                                         (Xi, Xi,0, Si, Ui,               , Y, Hi), i =  1, 2. A  relation
+                                                                                                                            i
+such that H(xi) = H(x′i), ∀i = 0, 1, . . . , n. That Tc enforces  R ⊆ X1 × X2  is  said  to be an InitSOP  alternating
+inﬁnite-step opacity is deﬁned analogously. Then the Opacity   simulation relation from T1 to T2 if
+Enforcing Control Problem requires to synthesize a controller     1) a) ∀x1,0 ∈X1,0, ∃x2,0 ∈X2,0 : (x1,0, x2,0) ∈R;
+Tc for T that enforces (initial-state or inﬁnite-step) opacity.        b) ∀x1,0 ∈X1,0 \ S1, ∃x2,0 ∈X2,0 \ S2 : (x1,0, x2,0)∈R;
+
+                                                       7655
+
+    c) ∀x2,0 ∈X2,0∩S2, ∃x1,0 ∈X1,0∩S1 : (x1,0, x2,0)∈R;
+  2) ∀(x1, x2) ∈R : H1(x1) = H2(x2);
+  3) for any (x1, x2) ∈R, we have
+    a) ∀u1 ∈U1(x1), ∃u2 ∈U2(x2), ∀x2 u2-x′2, ∃x1 u1-x′1
+       such that (x′1, x′2) ∈R;                                                                        (a) T2                            (b) T1
+            u1-         u2-    b) ∀x1       x′1, ∃x2       x′2 such that (x′1, x′2) ∈R.
+We say that T1 is InitSOP alternatingly simulated by T2 (or
+T2 InitSOP alternatingly simulates T1), denoted by T1 ⪯IOPAS
+T2, if there exists an InitSOP alternating simulation relation
+from T1 to T2.                                                                                               (c) controller T ′ for T2
+  Note that an InitSOP alternating simulation relation is still                                                                                  Fig. 2.  T1 ⪯IOPAS   T2, where T1 cannot be enforced to be initial-state
+an alternating simulation relation, which makes controller    opaque but T2 can be enforced to be initial-state opaque.
+reﬁnement still possible. The main differences between Init-
+SOP alternating simulation relation and the standard alter-     InitSOP alternating simulation  relation ensures  that,  if
+nating simulation relation are:                                  there exists a controller Tc enforcing opacity for T1, then it
+  (i) We further specify explicitly what initial states can be   can be reﬁned to enforce opacity for T2. However, we cannot
+      related in terms of secret states; and                    conclude that the original system cannot be enforced to be
+  (ii) Another simulation type condition for the other direc-   opaque if the opacity enforcement problem is unsolvable for
+      tion, i.e., condition 3)-b), is added in addition to the    the abstract system as illustrated by the following example.
+      original alternating simulation type condition.            Example 3: Let us consider LTSs T1 and T2 shown in
+                                                            Figure 2(b) and  2(a),  respectively, where T1 ⪯IOPAS   T2  The following result shows that InitSOP alternating sim-
+                                                      and both T1 and T2 are not initial-state opaque. Clearly,ulation  relation indeed satisﬁes the requirements for the
+                                                                   for T1, there exists no controller that can enforce initial-purpose of opacity-enforcing control synthesis.
+                                                                       state opacity as the control choice at each state in unique.
+  Theorem 1: Let T1 and T2 be two LTSs, where Ti =                                                                                            ′                                                       However, we can  still design a  controller T  shown  in(Xi, Xi,0, Si, Ui,           , Y, Hi), i = 1, 2, and suppose that              i-                                                            Figure  2(c), which  is feedback composable to T2 under
+T1 ⪯IOPAS  T2. Then for any controller Tc that enforces initial-    relation R = {(x′0, x2,0), (x′1, x2,1), (x′2, x2,2), (x′3, x2,3)}, to
+state opacity for the abstract system T1, the reﬁned controller                                                             enforce initial-state opacity for T2  .
+Tref = Tc ×F T1 also enforces initial-state opacity for the                                                    The above example reveals that T1 may excessively ab-
+original system T2.                                                                        stract T2 so that some information of the original system
+  In essence, the  role of InitSOP  alternating simulation                                                                              is  lost. Therefore, a stronger and symmetric version of
+relation is to build a “bridge” between the abstract system                                                          Deﬁnition 4 is proposed as follows.
+and the original one. The fact that  it is still an alternating
+                                                             Deﬁnition 5: (InitSOP      Alternating     Bisimulation
+simulation relation ensures that any control input in the
+                                                               Relation)  Let  T1,  T2  be  two  LTSs,  where  Ti  =
+abstract system can be reﬁned to the original system by           -
+                                                         (Xi, Xi,0, Si, Ui,               , Y, Hi), i =  1, 2. A  relation
+matching an input pair in the relation. Moreover, Theorem 1                                     i
+                                  R ⊆ X1 × X2  is  said  to be an InitSOP  alternatingshows  that  the reﬁned  controller Tref  can  still enforce
+                                                              bisimulation relation between T1 and T2 ifopacity for the original system  if Tc enforces opacity for
+the abstract system.                                             1) a) ∀x1,0 ∈X1,0 \ S1, ∃x2,0 ∈X2,0 \ S2 : (x1,0, x2,0)∈R;
+  Example 2: Let us consider LTSs T1 and T2 shown in       b) ∀x1,0 ∈X1,0∩S1, ∃x2,0 ∈X2,0∩S2 : (x1,0, x2,0)∈R;
+Figures 1(b) and 1(a), respectively, where both T1 and T2 are        c) ∀x2,0 ∈X2,0 \ S2, ∃x1,0 ∈X1,0 \ S1 : (x1,0, x2,0)∈R;
+not initial-state opaque. We consider the following InitSOP       d) ∀x2,0 ∈X2,0∩S2, ∃x1,0 ∈X1,0∩S1 : (x1,0, x2,0)∈R;
+alternating simulation relation from T1 to T2                    2) ∀(x1, x2) ∈R : H1(x1) = H2(x2);
+                                                                3) for any (x1, x2) ∈R, we have
+ R12 = {(x1,0, x2,0), (x1,2, x2,2), (x1,1, x2,1), (x1,3, x2,3)}.
+                                                                       a) ∀u1 ∈U1(x1), ∃u2 ∈U2(x2), ∀x2 u2-x′2, ∃x1 u1-x′1
+To enforce opacity  for T1, we can design a  controller          such that (x′1, x′2) ∈R;
+Tc  shown  in  Figure  1(c)  that   is  feedback  compos-                                                                  b) ∀u2 ∈U2(x2), ∃u1 ∈U1(x1), ∀x1 u1-x′1, ∃x2 u2-x′2
+able  to T1  with  alternating  simulation  relation Rc1 =                                                               such that (x′1, x′2) ∈R;
+{(xc,0, x1,0), (xc,1, x1,1), (xc,2, x1,2), (xc,3, x1,3)}.  Clearly,               u1-         u2-                                                                       c) ∀x1       x′1, ∃x2       x′2 such that (x′1, x′2) ∈R;we see that internal behavior x1,0x1,0 · · ·  that reveals the
+                                                                   u2-         u1-
+secret is excluded under the control of Tc. The composed       d) ∀x2       x′2, ∃x1       x′1 such that (x′1, x′2) ∈R.
+system Tref = Tc × T1  is isomorphic (by renaming state  We say that T1 is InitSOP alternatingly bisimular to T2, de-
+names) to Tc. By Theorem 1, we can use Tref as the reﬁned   noted by T1 ∼=IOPAS  T2, if there exists an InitSOP alternating
+controller to enforce  initial-state opacity for the original   bisimulation relation between T1 and T2.
+system T2. Intuitively, the reﬁned controller will exclude both     Then we have the following result that follows directly
+             c-            c-transitions x2,0       x2,0 and x2,0       x2,4 in T2.         from Theorem 1. It shows that, if T1 ∼=IOPAS   T2, then the
+
+                                                       7656
+
+                                                                                                                    (a) T2                       (b) T1
+                                                                                  Fig. 4.  T1 ∼=IOPAS  T2, where both T1 and T2 cannot be enforced to be
+                                                                                              initial-state opaque.
+
+
+
+
+
+                                      (a) T2
+
+
+
+
+
+                                    (b) T1                                                            (a) T2                                 (b) T1
+Fig. 3.   T1 ∼=IOPAS   T2, where both T1 and T2 can be enforced to be     Fig. 5.  T1 ∼=IOPAS  T2, where both T1 and T2 are not inﬁnite-step opaque,initial-state opaque.                                                                    and arbitrarily one of their controllers cannot be reﬁned to enforce each
+                                                                               other inﬁnite-step opaque.
+opacity enforcing control problem is solvable for T2  if and
+only if  it is solvable for T1.                                      {(x1,0, x2,0), (x1,1, x2,1), (x1,0, x2,2), (x1,1, x2,3), (x1,1, x2,4)}
+  Theorem 2: Let T1 and T2 be two LTSs, where Ti =    is an InitSOP alternating bisimulation relation between T1
+(Xi, Xi,0, Si, Ui,                                    , Y, Hi), i = 1, 2, and suppose that   and T2. As we have discussed earlier in Example 3, T1              i-
+T1 ∼=IOPAS  T2. Then there exists a controller Tc that enforces   cannot be enforced to be  initial-state opaque. Therefore,
+initial-state opacity for T1,  if and only  if, there exists a   by Theorem 2, we know that the original system T2 also
+controller T c′ that enforces initial-state opacity for T2.         cannot be enforced to be initial-state opaque.
+  We illustrate the notion of InitSOP alternating bisimulation
+                                                                V. INFINITE OPACITY-PRESERVING RELATIONrelation by the following two examples. The ﬁrst example
+shows that, although Deﬁnition 5 is a strong condition,  it      In the previous section, we have discussed how to modify
+may still obtain a fairly succinct abstraction.                   the standard alternating (bi)simulation to preserve  initial-
+  Example 4: Let us consider LTSs T1 and T2 shown in    state opacity. In this section, we further extend our result
+Figures 3(b) and 3(a), respectively, where T1 ∼=IOPAS  T2 and    to the case of inﬁnite-step opacity.
+both T1 and T2 are not initial-state opaque. Speciﬁcally, one       First, we show by the following example that InitSOP
+can readily verify that the following relation is an InitSOP    alternating  (bi)simulation does  not  preserve  inﬁnite-step
+alternating bisimulation relation from T1 to T2                opacity enforcement after control reﬁnement.
+   (x1,0, x2,0), (x1,1, x2,1), (x1,1, x2,4), (x1,1, x2,7),      Example 6: Let us consider LTSs T1 and T2 shown in
+                                 Figures 5(b) and 5(a), respectively. We have T1 ∼=IOPAS  T2         (x1,2, x2,2), (x1,2, x2,5), (x1,2, x2,8), (x1,3, x2,3),R12 =
+                                                                =         (x1,3, x2,6), (x1,3, x2,9), (x1,3, x2,10))   .   under InitSOP  alternating  bisimulation  relation R1,2
+                                                                     {(x1,0, x2,0), (x1,1, x2,1), (x1,2, x2,2), (x1,3, x2,3), (x1,4, x2,4),
+For  T1,   it  is  easy  to  design  a  controller  Tc  enforc-
+                                                                   (x1,5, x2,5), (x1,6, x2,6), (x1,7, x2,7)}.
+ing initial-state opacity, e.g., by eliminating the transition
+    c-                                              Note that neither of them are inﬁnite-step opaque. For
+x1,2         x1,2. Hence, we can reﬁne  this controller to                                                         example, if the self-loop transition at state x1,7 occurs more
+enforce initial-state opacity for the original system T2. Note                                                            than once, then we knows for sure that T1 is/was at the
+that the original system T2 is more complicated with more                                                                   secret state. To enforce inﬁnite-step opacity, we can design a
+states and transitions compared with T1. This example shows,                            f-
+                                                                   controller eliminating transition x1,7       x1,7 for T1. Theunder the InitSOP alternating bisimulation relation, we may
+                                                       reﬁnement of this controller will then eliminate transition
+still earn a succinct abstraction. It also shows that the relation      b-
+                                                                 x2,7         x2,7 for T2. However, this does not enforcesis  effective  in the nondeterministic systems  that we are                                                               b-
+interested in.                                                    inﬁnite-step opacity for T2 as transition x2,4         x2,4
+  The next example shows that we can conclude that the    violates inﬁnite-step opacity in T2. Similarly, we can show
+opacity enforcing  control problem  is unsolvable  for the    that a controller that enforces inﬁnite-step opacity for T2 does
+original system if it is unsolvable for the abstract system.     not enforce inﬁnite-step opacity for T1 after reﬁnement.
+  Example 5: Let   us   consider  LTSs  T1   and  T2      Therefore, in order to handle inﬁnite-step opacity, we
+shown  in  Figures  4(b)  and  4(a),  respectively,  where    further strengthen the deﬁnition of InitSOP alternating sim-
+T1  ∼=IOPAS   T2 and both T1 and T2  are not  initial-state    ulation relation to inﬁnite-step opacity preserving (InfSOP)
+opaque. Speciﬁcally, one can readily verify  that R12 =    alternating simulation relation as follows.
+
+                                                       7657
+
+  Deﬁnition 6: (InfSOP       Alternating       Simulation    ﬁrst synthesize an opacity-enforcing controller based on the
+Relation)  Let  T1,  T2  be  two  LTSs,  where  Ti  =    abstract system and then reﬁne it back to controller enforcing
+          -
+(Xi, Xi,0, Si, Ui,               , Y, Hi), i =  1, 2. A  relation   opacity of the original system.
+                                i
+R ⊆X1 ×X2 is said to be an InfSOP alternating simulation                                                               REFERENCES
+relation from T1 to T2 if
+                                                                                     [1] L. Mazar´e, “Using uniﬁcation for opacity properties,” in Workshop on
+  1) a) ∀x1,0 ∈X1,0, ∃x2,0 ∈X2,0 : (x1,0, x2,0) ∈R;                   Issues in the Theory of Security, vol. 4, pp. 165–176, 2004.
+    b) ∀x1,0 ∈X1,0 \ S1, ∃x2,0 ∈X2,0 \ S2 : (x1,0, x2,0)∈R;      [2]  J. Bryans, M. Koutny, L. Mazar´e, and P. Ryan, “Opacity generalised
+    c) ∀x2,0 ∈X2,0∩S2, ∃x1,0 ∈X1,0∩S2 : (x1,0, x2,0)∈R;           to transition systems,” Internationa Journal of Information Security,
+                                                                                            vol. 7, no. 6, pp. 421–435, 2008.
+  2) ∀(x1, x2)∈R : H1(x1) = H2(x2);                                 [3]  F. Lin, “Opacity of  discrete event systems and  its  applications,”
+  3) for any (x1, x2)∈R,                                                 Automatica, vol. 47, no. 3, pp. 496–503, 2011.
+                                 u2-                    [4] A. Saboori and C. Hadjicostis, “Veriﬁcation of inﬁnite-step opacity and    a) ∀u1 ∈U1(x1), ∃u2 ∈U2(x2), ∀x2        x′2 ∈S2,         complexity considerations,” IEEE Trans. Automatic Control, vol. 57,
+            u1-                                                               no. 5, pp. 1265–1269, 2012.
+      ∃x1       x′1 ∈S1 such that (x′1, x′2)∈R;                     [5] Y.  Ji, X. Yin, and S. Lafortune, “Opacity enforcement using non-                                      u2-    b) ∀u1 ∈U1(x1), ∃u2 ∈U2(x2) : ∀x2       x′2 ∈X2 \S2,          deterministic publicly-known edit functions,” IEEE Transactions on
+            u1-                                                         Automatic Control, 2019.
+      ∃x1       x′1 ∈X1 \ S1 such that (x′1, x′2)∈R;              [6] X. Yin and S. Lafortune, “A new approach for the veriﬁcation of
+          u1-                          u2-
+    c) ∀x1                    x′1 ∈S1, ∃x2                                          x′2 ∈S2 such that          inﬁnite-step and K-step opacity using two-way observers,” Automat-
+        (x′1, x′2) ∈R;                                                          [7]  ica,S. Ch´edor,vol. 80,C.pp.Morvan,162–171,S. Pinchinat,2017.   and H. Marchand, “Diagnosis and
+            u1-                  u2-    d) ∀x1       x′1 ∈X1 \ S1, ∃x2       x′2 ∈X2 \ S2 such          opacity problems for inﬁnite state systems modeled by recursive tile
+        that (x′1, x′2) ∈R.                                                    systems,” Discrete Event Dynamic Systems: Theory & Appllications,                                                                                            vol. 25, no. 1-2, pp. 271–294, 2015.
+We say that T1 is InfSOP alternatingly simulated by T2 (or      [8] R. Julio Barcelos and  J. Basilio, “Enforcing current-state opacity
+T2 InfSOP alternatingly simulates T1), denoted by T1 ⪯IfOPAS            through shufﬂe in event observations,” in 14th  Int. Workshop on                                                                                   Discrete Event Systems, pp. 106–111, 2018.
+T2, if there exists an InfSOP alternating simulation relation      [9] X. Yin and S. Li, “Synthesis of dynamic masks for inﬁnite-step
+from T1 to T2.                                                                      opacity,” IEEE Trans. Automatic Control, 2019.
+   Intuitively, Deﬁnition 6 strengthen Deﬁnition 4 by fur-    [10] C. Keroglou and C. Hadjicostis, “Probabilistic system opacity in
+                                                                                          discrete event systems,” Discrete Event Dynamic Systems: Theory &
+ther  specifying what  transitions can be matched  in  the          Appllications, pp. 1–26, 2017.
+(alternating) simulation type conditions,  i.e., condition 3).    [11] X. Yin, Z. Li, W. Wang, and S. Li, “Inﬁnite-step opacity and K-
+Particularly, conditions 3)-a) and 3)-b) in Deﬁnition 6 to-          step opacity of stochastic discrete-event systems,” Automatica, vol. 99,
+                                                                                    pp. 266–274, 2019.
+gether imply condition 3)-a) in Deﬁnition 4. Therefore, an    [12]  J. Dubreil, P. Darondeau, and H. Marchand, “Supervisory control for
+InfSOP alternating simulation relation is still an alternating           opacity,” IEEE Trans. Automatic Control, vol. 55, no. 5, pp. 1089–
+simulation relation. Moreover, it further requires that for any         1100, 2010.
+                                                                              [13]  S. Takai and Y. Oka, “A formula for the supremal controllable and
+transition that goes to a secret state (resp. non-secret state)         opaque sublanguage arising in supervisory control,” SICE J. Control,
+in T1,  its matching transition should also go to a secret        Measu. & Syst. Integration, vol. 1, no. 4, pp. 307–311, 2008.
+state (resp. non-secret state) in T1. The same requirement    [14] X. Yin and S. Lafortune, “A uniform approach  for synthesizing
+                                                                                   property-enforcing supervisors for partially-observed discrete-event
+for conditions 3)-c) and 3)-d) in Deﬁnition 6, which together          systems,” IEEE Trans. Automatic Control, vol. 61, no. 8, pp. 2140–
+imply condition 3)-b) in Deﬁnition 4.                                  2154, 2016.
+  The following theorem shows  that InfSOP  alternating    [15] Y. Tong, Z. Li, C. Seatzu, and A. Giua, “Current-state opacity en-
+                                                                             forcement in discrete event systems under incomparable observations,”
+simulation relation indeed preserves inﬁnite-step opacity.             Discrete Event Dynamic Systems: Theory & Appllications, vol. 28,
+  Theorem 3: Let  T1, T2  be  two  LTSs,  where  Ti =          no. 2, pp. 161–182, 2018.
+(Xi, Xi,0, Si, Ui,           , Y, Hi), i = 1, 2, and suppose that    [16]  S. Mohajerani, Y.  Ji, and S. Lafortune, “Efﬁcient synthesis of edit              i-                                                       functions for opacity enforcement using bisimulation-based abstrac-
+T1 ⪯IfOPAS    T2. Then for any controller Tc  that enforces           tions,” in IEEE CDC, pp. 4849–4854, 2018.
+inﬁnite-step opacity for the abstract system T1, the reﬁned    [17] M. Noori-Hosseini, B. Lennartson, and C. Hadjicostis, “Incremental                                                                                 observer reduction applied  to opacity veriﬁcation and  synthesis.”
+controller Tref = Tc×FT1 also enforces inﬁnite-step opacity         arXiv:1812.08083, 2018.
+for the original system T2.                                             [18] K. Zhang, X. Yin, and M. Zamani, “Opacity of nondeterministic transi-
+                                                                                         tion systems: A (bi) simulation relation approach,” IEEE Transactions
+  Similar to the case of InitSOP alternating bisimulation                                                                      on Automatic Control, 2019.
+relation, we can also deﬁne InfSOP alternating bisimulation    [19] X. Yin and M. Zamani, “On approximate opacity of cyber-physical
+relation by symmetrizing Deﬁnition 6 to preserve inﬁnite-          systems,” arXiv preprint:1902.09411, 2019.
+step opacity for both directions.                                       [20] M. Noori-Hosseini, B. Lennartson, and C. Hadjicostis, “Compositional                                                                                           visible bisimulation abstraction applied to opacity veriﬁcation,” in 14th
+                                                                                                      Int. Workshop on Discrete Event Systems, pp. 434–441, 2018.
+                  VI. CONCLUSION                              [21] B. Wu and H. Lin, “Privacy veriﬁcation and enforcement via belief
+  In this paper, we investigated abstraction-based synthesis           abstraction,” IEEE Cont. Sys. Letters, vol. 2, no. 4, pp. 815–820, 2018.
+                                                                              [22] R. Alur, T. Henzinger, O. Kupferman, and M. Vardi, “Alternating
+of opacity-enforcing controllers using alternating simulation         reﬁnement relations,” in International Conference on Concurrency
+relations for labeled transition systems. We proposed a new         Theory, pp. 163–178, Springer, 1998.
+concept called opacity-preserving alternating (bi)simulation    [23] M. Zamani, G. Pola, M. Mazo, and P. Tabuada, “Symbolic models for
+                                                                                   nonlinear control systems without stability assumptions,” IEEE Trans.
+relation that preserves opacity during the abstraction. We         Automatic Control, vol. 57, no. 7, pp. 1804–1809, 2012.
+investigated this concept for both initial-state opacity and    [24]  P. Tabuada, Veriﬁcation and Control of Hybrid Systems: A Symbolic
+inﬁnite-step opacity. Using the proposed approach, one can         Approach. Springer Science & Business Media, 2009.
+
+                                                       7658

@@ -1,0 +1,594 @@
+                                                            Automatica 131 (2021) 109713
+
+
+                                            Contents lists available at ScienceDirect
+
+                              Automatica
+
+
+                                         journal homepage: www.elsevier.com/locate/automatica
+
+
+Brief paper
+Marking diagnosability verification in labeled Petri nets✩
+Ziyue Ma a,∗, Xiang Yin b, Zhiwu Li a,c
+a School of Electro-Mechanical Engineering, Xidian University, Xi’an 710071, China
+b Department of Automation and the Key Laboratory of System Control and Information Processing,
+Shanghai Jiao Tong University, Shanghai 201108, China
+c Institute of Systems Engineering, Macau University of Science and Technology, Taipa, Macau, China
+
+
+a r t i c l e    i n f o             a b s t r a c t
+
+
+Article history:                                  This paper studies the marking diagnosability verification problem in labeled Petri nets. Marking
+Received 16 January 2020                        diagnosability is a property implying the fact that a plant Petri net has ever reached a pre-defined
+Received in revised form 13 April 2021             set of faulty markings can be detected in a finite number of future steps. We first show that the
+Accepted 18 April 2021                        conventional basis-reachability-graph-based methods cannot be used due to the existence of partially
+Available online 7 June 2021
+                                                   faulty basis markings. To overcome such a problem, we propose a transition partition rule to obtain two
+Keywords:                                       particular graphs called the positive basis reachability graph and the negative basis reachability graph.
+Marking diagnosability                      Then we develop an information structure, called a dual verifier, that is a parallel composition of the
+Petri net                               two basis reachability graphs and can be used to determine the marking diagnosability of a plant net.
+Discrete event system                       The proposed method has polynomial complexity in the number of basis markings.
+Basis reachability graph                                                   © 2021 Elsevier Ltd. All rights reserved.
+
+
+
+
+1. Introduction                                    & Giua, 2017) can be solved with relatively low computational
+                                                                         load. Fault diagnosis has also been extensively studied in labeled
+   Fault diagnosis in discrete event systems (DESs) (Jiang, Huang,     Petri net (LPN) in recent years. In Giua and Seatzu (2005) and
+Chandra, & Kumar, 2001; Lafortune, Lin, & Hadjicostis, 2018; Sam-    Jiroveanu and Boel (2010), minimal explanations are introduced
+path, Sengupta, Lafortune, Sinnamohideen, & Teneketzis, 1995) is     to abstract the firing of unobservable transitions. On the basis
+to determine whether some particular events, called faults, have     of such a notion, in Cabasino, Giua, and Seatzu (2010), a struc-
+occurred according to the current observation. Since diagnosabil-     ture called the basis reachability graph is proposed to abstract
+ity is highly related to safety and robustness of cyber–physical    the state space of a plant net and then is used for fault di-
+systems, abundant work have been done in the last decades,     agnosis. In Cabasino, Giua, Lafortune, and Seatzu (2012),  it is
+e.g., its verification (Moreira, Jesus, & Basilio, 2011; Yin & Lafor-    shown that the diagnosability verification problem in an LPN can
+tune, 2015; Zad, Kwong, & Wonham, 2005), robust diagnosabil-                                                           be converted to a reachability condition of the corresponding
+ity (Carvalho, Moreira, & Basilio, 2017), and its enforcement (Yin                                                                                   verifier net. In Basile, Chiacchio, and Tommasi (2012), integer
+& Lafortune, 2019).                                                                         linear programming is used to verify K-diagnosability of bounded
+    Petri net is a widely-used model of DES which is more compact                                                                          nets. The decidability and complexity of diagnosability in general
+than automata. In Petri nets, structural techniques can be used to
+                                                          LPNs are studied in Yin and Lafortune (2017). There are also
+circumvent the need to enumerating the state space of a plant.
+                                                         works on time Petri nets (Basile, Cabasino, & Seatzu, 2017), inter-
+Hence, many problems such as supervisory control (Basile, Cor-
+                                                                preted nets (Ramirez-Trevino, Ruiz-Beltran, Aramburo-Lizarraga,
+done, & Piroddi, 2015) and opacity verification (Tong, Li, Seatzu,
+                                               & Lopez-Mellado, 2012), and diagnosability enforcements (Ran,
+                                                                     Giua, & Seatzu, 2019).
+ ✩This work was supported in part by the National Natural Science Foundation         All the aforementioned methods consider faults as some par-
+of China under Grant Nos. 61873342, 62061136004, and 61803259, 61703321,     ticular events/transitions in a plant.1 However, in many practical
+Shaanxi Provincial Natural Science Foundation, China under Grant No. 2019JQ-
+022, the Fundamental Research Funds for the Central Universities, China under     situations, instead of recognizing events, an operator of a plant
+Grant Nos. JB210413, and JB190407, and the Science and Technology Develop-   may expect to know if the plant has or has ever reached some
+ment Fund, MSAR, China, under Grant No. 0012/2019/A1. The material in this     states of physical importance. For example, in an automated
+paper was not presented at any conference. This paper was recommended for
+publication in revised form by Associate Editor Christoforos Hadjicostis under
+the direction of Editor Christos G. Cassandras.                                 1 Note that although the term ‘‘fault’’ usually means some undesired behavior
+  ∗Corresponding author.                                                             in the usual sense, in the context of fault diagnosis, faults are not necessarily
+     E-mail addresses:  maziyue@xidian.edu.cn (Z. Ma), yinxiang@sjtu.edu.cn         associated with practical failures or errors, but can be any events or behavior
+(X. Yin), zhwli@xidian.edu.cn (Z. Li).                                                 patterns that have particular interests.
+
+
+https://doi.org/10.1016/j.automatica.2021.109713
+0005-1098/© 2021 Elsevier Ltd. All rights reserved.
+
+Z. Ma, X. Yin and Z. Li                                                                                                          Automatica 131 (2021) 109713
+
+production line, the content of a buffer may frequently exceed     2. Preliminaries
+a threshold. An alarm is expected to be issued in finite steps
+after the threshold is exceeded in order to draw an operator’s      2.1. Petri nets
+attention. Such a problem is referred to as the marking diagnosis
+problem if the plant is modeled by a Petri net. Briefly speaking,                                                   A Petri net is a four-tuple N = (P, T, Pre, Post), where P is a
+marking diagnosability is a property such that the fact that a plant                                                                        set of m places represented by circles; T is a set of n transitions
+net has ever reached a given set of faulty markings can be detected                                                                represented by bars; Pre : P × T →N and Post : P × T →N are
+in a finite number of future steps.
+                                                                 the pre- and post-incidence functions, respectively, specifying the
+   In automata, the event and the state diagnosis problems are
+                                                                      arcs from places to transitions and from transitions to places in
+equivalent (Kumar & Takai, 2010; Zad et al., 2005). However, in
+                                                                 the net and can also be represented as matrices in Nm×n (herePetri nets, methods for transition diagnosis such as Basile et al.
+                                           N = {0, 1, 2, . . .}). The incidence matrix of a net is defined by(2012), Cabasino et  al. (2010) are not applicable for marking
+diagnosis. The fact that the firing of a transition at a particular    C = Post −Pre ∈Zm×n (here Z = {0, ±1, ±2, . . .}).
+marking yields a faulty marking does not necessarily imply that       For a transition t ∈T, we define the set of its input places as
+the firing of this transition always yields a faulty marking. Thus,     •t = {p ∈P  | Pre(p, t) > 0} and the set of its output places as
+one cannot transform a marking diagnosis problem to a transition     t• = {p ∈P  | Post(p, t) > 0}. The notions for •p and p• are
+diagnosis problem by defining a set of faulty transitions in the    analogously defined.
+original net. On the other hand, a marking diagnosis problem     A marking  is a function M   :  P → N that assigns each
+can be transformed into a state diagnosis problem of automata    place of a Petri net a non-negative integer number of tokens,
+by constructing the entire reachability graph of the plant net    represented by black dots; a marking can also be represented
+and using the automaton-based methods (Yoo & Lafortune, 2002).    as an m-component vector. We denote by M(p) the number of
+However, the reachability graph of a net is in general extremely    tokens in place p at marking M. A marked net ⟨N, M0⟩is a net N
+large even  if the structure of a net is relatively small, and by    with an initial marking M0. Marking [x1, . . . , xm]T is also denoted
+doing so, we lose the advantages for analyzing diagnosability                                                                   as x1p1 + · · · + xmpm for simplicity.
+using the structural analysis techniques of Petri nets. Therefore, it                                                   A transition t is said to be enabled at a marking M  if M ≥
+is desirable to develop more efficient algorithms for the marking     Pre(·, t). If t is enabled at M, then it may fire and reach a new
+diagnosis problem in Petri nets.
+                                                           marking M′ = M0 + C(·, t). We write M[t⟩and M[t⟩M′ to denote,   In this paper, we formulate and systematically investigate the
+                                                                         respectively, that transition t is enabled at M and its occurrence
+marking diagnosability verification problem in LPNs. Precisely
+                                                                        yields M′. We denote by T ∗the set of all finite sequences of tran-speaking, marking diagnosability  is a property such that any
+                                                                           sitions over T. Then M[σ⟩M′ analogously denotes that a transitionvisit of a set of markings with particular interests, called faulty
+markings, can be inferred in a finite number of future steps there-    sequence σ = t1t2 . . . tk ∈T ∗is enabled (sequentially) at M and
+after. To our knowledge, this work is the first one that addresses      its occurrence finally yields M′. In this case we say that M′ is
+marking diagnosis in the literature. Specifically, we assume that     reachable from M. We denote by R(N, M0) the set of all markings
+the set of faulty markings to be diagnosed is described by a    reachable from the initial marking M0. The language of ⟨N, M0⟩
+linear marking specification called a generalized mutual exclusion      is defined as L(N, M0) = {σ ∈T ∗| M0[σ⟩}. For any sequence
+constraint (Giua, DiCesare, & Silva, 1992). We develop a method    σ ∈T ∗, yσ denotes its firing vector, i.e., yσ (t) = k if transition t
+based on the notion of basis reachability graphs (BRGs), an efficient    occurs k times in σ.
+tool for abstracting the state space of a Petri net (Ma, Tong, Li,       Given a sequence σ ∈T ∗, the prefix-closure of σ is defined as
+& Giua, 2017; Ran, Su, Giua, & Seatzu, 2018; Tong et al., 2017)    Pr(σ) = {σ ′ ∈T ∗| (∃σ ′′ ∈T ∗)σ = σ ′σ ′′}. A sequence ¯σ ∈T ∗is
+without constructing the entire reachability graph. However, un-     said to be a strict prefix of σ  if ¯σ ∈Pr(σ) and  ¯σ̸ = σ.
+like the case of transition diagnosability verification (Cabasino                                                               Given a Petri net N = (P, T, Pre, Post), net ˆN = (ˆP, ˆT, ˆPre, ˆPost)
+et al., 2010; Ran et al., 2018), the visit of faulty markings is in                                                                                       is said to be a subnet of N if ˆP ⊆P, ˆT ⊆T and ˆPre (resp., ˆPost)
+general not well preserved in an arbitrary built BRG. In fact, a                                                                                       is the restriction of Pre (resp., Post) to ˆP × ˆT. In particular, ˆN is
+BRG based on a blindly chosen TE may not capture all marking                                                                        called the ˆT-induced subnet if ˆN = (P, ˆT, ˆPre, ˆPost).trajectories of the original marking space for the purpose of
+marking diagnosis. As a result, we explore the reason behind and
+develop a method for marking diagnosability verification using a      2.2. Labeled Petri nets
+compact information structure.
+   The main content of this paper is summarized as follows. First,     A labeled Petri net (LPN) is a 4-tuple G = (N, M0, E, ℓ), where
+by introducing two notions pertaining to basis markings called    ⟨N, M0⟩is a marked net, E is the alphabet, and ℓ: T →E ∪{ε}
+faulty basis markings and partially faulty basis markings, we reveal      is the labeling function that assigns each transition t ∈T either
+that the information loss may happen if a basis trajectory passes    a symbol from E or the silent label ε. This leads to a partition
+a partially faulty basis marking. To overcome such a problem,    T = To ˙∪Tuo, where To = {t ∈T | ℓ(t) ∈E} is the set of observable
+we propose a transition partition rule to obtain two particular     transitions and Tuo = T \ To = {t ∈T  | ℓ(t) = ε} is the set of
+BRGs called the positive basis reachability graph (positive BRG)                                                                  unobservable transitions.
+and the negative basis reachability graph (negative BRG). Based                                                            The labeling function can be extended to ℓ:  T ∗ →  E∗
+on positive and negative BRGs  an information structure called                                                                      recursively by: (i) ℓ(ε) = ε; and (ii) ℓ(σt) = ℓ(σ)ℓ(t) with σ ∈T ∗
+a dual verifier is developed to verify marking diagnosability. The                                                         and t ∈T. When a sequence σ ∈T ∗fires, the observation of σ is
+structural complexity of the dual verifier is polynomial in the
+                                       w = ℓ(σ) ∈E∗. The inverse projection of an observation w ∈E∗
+number of basis markings in the positive and the negative BRGs.
+                                                             with respect to G = (N, M0, E, ℓ) is defined as: ℓ−1(w) = {σ ∈Since the number of basis markings is usually much smaller than
+                                                                 L(N, M0) | ℓ(σ) = w}. The language of an LPN G = (N, M0, E, ℓ) isthat of reachable markings (Cabasino et al., 2010; Ma et al., 2017),
+our method is in general more efficient than using methods for    defined as L(G) = {ℓ(σ) | σ ∈L(N, M0)}.
+state diagnosis (Kumar & Takai, 2010; Zad et al., 2005) on the       Given an LPN G = (N, M0, E, ℓ), for an observation w ∈E∗,
+reachability automata of LPNs. Therefore, our proposed approach   we write M1[w⟩M2 if there exists a sequence σ ∈T ∗such that
+can reduce the computational complexity  if a discrete event    ℓ(σ) = w and M1[σ⟩M2. Then we define C (w) as the set of
+system is modeled as a Petri net and the state relations (i.e., the     consistent markings of an observation w ∈L(G), i.e., C (w) = {M ∈
+reachability automaton) are unknown.                           R(N, M0) | M0[w⟩M}.
+
+                                                                   2
+
+Z. Ma, X. Yin and Z. Li                                                                                                          Automatica 131 (2021) 109713
+
+2.3. Basis reachability graph
+
+Definition 2.1 (Ma et al., 2017). Given a Petri net N = (P, T, Pre,
+Post), a pair π = (TE, TI) is called a basis partition of T if (1) TI ⊆T,
+TE = T \ TI; and (2) the TI-induced subnet is acyclic. The sets TE
+and TI are called the set of explicit transitions and the set of implicit
+transitions, respectively.
+
+   Note that the acyclicity on the TI-induced subnet is not an
+assumption on plants. In fact, one can always subjectively choose
+a set TE such that the implicit subset is acyclic — based on which
+the BRG-based marking abstraction technique can be used.
+
+Definition 2.2.   Given Petri net N =  (P, T, Pre, Post), basis
+partition π =  (TE, TI), marking M, and transition t ∈TE, we
+define:
+  • Σ(M, t) = {σ ∈T I∗  | M[σ⟩M′, M′ ≥Pre(·, t)} as the set of                                    Fig. 1. A labeled Petri net.
+     explanations of transition t at marking M;
+  • Y(M, t) = {yσ ∈N|T| | σ ∈Σ(M, t)} as the set of explanation
+     vectors of transition t at marking M;
+  • Ymin(M, t) denotes the set of all minimal elements of Y(M, t),      The following proposition  is a direct generalization of the
+                                                                         result in Cabasino et al. (2010).        i.e., the minimal explanation vectors.
+
+Definition 2.3.  Given a Petri net N = (P, T, Pre, Post) with an    Proposition 2.2.   Given an LPN G = (N, M0, E, ℓ) with N =
+initial marking M0 and a basis partition π = (TE, TI), the set of     (P, T, Pre, Post), let B = (M, Tr, ∆, M0) be the BRG with respect
+its basis markings M is recursively defined as: (i) M0 ∈M ; (ii) if     to π = (TE, TI) where TE ⊇To. For an observation w ∈L(G), it
+M ∈M , then for all t ∈TE, for all y ∈Ymin(M, t):                      holds:
+                                                         M = Mb + CI · y}M′ = M + C · y + C(·, t) ⇒  M′ ∈M.                     C (w) = ⋃   RI(Mb) = ⋃  {M |
+                                                                    Mb∈M(w)         Mb∈M(w)
+   The basis reachability graph (BRG) is a finite state automaton
+B = (M, Tr, ∆, M0), where: (i) the state set M is the set of basis    where M (w) = {Mb ∈M | M0 φ−→Mb, ℓ(φ) = w}.
+markings; (ii) the event set Tr is the set of pairs (t, y) ∈TE × N|T|;
+(iii) the transition relation ∆⊆M × Tr × M is:                    Proof.  This proposition follows from Theorem 3.8 in Cabasino
+∆= {(M1, (t,y), M2) | y ∈Ymin(M1, t),                                 et al. (2010) by changing observable/unobservable transitions as
+                                                                           explicit/implicit ones. □
+                  t ∈TE, M2 = M1 + C · y + C(·, t)}
+(iv) the initial state is the initial marking M0 ∈M .                     3. Marking diagnosability problem formulation
+
+   In the worst case, the size of a basis reachability space M
+                                                             Marking diagnosability is a property such that the fact that a
+is the same as that of the reachability set R(N, M0) (e.g., when                                                                    plant Petri net has ever reached a pre-defined set of markings
+TE = T and TI = ∅). However, in practice we can usually find a                                                             with particular interests, called faulty markings, can be detected
+basis partition TE ⊂T, under which M is much smaller than the                                                                        in a finite number of future steps. Before proceeding formally,
+reachability set, i.e., |M| ≪|R(N, M0)|. Detailed discussions and                                               we first present an example to illustrate the notion of marking
+numerical results can be found in Cabasino et al. (2010), Ma et al.
+                                                                      diagnosability in LPNs.
+(2017), Ran et al. (2018) and Tong et al. (2017).
+   For the convenience of presentation, in the sequel of this pa-
+                                                      Example 3.1.  Consider the LPN in Fig. 1 in which ℓ(t1) = ℓ(t8) =
+per, we use φ = (ti1, yi1)(ti2, yi2) · · · (tin, yin) to denote a sequence      a, ℓ(t3) = b, ℓ(t6) = c, and ℓ(ti) = ε for all ti where  i̸ = 1, 3, 6, 8.of labels of arcs in a BRG, i.e., a path Mb,1 →Mb,2 →· · · →
+                                                                    This net has 57 reachable markings. Suppose that an operator
+Mb,n, where the arcs on this path are sequentially labeled by                                                                observes a sequence of events w = aa and wants to determine if
+(ti1, yi1), (ti2, yi2), . . . , (tin, yin). We write ℓ(φ) = ℓ(ti1ti2 · · · tin).                                                                 the plant has reached a set of markings:
+
+Definition 2.4 (Ma et al., 2017). Given a marked net ⟨N, M0⟩with    F = {M | M(p2) + 2M(p3) ≥3}.
+π = (TE, TI), the implicit reach of a marking M is a set of markings:                                         ∗                     We use σ ⊕t with σ ∈T ∗and t ∈T to denote the set of all
+RI(M) = {M′ ∈N|P| | M[σ⟩M′, σ ∈TI }.                           sequences generated by inserting transition t in σ. For example,
+                                                                                  t1t2 ⊕t3 =  {t1t2t3, t1t3t2, t3t1t2}. Hence, from the prospective
+Proposition 2.1 (Ma et  al., 2017). Given a marked net ⟨N, M0⟩     of the operator, the set of consistent sequences of observation
+where N = (P, T, Pre, Post) and its BRG B = (M, Tr, ∆, M0) with                                       w = aa is:
+respect to π = (TE, TI), the following two statements are equivalent:
+                                                                                    (t1t1 ⊕t7) ∪(t1t1t2 ⊕t7) ∪(t1t1t2t2 ⊕t7) ∪(t1t2t1t2 ⊕t7)
+    1. there exists a marking M and a firing                                        sequence in the form of                               ∪(t1t2t1t2t4 ⊕t7) ∪(t1t2t1t2t4 ⊕t7).                                               ∗
+     σ = σ1ti1 · · · σntinσn+1, where σj ∈TI  (for all j ∈{1, . . . , n+
+       1}), tij ∈TE (for all j ∈{1, . . . , n}), such that M0[σ⟩M;          Since M0[t1t1⟩2p2 + p6 /∈F and M0[t1t1t2⟩p2 + p3 + p6 ∈F, the
+                                                                 operator knows that the plant may have reached F but cannot be
+    2. there is a path in the BRG B
+                                                                         sure.
+                   (ti1 ,y1)             (ti2 ,y2)          (tin ,yn)                             However, by observing (any of) the next event the operator
+     M0 −−−→Mb,1 −−−→· · · −−−→Mb,n
+                                                             immediately knows that the plant must have ever reached F. In
+      such that M ∈RI(Mb,n).                                                 fact, if the next observed event is  ‘‘a’’, all sequences consistent
+
+                                                                   3
+
+Z. Ma, X. Yin and Z. Li                                                                                                          Automatica 131 (2021) 109713
+
+                                                                    diagnosis problem in the literature. By adding a dummy place q
+                                                             with Pre(q, ·) = 0 and Post(q, t) = 1 (resp., Post(q, t) = 0) for
+                                                                                       all faulty transitions (resp., non-faulty transitions) t, a transition
+                                                                    diagnosis problem can be transformed to a marking diagnosis
+                                                          problem of the transformed net with F = {M  | M(q) ≥1}.
+                                                           Such a procedure is illustrated in Fig. 2. Moreover, our method
+                                                             can be extended to cases where F is defined by multiple GMECs
+                                                                     (see Remark 4 in Section 5).
+
+                                           We define the fault language of a marking M with respect to a
+                                                                given set of faulty markings F as the set of all sequences having
+                                                                         at least one prefix that reaches set F, i.e.,
+Fig. 2. Illustration of the transformation from a transition diagnosis problem to
+its equivalent marking diagnosis problem.                                      LM,F = {σ ∈L(N, M) | ∃¯σ ∈Pr(σ), M[ ¯σ⟩M′ ∈F}.
+
+                                                           Note that this definition does not require that the final marking
+                                                              reached by the firing of σ belongs to set F. The fault language
+with w = aaa must contain t4, which implies that the plant
+                                                                        of an initial marking M0 is denoted by LM0,F. We say ‘‘trajectorynecessarily passes a faulty marking at which place p3 holds two
+                                                         M0[σ⟩passes F’’ or ‘‘sequence σ passes F’’ if σ ∈LM0,F.tokens. On the other hand, if the next event is  ‘‘b’’, the set of
+consistent sequences of w = aab is:
+                                                                  Definition 3.2 (Marking Diagnosability). Given an LPN G = (N, E,
+(t1t1t2t3 ⊕t7) ∪(t1t2t1t3 ⊕t7) ∪(t1t1t2t3t2 ⊕t7) ∪(t1t2t1t3t2 ⊕t7)     ℓ, M0) with N = (P, T, Pre, Post) and a set of faulty markings F,
+                                                                    plant G is diagnosable (with respect to F) if for all σ such that
+all of which pass F. In fact, for this LPN, the operator can always
+                                                   M0[σ⟩M ∈F, there exists an integer Kσ ∈N such that theknow that a faulty marking in F has ever been reached after
+                                                                   following condition holds:
+observing a finite number of events in the future.
+                                                     ∀σ ′ ∈ℓ−1(ℓ(σ)), ∀σ ′′ ∈T ∗:
+                                                                                                                                            (1)Remark 1. Note that, one cannot transform a marking diagnosis                   ′′                                                                        ′′                                                      σ ′σ  ∈L(N, M0) ∧|σ ′′| ≥Kσ ⇒σ ′σ  ∈LM0,F.
+problem to a transition diagnosis problem by simply defining
+a set of faulty transitions in the original net, since that the        In words, an LPN G is diagnosable if for any M0[σ⟩M where
+firing of a transition at one marking yields a faulty marking does  M ∈F, there exists an integer Kσ such that for all σ ′ ∈L(N, M0)
+not necessarily imply that the firing of such a transition always     that looks like σ, for all σ ′′ ∈T ∗that is a feasible continuation of
+leads to faulty markings. For instance, in the LPN in Fig. 1 of    σ ′ with length |σ ′′| ≥Kσ , trajectory M0[σ ′σ ′′⟩necessarily passes
+Example 3.1, although firing transition t1 twice at M0 yields a     F. Note that, by Definition 3.2, G is diagnosable when F  is not
+faulty marking, we cannot define t1 as a fault transition and use    reachable (since Eq. (1) is satisfied). However, we do not need to
+transition diagnosis method for this net.                          check the reachability of F in advance (see Remark 3 in Section 5).
+                                                                      Since a plant LPN G is assumed to be bounded, Eq. (1) in
+   In the sequel of this paper, we assume that a plant LPN G =                                                                      Definition 3.2 can be verified by using the reachability analysis.
+(N, M0, E, ℓ) with N = (P, T, Pre, Post) satisfies the following two                                                                              Specifically, one can construct the entire reachability graph, and
+assumptions:
+                                                             then reduce the marking diagnosability verification problem to
+  • A1: G is deadlock-free, i.e., at any reachable marking at least    an event diagnosability verification problem in it. However, this
+    one transition can fire;                                method is very exhaustive as the size of the reachability graph
+  • A2: G is bounded;                                                of a net is generally extremely large even if the net structure is
+                                                                           relatively limited. On the other hand, BRGs have been proved to
+Assumption A1 on deadlock-freeness is a common assumption                                                           be an efficient information structure to abstract the state space
+in the analysis of Petri nets with partial observation (Cabasino                                                                        of Petri nets (Cabasino et al., 2010; Ma et al., 2017; Ran et al.,
+et  al., 2010; Ran et  al., 2018). Assumption A2 guarantees that                                                             2018; Tong et al., 2017). Therefore, we aim to develop a method
+any BRG of a plant is bounded (Ma et al., 2017) regardless of                                                                     to efficiently solve Problem 1 by leveraging the structure property
+the basis partition. On the other hand, here we do not require                                                                        of the Petri net without computing the entire reachability graph.
+the acyclicity of the unobservable subnet, which is often needed
+in the literature. Moreover, we also assume that the set of faulty
+                                                                             4. Marking diagnosability verification in LPNs using dual ver-
+markings to be diagnosed, denoted as F ⊆Nm, is represented by
+                                                                              ifiers
+a generalized mutual exclusion constraint (GMEC).
+
+                                                                                   4.1. Fault-ness of basis markings
+Definition 3.1 (Giua et al., 1992). A GMEC is a pair (w, k), where
+w ∈Zm and k ∈Z, that defines a set of markings:
+                                                                          In the diagnosability verification of transition faults (Ran et al.,
+L(w,k) = {M ∈Nm | wT · M ≤k}.                                    2018), a particular type of BRG was used where fault transitions
+                                                                   are added to the explicit set TE such that their firings can be
+The token count of GMEC (w, k) at a marking M is the value of
+                                                                            explicitly tracked. On the other hand, as shown in Section 3, an
+wT · M. The quantity wT · C(·, t) is called the influence of t.
+                                                                        arbitrary BRG may not capture the information of faulty markings
+                                                                          for the purpose of marking diagnosis. To encode the informa-
+Remark 2.  Although defining the set of faulty markings by a     tion of faulty markings into a BRG, the following definition is
+single GMEC seems restrictive, we believe that using GMECs to     necessary.
+represent faults is general enough to capture existing notions
+of transition faults and the case of multiple faults. In fact, the    Definition 4.1.  Given an LPN G = (N, M0, E, ℓ), its BRG B =
+marking diagnosis problem whose set of fault markings is defined   (M, Tr, ∆, M0) whose basis partition satisfies TE ⊇To, and a set
+by a GMEC  is more general than the conventional transition     of faulty markings F = L(w,k):
+
+                                                                   4
+
+Z. Ma, X. Yin and Z. Li                                                                                                          Automatica 131 (2021) 109713
+
+                                                                        in which all fully faulty basis markings are faulty states (due to
+                                                                 the limit of space we do not address this in detail). On the other
+                                                               hand, there is no efficient method to guarantee the non-existence
+                                                                        of partially faulty basis markings except adding all transitions
+                                                             with non-zero influences into set TE. However, in Ma et al. (2017)
+                                               we have proved that elaborating set TE usually increases the
+                                                                         size of the resulting BRG simultaneously. In the next section we
+                                                              develop a verifier-like structure called a dual verifier to solve the
+                                                          problem without adding all transitions with non-zero influences
+                                                                      into set TE.
+
+                                                                                   4.2. Positive and negative BRGs
+
+                                                                          In this subsection, we show that the faulty and the non-faulty
+                       Fig. 3. The LPNs used in Example 4.1.                      trajectory can be separately encoded into two BRGs that are
+                                                             then composed to obtain a compact information structure. We
+                                                                                       first define two particular BRGs, namely the positive BRG and the
+                                                                     negative BRG.
+  • the set of faulty basis markings is defined as: F = {Mb ∈
+  M | RI(Mb) ⊆F};
+                                                                  Definition 4.2.  Given an LPN G = (N, M0, E, ℓ) and a set of  • the set of partially faulty basis markings is defined as: P =
+                                                                         faulty markings F = L(w,k), the positive BRG, denoted by B+ =    {Mb ∈M | [RI(Mb) ∩F̸ = ∅] ∧[RI(Mb) \ F̸ = ∅]};                                              (M +, Tr+, ∆+, M0), is the BRG with respect to basis partition
+  • a basis marking Mb ∈M \ (F ∪P) is said to be a non-faulty                                              π+ = (T E+ , TI+ ) where      basis marking.
+                                                      + = To ∪{t ∈T | wT · C(·, t) > 0}.                                                               T E   In plain words, a basis marking Mb is a faulty basis marking
+(resp., partially faulty basis marking) if all markings (resp., some    The negative BRG, denoted by B−= (M −, Tr−, ∆−, M0), is the
+                                                                                      −  −
+but not all markings) in its implicit reach belong to F. Since   BRG with respect to basis partition π−= (T E , T I  ) where
+the implicit subnet is acyclic, checking if a marking is faulty or     −
+                                                               T E = To ∪{t ∈T | wT · C(·, t) < 0}.partially faulty can be done by using the state equation of Petri
+nets.                                                                     In plain words, a positive (resp., negative) BRG is a BRG with
+   According to Proposition 2.1, each trajectory in an LPN  is     respect to the basis partition in which the set of explicit transi-
+associated to a path in a corresponding BRG and vice versa. Hence,     tions is the union of To and the set of transitions with positive
+one may intuitively conjecture that Eq. (1) can be verified by     (resp., negative) influence. Since the basis partitions π+ and π−
+inspecting the paths in a basis reachability graph, analogous to    are different, the sets of basis markings in a positive BRG and of a
+                                                                                                                                                                              +̸what was done in event diagnosability verification (Ran et  al.,    negative BRG are in general different (i.e., M = M −). To avoid
+2018). Unfortunately, such a conjecture is false.                      confusion, a basis marking in a positive BRG (resp., negative BRG)
+                                                                                       is denoted as M+b  (resp., M−b ). The sets of faulty basis markings
+Example 4.1.  Consider the LPN G shown in Fig. 3. Its BRG w.r.t.    and of partially faulty basis markings in B+ (resp., in B−) are
+                                                               +                                    +
+TE = {t1, t3, t4, t5, t6}, shown in the same figure, has five basis    denoted as F  and P+ (resp., F −and P−) accordingly. The TI -
+                                                                          −
+markings. Let us first consider set F1 = {M  | M(p3) ≥2}. Then    induced subnet (resp., the T I -induced subnet) is denoted as C+I
+F1 = ∅and P1 = {M1}. For path M0 →M1 →M2 →M3 whose     (resp., C−I  ). The implicit reach of a basis marking M+b in B+ (resp.,
+observation is abb, there exist two trajectories M0[t1t2t2t3t3⟩and   M−b  in B−) is denoted as RI+(M+b ) (resp., RI−(M−b )).
+M0[t1t2t3t2t3⟩, both of which coincide with abb, such that the        In the following we show how the non-faulty and faulty tra-
+former passes F1 while the latter does not.                             jectories are associated to paths in positive and negative BRGs,
+   As another example, consider F2 = {M  | M(p3) ≥1} such     respectively. First, the following proposition shows that any tra-
+that F2 = ∅and P2 =  {M1, M2}. Consider the same path     jectory that passes set F is associated to a path in the negative
+M0 →M1 →M2 →M3 whose observation is abb. In this case,   BRG B−which passes at least one basis marking M−b ∈F (note
+however, one can readily verify that all trajectories coinciding     that M−b ∈F does not require M−b ∈F).
+with abb necessarily pass F2 due to the firing of t3.
+   As the last example, consider the same F2 = {M | M(p3) ≥1}    Proposition 4.1.  Given an LPN G = (N, M0, E, ℓ), a set of faulty
+but a different path M0 →M1 →M4 whose observation is ac. In    markings F = L(w,k), and a negative BRG B−, there exists a sequence
+this case, all trajectories coinciding with ac are t1t5t∗6 that do not    σ ∈T ∗such that M0[σ⟩M ∈F  if and only if there exists a path φ
+pass F2.                                                                   in B−such that M0 φ−→M−b ∈F and ℓ(σ) = ℓ(φ).
+   Example 4.1 shows that, for the purpose of marking diagnosis,
+tracking basis markings in the abstracted basis space of a BRG    Proof.  (⇐)  is  trivial. For (⇒),  since M0[σ⟩M  ∈   F, by
+with TE ⊇To may not capture all trajectories of the original    Proposition 2.1 in B−there exists a path labeled by φ such that
+marking space. This is quite different from the previous BRG-   M0 φ−→M−b  , M ∈RI−(M−b ), and ℓ(σ) = ℓ(φ). Since wT · C(·, t) ≥0
+based methods in the literature where many important properties    holds for all t ∈T I− , for all markings M ∈RI−(M−b ), wT  · M ≥
+of Petri nets including marking estimation (Cabasino et al., 2010),    wT · M−b  holds. Hence M ∈F implies M−b ∈F. □
+transition diagnosability (Ran et al., 2018), and opacity (Tong et al.,
+                                                                   Second, we introduce the notion of faulty arcs in a positive2017) can be verified by simply inspecting the basis markings in
+                                                   BRG B+. We show that any trajectory that does not pass F  isan arbitrary BRG with TE ⊇To. Therefore, additional augmenta-
+                                                                    associated to a path that does not pass any faulty arcs in B+.tions have to be done to encode the faultness of trajectories into
+classical BRGs. We point out that if there are no partially faulty
+                                                                  Definition 4.3.  Given a set of faulty markings F = L(w,k) and abasis markings, then the methods in Kumar and Takai (2010) and
+                                                                                                                                                             (t,y)
+Zad et al. (2005) can be used by treating the BRG as an automaton     positive BRG B+, an arc M+b −−→is a faulty arc if M+b + CI · y ≤k.
+
+                                                                   5
+
+Z. Ma, X. Yin and Z. Li                                                                                                          Automatica 131 (2021) 109713
+
+Proposition 4.2.  Given an LPN G = (N, M0, E, ℓ), a set of faulty      The main features of a dual verifier are the following:
+markings F = L(w,k), and a positive BRG B+, there exists a sequence
+                                                                                      (M+b , γ +) andσ ∈L(N, M0) \ LM0,F  if and only if in B+ there exists a path                 1. in each state of a dual verifier, components                                                      (M−b , γ −) track the evolutions in the positive BRG and in
+         (ti1 ,y1)            (ti2 ,y2)                     (tin ,yn)                                   the negative BRG, respectively;
+                                                                                                  +  isMb0 −−−→M+b1 −−−→· · · M+bn−1 −−−→M+bn                                  2. in the  positive BRG component (M+b , γ +),  flag γ
+such that ℓ(σ) = ℓ(φ), φ = (ti1, y1) · · · (tin, yn) and all arcs on this          switched from 0 to 1 when and only when a faulty arc in
+                                                                       the positive BRG is passed;path are not faulty arcs.
+                                                                                    3. in the negative BRG component (M−b , γ −),  flag γ −is
+Proof. The (⇐) is trivial. To prove (⇒), let σ = σ1t1 · · · σntnσn+1          switched from 0 to 1 when and only when a basis marking
+                                             M−b ∈F in the negative BRG is passed.where σi ∈TI∗ , ti ∈TE. The following trajectory does not pass F:
+M0[σ1⟩[t1⟩M1[σ2⟩[t2⟩· · · [σn⟩[tn⟩Mn[σn+1⟩M.                         Definition 4.6. A cycle in a dual verifier d1 →d2 →· · · →dn →
+                                                                                                                                     1)) for all                                                                    d1 is said to be a confused cycle if di = ((M+bi , 0), (M−bi ,
+From σ1 we can extract a sequence σmin,1 that  is a minimal        i = 1, . . . , n.
+explanation of t1 and move the transitions that do not belong to
+σmin,1 after the firing of t1, i.e.,                                                Finally, we state the following result showing that marking
+                                                                      diagnosability in an LPN can be verified by checking the (non-)
+M0[σmin,1⟩[t1⟩M+b1[σ 1⟩M1[σ2⟩[t2⟩·′                   · · [σn⟩[tn⟩Mn[σn+1⟩M.               existence of confused cycles in the corresponding dual verifier.
+
+According to Cabasino et  al. (2010), this operation is feasible
+                                                    Theorem 4.1.  Given an LPN G = (N, M0, E, ℓ) and a set of faulty
+since the implicit subnet  is acyclic. Hence, in the rearranged
+                                                               markings F = L(w,k), G is diagnosable with respect to F  if and onlytrajectory, marking M+  is a basis marking in B+. Since for all                             b1                                                                         if the corresponding dual verifier D = (D, E, δ, d0) does not contain     +
+t ∈T I   , wT  · C(·, t) ≤0 holds, which indicates wT  · C+I   · y ≤    confused cycles.
+                                                        notwT  · C+I   · ˆy for all y ≥ˆy. Then M0[σmin,1⟩[t1⟩M+b1[σ 1⟩does′
+                            does not pass F. Let M+                                                 be the    Proof. (Only If) By contradiction, suppose that G is diagnosablepass F,  i.e., M+b1[σ 1⟩[σ2⟩[t2⟩·′               · ·                                                                       b1
+new initial basis marking and such reasoning can be repeatedly      w.r.t. F and there exists a confused cycle in D: d1 →d2 →
+                                                                                                                          1)) for i = 1, . . . , n.applied. Finally we reach a trajectory:                                               · · · →dn →d1, where di = ((M+bi , 0), (M−bi ,
+M0[σmin,1t1⟩M+b1[σmin,2t2⟩· · · [σmin,ntn⟩M+bn[σn+1⟩M′                        Following the same argument in Yoo and Lafortune (2002), in                                                                 the positive BRG and in the negative BRG there exist two infinite
+                                                                                                            (φ+)n                                                                                                                                          (φ−)n                                                                         φ+0                                                                                                φ−0such that all M+         + C+I   · yσmin,i /∈F. This completes the proof. □                         bi                                                             −−−→and                                                                                              −−−→,                                                                                                                               respectively,                                                                paths M0 −→M+                                                                         M0 −→M−                                                                                                               b1                                                                                                                                                b1
+                                                             such that ℓ(φ+0 (φ+)n) = ℓ(φ−0 (φ−)n) and the first trajectory does
+4.3. Marking diagnosability verification using dual verifiers            not pass F while the second trajectory passes F. Then, according
+                                                                     to Propositions 4.2 and  4.1, there exist two trajectories M0[σ⟩
+  Now we are ready to introduce the dual verifier that will                                       φ+0         (φ+)n         φ−0
+                                                         and M0[σ ′⟩that are associated to M0 −→M+b1 −−−→and M0 −→be used for the verification of marking diagnosability. Roughly
+                                                                                          (φ−)n
+speaking, a dual verifier is an automaton parallelly composed by   M−                                                             −−−→, respectively. This implies that the required Kσ  in                                                                                            b1
+a positive BRG and a negative BRG, in which each state is a tuple
+((M+b , γ +), (M−b , γ −)).                                                Definitionthat G is diagnosable.3.2 does not exist, which contradicts that assumption
+                                                                                                  (If) Suppose that G is not diagnosable w.r.t. F. This implies
+Definition 4.4. The dual-next                             function Ωd : (M + × Γ ) × (M −×     that there exist two sequences σ, σ ′ such that M0[σ⟩M ∈F,                 +Γ ) × (E ∪{ε}) →(M × Γ ) × (M −× Γ ), where Γ = {0, 1}, is                                                        M0[σ ′⟩M′ /∈F with ℓ(σ) = ℓ(σ ′), and there exist two sequences
+defined as:                                                                         ˆσ, ˆσ ′ where ℓ( ˆσ ′) =  ℓ(ˆσ) and σ(ˆσ)n, σ ′( ˆσ ′)n ∈L(N, M0) for
+                                                                        arbitrary n ∈  N. According to Propositions 4.2 and   4.1, in
+Ωd((M+b , γ +), (M−b , γ −), e) = {( ˆM+b , ˆγ +), (ˆM−b , ˆγ −)}                                                                 the positive and the negative BRG there exist two infinite paths
+                                                                   φ+0         (φ+)n              φ−0         (φ−)nwhere
+                                                                                                                               respectively,                                                  M0 −→M+b1 −−−→M+b1                                                                            and M0 −→M−b1 −−−→M−b1,
+⎧ (M+b , (t+, y+), ¯M+b ) ∈∆+, (M−b , (t−, y−), ˆM−b ) ∈∆−,              such that (i) ℓ(φ+0 ) = ℓ(φ−0 ) = ℓ(σ), ℓ(φ+) = ℓ(φ−) = ℓ(σ ′);
+  ℓ(t+) = ℓ(t−) = e,                                                               φ+0
+                                                                                     does not pass any faulty arcs; (iii) in                                                                                                 (ii) in B+ path M0 −→M+b1     {     +               (t+,y+)⎪⎪⎪⎪⎪⎪⎪⎪⎨                                     not a faulty arc,                        φ−0   ˆγ + =  0,  if γ = 0 ∧M+b −−−−→is                                                                                      passes at least one basis marking M−b ∈F.                                                B−path M0 −→M−b1          1, otherwise
+                                                              Hence, by the construction of Definition 4.5, in D there neces-
+                                                                                                                                                              1)).   ˆγ −=     { 0,  if γ −= 0 ∧ˆM−b /∈F,                                        sarily exists a path from ((M0, 0), (M0, 0)) to ((M+b1,                                                                                                                                 0), (M−b1,⎪⎪⎪⎪⎪⎪⎪⎪⎩        1, otherwise                                          Moreover, since the size of D is finite, in D there necessarily exists
+                                                                                                                                  1)) that is a                                                               a cycle ((M+b1, 0), (M−b1,                                                                                                   1)) →· · · →((M+b1, 0), (M−b1,
+Definition 4.5 (Dual Verifier). Given an LPN G = (N, M0, E, ℓ) and    confused cycle in D. □
+a set of faulty markings F = L(w,k), let B+ = (M +, Tr+, ∆+, M0)
+and B−= (M −, Tr−, ∆−, M0) be a positive BRG and a negative   Remark 3.  If F is not reachable, then B+ does not contain any
+BRG, respectively. A dual verifier is an automaton D = (D, E, δ, d0)     fault marking while B−does not contain any faulty arc. In such
+where (1) the state set D ⊆(M + × Γ ) × (M −× Γ ) where    a case, the flags in the corresponding dual verifier are all zero,
+Γ = {0, 1}; (2) the initial state d0 = ((M0, 0), (M0, 0)); (3) the    which tells that the plant is diagnosable.
+nondeterministic transition rule δ is defined as: for each e ∈
+                                                   Remark 4.  When F  is defined by a conjunction of GMECsE ∪{ε}:
+                                                       (W, k) ∈Nm×r × Nm×1, r ∈N, i.e., F = {M  | WT  · M ≤k}, by
+δ(((M+b , γ +), (M−b , γ −)), e) = Ωd((M+b , γ +), (M−b , γ −), e).            defining the positive and negative BRGs on TE+ = To ∪{t ∈T  |
+
+                                                                   6
+
+Z. Ma, X. Yin and Z. Li                                                                                                          Automatica 131 (2021) 109713
+
+
+
+
+
+Fig. 4. The positive BRG B+ of the LPN in Fig. 1 with T E+ = {t1, t3, t4, t6, t8}.      Fig. 6. (Part of) the dual verifier constructed from B+ in Fig. 4 and B−in
+Dashed arcs denote the faulty arcs.                                                            Fig. 5.
+
+
+                                                                    For a positive BRG and a negative BRG with |M +| and |M −|
+                                                                       basis markings, respectively, the corresponding dual verifier has
+                                                                         at most 2 · |M +| · |M −| states. Hence, the complexity of our
+                                                            approach is O(|M +| · |M −|). In comparison, the complexity of
+                                                                                       first establishing an event-diagnosis problem in the reachability
+                                                           automata of a plant LPN followed by using the conventional
+                                                                           verifier-based algorithm (Yoo & Lafortune, 2002) is O(|R(N, M0)|2).
+                                                                   Since many works (Cabasino et al., 2010; Ma et al., 2017; Tong
+                                                                        et al., 2017) in the literature have shown that |M +|, |M −| ≪
+                                                                  |R(N, M0)| in general, our method is practically more efficient
+                                             −                  than applying conventional methods on the manipulated reacha-
+Fig. 5. The negative BRG B−of the LPN in Fig. 1 with T E = {t1, t2, t3, t6, t8}.
+Basis markings M−bi ∈F are marked by dashed boxes.                              bility automaton. For instance,+  the LPN in Fig. 1 has 57 reachable                                                                markings, while the sets M  and M −in Example 4.2 only have
+                                                        14 and 22 basis markings, respectively. Note that in some ex-
+WT  · C(·, t) ≰0} and T E− = To ∪{t ∈T  | WT  · C(·, t) ≱0}, all    treme cases (e.g., all transitions are observable/all unobservable
+results in this section analogously hold. On the other hand, when     transitions are with self-loops) it may happen that the only valid
+                                                            −
+                                                                               are                                                            and T E                                                                              T E                                                                   + =  T E− =  T. In such cases our methodF  is defined by a disjunction of GMECs, i.e., F = ⋃ri=1 L(wi,ki),    T E+                                                               +the diagnosability of a plant can be verified by checking the     (in which M  = M −= R(N, M0)) has the same complexity
+diagnosability of each (wi, ki), since the plant is diagnosable if     of the conventional methods by manipulating the reachability
+and only if all (wi, ki)’s are diagnosable.                          automaton.
+   In practice, an operator of a plant is often interested in whether
+or not the resources in some places are overflowed or under-     5. Conclusion
+flowed, and thus set F is usually either right-closed (i.e., M ∈F
+implies ∀M′ ≥ M, M′ ∈  F) or left-closed (M ∈  F implies     We propose a framework for marking diagnosis of labeled
+∀M′ ≤M, M′ ∈F). A right- or left-closed set F can always be     Petri nets using basis reachability graph. An effective algorithm
+characterized by a set of conjunctive or disjunctive GMECs that      is developed to verify marking diagnosability of a plant based
+can be easily established when modeling a system.               on the dual verifier. In the future, we would like to extend our
+                                                         framework to the stochastic setting as well as the decentralized
+Example 4.2.  Let us consider again the LPN in Fig. 1 and a set     setting for labeled Petri nets.
+of faulty markings F = {M  | M(p2) + 2M(p3) ≥3}, i.e., F =
+L(w,k) where w =  [0, −1, −2, 0, 0, 0, 0, 0, 0, 0, 0]T, k = −3.    References
+Since wT  · C(·, t4) = 2 and wT  · C(·, t2) = −1, we choose
+T E + = {t1, t3, t4, t6, t8}, TE− = {t1, t2, t3, t6, t8}, and compute the      Basile,labeledF.,  Cabasino,time Petri M.net P.,systems.&  Seatzu,IEEE TransactionsC.  (2017). onDiagnosabilityAutomatic Control,analysis62(3),ofcorresponding positive BRG B+ and negative BRG B−, as depicted                                                                              1384–1396.
+in Figs. 4 and 5, respectively. For better readability, in these      Basile, F., Chiacchio, P., & Tommasi, G. De (2012). On K-diagnosability of Petri
+figures minimal explanation vectors are not drawn. The positive         nets via integer linear programming. Automatica, 48(9), 2047–2058.
+BRG B+ (Fig. 4) contains 14 basis markings while two arcs in      Basile, F., Cordone, R., & Piroddi, L. (2015). A branch and bound approach for
+                            (t4,yt2t2 )                  (t4,yt2t2 )                                  the design of decentralized supervisors in Petri net models. Automatica, 52,
+it are faulty: M4 −−−−→and M11 −−−−→where M4 = 2p2 +        322–333.
+p6, M11 = 2p2 + p10. The negative BRG (Fig. 5) contains 22 basis      Cabasino, M., Giua, A., Lafortune,  S., & Seatzu, C. (2012). A new approach for
+markings among which four basis markings M9 = p2 + p3 + p6,          diagnosability analysis of Petri nets using verifier nets. IEEE Transactions on
+M12 = 2p3 + p6, M19 = p2 + p3 + p10, and M21 = 2p3 + p10 belong      Cabasino,AutomaticM., Control,Giua, A.,57(12),& Seatzu,3104–3117.C. (2010). Fault detection for discrete event
+to set F.                                                                       systems using Petri nets with unobservable transitions. Automatica, 46(9),
+   The corresponding dual verifier consists of 111 states, and        1531–1539.
+hence only part of  it  is graphically presented in Fig. 6. This      Carvalho,  L.  K.,  Moreira, M.  V., &  Basilio,   J.  C.  (2017).  Diagnosability  of
+                                                                                         intermittent sensor  faults  in  discrete event systems. Automatica,  79(C),
+dual verifier does not contain any confused cycles, and hence by        315–325.
+Theorem 4.1 the plant LPN is diagnosable w.r.t. F. For instance,      Giua, A., DiCesare, F., & Silva, M. (1992). Generalized mutual exclusion constraints
+for trajectory M0[t1t1t2⟩p2 + p3 + p6 ∈F whose observation is          for Petri nets with uncontrollable transitions. In Proceedings of the IEEE int.
+aa, the corresponding state in the dual verifier is (M+4 , 0, M−9 , 1).           conf. on systems, man, and cybernetics, Chicago, USA (pp. 947–949).
+                                                                                      Giua, A., & Seatzu, C. (2005). Fault detection for discrete event systems using
+Then, from (M+4 , 0, M−9 , 1), the dual verifier will eventually move          Petri nets with unobservable transitions. In Proceedings of Joint 44th confer-
+to a state that double-flagged 1 such that the visit of some faulty         ence on decision and control and 2005 European control conference, Seville,
+markings can be determined.                                                  Spain (pp. 6323–6328).
+
+                                                                   7
+
+Z. Ma, X. Yin and Z. Li                                                                                                          Automatica 131 (2021) 109713
+
+
+Jiang,  S., Huang,  Z., Chandra, V., & Kumar, R. (2001). A polynomial algorithm     theory  in  discrete event systems, automaton and  Petri net  theories,  fault
+    for testing diagnosability of discrete-event systems. IEEE Transactions on      diagnosis/prognosis, resource optimization, and information security.
+    Automatic Control, 46(8), 1318–1321.                                                   Dr. Ma is a member of Technical Committee Member of IEEE Control System
+Jiroveanu, George, & Boel, René K. (2010). The diagnosability of Petri net models      Society (IEEE-CSS) on Discrete Event Systems. He is serving/has served as the
+    using minimal explanations. IEEE Transactions on Automatic Control, 55(7),      Associate Editor of the IEEE Conference on Automation Science and Engineering
+   1663–1668.                                                                      (CASE’17–’21), European Control Conference (ECC’19–’21), and IEEE International
+Kumar, R., & Takai, S. (2010). Decentralized prognosis of failures in discrete event     Conference on Systems, Man, and Cybernetics (SMC’19–’21). He is/was the Track
+    systems. IEEE Transactions on Automatic Control, 55(1), 48–59.                 Committee Member of the International Conference on Emerging Technologies
+Lafortune, S., Lin, F., & Hadjicostis, C. N. (2018). On the history of diagnosabil-     and Factory Automation (ETFA’17–’21).
+    ity and opacity in discrete event systems. Annual Reviews in Control, 45,
+   257–266.
+Ma, Z., Tong, Y., Li, Z., & Giua, A. (2017). Basis marking representation of Petri
+    net reachability spaces and its application to the reachability problem. IEEE
+    Transactions on Automatic Control, 62(3), 1078–1093.
+Moreira, M. V., Jesus, T. C., & Basilio, J. C. (2011). Polynomial time verification of                          Xiang Yin was born in Anhui, China, in 1991. He
+    decentralized diagnosability of discrete event systems. IEEE Transactions on                              received the B.Eng. degree from Zhejiang University in
+    Automatic Control, 56(7), 1679–1684.                                                                 2012, the M.S. degree from the University of Michigan,
+Ramirez-Trevino, A., Ruiz-Beltran, E., Aramburo-Lizarraga, J., & Lopez-Mellado, E.                       Ann Arbor, in 2013, and the Ph.D. degree from the
+    (2012). Structural diagnosability of DES and design of reduced Petri net                               University  of Michigan, Ann Arbor,  in 2017,  all  in
+    diagnosers. IEEE Transactions on Systems, Man, and Cybernetics  - Part A:                                   electrical engineering. Since 2017, he has been with
+    Systems and Humans, 42(2), 416–429.                                                                  the Department  of Automation, Shanghai  Jiao Tong
+Ran, N., Giua, A., & Seatzu, C. (2019). Enforcement of diagnosability in labeled                                University, where he  is an Associate  Professor. His
+    Petri nets via optimal sensor selection. IEEE Transactions on Automatic Control,                              research interests include formal methods, discrete-
+    64(7), 2997–3004.                                                                                  event systems, and cyber–physical systems.
+Ran, N., Su, H., Giua, A., & Seatzu, C. (2018). Codiagnosability analysis of bounded                                    Dr. Yin is serving as the co-chair of the IEEE CSS
+    Petri nets. IEEE Transactions on Automatic Control, 63(8), 1192–1199.                                                                                        Technical Committee on Discrete Event Systems, an Associate Editor for the Journal
+Sampath, M., Sengupta,  R., Lafortune,  S., Sinnamohideen, K., & Teneketzis, D.
+                                                                                                 of Discrete Event Dynamic Systems: Theory & Applications, and a member of
+    (1995).  Diagnosability  of  discrete  event  systems.  IEEE  Transactions on
+                                                                                 the IEEE CSS Conference Editorial Board. Dr. Yin received the IEEE Conference
+    Automatic Control, 40(9), 1555–1575.
+                                                                     on Decision and Control (CDC) Best Student Paper Award  Finalist in 2016.
+Tong, Y., Li, Z. W., Seatzu, C., & Giua, A. (2017). Verification of state-based opacity
+                                                                He  is the co-chair of the IEEE CSS Technical Committee on Discrete Event
+    using Petri nets. IEEE Transactions on Automatic Control, 62(6), 2823–2837.
+                                                                                 Systems.
+Yin,  X., &  Lafortune,  S.  (2015). Codiagnosability and  coobservability under
+   dynamic  observations:  Transformation and  verification.  Automatica,  61,
+   241–252.
+Yin, X., & Lafortune, S. (2017). Synthesis of maximally-permissive supervisors
+    for the range control problem. IEEE Transactions on Automatic Control, 62(8),
+   3914–3929.                                                                         Zhiwu Li received the  B.S., M.S., and Ph.D. degrees
+Yin, X., & Lafortune, S. (2019). A general approach for optimizing dynamic sensor                          from Xidian University in 1989, 1992, and 1995, re-
+    activations for discrete event systems. Automatica, 105, 376–383.                                            spectively. He joined Xidian University in 1992. His
+Yoo, T. S., & Lafortune, S. (2002). Polynomial-time verification of diagnosability                                 interests include discrete event systems and Petri nets.
+    of partially observed discrete-event systems. IEEE Transactions on Automatic                                                                                  He published two monographs in Springer and CRC
+    Control, 47(9), 1491–1495.
+                                                                                                              Press and 150+ papers in Automatica and IEEE Trans-
+Zad,  S.  H., Kwong,  R.  H., & Wonham, W. M.  (2005).  Fault  diagnosis  in
+                                                                                                                actions (mostly regular). He was a Visiting Professor
+    discrete-event systems: Incorporating timing information. IEEE Transactions
+                                                                                                                      at the University of Toronto, Technion (Israel Institute
+   on Automatic Control, 50(7), 1010–1015.
+                                                                                                                    of Technology), Martin-Luther University, Conservatoire
+                                                                                                           National des Arts et Métiers (Cnam), Meliksah Univer-
+                      Ziyue Ma received the B.S. degree and the M.S. de-                                       sitesi, and King Saud University. His work was cited by
+                        gree from Peking University, China, in 2007 and 2011,     engineers and researchers from more than 50 countries and areas, including
+                           respectively. In 2017 he got the Ph.D. degree in co-      prestigious R&D institutes such as IBM, Volvo, HP, GE, GM, ABB, and Huawei.
+                         tutorship between the School  of Electro-Mechanical     Now, he is also with the Institute of Systems Engineering, Macau University of
+                        Engineering of Xidian University, China (in Mechatronic     Science and Technology, Taipa, Macau.
+                         Engineering), and the Department  of  Electrical and          Dr. Li serves (served) an Associate Editor of the IEEE Trans. Automation
+                          Electronic Engineering of University of Cagliari, Italy     Science and Engineering, IEEE Trans. Systems, Man, and Cybernetics, Part A:
+                            (in Electronics and Computer Engineering). He joined     Systems and Human Beings, IEEE Trans. Systems, Man, and Cybernetics: Systems,
+                        Xidian University in 2011, where he  is currently an     IEEE Access  (also a Senior  Editor), and Information Sciences  (Elsevier). He
+                         Associate Professor in the School of Electro-Mechanical       is a recipient of Alexander von Humboldt Research Grant and Research in
+                         Engineering.  His  research  interests  include  control       Paris.
+
+
+
+
+
+                                                                   8

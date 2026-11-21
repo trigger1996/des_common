@@ -1,0 +1,515 @@
+Preprints of the 19th World Congress
+The International Federation of Automatic Control
+Cape Town, South Africa. August 24-29, 2014
+
+
+
+           A General Approach for Synthesis of
+                  Supervisors for Partially-Observed
+                                                ⋆                       Discrete-Event Systems
+
+                              Xiang Yin ∗St´ephane Lafortune ∗
+
+                        ∗Department of Electrical Engineering and Computer Science,
+                                University of Michigan, Ann Arbor, MI 48109, USA.
+                                    (e-mail:{xiangyin,stephane}@umich.edu)
+
+
+          Abstract: We revisit the synthesis of supervisors for partially-observed discrete-event systems
+          from a new angle, based on the construction of a new structure called the All Inclusive Controller
+            (or AIC). We consider control problems for safety speciﬁcations, where the legal language is a
+            preﬁx-closed sublanguage of the system language. We deﬁne the AIC as a bipartite transition
+           system that embeds all safe supervisors and thus all controllable and observable sublanguages
+             of the legal language. The structure of the AIC is that of a bipartite graph, reminiscent of
+           a game between the supervisor and the system, with (i) control states, where all safe control
+            decisions are enumerated, and (ii) system states, where all feasible observable system events are
+            executed. The states of the AIC are information states, i.e., subsets of system states. We present
+          an algorithm for the construction of the AIC. This algorithm exploits the pre-computation of
+           the so-called extended speciﬁcation, which makes the safety of a control state a function of the
+            current information state alone, thereby allowing for on-the-ﬂy construction of the AIC, if so
+             desired. We discuss the properties of the AIC. We also describe how the AIC can be used for
+            synthesis of supervisors that possess a desired maximality property.
+
+          Keywords: Discrete Event Systems; Supervisory Control and Automata; Partial Observation.
+
+                    1. INTRODUCTION                      et al., 1996], the authors gave an online algorithm, which
+                                                    computes a particular type of maximal solution for a
+This paper  is concerned with the control of partially-   preﬁx-closed language speciﬁcation. In [Yoo and Lafor-
+observed Discrete Event Systems (DES). Control problems   tune, 2006], where the preﬁx-closed assumption was re-
+for DES arise in the study of complex automated systems   laxed, the authors provided an algorithm that returns a
+where the behavior is inherently event-driven, as well as   nonblocking solution to this problem; however, the max-
+in the study of discrete abstractions of continuous, hybrid,   imal property cannot be guaranteed. This problem was
+and/or cyber-physical systems. The goal in this paper   also studied from diﬀerent angles by Overkamp and van
+is to  restrict the behavior of a DES within a preﬁx-   Schuppen [2000] and Arnold et al. [2003]. An alternative
+closed legal language, while accounting for the presence of   approach to the partial-observation control problem was
+uncontrollable and unobservable events, due to the limited   studied by allowing the supervisor to be nondeterministic.
+actuation and sensing capabilities in the plant. Unlike the   Control using nondeterministic supervisors was ﬁrst advo-
+fully-observed case, synthesizing a supervisor that achieves   cated by Inan [1994] and extended by Kumar et al. [2005],
+some speciﬁcation in the partially-observed case is more   in which a weaker notion of observability was studied.
+diﬃcult to deal with, since no supremal solution exists in
+                                                            Recently, a new structure called “most permissive observ-
+general. Thus, more general synthesis methodologies for
+                                                            er” was studied in dynamic sensor activation problems in
+supervisors under safety speciﬁcations are needed.
+                                        DES by Cassez and Tripakis [2008] and Dallal and Lafor-
+A number  of other works have considered  this prob-   tune [To appear]. This structure captures all controllers
+lem. The control of centralized partially-observed DES   (sensor activation policies) maintaining K-diagnosability.
+was initially studied by Lin and Wonham [1988], Cieslak   In this paper, motivated by this previous work, we deﬁne a
+et al. [1988]. The problem of synthesizing a safe and non-  new structure called All Inclusive Controller (AIC). How-
+blocking partial observation supervisor was shown to be   ever, what we aim to solve here is the standard supervisory
+decidable [Inan, 1994] and solvable [Yoo and Lafortune,   control problem under partial observation. In this new
+2006]. To deal with computational complexity of oﬀ-line   structure, we enumerate all “safe” control decisions that
+synthesis, online schemes for the computation of the su-   are possible at each information state. This structure con-
+pervisor were proposed in Heymann and Lin [1994] and   tains all possible control policies that generate controllable
+Ben Hadj-Alouane et  al. [1996]. In [Ben Hadj-Alouane   and observable sublanguages of the speciﬁcation; this jus-
+                                                                 tiﬁes naming this structure the “all inclusive controller”.⋆This work was partially supported by the NSF Expeditions in
+                                              The AIC can be used for ﬁnding one “optimal” solutionComputing project ExCAPE: Expeditions in Computer Augmented
+Program Engineering (grant CCF-1138860).                     with respect to some cost criterion.
+
+
+Copyright © 2014 IFAC                                     2422
+
+19th IFAC World Congress
+Cape Town, South Africa. August 24-29, 2014
+
+
+Compared with previous approaches, the main contribu-   Euc ⊆SP (s), ∀s ∈E∗o. We say that a control decision is
+tion of this paper is that we present a general approach for   admissible  if it satisﬁes the above constraint and deﬁne
+synthesizing a supervisor by deﬁning a new deterministic  Γ = {γ ∈2E  : Euc ⊆γ} as the set of admissible control
+structure and provide an algorithm for constructing this   decisions. The notation SP /G  is used to represent the
+structure. The structure of the AIC has the following prop-   controlled system and the language generated by SP /G,
+erties: (i) The AIC is deﬁned as a deterministic bipartite   denoted by L(SP /G), is deﬁned recursively in the usual
+transition system. This structure provides a more readily   manner.
+interpretable solution to this problem, since the alterna-
+                                                       For the sake of simplicity, we use the algorithm in thetion of states in the AIC captures the alternation between
+                                                     appendix of [Ben Hadj-Alouane et al., 1996] to pre-processcontrol decisions and observations; (ii) The construction of
+                                                          the trim automaton that generates K, denoted by H wherethe AIC can be achieved on-the-ﬂy, if so desired, since we
+                                             L(H) = K, and the original system model G, if necessary,prove that safety of a control decision is fully determined
+                                                        such that the resulting H and G satisfy the followingby the current information state, rather than by looking
+                                                               properties: (i) H  is a sub-automaton of G, denoted byforward or iterating; and (iii) The structure of the AIC
+                                H ⊑G and its state space is denoted by XH; and (ii)contains all solutions to this problem. Thus, it can serve
+                                                                                           if f(x, e) = y  is deﬁned in G and x, y ∈XH, thenas a basis for ﬁnding one maximal and/or one “optimal”
+                                                      fH(x, e) = y is also deﬁned in H. This means that thesolution w.r.t. some cost criterion.
+                                                               safety speciﬁcation K on L(G)  is fully captured by a
+This paper is organized as follows. Section 2 describes the   partition of the state space X of G into legal states, i.e.,
+deﬁnitions related to the information state and deﬁnes   those in XH, and illegal states, i.e, those in X \ XH. That
+the total controller. In Section 3, we deﬁne the recursive    is, any transition between legal states is also legal.
+structure of the AIC for the safety control problem. In
+                                                         Before moving forward, we deﬁne the following operatorsSection 4, we deﬁne the extended speciﬁcation, establish
+                                                          that will be used in this paper. The unobservable reacha number of results on safety, and provide an algorithm
+                                                                  of the subset of states S ⊆X under the subset of eventsto construct the AIC by using the extended speciﬁcation.
+                                                    γ ⊆E is given by, URγ(S) := {x ∈X  :  (∃u ∈S)(∃e ∈Section 5 establishes the correctness of the AIC and shows
+                                                      (Euo ∩γ)∗) s.t. x = f(u, e)}. The extended unobservablehow to synthesize a supervisor from it. We illustrate the
+                                                           reach of the subset of states S ⊆X under the subsetapplication of the AIC to a collision avoidance problem in
+                                                                  of events γ ⊆E  is given by, UR+γ (S) := URγ(S) ∪Section 6. Finally, we conclude in Section 7. Due to space
+                                                  {x ∈X : (∃u ∈URγ(S))(∃e ∈(Eo ∩γ)) s.t. x = f(u, e)}.constraints, all proofs have been omitted.
+                                              The observation transition  of the subset of states S ⊆X
+                                                     under observable event e ∈Eo is given by, Nexte(S) :=
+  2. SYSTEM MODEL, INFORMATION STATE AND                                                  {x ∈X : ∃u ∈S s.t. x = f(u, e)}.
+          TOTAL CONTROLLER
+
+                                                            2.2 Information State and Total Controller
+2.1 System Model
+
+                                         An information state (IS) is a subset IS ⊆X of states. We
+We assume basic knowledge of DES and common notations                                                       denote by I = 2X the set of information states. We will use
+(see, e.g., [Cassandras and Lafortune, 2008]). We model                                                   two kinds of states, Y -states, y ∈Y , and Z-states, z ∈Z.
+a DES as a deterministic ﬁnite-state automaton G =                                                               Speciﬁcally, Y is the set of information states (i.e., Y = I),
+(X, E, f, x0, Xm), where X  is the ﬁnite set of states, E                                                  and Z  is the set of information states augmented with
+is the ﬁnite set of events, f  : X × E →X is the partial                                                        enabled events (i.e., Z = I ×2E). We use the notation I(z)
+transition function where f(x, e) = y means that there is                                                  and C(z) denote z’s information state and control decision
+a transition labeled by event e from state x to state y, x0                                                      components, respectively, so that z = (I(z), C(z)). For
+is the initial state, and Xm is the set of marked states.                                                       example, consider the automaton in Figure 1; a Y -state
+f is extended to X × E∗in the usual way. The behavior                                                      y  is a state in the form of {1, 2} and a Z-state z  is a
+of the system is described by the preﬁx-closed language                                                               state in the form of ({1}, {a, c, uc}), where I(z) = {1} and
+L(G), generated by G. In this paper, we only deal with                                                   C(z) = {a, c, uc}. Also, we deﬁne the labeled transition
+preﬁx-closed languages (i.e., blocking is not considered).                                                                relation A ⊆Y × Γ × Z ∪Z × Eo × Y between Y and
+Therefore, we assume that Xm = X.                                                           Z-states as follows:
+In the supervisory control framework [Ramadge and Won-                                                        • A transition from a Y -state to a Z-state represents
+ham, 1987], a sublanguage K ⊆L(G) represents the                                                              the unobservable reach and “remembers” the set of
+desired or legal/safe behavior. A supervisor is imposed on                                                            enabled events from the Y -state that leads to  it.
+G with the task of dynamically enabling/disabling events                                                                Formally, (y, γ, z) ∈A is a transition from y to z,
+in order to achieve such a speciﬁcation. The event set E                                                                 labeled with γ ∈Γ, if:
+is partitioned into two disjoint subsets: Ec, the subset of
+                                                                          I(z) = URγ(y)  and  C(z) = γ        (1)controllable events, and Euc, the subset of uncontrollable
+events. Under the partial observation assumption [Lin and       This means that I(z) is the set of states reachable
+Wonham, 1988], E is also partitioned into the subset of       from some state in y through some string of enabled
+observable events, Eo, and the subset of unobservable        unobservable events, and that C(z)  is the control
+events, Euo. The natural projection, P  : E∗→E∗o, is        decision made in y. We write hY Z(y, γ) = z.
+deﬁned in the usual manner (see, e.g., [Cassandras and     • A transition from a Z-state to Y -state represents the
+Lafortune, 2008]). A partial observation supervisor is a        observation transition. Formally, (z, e, y) ∈A  is a
+function SP  : E∗o →2E, with the following constraints:        transition from z to y, labeled with e ∈C(z) ∩Eo, if:
+
+
+                                                        2423
+
+19th IFAC World Congress
+Cape Town, South Africa. August 24-29, 2014
+
+
+                                                  ISYSP (y, ϵ) := y                  3
+                                       hZY (hY Z(ISYSP (y, s), SP (P(s))), σ),
+           1      2     4     6                                         if σ ∈Eo ∩SP (P(s))                                                  ISYSP (y, sσ) :=  ISYSP (y, s),
+                             8                     undeﬁned,     ifotherwiseσ ∈Euo ∩SP (P(s))              5        7
+                                                                                                                       (3)
+Fig. 1. A ﬁnite state automaton G. Events are classiﬁed as   For brevity, we deﬁne ISYSP (y0, s) := ISYSP (s).
+     follows: Eo = {o, uc}, Euo = {a, b, c}, Ec = {a, b, c, o}
+    and Euc = {uc}. States 3 and 8 are illegal states.       Also, ISZSP (z, s) is deﬁned analogously, with ISZSP (s) :=
+                                              ISZSP (z0, s), where z0 = hY Z(y0, SP (ϵ)).         2
+                     y = Nexte(I(z))                (2)                                          Lemma 1. Given a supervisor SP , for any string s ∈
+    This means that y is the set of states reachable from   L(SP /G), we have I(ISZSP (s)) =  {v ∈X   :  ∃s′ ∈
+    some state in I(z) through an enabled observable   L(SP /G) s.t. P(s) = P(s′) ∧v = f(s′)}.
+     event e. We write hZY (z, e) = y.
+Example 1. Consider the automaton of Figure 1. For the   This lemma implies that the information state reached
+initial Y -state y0 = {1}, given control decision γ0 =   by supervisor SP upon the occurrence of string s is only
+{a, b, o}, by deﬁnition, the successor Z-state  is z0 =   determined by its projection. Thus, strings that have the
+hY Z(y0, γ0) = (URγ0(y0), γ0) = ({1, 2, 3}, γ0). Here, there   same projection should lead to the same information state.
+is only one observable event o in C(z0). Once event o
+occurs, the next Y -state is given by y1 = hZY (z0, o) =      3. ALL INCLUSIVE CONTROLLER FOR SAFETY
+Nexto(I(z0)) = {4, 5}, since f(1, o) = 5, f(2, o) = 4 and
+1, 2 ∈I(z0). However, the control decision γ0 is not a safe   In this section, we deﬁne the safety control problem we
+control decision at the initial state, because illegal state 3   need to solve and deﬁne the recursive structure of the AIC,
+could be reached before a new event is observed.            that contains all solutions to this problem.
+Deﬁnition 2.1. (Total Controller). The Total Controller   Deﬁnition 3.1. We say an information state i ∈I violates
+(TC) is deﬁned as a bipartite transition system T C(G) =   safety if there exist a state x ∈i such that x /∈XH. Thus,
+(Y, Z, A, Γ, E, y0), Here, Y and Z are the Y and Z-state   we deﬁne the safety binary function DI : I →{0, 1} as:
+sets, respectively and, A is the set of labeled transitions                             1,    if ∀x ∈i : x ∈XH
+deﬁned above where Γ and E are the respective label              DI(i) =   0,   otherwise                   (4)
+sets. The set A contains (i) all transitions from Y -states                                                                    2
+to Z-states  (all admissible control  decisions) and  (ii)
+                                                 Theorem 2. Supervisor SP maintains safety if and only ifall transitions from Z-states to Y -states (all observable
+                                                       DI(I(z)) = 1, for all reachable Z-states. Mathematically:events). The initial state is the Y -state corresponding to
+the initial information state, i.e., y0 = {x0}.       2          ∃s ∈L(SP /G) : z = ISZSP (s) ∧DI(I(z)) = 0
+                                                    ⇔∃s′ ∈L(SP /G) : f(s′) /∈XHSince the control decision for a Y -state may not be unique,
+we use the notation C(y) to denote the set of control                                                       This theorem allows us to transfer the partially-observed
+decisions from a Y -state y. Note that, C(y), y ∈Y , is a set                                                               safety control problem to the problem of ﬁnding a sub-
+of event sets (set of control decisions) and C(z), z ∈Z, is                                                     graph of the total controller, in which all reachable states
+a single event set (one control decision).                                                            are safe. To formally describe this transformation, let us
+Remark 1. Because the total controller contains all ad-   ﬁrst deﬁne the notion of safety for Y and Z-states.
+missible control decisions after each observation and all                                                       Deﬁnition 3.2. (Safety binary function for Y and Z-state).
+possible event observations after each control decision,                                      We say that a Y -state is safe if it is currently safe and there
+it contains all strings in L(G) and also every admissible                                                                   exists some supervisor that maintains the safety property
+supervisor. As a consequence, this structure contains all                                                                   for any future behaviors. Since we cannot choose event
+possible supervisors and languages generated by some                                                            occurrences, we say a Z-state  is safe  if  it  is currently
+controlled system, no matter safe or unsafe. Also, we                                                                 safe and all of its successor Y -states are safe. Thus, we
+observe that the a run of the bipartite structure (alter-                                                    deﬁne two safety binary functions, DY  : Y →{0, 1} and
+nation between control and observation) also results in an                                       DZ : Z →{0, 1} as follows:
+alternation between Y and Z-states.
+                                       (       if DI(y) = 1 and
+Remark 2. There  is a  special kind  of Z-state  in TC,                  1,                                          DY (y) =      ∃γ ∈Γ : DZ(hY Z(y, γ)) = 1          (5)
+which has no Y -state successors. Formally, we say that                                                                                   0,   else
+a Z-state z  is terminal  if (∀x ∈I(z))(∀e ∈(Eo ∩
+                                       (       if DI(I(z)) = 1 andC(z)))[f(x, e) is not deﬁned]. By deﬁnition, we know that                  1,
+                                                 DZ(z) =      ∀e ∈(C(z) ∩Eo) : DY (hZY (z, e)) = 1the total controller only ends up with a terminal Z-state.
+                                                                                   0,   else
+Deﬁnition 2.2. (Y -state Supervisor Induced Information                                                           (6)
+State  Evolution). Given a  supervisor SP , we deﬁne                                   2
+ISYSP (y, s) to be the Y -state that results from the occur-
+rence of string s, when starting in Y -state y. This can be  From these deﬁnitions, we see that there exists a safe
+computed recursively as follows:                            supervisor for G if and only if DY (y0) = 1, i.e., DI(y0) = 1
+
+
+                                                        2424
+
+19th IFAC World Congress
+Cape Town, South Africa. August 24-29, 2014
+
+
+and ∃γ0 : DI(I(z0)) = 1 and ∀e0 ∈γ0 ∩Eo : DI(y1) = 1,                                                   {1,4,5},{  }
+and so forth, where z0 = hY Z(y0, γ0) and y1 = hZY (z0, e0).                                   {4,5},
+                                                                                                                      { }          {1,2,4,5},{   ,  }
+By using information state evolution, we can say that G                                                                                                                            {   ,  }
+can be safely controlled if and only if ∃SP such that ∀s ∈            {1},                  {1,2},{  , }    {4,5}
+                                                                                                                                 {   ,   ,  }
+L(SP /G), DI(ISYSP (s)) = 1 and DI(I(ISZSP (s))) = 1. This                           {   ,  }      {   ,  }
+is the same conclusion that is reached from Thm. 2. Using                      {1}
+                                                                                                                                    {1,4,5},{   ,  }    {1,2,4,5},{   ,   ,  }
+the above deﬁnition, we say that a control decision γ is
+safe from Y -state y if DZ(hY Z(y, γ)) = 1, since we know          {1,2},{  }  {  }     { }                                                                                                                            { }
+that there exists a sequence of safe control decisions in                                  {1},{  }      {5}          {5,7},{  }
+the future. Now, we are ready to deﬁne the structure of
+the All Inclusive Controller that contains all solutions to                                                {5},
+safety control problem.
+                                                              Fig. 2. The corresponding AIC for Figure 1.Deﬁnition 3.3. (All Inclusive Controller). The All Inclu-
+sive Controller (AIC) is deﬁned as the largest safe sub-    of events such that some illegal state will be reached. To
+graph of the total controller that is reachable from state y0.   describe the extended speciﬁcation, we deﬁne a binary
+By the safe subgraph, we mean the subsystem of the total   function V  : X →{0, 1} 1 , where in the case of preﬁx-
+controller consisting only of safe Y and Z-states, and the   closed languages, 0 is assigned to a state if and only if it
+transitions between them. The notation AIC(G) is used   can uncontrollably reach an illegal state. Mathematically,
+to denote the AIC of automaton G.            2   ∃s ∈(Euc)∗: f(x, s) /∈XH ⇔V (x) = 0          2
+Remark 3. It is equivalent to deﬁne the AIC as the trim
+                                                       For example, in Figure 1, we have V (3) = V (8) = V (6) =
+of the total controller when removing Y -states such that
+                                                                     0, since 3 and 8 are illegal states and 6 can uncontrollably
+DY (·) = 0 and Z-states such that DZ(·) = 0. By Def.                                                            lead to illegal state 8. Note that the extend speciﬁcation
+3.2 DY (·) and DZ(·) are deﬁned recursively, therefore the                                                     can be calculated oﬄine all at once or online if so desired
+AIC structure (only) captures all safe control decisions.
+                                                                (see e.g. [Ben Hadj-Alouane et al., 1994]). In the remainder
+Therefore, any supervisor included in the AIC (will be
+                                                                  of this paper, we assume that the extended speciﬁcation
+well deﬁned by Def. 5.1) generates a legal language. It is
+                                                       has already been pre-calculated.
+not diﬃcult to see that the terminal states of the AIC also
+                                                       Deﬁnition 4.2. Similar to the safety binary function, weconsists of terminal Z-states.
+                                                    deﬁne the extended safety binary function for information
+Example 2. Let G be the automaton shown on Figure 1.
+                                                                states DeI : I →{0, 1} as:By our deﬁnition, the resulting AIC of G is shown in Figure
+2 (a formal construction algorithm will be given later).                             1,  ∀x ∈i : V (x) = 1                                                    DeI(i) =                                   (7)In the diagram of the AIC, rectangular states correspond                             0,   else
+to Y -states and oval states correspond to Z-states. For
+                                      We are now ready to prove two key theorems show thatinitial Y -state {1}, we cannot make control decision {a, b},
+                                              how we can determine the values of DY (·) and DZ(·) bybecause it will unobservably lead to illegal state 3 before
+                                                          using the extended speciﬁcation.a new event is observed. For Y -state {4, 5}, it is necessary
+to disable event a, for otherwise it will lead us to state,   Theorem 3. For any Y -state y, we have DY (y) = DeI(y).
+which will uncontrollably lead to an illegal state.          Theorem 4. For any Z-state z, we have
+Remark 4. Note that, in Figure 2, at the initial Y -state   DZ(z) = DeI(UR+C(z)(I(z))).
+y0 = {1}, we can also take control decision {o, c}. However,   Remark 5. Theorems 3 and 4 imply that the safety of a
+event c will never be executed within the resulting unob-  Y or Z-state solely depends on itself. We note that the
+servable reach, thus we regard event c as a “redundant”   safety of a Z-state is not solely information state based,
+event, and eliminate it from the control decisions. This   but also depends on its associated control decision, since
+situation also appears in other states. Formally, we say   adding a new observable event in the control list may lead
+that a control decision γ ∈Γ is irredundant at i ∈I  if,   to some illegal state, in which case even if its information
+for all e ∈γ, there exists x ∈URγ(i) such that f(x, e) is   state is safe, the extended unobservable reach can still be
+deﬁned. To make our structure as compact as possible, we   unsafe. That is why we also need to check the safety of
+only show the irredundant control decisions in Figure 2.      its extended unobservable reach, i.e., all reachable states
+                                                                                it could be in before the next control decision is issued.
+      4. THE EXTENDED SPECIFICATION AND        Corollary 5. (Monotonicity Properties).
+        CONSTRUCTION OF THE AIC                   (i)  If Y -state y1 is safe then so is any Y -state y2 ⊆y1.
+                                                                                (ii) Any control decision that is safe in Y -state y1 is also
+We ﬁrst present the extended speciﬁcation, which can be   safe in Y -state y2 ⊆y1.
+used to determine the safety of a Y or Z-state. Then we    (iii) If control decision γ1 is safe in Y -state y, then so is
+provide a construction algorithm for the AIC.             any control decision γ2 ⊆γ1.
+
+4.1 Extended Speciﬁcation                                  4.2 Construction of the AIC
+
+Deﬁnition 4.1. (Extended Safety Speciﬁcation). The ex-   Deﬁnition 3.2 provides us an obvious means for construct-
+tended speciﬁcation is deﬁned as the set of states that   ing the AIC. Since the safety of a Z-state  is deﬁned
+should never be reached because even if all events in Ec are    1 This binary function was expressed as a cost function V  : X →
+disabled forever thereafter, there still exists some sequence    {0, ∞} in [Ben Hadj-Alouane et al., 1994].
+
+
+                                                        2425
+
+19th IFAC World Congress
+Cape Town, South Africa. August 24-29, 2014
+
+
+Algorithm 1                                             terminate. Note that the ﬁnal output of this Algorithm
+                                                                               is sl and the initial call is DoDSF(G, y0, V, ∅, E).
+  1: procedure DoDFS(G, y, V, sl, E)
+                                                 Theorem 6. DoDFS correctly constructs the AIC.  2:    for all el ⊆E.c do
+  3:       Act ←el ∪E.uc                                 Proposition 7. The running time of DoDFS is in
+  4:       eur ←UR+Act(y)                                   O([2(|X|+|Ec|)]|X||E|). The number of states in the AIC,
+  5:          if [(∀x ∈eur)V (x) = 1] then                      in the worst case, is [2|X| + 2(|X|+|Ec|)].
+  6:        Add (y, Act) to sl
+  7:         Mark y as “safe”                                                5. PROPERTIES OF THE AIC
+  8:      end if
+  9:   end for                                           In  this  section, we ﬁrst prove the correctness  of the
+ 10:      if y is not marked “safe” then                   AIC, i.e., that this structure contains all possible control
+ 11:      Mark y as “unsafe”                                 policies that generate the  controllable and observable
+ 12:   end if                                           sublanguages of the speciﬁcation. Then we discuss how to
+ 13:    for all el ⊆E.c s.t (y, el ∪E.uc) ∈sl do            synthesize a supervisor from the AIC and study a special
+ 14:       Act ←el ∪E.uc                               kind of supervisor which is solely information state based.
+ 15:       ur ←URAct(y)
+ 16:        for all e ∈Act ∩E.o do                         5.1 Correctness of the AIC
+ 17:          next ←Nexte(ur)
+ 18:               if next not marked then             We start by revisiting the well-known properties of con-
+ 19:           DoDFS(G, next, V, sl, E)                     trollability and observability. We say that a preﬁx-closed
+ 20:        end if                                    sublanguage K is controllable if, (∀s ∈K, σ ∈Euc)(sσ ∈
+ 21:      end for                                 L(G) ⇒sσ ∈K); and K is observable if, (∀s, s′ ∈K, σ ∈
+ 22:   end for                                        Ec)(P(s) = P(s′) ∧sσ ∈K ∧s′σ ∈L(G) ⇒s′σ ∈K).
+ 23: end procedure                                   Then, we ﬁrst deﬁne the notion of the AIC included su-
+                                                             pervisor and then use this concept to deﬁne the notion of
+                                                          the AIC included language.universally, to determine whether it is safe or not, one
+way is searching through the whole (Y and Z) state space   Deﬁnition 5.1. (AIC Included Supervisor). A supervisor
+until all remaining reachable states are either known to be   SP  : E∗o →Γ is said to be included in AIC(G) if,
+unsafe, or have already been visited. This approach does                                                                (∀s ∈L(SP /G))[SP (P(s)) ∈C(ISYSP (s))]work, but is worse in computational complexity. Recalling
+                                      We use the notation S(AIC(G)) to denote the set ofthe previous results, Thm. 3 and Thm. 4 allow us to
+                                                            supervisors included in AIC(G).              2use the extended speciﬁcation to simplify this problem by
+replacing this whole search by a single calculation each   Deﬁnition 5.2. (AIC Generated Language). A language L
+time we would like to determine the safety of a particu-    is said to be generated by AIC(G) if,
+lar information state. At any Y -state, we can determine            (∃SP ∈S(AIC(G)))[L(SP /G) = L]
+whether or not taking control decision γ is safe through                                      We use the notation LAIC(AIC(G)) to denote the set of
+three steps: ﬁrst, we compute z = hY Z(y, γ); second, we                                                         languages generated by AIC(G).             2
+compute the extend unobservable reach of I(z) under γ,
+                                                Remark 6. By the Controllability and Observability The-
+eur = UR+γ (I(z)) and, third, we verify whether or not the                                                 orem (see, e.g., [Cassandras and Lafortune, 2008]), for a
+information state eur satisﬁes the extended speciﬁcation.
+                                                           preﬁx-closed language L, controllability and observability
+Since UR+γ (y) = UR+γ (I(z)) for z = hY Z(y, γ), steps 1 and                                                            are necessary and suﬃcient conditions for the existence
+2 can be collected as one step.
+                                                                  of a supervisor SP such that L(SP /G) = L. Thus, the
+The construction algorithm for the AIC is shown in Algo-   statement of synthesizing a controllable and observable
+rithm DoDFS, which is based on a depth-ﬁrst search. The   sublanguage and the statement of synthesizing a supervi-
+parameters in this algorithm are as follows: G represents   sor to restrict the behavior are equivalent. We can deﬁne
+the system for which we want to construct the AIC, y rep-   either notion ﬁrst, and it will lead to the same result.
+resents a Y -state, V represents the extended speciﬁcation   Theorem 8. There exists a supervisor SP  for system G
+which has been pre-computed, and E contains the sets of   such that L(SP /G) ⊆L(H) iﬀAIC(G) is non-empty.
+events Ec, Euc, Eo and Euo. Lines 2-12 are used to ﬁnd
+the safe control decisions. This is done by considering each  We are now ready to prove the correctness of the AIC. The
+subset of events el ⊆E.c, and determining whether it is   next results shows that the AIC structure (only) contains
+safe or not to choose to enable events Act = el ∪E.uc. For    all solutions to the partially-observation control problem.
+each control decision, we compute its extended unobserv-                                                 Theorem 9.  If AIC(G) is non-empty, then
+able reach, and determine the value of DeI(UR+Act(y)). If
+                                                    (L = L ⊆L(H) ∧L is observable ∧L is controllable)the control decision is safe, then we add y to the state list
+sl and we mark y as safe. Lines 13-22 are used to traverse         ⇔L ∈LAIC(AIC(G))
+the space of Y -states. This is done by considering all safe
+control decisions of the current Y -state, determining the   5.2 State Based Property of the AIC
+next Z-states and, for each such Z-state, computing all
+possible Y -state successors and making a recursive call.   Theorem 9 provides us with a clear way for synthesizing
+Since the number of information states and the number   a supervisor. By Def. 5.1, since safety is the only issue we
+of events are both ﬁnite, the algorithm will eventually   consider, then for any string s, the control decision made
+
+
+                                                        2426
+
+19th IFAC World Congress
+Cape Town, South Africa. August 24-29, 2014
+
+
+
+based on the projection P(s) must be within the control
+                                                                             Vehicle X is controllable;                                            decision set of its corresponding information state ISYSP (s)                                                 We can choose velocity V={2,3},                5in the AIC,  i.e., for each Y -state y, we can arbitrarily
+                                                                                   with disturbance 0≤d<1;
+choose a control decision which is deﬁned in the AIC, and
+                                                                                                                It can not be measured perfectly,
+following the same step after a new observation, and so                                                      6
+                                                                                     xˆ  x  e,   emax  0.5forth, until reaching a terminal Z-state.
+                                             Vehicle Y is uncontrollable,          Y  7As discussed above,  if we  solely consider  safety, then            with constant velocity v=3;
+randomly picking a control decision at each information                  It can be measured perfectly.                        7.5
+state does satisﬁes the requirement; however, in most                                                      8
+of the cases, we would like to do more. There are two          X
+issues to consider.  First, randomly choosing a control
+decision can only guarantee  safety; however, in many          2     3     4     5     6     7 7.5 8          9.5
+situations, we want to ﬁnd a maximal solution. Second,      Goal: Two vehicles successfully cross the             9.5by Def. 5.1, we know that an AIC included supervisor                                                                                         intersection (red region), without collision
+is string based, not information state based. Thus, to                                                                              (avoid being in the intersection at the same time).
+synthesize a supervisor from the AIC,  it  is possible to
+take diﬀerent control decisions upon diﬀerent visits to
+                                                              Fig. 3. An vehicle control problemthe same state. However, for many purposes (e.g., saving
+the memory of the controller), it is desirable to restrict                                                        and, (ii) ∀c′′ ∈C(y) satisfying (i): Puo(c)̸ ⊂Puo(c′′), where
+attention to information-state-based supervisors, rather                                                          Puo(c) means eliminate all observable events in c.
+than remembering all the histories.
+                                                   Example 3. Consider again the example we studied in
+Deﬁnition 5.3. (IS-Based Supervisor) A partially-observed                                                          Figures 1 and 2. We want to synthesize the IS-based
+supervisor SP  : P(L(G)) →2E is said to be information-                                                            supervisor of Prop. 12. For initial Y -state {1}, we can
+state-based (IS-based)  if (∀s, t ∈L(SP /G))[ISYSP (s) =   pick control decision {b, o} and take {b, c, o} at {4, 5}.
+ISYSP (t) ⇒SP (P(s)) = SP (P(t))].             2   Since the only successor Y -state of the Z-state reached
+                                                   by taking {b, c, o} from {4, 5} is itself, we ﬁnish the syn-
+The above deﬁnition means the following. If a supervisor
+                                                                 thesis procedure and the closed-loop language is {(boc)∗o}.is IS-based, it implies that it will take the same control
+                                                          Here, the supremal and normal language is empty, clearlydecision every time it visits the same information state.
+                                                   L(H)↑(CN) ⊆L(SI/G). Furthermore, we see that L(SI/G)Thus, an IS-based supervisor can be deﬁned as SI  : I →
+                                                                               is also a maximal language.2E. We deﬁne SI(AIC(G)) ⊆S(AIC(G)) as the set of
+IS-based supervisors included in the AIC. Clearly, the
+cardinality of SI(AIC(G)) is ﬁnite.                                           6. ILLUSTRATIVE EXAMPLE
+
+It is well known that the property of observability is more                                                       This section is devoted to an example of a collision avoid-
+diﬃcult to deal with than the property of controllability,                                                       ance problem in vehicular networks. The example is to
+because it is not preserved under union in general, i.e., the
+         ↑O                                                      illustrate the application of the proposed AIC structure.operation    does not always exist. As stated above, we                                                       For more details (modeling and analysis) about the super-
+usually wish to ﬁnd a maximal (w.r.t. set inclusion) solu-                                                             visory control of vehicular networks, the reader is referred
+tion. Unfortunately, in general, not all maximal solutions                                                            to [Dallal et al., 2013]. Here, we will only brieﬂy introduce
+can be expressed by IS-based supervisors. However, in                                                  and use results from that work.
+some special cases, IS-based supervisors provide a simple
+way for us to ﬁnd maximal solutions. We present three   Each vehicle is modeled by ˙x = v + d, where x ∈X ⊂R is
+results in this regard.                                     the state, v ∈V ⊂R is the control input, and d ∈D ⊂R
+                                                                               is the disturbance input. Moreover, we assume that theProposition 10. There exists at least one IS-based super-
+visor SI ∈SI(AIC(G)) such that L(SI/G) is a maximal   measurement is imperfect, i.e., ˆx = x + e, ||e||∞≤emax,
+                                                    where  ˆx ∈X ⊂R  is the measurement value. In ourcontrollable and observable sublanguage.
+                                                              particular problem, as shown in Figure 3, we assume that
+Proposition 11. Assume that Ec ⊆Eo. If L ⊆L(H) is                                                               vehicle X is controllable and can take velocity v = 2 or 3
+a maximal controllable and observable sublanguage, then
+                                                       with disturbance 0 ≤d < 1 and measurement uncertainty
+there exists an IS-based supervisor SI ∈SI(AIC(G)) such
+                                                    emax = 0.5; vehicle Y  is uncontrollable, with constantthat L(SI/G) = L.                                                                velocity v = 3, however, its position can be measured
+Proposition 12. There exists an IS-based supervisor SI ∈    perfectly,  i.e., emax = 0. Our goal is to guarantee that
+SI(AIC(G)) such that L(H)↑(CN) ⊆L(SI/G), where    all vehicles successfully cross the intersection safely, i.e.,
+↑(CN) is the supremal controllable and normal sublanguage   by avoiding being in the intersection at the same time.
+operation.                                                           It is shown in [Dallal et al., 2013] that the problem of
+                                                              synthesis a safe supervisor for the continuous system can
+The supervisor in Proposition 10 can be constructed by                                                    be transferred into a DES control problem by proper
+taking a ﬁxed control decision c ∈C(y), such that ∀c′ ∈                                                              abstraction. Furthermore, we assume that the initial state
+C(y)  :  c̸ ⊂c′, for any reachable Y -state y. Proposition                                                                  of the continuous system is (2, 6) and at discrete event
+12 could be regarded as a corollary of Theorem 5 in                                                                        level, the prior information for X is {1, 2, 3}.
+[Ben Hadj-Alouane et al., 1996]. Such a supervisor can be
+constructed as follows. For each Y -state y ∈Y , pick a ﬁxed  The DES model G of this system by abstraction is shown in
+control decision c ∈C(y), such that: (i) ∀c′ ∈C(y) : c̸ ⊂c′   Figure 4, where: events in layer Λ represent measurements,
+
+
+                                                        2427
+
+19th IFAC World Congress
+Cape Town, South Africa. August 24-29, 2014
+
+
+
+                                                   whose structure contains all the solutions to the problem.
+                       {1,2},6     {2,3},6        {2},6                         Also, we deﬁned the extended speciﬁcation, established
+                   {1,2},9         {2,3},9             {2},9                      several results on safety, and provided an algorithm to
+              {1,2},9       {2,3},9      {3,4},9          {2},9      {3},9            eﬀectively construct the AIC by making use of the ex-
+         {3,4},9    {4,5},9      {5,6},9     {6,7},9    {4},9   {5},9    {6},9        tended speciﬁcation. Finally, the correctness of the AIC
+      {3},9  {3,4},9   {4},9   {4,5},9  {5},9   {5,6},9   {6},9   {6,7},9   {7},9      was proved and how to synthesize a supervisor based on
+     {3},12 {3,4},12  {4},12  {4,5},12 {5},12 {5,6},12  {6},12  {6,7},12 {7},12      the information state was discussed. In the future, we will
+                                                                 investigate: 1) improving the eﬃciency of our construc-
+ {3},12 {4},12 {3,4},12 {4,5},12 {5},12 {5,6},12 {6},12 {6,7},12 {7},12 {7,8},12 {8},12
+                                                              tion algorithms; 2) extending to decentralized structure;
+     {5,6},12 {7},12 {6,7},12  {7,8},12 {8},12 {8,9},12 {9},12 {9,10},12{10},12
+                                                            3) dealing with non-preﬁx-closed languages, i.e., blocking
+ {5},12    {6},12                                              {10,11},12 {11},12
+                                                         (deadlock and livelock) should be considered; and 4) ﬁnd-
+                                                            ing a single optimal controller, w.r.t. some cost criterion.
+Fig. 4. The DES model G for Figure 3
+
+                                   {  }                                    REFERENCES
+                                                    {   }
+                                                    A. Arnold, A. Vincent, and  I. Walukiewicz.  Games
+                ({1,2},6)                                                ({2,3},6)                                                                           ({2},6)                                                                     for synthesis  of controllers with partial observation.
+                       {3}             {2}                                                       {2}   {2}       {2,3}                                                                          {2,3} {3}                                                                Theoretical Computer Science, 303(1):7–34, 2003.
+                                                               ({2,3},9)                                                                            ({2,3},9)                                                                                        ({2,3},9)                              ({1,2,3},9)                ({1,2,3},9)  ({1,2,3},9)                                                ({2,3,4},9)                                                    N.                                                 Ben Hadj-Alouane,                                                                                        S. Lafortune,                                                                                and                                                                                                F. Lin.                                                                                                           Variable                           {3}                                          {2}                                                       {2}                                                                       {2,3}                                                                            {3}                 {2,3}     {2}                                    2                      3           2   2                               3                                                    2                                                               2                                                                    3                                                                            3                                                         lookahead                                                                        supervisory                                                                                        control with                                                                                                        state                                                                                                        information.
+  ({3,4,5},9)                 ({4,5,6},9)                         ({4,5},9)              ({5,6},9)      IEEE Trans. Autom. Control, 39(12):2398–2410, 1994.
+        {  }                    {  }                          {  }               {  }
+  ({3,4,5},9)                 ({4,5,6},9)                         ({4,5},9)              ({5,6},9)     N. Ben Hadj-Alouane, S. Lafortune, and F. Lin.  Cen-
+    {  }                       {   }                          {  }               {  }          tralized and distributed algorithms for on-line synthesis
+                                                                     of maximal control policies under partial observation.
+                                                              Discrete Event Dyn. Syst.: Theory Appl., 6(4):379–427,
+    ({3},9)        ({3,4},9)      ({4},9)       ({4,5},9)      ({5},9)       ({5,6},9)     ({6},9)
+       {2}or{3}or    {2}or{3}or   {2}or{3}or   {2}or{3}or   {2}or{3}or                 1996.                                                                     {2}        {2}             {2,3}           {2,3}           {2,3}           {2,3}           {2,3}               C.G. Cassandras and S. Lafortune.  Introduction to Dis-
+                                                            ({5,6},12)  ({3,4},12)                                ({4,5},12)                ({3,4,5},12)                                              ({4,5,6},12)                                                                  crete                                                            Event                                                                      Systems.                                                                                     Springer,                                                                             2nd edition,                                                                                                       2008.                                                                           ({5,6,7},12)                                                                                       ({6,7},12)                            {2}or{3}                                                     {2}or{3}   {2}or{3}               {2}or{3}                                         {2}or{3}                                                                  {2}
+                                or{2,3}                                                          or{2,3}    or{2,3}                 or{2,3}                                             or{2,3}                                                                             {2}     F.                                                          Cassez                                                          and                                                                               S. Tripakis.                                                                                    Fault diagnosis                                                                                             with                                                                                                                       static and
+                                                    dynamic observers. Fund. Inform., 88(4):497–540, 2008.
+                                                     R. Cieslak, C. Desclaux, A.S. Fawaz, and P. Varaiya. Su-
+                                                              pervisory control of discrete-event processes with partial
+Fig. 5. The All Inclusive Controller for G                                                                observations. IEEE Trans. Autom. Control, 33(3):249–
+which are uncontrollable but observable; events in layer     260, 1988.
+Uuc represent the actions of uncontrollable vehicles, which   E. Dallal and S. Lafortune. On most permissive observers
+are uncontrollable and unobservable; events in layer D      in dynamic sensor activation problems. IEEE Trans.
+represent the disturbances, which are uncontrollable and     Autom. Control, To appear.
+unobservable; and events in layer Uc represent the actions   E. Dallal, A. Colombo, D. Del Vecchio, and S. Lafortune.
+of controllable vehicles, which are controllable and observ-     Supervisory control for collision avoidance in vehicular
+able. By the safety criteria provided in [Dallal et al., 2013],     networks with imperfect measurements. In Proc. 52th
+we know that states ({9, 10}, 12), (10, 12), ({10, 11}, 12)    IEEE Conf. Decision Contr., 2013.
+and (11, 12) are illegal, because two vehicles are possibly  M. Heymann and F. Lin.  On-line control of partially
+colliding in the intersection.                                 observed discrete event systems.  Discrete Event Dyn.
+                                                                     Syst.: Theory Appl., 4(3):221–236, 1994.
+By our construction algorithm, the AIC for G is shown in   K. Inan. Nondeterministic supervision under partial obser-
+Fig. 5. For simplicity, we use a single state qm to represent      vations. In 11th International Conference on Analysis
+the set of states in which at least one vehicle has already     and Optimization of Systems: Discrete Event Systems,
+crossed the intersection. Following the properties discussed     pages 39–48. Springer, 1994.
+in the previous sections, the AIC contains  all possible   R. Kumar, S. Jiang, C. Zhou, and W. Qiu. Polynomial
+safe control policies for this problem. Note that in this      synthesis of supervisor for partially observed discrete-
+model the event set satisﬁes Ec ⊆Eo. By Prop. 11, we see     event systems by allowing nondeterminism in control.
+that the unique (IS-based) maximally permissive solution    IEEE Trans. Autom. Control, 50(4):463–475, 2005.
+exists; it consists of the decisions highlighted in Fig. 5. The   F. Lin and W.M. Wonham. On observability of discrete-
+intuition of the solution is that, in the worst case (largest     event systems. Inform. Sciences, 44(3):173–198, 1988.
+measurement uncertainty and largest disturbance), vehicle   A. Overkamp and J.H. van Schuppen. Maximal solutions
+X should keep the slowest velocity, waiting for vehicle Y      in decentralized supervisory control. SIAM J. Control
+to cross the intersection ﬁrst, in order to guarantee no     Optim., 39(2):492–511, 2000.
+collision will ever happen.                                     P.J. Ramadge and W.M. Wonham.  Supervisory control
+                                                                     of a class of discrete event processes. SIAM J. Control
+                      7. CONCLUSION                       Optim., 25(1):206–230, 1987.
+                                                              T.-S. Yoo and S. Lafortune.  Solvability of centralized
+We revisited the problem of synthesizing a controllable and     supervisory control under partial observation. Discrete
+observable safe sublanguage for a partially observed dis-     Event Dyn. Syst.: Theory Appl., 16(4):527–553, 2006.
+crete event system. We deﬁned the All Inclusive Controller,
+
+
+                                                        2428

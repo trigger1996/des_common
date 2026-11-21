@@ -1,0 +1,1073 @@
+1630                                                IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 66, NO. 4, APRIL 2021
+
+  On Approximate Opacity of Cyber-Physical
+                Systems
+
+                Xiang Yin    , Member, IEEE, Majid Zamani    , Senior Member, IEEE,
+                          and Siyuan Liu    , Student Member, IEEE
+
+
+
+  Abstract—Opacity is an important information-ﬂow se-                                     I. INTRODUCTION
+curity property in the analysis of cyber-physical systems.
+It captures the plausible deniability of the system’s secret   A. Motivations
+behavior in the presence of an intruder that may access
+                                                           YBER-physical systems (CPSs) are complex systemsthe information ﬂow. Existing works on opacity only con-
+sider nonmetric systems by assuming that the intruder         resulting from tight interactions of dynamical systems            C
+can always distinguish between two different outputs pre-  and computational devices. Such systems are generally very
+cisely. In this article, we extend the concept of opacity  complex posing both continuous and discrete behaviors, which
+to systems whose output sets are equipped with met-  makes the veriﬁcation and design of such systems signiﬁcantly
+rics. Such systems are widely used in the modeling of
+                                                                challenging. In particular, components in CPSs are usuallymany real-world systems whose measurements are phys-
+ical signals. A new concept called approximate opacity is   connected via communication networks in order to acquire and
+proposed in order to quantitatively evaluate the security   exchange information so that some global functionality of the
+guarantee level with respect to the measurement precision   system can be achieved. However, this also brings new chal-
+of the intruder. Then, we propose a new simulation-type   lenges for the veriﬁcation and design of CPSs, since the commu-
+relation, called approximate opacity-preserving simulation
+                                                                  nication between system components may release informationrelation, which characterizes how close two systems are
+in terms of the satisfaction of approximate opacity. This   that might compromise the security of the system. Therefore,
+allows us to verify approximate opacity for large-scale, or  how to analyze and enforce security for CPS is becoming an in-
+even inﬁnite, systems using their abstractions. We also   creasingly important issue and has drawn considerable attention
+discuss how to construct approximate opacity-preserving   in the literature in the past few years [1], [2].
+symbolic models for a class of discrete-time control sys-
+                                                                  In this article, we investigate an important information-ﬂowtems. Our results extend the deﬁnitions and analysis
+techniques for opacity from nonmetric systems to metric   security property called opacity. Roughly speaking, opacity is a
+systems.                                                       conﬁdentiality property that captures whether or not the “secret”
+                                                               of the system can be revealed to an intruder that can infer the sys-
+  Index Terms—Approximate simulation relations, ﬁnite
+                                                             tem’s actual behavior based on the information ﬂow. A systemabstractions, opacity, symbolic models.
+                                                                               is said to be opaque if it always has the plausible deniability for
+                                                       any of its secret behavior. The concept of opacity was originally
+                                                           proposedinthecomputerscienceliteratureasauniﬁednotionfor
+                                                                  several security properties [3], [4]. Since then, opacity has been
+  Manuscript received November 12, 2019; revised April 4, 2020; ac-
+                                                                studied more extensively in the context of discrete-event systemscepted May 25, 2020. Date of publication June 1, 2020; date of current
+version March 29, 2021.  This work was supported in part by the   (DESs), an important class of event-driven dynamical systems
+National Natural Science Foundation of China under Grant 61803259   with discrete state spaces. For example, in [5]–[7], several
+and Grant 61833012, in part by the Shanghai Jiao Tong University
+                                                                 state-based notions of opacity were proposed, which includeScientiﬁc and Technological Innovation Funds, in part by the German
+Research Foundation under Grant ZA 873/1-1, and in part by the H2020   current-state opacity, initial-state opacity, K-step opacity, and
+ERC Starting Grant AutoCPS under Grant 804639. Recommended by   inﬁnite-step opacity. In [8], Lin proposed two language-based
+Associate Editor K. Cai. (Corresponding author: Xiang Yin.)
+                                                               opacity notions called strong opacity and weak opacity and in-  Xiang Yin is with the Key Laboratory of System Control and Informa-
+tion Processing, Ministry of Education, and the Department of Automa-   vestigated their relationships with some other properties. In [9],
+tion, Shanghai Jiao Tong University, Shanghai 200240, China (e-mail:   transformation algorithms among different notions of opacity
+yinxiang@sjtu.edu.cn).
+                                                       wereproposed.TheaforementionedworksmainlyconsiderDES  Majid Zamani is with the Department of Computer Science, University
+of Colorado Boulder, CO 80309 USA, and also with the Department  modeled by ﬁnite-state automata. More recently, the deﬁnitions
+of Computer Science, Ludwig Maximilian University of Munich 80539,  and veriﬁcation algorithms for different notions of opacity have
+Munich, Germany (e-mail: majid.zamani@colorado.edu).
+                                                        been extended to other classes of (discrete) systems, including  Siyuan Liu is with the Department of Electrical and Computer En-
+gineering, Technical University of Munich 80333, Munich, Germany   Petri nets [10]–[13], stochastic systems [14]–[16], recursive tile
+(e-mail: sy.liu@tum.de).                                       systems[17],andpushdownsystems[18].Theinterestedreaders
+  Color versions of one or more of the ﬁgures in this article are available
+                                                                 are referred to recent surveys [19], [20] for more references andonline at https://ieeexplore.ieee.org.
+   Digital Object Identiﬁer 10.1109/TAC.2020.2998733                  recent developments on this active research area.
+
+
+
+               0018-9286 © 2020 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                          See https://www.ieee.org/publications/rights/index.html for more information.
+
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 13,2021 at 08:17:27 UTC from IEEE Xplore. Restrictions apply.
+
+YIN et al.: ON APPROXIMATE OPACITY OF CYBER-PHYSICAL SYSTEMS                                                                    1631
+
+
+  Since opacity is an information-ﬂow property, its deﬁnition   to construct symbolic models (a.k.a. ﬁnite abstractions) that
+strictly depends on the information model of the system. Most   approximately simulate the original systems in the sense of
+of the existing works in the literature formulate opacity by   opacity preserving and vice versa. The resulting symbolic model
+adopting the event-based observation model, i.e., some events of    is ﬁnite if the state space of the original continuous system is
+the system (either transition labels or state labels) are observable   within a bounded region. Therefore, the proposed abstraction
+or distinguishable while some are not. This essentially assumes   technique together with the veriﬁcation algorithm for the ﬁnite
+that the output of the system is symbolic in the sense that we can   case provides a sound way for verifying opacity of discrete-time
+precisely distinguish between two outputs with different labels.   control systems with continuous state spaces.
+Hereafter, we will also refer to opacity under this setting as exact    The contributions of this article are summarized as follows.
+opacity. Exact opacity is very meaningful for systems whose      1) New notions of δ-approximate opacity are proposed to
+output sets are nonmetric, e.g., discrete systems whose outputs          quantitatively characterize the issue regarding the mea-
+are logic events. However, for many real-world applications        surement precision of the intruder.
+whose outputs are physical signals, instead of just saying that      2) Effective algorithms are provided to verify different no-
+two events are distinguishable or indistinguishable, we may          tions of approximate opacity.
+have a measurement to quantitatively evaluate how close two      3) New  simulation  relations  termed  as  ε-approximate
+outputs are. Such systems are referred to as metric systems,         opacity-preserving simulation relations are proposed to
+where the output sets are equipped with appropriate metrics.          characterize how close two systems are in terms of the
+For metric systems, if two signals are very close to each other,          satisfaction of approximate opacity.
+then it will be very hard to distinguish them unambiguously      4) For a class of discrete-time control systems, we show how
+because of the measurement precision or potential measurement          to construct symbolic models that preserve opacity with
+noises. A typical example of this scenario is linear or nonlinear         given a priori precision.
+discrete-time control systems with continuous state spaces and
+continuous output mappings. Therefore, existing deﬁnitions of
+                                                      C. Related Works
+opacity are too strong for metric systems, since they implicitly
+assume that the intruder can always distinguish between two    Our article is closely related to several works in the literature.
+output signals even when they are arbitrarily close to each other,   First, several different approaches have been proposed in the
+which is not practical.                                                 literature to evaluate opacity more quantitatively rather than re-
+                                                                quiring that the system is opaque exactly [14], [21]–[23]. For ex-
+                                                           ample, in [22], the authors adopt the Jensen–Shannon divergence
+B. Our Contributions
+                                                               as the measurement to quantify secrecy loss. In [14], [21], and
+  In this article, we propose a new concept called approximate   [23], stochastic DES models are used to study the probabilistic
+opacity that is more applicable to metric systems. In particular,  measurement of opacity. These approaches essentially aim to
+we treat two outputs as “indistinguishable” outputs  if their   analyze how opaque a single system is, e.g., the probability of
+distance is smaller than a given threshold parameter δ ≥0.   being opaque. However, they neither consider how close two
+We consider three basic types of opacity: initial-state opacity,   systems are in terms of being opaque nor consider under what
+current-state opacity, and inﬁnite-step opacity. For example,   observation precision level, we can guarantee opacity.
+δ-approximate initial-state opacity requires that, for any state     There are also attempts in the literature that extend opacity
+run starting from a secret state, there exists another state run  from discrete systems to continuous systems. For example, in
+starting from a nonsecret state, such that their corresponding   the recent results in [24]–[26], the authors extended the notion of
+output runs are δ-close to each other. Intuitively, δ-approximate   opacity to (switched) linear systems. However, their deﬁnition of
+initial-state opacity says that the intruder can never determine   opacity is more related to an output reachability property rather
+that the system is initiated from a secret state if it does not   than an information-ﬂow property. Moreover, their formulation
+have an enough measurement precision, which is captured by    is mostly based on the setting of exact opacity, i.e., we can
+parameter δ. In other words, instead of requiring that the system   always distinguish between two different outputs precisely no
+isexactlyopaque,ournewdeﬁnitionsessentiallyproviderelaxed   matter how close they are, In [24], the authors mentioned the
+versions of opacity with a quantitative security guarantee level   direction of using output metric to quantify opacity, and a
+with respect to the measurement precision of the intruder.        property called strong ϵ-K-initial-state opacity was proposed,
+  For systems whose state spaces are very large or even inﬁnite,  which is closely related to our notions. However, no systematic
+it is desirable to construct abstract models that preserve opacity,   study, e.g., veriﬁcation and abstraction as we consider in this
+to some extent, for the purpose of veriﬁcation. To this end,   article, was provided for this property.
+we propose the concept of ε-approximate opacity-preserving     Regarding the techniques used in this article, ﬁrst, our al-
+simulation relation. We show that if there is an ε-approximate   gorithms for the veriﬁcation of approximate notions of opacity
+opacity-preservingsimulationrelationfromsystem Sa tosystem   are motivated by the veriﬁcation algorithms for exact opacity
+Sb, then Sb being (δ −2ε)-approximate opaque implies that   studied in [5] and [27]. In particular, we use the idea of con-
+Sa is δ-approximate opaque. In particular, for a class of incre-   structing a new system, called the state estimator, that tracks
+mentally input-to-state stable discrete-time control systems with    all possible states consistent with the observation. However, our
+possibly inﬁnite state spaces, we propose an effective approach   construction of state estimator is not exactly the same as the
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 13,2021 at 08:17:27 UTC from IEEE Xplore. Restrictions apply.
+
+1632                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 66, NO. 4, APRIL 2021
+
+
+existing one, as additional state information is needed in order   approximate opacity-preserving symbolic models for incremen-
+to handle the issue of approximation.                                 tally stable discrete-time control systems with continuous state
+  Abstraction-based techniques have also been investigated   spaces. Finally, we conclude this article by Section VII. Prelimi-
+in the literature for the veriﬁcation and synthesis of opacity   nary and partial version of this article is presented as an extended
+(see, e.g., [28]–[32]). In particular, in our recent work [28],   abstract in [44].
+we propose several notions of opacity-preserving (bi)simulation
+relations. However, these relations only preserve exact opacity                                    II. PRELIMINARIES
+for nonmetric systems. Our new relations extend the relations
+                                                        A. Notationin [28] to metric systems by taking into account how close two
+systems are. Such an extension is motivated by the deﬁnition of    The symbols N, N0, Z, R, R+, and R+0 denote the set of nat-
+approximate (bi)simulation relation originally proposed in [33].   ural, nonnegative integer, integer, real, positive, and nonnegative
+However, the original deﬁnition of approximate (bi)simulation   real numbers, respectively. Given a vector x ∈Rn, we denote
+relation does not necessarily preserve approximate opacity. Con-  by xi the ith element of x, and by ∥x∥the inﬁnity norm of x.
+structing symbolic models for control systems is also an active    The closed ball centered at u ∈Rm with radius λ is deﬁned by
+researcharea(see,e.g.,[34]–[37]).However,mostoftheexisting  Bλ(u) = {v ∈Rm | ∥u −v∥≤λ}. We denote the closed ball
+works on the construction of symbolic models only consider the   centered at the origin in Rn and with radius λ by Bλ. A set
+dynamics of the systems and are not taking into account the  B ⊆Rm is called a box if B =  mi=1[ci, di], where ci, di ∈R
+opacity property. In our approach, we need to consider both   with ci < di for each i ∈{1, . . . , m}. The span of a box B
+the dynamic and the secret of the system while constructing the    is deﬁned as span(B) = min{|di −ci| | i = 1, . . . , m}. For a
+symbolic model and guarantee the preservation of approximate  box B ⊆Rm and μ ≤span(B), deﬁne the μ-approximation
+opacity across related systems.                              [B]μ = [Rm]μ ∩B,where[Rm]μ = {a ∈Rm | ai = kiμ, ki ∈
+ A related notion called differential privacy was introduced in  Z, i = 1, . . . , m}. Remark that [B]μ̸ = ∅for any μ ≤span(B).
+[38] for database systems and has attracted signiﬁcant attention   Geometrically, for any μ ∈R+ with μ ≤span(B) and λ ≥μ,
+in the past few years [39]–[41]. In particular, Jones et al. [40]   the collection of sets {Bλ(p)}p∈[B]μ  is a ﬁnite covering of
+extend the original notion of differential privacy to symbolic  B,  i.e., B ⊆   p∈[B]μ Bλ(p). We extend the notions of span
+systems. Differential privacy requires that any two adjacent  and approximation to ﬁnite unions of boxes as follows. Let
+data should produce indistinguishable outputs in the probability  A = Mj=1 Aj, where each Aj  is a box. Deﬁne span(A) =
+sense. However, the essence of opacity is a conﬁdentiality prop-  min{span(Aj) | j = 1, . . . , M}, and for any μ ≤span(A), de-
+erty that captures the plausible deniability of the system’s secret  ﬁne [A]μ = Mj=1[Aj]μ. The Minkowski sum of two sets P, Q ⊆
+behavior, while differential privacy captures whether or not any  Rn  is deﬁned by P ⊕Q = {x ∈Rn|∃p∈P,q∈Q, x = p + q}.
+sensitive data can be learned under some side information. These   Given a set S ⊆Rn and a constant θ ∈R≥0, we deﬁne a new
+two properties are incomparable in general. Note that there are   set Sθ = S ⊕Bθ as the inﬂated version of the set S.
+also probabilistic versions of opacity studied in the literature for     Given a function f : N+0 →Rn, the (essential) supremum of
+systems modeled as Markov chains [14], [21]–[23]. In those  f is denoted by ∥f∥∞:= (ess)sup{∥f(k)∥, k ≥0}. A contin-
+studies, the essence of probabilistic opacity is still plausible   uous function γ : R+0 →R+0  is said to belong to class K if it
+deniability but with a quantitative measure; the output at each    is strictly increasing and γ(0) = 0; γ is said to belong to class
+state is still nonprobabilistic.                         K∞if γ ∈K and γ(r) →∞as r →∞. A continuous function
+   Finally, approximate notions of two related properties called  β : R+0 × R+0 →R+0  is said to belong to class KL if, for each
+diagnosability and predictability have recently been investigated  ﬁxed s, the map β(r, s) belongs to class K with respect to r
+in [42] and [43]. Their setting is very similar ours as we both   and, for each ﬁxed nonzero r, the map β(r, s) is decreasing with
+consider a measurement uncertainty threshold. However, diag-   respect to s and β(r, s) →0 as s →∞. We identify a relation
+nosability and predictability can be preserved by the standard  R ⊆A × B with the map R : A →2B deﬁned by b ∈R(a) iff
+approximate simulation relation. We show that the standard ap-   (a, b) ∈R. Given a relation R ⊆A × B, R−1 denotes the in-
+proximate simulation relation does not preserve opacity. There-   verserelationdeﬁnedbyR−1 = {(b, a) ∈B × A : (a, b) ∈R}.
+fore, the proposed approximate opacity-preserving simulation
+relation is different from the standard approximate simulation                                                         B. System Model
+relation in the literature.
+                                                                  In this article, we employ a notion of “system” introduced in
+                                                               [45] as the underlying model of CPS describing both continuous-
+D. Organization                                           space and ﬁnite control systems.
+                                                              Deﬁnition II.1: A system S is a tuple  The rest of this article is organized as follows. In Section II,
+we ﬁrst introduce some necessary preliminaries. Then, we pro-              S = (X, X0, U, −→, Y, H)               (1)
+pose the concept of approximate opacity in Section III. The
+veriﬁcation procedures for approximate opacity are provided  where we have the following.
+in Section IV. In Section V, approximate opacity-preserving      1) X is a (possibly inﬁnite) set of states.
+simulation relations are proposed, and  their properties are      2) X0 ⊆X is a (possibly inﬁnite) set of initial states.
+also discussed. In Section VI, we describe how to construct      3) U is a (possibly inﬁnite) set of inputs.
+
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 13,2021 at 08:17:27 UTC from IEEE Xplore. Restrictions apply.
+
+YIN et al.: ON APPROXIMATE OPACITY OF CYBER-PHYSICAL SYSTEMS                                                                    1633
+
+
+   4) −→⊆X × U × X is a transition relation.                                         u′1       u′2       u′n
+                                                                 run x′0 −→x′1 −→· · · −→x′n such that x′k ∈X \ XS and   5) Y is a set of outputs.
+                                                        H(xi) = H(x′i) for any i = 0, 1, . . . , n.   6) H : X →Y is an output map.
+                                             u           The intuitions of the above deﬁnitions are as follows. Suppose A transition (x, u, x′) ∈−→is also denoted by x −→x′. For
+             u                                                     that the output run of the system can be observed by a passive
+a transition x −→x′, state x′ is called a u-successor, or simply a                                                                   intruder that may use this information to infer the secret of
+successor, of state x; state x is called a u-predecessor, or simply                                                                 the system. Then, initial-state opacity requires that the intruder
+a predecessor, of state x′. We denote by Postu(x) the set of                                                           should never know for sure that the system is initiated from a
+all u-successors of state x and by Preu(x) the set of all u-                                                                    secret state no matter what output run is generated. Similarly,
+predecessors of state x. For a set of states q ∈2X, we deﬁne                                                                     current-state opacity says that the intruder should never know
+Postu(q) = ∪x∈qPostu(x) and Preu(q) = ∪x∈qPreu(x). A                                                                    for sure that the system is currently at a secret state no matter
+system S is said to be:                                                      what output run is generated. Inﬁnite-step opacity is stronger
+   1) metric, if the output set Y  is equipped with a metric d :                                                             than both initial-state opacity and current-state opacity as  it
+     Y × Y →R+0 ;                                                                  requires that the intruder should never know that the system
+   2) ﬁnite (or symbolic), if X and U are ﬁnite sets;                                                                is/was at a secret state for any speciﬁc instant k. For any sys-
+   3) deterministic, if for any state x ∈X and any input u ∈U,                                                     tem S = (X, X0, XS, U, −→, Y, H), we assume without loss of
+      |Postu(x)| ≤1 and nondeterministic otherwise.                                                                  generality that ∀x0 ∈X0 : {x ∈X0 : H(x) = H(x0)}̸ ⊆XS.
+  Given a system S = (X, X0, U, −→, Y, H) and any initial                                                           This assumption essentially requires that the secret of the system
+state x0 ∈X0, a ﬁnite state run generated from x0 is a ﬁnite                                                           cannot be revealed initially; otherwise, the system is not opaque
+sequence of transitions:                                                                               trivially.
+           x0 −→x1u1   −→·u2    · · un−1−→xn−1 −→xnun               (2)     Remark III.2: Deﬁnition III.1 implicitly considers the fol-
+                                                          lowing model of the intruder: 1) the intruder knows the model
+such that xi ui+1−→xi+1 for all 0 ≤i < n. A ﬁnite output run is a   of the system; and 2) it can only observe the output trajectory
+sequence y0y1 . . . yn such that there exists a ﬁnite state run of   of the system. Therefore, the intruder essentially wants to use
+the form (2) with yi = H(xi), for i = 0, . . . , n.                  the output trajectory observed online and the knowledge of the
+                                                         system model to infer the internal behavior/state of the system.
+                                                      Note that, in our setting, the input information is assumed to be
+                III. EXACT AND APPROXIMATE OPACITY
+                                                                     internal and the intruder does not know which input the system
+  In this section, we ﬁrst review the notion of exact opacity.   takes. This setting can be easily relaxed, and all results in this
+Then, we introduce the notion of approximate opacity.             article can be extended to the case where both input and output
+                                                              information are available by the intruder. For example, we can
+A. Exact Opacity                                         simply reﬁne the model of the system such that the output space
+                                                               of the reﬁned system is a pair and the input leading to a state is
+  In many applications, systems may have some “secrets” that
+                                                                  also encoded in the output of this state.
+do not want to be revealed to intruders that are potentially
+                                                     Remark III.3: Our deﬁnition of inﬁnite-step opacity requires
+malicious. In this article, we adopt a state-based formulation of
+                                                                      that the intruder should never know for sure that the systemsecrets. Speciﬁcally, we assume that XS ⊆X is a set of secret
+                                                                is/was at a secret state for any speciﬁc instant. In some cases,
+states. Hereafter, we will always consider systems with secret
+                                                                 the intruder may know that the system must have visited astates, and we write a system S = (X, X0, U, −→, Y, H) with
+                                                                    secret state, although  it cannot tell the precise instant. Suchsecret states XS by a new tuple S = (X, X0, XS, U, −→, Y, H).
+                                                           a requirement can be captured by the notion of strong (or
+  In order to characterize whether or not a system is secure, the
+                                                                  trajectory-based) inﬁnite-step opacity (see, e.g., [6, Remark 5]).
+concept of opacity was proposed in the literature. We review
+                                                           This deﬁnition is stronger than ours, and which one to use is
+three basic notions of opacity [9] as follows.
+                                                          dependent on the applications. However, strong inﬁnite-step   Deﬁnition III.1: Consider       a      system     S =
+                                                               opacity can be transformed to current-state opacity by augment-(X, X0, XS, U, −→, Y, H). System S is said to be:
+                                                              ing the state space to encode whether a secret state has been   1) initial-state opaque if for any x0 ∈X0 ∩XS and ﬁnite
+                   u1     u2     un                               visited or not.
+       state run x0 −→x1 −→· · · −→xn, there exist x′0 ∈X0 \
+                                               u′1       u′2       u′n
+    XS and a ﬁnite state run x′0 −→x′1 −→· · · −→x′n such   B. Approximate Opacity
+       that H(xi) = H(x′i) for any i = 0, 1, . . . , n;
+                                                        Note that Deﬁnition III.1 requires that for any secret behavior,   2) current-state  opaque   if   for  any  x0 ∈X0  and
+                             u1     u2    un                    there exists a nonsecret behavior such that they generate exactly
+      ﬁnite  state  run  x0 −→x1 −→· · · −→xn  such  that
+                                                                 the same output. Therefore, we will also refer to these deﬁnitions
+     xn ∈XS,  there  exist  x′0 ∈X0 and  ﬁnite  state run                                                               as exact opacity. Exact opacity essentially assumes that the
+              u′1       u′2       u′n       x′        0 −→x′1 −→· · · −→x′n such that x′n ∈X \ XS and   intruder or the observer can always measure each output or
+     H(xi) = H(x′i) for any i = 0, 1, . . . , n;                   distinguish between two different outputs precisely. This setting
+   3) inﬁnite-stepopaqueifforanyx0 ∈X0,anyﬁnitestaterun    is reasonable for nonmetric systems where outputs are symbols
+     x0 −→x1u1   −→·u2   · · −→xnun    and any k ∈{0, . . . , n}, xk ∈   orevents.However,formetricsystems,e.g.,whentheoutputsare
+    XS implies that there exist x′0 ∈X0 and a ﬁnite state   physical signals, this setting may be too restrictive. In particular,
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 13,2021 at 08:17:27 UTC from IEEE Xplore. Restrictions apply.
+
+1634                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 66, NO. 4, APRIL 2021
+
+
+owing to the imperfect measurement precision, which is almost
+the case for all physical systems, it is very difﬁcult to distin-
+guish between two observations if their difference is very small.
+Therefore, exact opacity may be too strong for metric systems,
+and it will be useful to deﬁne a weak and “robust” version of
+opacity by characterizing under which measurement precision
+the system is opaque. To this end, we deﬁne new notions of
+opacity called approximate opacity for metric systems.
+   Deﬁnition III.4: Let S = (X, X0, XS, U, −→, Y, H) be a                                                                               Fig. 1.  Example for approximate opacity, where states marked by red
+metric system, with the metric d deﬁned over the output set,   denote secret states, states marked by input arrows denote initial states,
+and a constant δ ≥0. System S is said to be:                   and the output map is speciﬁed by the value associated to each state.
+   1) δ-approximate  initial-state opaque  if  for any x0 ∈
+    X0 ∩XS and ﬁnite state run x0 −→x1u1   −→·u2    · · −→xn,un                                                    means that δ-approximate initial-state opacity, δ-approximate
+       there  exist  x′0 ∈X0 \ XS  and  a  ﬁnite  state  run                                                                     current-state opacity, and δ-approximate inﬁnite-step opacity
+              u′1       u′2       u′n       x′        0 −→x′1 −→· · · −→x′n such that                        are all violated trivially.
+                                          We illustrate exact opacity and approximate opacity by the
+              max  d(H(xi), H(x′i)) ≤δ                        i∈{0,...,n}                                   following example.
+                                                       Example III.5: Consider system S = (X, X0, XS, U, −→
+                              opaque   2) δ-approximate current-state                                                            if for                                             any x0 ∈    , Y, H) depicted in Fig. 1,  where X = {A, B, C, D}, X0 =                                   u1                                           u2                                             un
+    X0 and ﬁnite state run x0 −→x1 −→· · · −→xn such  {A, B}, XS = {B}, U = {u}, H = {0.1, 0.15, 0.2, 0.35} ⊆
+       that xn ∈XS, there exist x′0 ∈X0 and ﬁnite state run  R, and the output map is speciﬁed by the value associated with
+          u1       u′2       u′n       x′        0 −→x′1 −→· · · −→x′n such that x′n ∈X \ XS and     each state. Clearly, none of exact initial-state opacity, exact
+                                                                     current-state opacity, and exact inﬁnite-step opacity is satisﬁed,
+              max  d(H(xi), H(x′i)) ≤δ               since we know immediately that the system is at secret state B                        i∈{0,...,n}
+                                                 when value 0.1 is observed.
+   3) δ-approximate inﬁnite-step opaque if for any x0 ∈X0,    Now, let us assume that the output set Y  is equipped with
+      any ﬁnite state run x0 −→x1u1   −→·u2    · · −→xnun    and any k ∈   metric d deﬁned by d(y1, y2) = |y1 −y2|. We claim that S
+      {0, . . . , n},xk ∈XS impliesthatthereexistx′0 ∈X0 and    is not 0.05-approximate current-state opaque. For example, let
+                                                       u′n                                                                                                                  that generates output                                         2    · · −→x′      a ﬁnite state run x′0 −→x′u1   1 −→·u′                                      n such that x′k ∈   us consider ﬁnite run B −→Du  −→Bu
+   X \ XS and                                          run [0.1][0.35][0.1]. However, there does not exist a ﬁnite run
+                                                               leading to a nonsecret state whose output run is 0.05-close to
+             max  d(H(xi), H(x′i)) ≤δ.               the above output run. To see this, in order to match the above                       i∈{0,...,n}
+                                                              output run, we must consider a run starting from state B, since
+  The notions of δ-approximate initial-state, current-state opac-   for the initial state A, we have d(H(A), H(B)) = 0.1 ≥0.05,
+ity, and inﬁnite-step opacity are very similar to their exact  and the next state reached can only be D. From state D, we
+counterparts. The main difference is how we treat two outputs as   can reach states A and B, but d(H(A), 0.1) = 0.1 ≥0.05 =: δ.
+indistinguishable outputs. Speciﬁcally, same as the exact case,   Therefore, the only ﬁnite run that approximately matches the
+we still assume that the intruder knows the system model and   above output will end up with secret state B, i.e., we know
+the output trajectory generated. However, we further assume that   unambiguously that the system is currently at a secret state
+the intruder may not be able to distinguish an output trajectory   even when we cannot measure the output precisely. In contrast,
+from other δ-closed trajectories conﬁdentially. Intuitively, the  one can check that the system is 0.1-approximate current-state
+approximate version of opacity can be interpreted as “the secret   opaque.
+of the system cannot be revealed to an intruder that does not have      Similarly, system S  is not 0.1-approximate  initial-state
+an enough measurement precision related to parameter δ.” In   opaque, since for output run [0.1][0.35] starting from the secret
+other words, instead of providing an exact security guarantee,   state B, there is no run starting from a nonsecret initial state that
+approximate opacity provides a relaxed and quantitative security   canapproximatelymatchit.Onecanalsocheckthatthesystemis
+guarantee with respect to the measurement precision of the   δ-approximate initial-state opaque only when δ ≥0.15. We will
+intruder. Therefore, the value δ can be interpreted as either the   provide formal procedures for verifying approximate opacity
+measurement imprecision of the intruder or the security level    later.
+the system can guarantee, i.e., under how powerful intruder     Remark III.6: Let S = (X, X0, XS, U, −→, Y, H) be a met-
+the system is still secure. Clearly, when δ = 0, each notion of   ric system. If the output map H is identity, i.e. H(x) = x, ∀x ∈
+δ-approximate opacity reduces to its exact version. Similar to the  X, then S is trivially not exactly opaque as in Deﬁnition III.1
+exact case, hereafter, we assume without loss of generality that   since we know the exact state of the system directly. However,
+    ∀x0 ∈X0 : {x ∈X0 : d(H(x0), H(x)) ≤δ}̸ ⊆XS         this is not the case for the approximate notions of opacity as in
+                                                           Deﬁnition III.4, since the distance between a secret state and
+for   any   system  S = (X, X0, XS, U, −→, Y, H).   This   a nonsecret state can be very small even if their values are not
+assumption can be easily checked, and  its nonsatisfaction   exactly the same.
+
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 13,2021 at 08:17:27 UTC from IEEE Xplore. Restrictions apply.
+
+YIN et al.: ON APPROXIMATE OPACITY OF CYBER-PHYSICAL SYSTEMS                                                                    1635
+
+
+      IV. VERIFICATION OF APPROXIMATE OPACITY FOR
+                     FINITE SYSTEMS
+
+  In this section, we show how to verify approximate opacity for
+ﬁnite systems. This will also provide the basis for the veriﬁcation
+of approximate opacity for inﬁnite systems.
+
+
+A. Veriﬁcation of Approximate Initial-State Opacity
+  In order to verify δ-approximate initial-state opacity, we
+construct a new system called the δ-approximate initial-state
+estimator deﬁned as follows.
+   Deﬁnition IV.1: Let S = (X, X0, XS, U, −→, Y, H) be a
+metric system, with the metric d deﬁned over the output set,
+and a constant δ ≥0. The δ-approximate initial-state estimator
+is a system (without outputs)
+
+                SI = (XI, XI0, U, −→)
+                                             I                              Fig. 2.  Examples of δ-approximate initial-state estimators. (a) SI when
+                                                                      δ = 0.1. (b) SI when δ = 0.15.where we have the following.
+   1) XI ⊆X × 2X is the set of states.
+   2) XI0 = {(x, q)∈X × 2X : x′ ∈q ⇔d(H(x), H(x′)) ≤                                            u′n      u′n−1      u′1
+                                                                                   ∃x′0 −→x′1 −→· · · −→x′n s.t.     }.     δ} is the set of initial states.                                               ii) qn ={x′0 ∈X :                                                                                            maxi∈{0,1,...,n} d(H(xi), H(x′n−i)) ≤δ   3) U is the set of inputs, which is the same as the one in S.                                                                 Proof: See the Appendix.                 ■
+   4) −→ ⊆XI × U × XI  is  the  transition  function  de-         I                                              The next theorem provides one of the main results of this
+     ﬁned by: for any (x, q), (x′, q′) ∈X × 2X and u ∈U,   section on the veriﬁcation of δ-approximate initial-state opacity
+      (x, q) −→u  (x′, q′) if:                                      of ﬁnite metric systems.
+                I                                                                                                                                                                    , Y, H) be a ﬁ-                                                       Theorem IV.3: Let S = (X, X0, XS, U, −→                u, x) ∈−→;          1) (x′,                                                                                                                             I
+          2) q′ = ∪ˆu∈UPreˆu(q) ∩{x′′ ∈X : d(H(x′),          nite metric system, with the metric d deﬁned over the output
+            H(x′′)) ≤δ}.                                              set, and a constant δ ≥0. Let SI = (XI, XI0, U, −→) be its
+                                                                                                                                      I
+  For the sake of simplicity, we only consider the part of SI that   δ-approximate initial-state estimator. Then, S is δ-approximate
+is reachable from initial states.                                         initial-state opaque if and only if
+   Intuitively, the δ-approximate initial-state estimator works as
+follows. Each initial state of SI is a pair consisting of a system         ∀(x, q) ∈XI : x ∈X0 ∩XS ⇒q ∩X0̸ ⊆XS.     (3)
+state and its δ-closed states; we consider all each pairs as the                                                                 Proof: See the Appendix.                 ■
+set of initial states. Then, from each state, we track backwards                                          We illustrate how to verify δ-approximate initial-state opacity
+states that are consistent with the output information recursively.                                                     by the following example.
+Our construction is motivated by the reversed-automaton-based                                                       Example IV.4: Let us still consider system S shown in Fig. 1.
+initial-state estimator proposed in [9] but with the following                                                   The δ-approximate initial-state estimator SI when δ = 0.1 is
+differences. First, the way we deﬁned information consistency                                                   shown in Fig. 2(a). For example, for the initial state (D, {D}),
+is different. Here, we treat states whose outputs are δ-close to                      u                       u                                             we  have  (D, {D}) −→ (B, {B, C})  since B −→D  and
+each other as consistent states. Moreover, the structure in [9]                              I
+only requires a state space of 2X, while our state space is X ×  {B, C} = Preu({D}) ∩{x ∈X : d(0.1, H(x)) ≤0.1} =
+2X. The additional ﬁrst component can be understood as the  {B, C} ∩{A, B, C}. However, for state (B, {B, C}) ∈XI,
+“reference trajectory” that is used to determine what is “δ-close”  we  have B ∈X0 ∩XS  and  {B, C} ∩X0 = {B} ⊆XS.
+at each instant. We use the following result to show the main   Therefore, by Theorem IV.3, we know that the system  is
+property of SI.                                                not 0.1-approximate  initial-state opaque. Similarly, we can
+   Proposition IV.2: Let S = (X, X0, XS, U, −→, Y, H) be a   also construct SI for the case of δ = 0.15, which is shown
+                                                      I                                                                    in Fig. 2(b). For state (B, {A, B, C}) ∈XI, which  is themetric system, with the metric d deﬁned over                                               the output set,
+and a constant δ ≥0. Let SI = (XI, XI0, U, −→) be its δ-   only state whose ﬁrst component  is in X0 ∩XS, we have
+                                                        I            {A, B, C} ∩X0 = {A, B}̸ ⊆XS. By Theorem IV.3, we know
+approximate initial-state estimator. Then, for any (x0, q0) ∈   that the system is 0.15-approximate initial-state opaque.
+XI0 and any ﬁnite run
+           (x0, q0) −→u1 (x1, q1) −→u2  · · · −→un (xn, qn)            B. Veriﬁcation of Approximate Current-State Opacity
+                        I             I        I
+                                                                  In order to verify δ-approximate current-state opacity, we also
+we have                                                   needtoconstructanewsystemcalledtheδ-approximatecurrent-
+         un       un−1     u1
+     i) xn −→xn−1 −→· · · −→x0;                                state estimator deﬁned as follows.
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 13,2021 at 08:17:27 UTC from IEEE Xplore. Restrictions apply.
+
+1636                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 66, NO. 4, APRIL 2021
+
+
+   Deﬁnition IV.5: Let S = (X, X0, XS, U, −→, Y, H) be a   systems. The veriﬁcation scheme is provided by the following
+metric system, with the metric d deﬁned over the output set, and   theorem.
+a constant δ ≥0. The δ-approximate current-state estimator is     Theorem IV.8: Let S = (X, X0, XS, U, −→, Y, H) be a ﬁ-
+a system (without outputs)                                          nite metric system, with the metric d deﬁned over the output
+                                                                              set, and a constant δ ≥0. Let SI = (XI, XI0, U, −→) and
+            SC = (XC, XC0, U, −→)                                                                                      I
+                            C                SC = (XC, XC0, U, −→) be its δ-approximate initial-state es-
+                                                              C
+where we have the following.                                   timator and δ-approximate current-state estimator, respectively.
+   1) XC ⊆X × 2X is the set of states.                      Then, S  is δ-approximate inﬁnite-step opaque  if and only
+   2) XC0 = {(x, q)∈X0×2X0 : x′ ∈q ⇔                             if
+     d(H(x), H(x′))≤δ} is the set of initial states.
+   3) U is the set of inputs, which is the same as the one in S.    ∀(x, q) ∈XI, (x′, q′) ∈XC : x = x′ ∈XS ⇒q ∩q′̸ ⊆XS.
+   4) −→ ⊆XC × U × XC  is  the  transition function de-                                                                 (5)
+     C                                                        Proof: See the Appendix.                 ■
+     ﬁned by: for any (x, q), (x′, q′) ∈X × 2X and u ∈U,
+            u                                         Remark IV.9: We  conclude  this  section  by  discussing
+      (x, q) −→                  (x′, q′) if:                                       the complexity of verifying approximate opacity. Let S =          C
+          1) (x, u, x′) ∈−→;                             (X, X0, XS, U, −→, Y, H) be a ﬁnite metric system. The com-
+          2) q′ = ∪ˆu∈UPostˆu(x) ∩{x′′ ∈X : d(H(x′),        plexity of the veriﬁcation algorithms for both approximate
+           H(x′′))≤δ}.                                              initial-state and current-state opacity is O(|U| × |X| × 2|X|),
+  For the sake of simplicity, we only consider the part of SC   which is the size of SI or SC. For approximate inﬁnite-step
+that is reachable from initial states.                                opacity, we need to construct both SI and SC and compare
+  The construction of SC is similar to SI. However, we need   each pair of states in SI and SC. Therefore, the complexity for
+to track all forward runs from each pair of initial state and its   verifying approximate inﬁnite-step opacity using Theorem IV.8
+information-consistent states. Still, we need the ﬁrst component    is O(|U| × |X|2 × 4|X|). It is worth noting that the complexity
+as the “reference state” to determine what are “δ-close” states.   of verifying exact opacity as in Deﬁnition III.1 is already known
+We use the following result to state the main properties of SC.    to be PSPACE complete [46]. Using a similar reduction, we can
+   Proposition IV.6: Let S = (X, X0, XS, U, −→, Y, H) be a   conclude that the complexity of verifying approximate opacity
+metric system, with the metric d deﬁned over the output set,   as in Deﬁnition III.4 is also PSPACE complete for δ > 0. Finally,
+and a constant δ ≥0. Let SC = (XC, XC0, U, −→) be its δ-  we note that the exponential complexity essentially comes from
+                                   C               the subset construction to handle information uncertainty. Inapproximate current-state estimator. Then, for any (x0, q0) ∈
+XC0 and any ﬁnite run                                             practice, the subset construction usually results in a quite small
+                                                                    structure (see, e.g., [47] for detailed empirical studies on this
+           (x0, q0) −→u1 (x1, q1) −→u2  · · · −→un (xn, qn)               issue).
+              C        C    C
+
+we have                                                           V. APPROXIMATE SIMULATION RELATIONS FOR OPACITY
+          u1     u2     un
+     i) x0 −→x1 −→· · · −→xn;
+                                                     u′1       u′2                  In the previous sections, we have introduced notions of ap-
+     ii) qn = {x′n ∈X : ∃x′0 ∈X0, ∃x′0 −→x′1 −→             proximate opacity and their veriﬁcation procedures. However,
+              u′n
+          · · · −→x′n  s.t.  maxi∈{0,1,...,n} d(H(xi), H(x′i))       when the system is very large or even inﬁnite, verifying opacity
+     ≤δ}.                                               based on the original system is not efﬁcient or not even possible.
+   Proof: See the Appendix.                 ■   Therefore, it will be beneﬁcial if we can verify opacity based
+  Now, we show the second main result of this section by  on an “equivalent” smaller or symbolic system. To this end, in
+providing a veriﬁcation scheme for δ-approximate current-state   this section, we study under what conditions two systems are
+opacity of ﬁnite metric systems.                                 equivalent and in what sense. Speciﬁcally, we introduce new
+  Theorem IV.7: Let S = (X, X0, XS, U, −→, Y, H)  be  a   notions of approximate opacity-preserving simulation relations,
+metric system, with the metric d deﬁned over the output set,   inspired by the one in [33]. The newly proposed simulation
+and a constant δ ≥0. Let SC = (XC, XC0, U, −→) be its δ-   relations will provide the basis for abstraction-based veriﬁcation
+                                   C              of approximate opacity.approximate current-state estimator. Then, S is δ-approximate
+current-state opaque if and only if
+                                                        A. Approximate Initial-State Opacity-Preserving
+                 ∀(x, q) ∈XC : q̸ ⊆XS.                 (4)   Simulation Relation
+
+   Proof: See the Appendix.                 ■      First, we introduce a new notion of approximate initial-state
+                                                               opacity-preserving simulation relation.
+C. Veriﬁcation of Approximate Inﬁnite-Step Opacity           Deﬁnition V.1 (Approximate initial-state opacity-preserving
+                                                               simulation   relation):   Consider   two   metric   systems
+   Finally, we can combine the δ-approximate initial-state es-                                                  Sa = (Xa, Xa0, XaS, Ua, −→, Ya, Ha)      and      Sb =
+timator SI and the δ-approximate current-state estimator SC                             a
+to verify δ-approximate inﬁnite-step opacity of ﬁnite metric   (Xb, Xb0, XbS, Ub, −→b  , Yb, Hb) with  the same output  sets
+
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 13,2021 at 08:17:27 UTC from IEEE Xplore. Restrictions apply.
+
+YIN et al.: ON APPROXIMATE OPACITY OF CYBER-PHYSICAL SYSTEMS                                                                    1637
+
+
+Ya = Yb and metric d. For ε ∈R+0 , a relation R ⊆Xa × Xb
+is  called an  ε-approximate  initial-state  opacity-preserving
+simulation relation (ε-InitSOP simulation relation) from Sa to
+Sb if:
+   1)
+           a) ∀xa0 ∈Xa0 ∩XaS, ∃xb0 ∈Xb0 ∩XbS :
+            (xa0, xb0) ∈R;
+          b) ∀xb0 ∈Xb0 \ XbS, ∃xa0 ∈Xa0 \ XaS :
+            (xa0, xb0) ∈R;
+   2) ∀(xa, xb) ∈R : d(Ha(xa), Hb(xb)) ≤ε;                     Fig. 3.  Example of ε-InitSOP simulation relation.
+   3) for any (xa, xb) ∈R, we have
+                                    x′           a) ∀xa −→ua                       x′a, ∃xb −→ub                                         b : (x′a, x′b) ∈R;           Combining (6)–(8), and using the triangle inequality, we have                  a                                    b
+                                    x′          b) ∀xb −→ub                       x′b, ∃xa −→ua                             a                                 a : (x′a, x′b) ∈R.                   max     : d(Ha(xi), Ha(x′′′i )) ≤δ.          (9)                      b
+  We say that Sa is ε-InitSOP simulated by Sb, denoted by                   i∈{0,1,...,n}
+Sa ⪯εI Sb, if there exists an ε-InitSOP simulation relation R   Since x0 ∈Xa0 ∩XaS and x0 −→                                                                                                 u1 x1 −→u2  · · · −→un xn are arbi-
+from Sa to Sb.                                                                              a      a      a
+                                                                            trary, we conclude that Sa is δ-approximate initial-state opaque.  Note that although the above relation is similar to the approxi-
+                                                                 ■mate bisimulation relation proposed in [33], it is still a one sided
+                                                     The following corollary is a simple consequence of the resultrelation here because condition 1) is not symmetric. We refer the
+                                                                    in Theorem V.2 but for the lack of δ-approximate initial-stateinterested readers to [28] to see why one needs strong condition
+                                                                    opacity.3) in Deﬁnition V.1 to show preservation of initial-state opacity
+in one direction when ε = 0.                                     Corollary V.3: Let Sa = (Xa, Xa0, XaS, Ua, −→a  , Ya, Ha)
+  The following main theorem provides a sufﬁcient condition  and Sb = (Xb, Xb0, XbS, Ub, −→, Yb, Hb) be two metric sys-
+                                                                                                               b
+for δ-approximate initial-state opacity based on related systems   tems with the same output sets Ya = Yb and metric d and let
+as in Deﬁnition V.1.                                                 ε, δ ∈R+0 . If Sb ⪯εI Sa, then the following implication holds:
+  Theorem V.2: Let  Sa = (Xa, Xa0, XaS, Ua, −→, Ya, Ha)
+                                               a                                                             Sb is not (δ + 2ε)-approximate initial-state opaque
+                                                     metricand  Sb = (Xb, Xb0, XbS, Ub, −→, Yb, Hb)  be  two
+                                     b
+systems with the same output sets Ya = Yb and metric d,    ⇒Sa is not δ-approximate initial-state opaque.
+and let ε, δ ∈R+0 . If Sa ⪯εI Sb and ε ≤δ2, then the following      Proof: Since Sb ⪯εI Sa, by Theorem V.2, we know that Sa
+implication holds:                                                           being δ-approximate initial-state opaque implies that Sb is (δ +
+                                                           2ε)-approximate initial-state opaque. Hence, Sb not being (δ +        Sb is (δ −2ε)-approximate initial-state opaque
+                                                           2ε)-approximate initial-state opaque implies that Sa is not δ-
+   ⇒Sa is δ-approximate initial-state opaque.              approximate initial-state opaque.               ■
+                                                     Remark V.4: It is worth remarking that δ and ε are parame-
+   Proof: Consider an arbitrary secret initial state x0 ∈Xa0 ∩   ters specifying two different types of precision. Parameter δ is
+XaS and a run x0 −→u1 x1 −→u2  · · · −→un xn in Sa. Since Sa ⪯εI   used to specify the measurement precision under which we can                   a      a      a
+Sb, by  conditions  1)-a),  2), and  3)-a)  in Deﬁnition  V.1,   guarantee opacity for a single system, while parameter ε is used
+there exist a secret initial state x′0 ∈Xb0 ∩XbS and a run   to characterize the “distance” between two systems in terms of
+     u′1       u′2       u′n                                        being approximate opaque. The reader should not be confusedx′ 0 −→ x′1 −→ · · · −→ x′n in Sb such that     b       b        b                                    by the different roles of these two parameters.
+                                          We illustrate ε-InitSOP simulation relation by the following
+        ∀i ∈{0, 1, . . . , n} : d(Ha(xi), Hb(x′i)) ≤ε.      (6)   example.
+                                                       Example V.5: Let us consider systems Sa and Sb shown in
+Since Sb  is (δ −2ε)-approximate initial-state opaque, there                                                                   Fig. 3  (a) and (b), respectively. We mark all secret states by
+exist a nonsecret  initial  state  x′′0 ∈Xb0 \ XbS  and a run                                                                     red, and the output map is speciﬁed by the value associated
+      u′′1         u′′2         u′′nx′′ 0 −→ x′′1 −→ · · · −→ x′′n such that                            with each state. Let us consider the following relation: R =
+     b       b        b                                      {(A, J), (B, K), (C, K), (D, K), (E, N), (F, M), (G, M),
+         max   d(Hb(x′i), Hb(x′′i )) ≤δ −2ε.        (7)   (I, M)}. We  claim  that R  is  an  ε-InitSOP  simulation
+              i∈{0,1,...,n}                                               relation from Sa  to Sb when ε = 0.1. We check item by
+                                                           item following Deﬁnition V.1. First, for E ∈Xa0 ∩XaS, we            ⪯εAgain, since                    by                            conditions                                           1)-b),                                                    2), and                                                       3)-b)                                                               in           Sa                      I Sb,                                                                N)                                                                              such                                                                                                      that (E,                                                                   ∈R.                                                                                                                      Similarly,                                                                                                                                  for                                                         have                                    N ∈Xb0                                                   ∩XbS                                                          x′′′                                                 andDeﬁnition           V.1,                there                       exist                       an                                    initial state                                          \ XaS                                           0 ∈Xa0
+                                                         we have                                                                                              such                                                                                                                        that                                                                                                   (A, J) ∈R.                                                J ∈Xb0                                                            \ XbS,                                                 A ∈Xa0                                                                                 \ XaS                  u′′′                                              u′′′             1                                u′′′2                        n                   x′′′                                         x′′′                               · · · −→a run x′′′0 −→               1 −→                         n such that                       Therefore, condition 1) in Deﬁnition V.1 holds. In addition,          a                 a                        a
+                                                                    for any (xa, xb) ∈R, we have d(Ha(xa), Ha(xb)) ≤0.1,
+       ∀i ∈{0, 1, . . . , n} : d(Ha(x′′′i ), Hb(x′′i )) ≤ε.      (8)    e.g., d(Ha(A), Hb(J)) = 0.1  and d(Ha(C), Hb(K)) = 0.
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 13,2021 at 08:17:27 UTC from IEEE Xplore. Restrictions apply.
+
+1638                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 66, NO. 4, APRIL 2021
+
+
+Therefore, condition 2) in Deﬁnition V.1 holds. Finally, we can   (Ha(x0), Ha(x)) ≤δ}̸ ⊆XaS, we observe immediately that
+also check that condition 3) in Deﬁnition V.1 holds. For example,   thereexistsx′0 ∈Xa0 \ XaS suchthatd(Ha(x0), Ha(x′0)) ≤δ.
+                      B, we can choose K −→ufor (D, K) ∈R and D −→u                          K such   Then, we consider the case of n ≥1. Since Sa ⪯εC Sb, by                        a                                                            b
+                                        u                 conditions 1), 2), 3)-a), and 3)-b) in Deﬁnition V.6, there exist anthat (B, K)        ∈R; for (E, M) ∈R and N −→                              M, we can                                                                                                                                             u′1                                                                                                                                                       u′2                                                                                                                                                                 u′n                                                      b                                                                                                                    x′                                                                                                                                    x′                                                                                                                                                                           · · · −→                                                                                                       n                                                                               initial state x′0 ∈Xb0 and a ﬁnite run x′0 −→                                                                                                                 1 −→          u
+choose E −→ F such that (F, M) ∈R. Therefore, we know                                                   b       b        b
+              b                                                       in Sb such that x′n ∈XbS and
+that R is an ε-InitSOP simulation relation from Sa to Sb, i.e.,
+Sa ⪯εI Sb.                                                         ∀i ∈{0, 1, . . . , n} : d(Ha(xi), Hb(x′i)) ≤ε.     (10)
+  Then, by applying the veriﬁcation algorithm in Section IV,
+                                                           Since  Sb   is  (δ −2ε)-approximate  current-state  opaque,we can check that Sb is δ-approximate initial-state opaque for
+δ = 0.1. Therefore, according to Theorem V.2, we conclude that   there  exist  an  initial  state  x′′0 ∈Xb0  and  a  ﬁnite  run
+                                                                                                                u′′1         u′′2         u′′n
+Sa is 0.3-approximate initial-state opaque, where 0.3 = δ + 2ε,    x′′0 −→ x′′1 −→ · · · −→ x′′n such that x′′n ∈Xb \ XbS and
+                                                                                b       b        b
+without applying the veriﬁcation algorithm to Sa directly.
+                                                    max   d(Hb(x′i), Hb(x′′i )) ≤δ −2ε.       (11)
+                                                                                                i∈{0,1,...,n}
+B. Approximate Current-State Opacity-Preserving
+Simulation Relation                                        Again, since Sa ⪯εC Sb, by conditions 1), 2), 3)-c), and 3)-d) in
+                                                           Deﬁnition V.6, there exist an initial state x′′′0 ∈Xa0 and a ﬁnite
+  Now, we provide a notion of approximate simulation relation                    u′′′1           u′′′2          u′′′n
+for preserving current-state opacity.                           run x′′′0 −→ x′′′1 −→ · · · −→ x′′′n such that x′′′n ∈Xa \ XaS and                                                                     a      a      a
+   Deﬁnition V.6 (Approximate     current-state     opacity-
+preserving  simulation  relation):  Let Sa = (Xa, Xa0, XaS,          ∀i ∈{0, 1, . . . , n} : d(Ha(x′′′i ), Hb(x′′i )) ≤ε.    (12)
+Ua, −→, Ya, Ha)  and  Sb = (Xb, Xb0, XbS, Ub, −→, Yb, Hb)     a                                                   b           Combining (10)–(12), and using the triangle inequality, we have
+be two metric systems with the same output sets Ya = Yb
+                                                                                                                                                       i )) ≤δ.         (13)and metric d. For ε ∈R+0 , a relation R ⊆Xa × Xb is called                    i∈{0,1,...,n}max   d(Ha(xi), Ha(x′′′
+an ε-approximate current-state opacity-preserving simulation
+relation (ε-CurSOP simulation relation) from Sa to Sb if:        Since x0 ∈Xa0 and x0 −→u1 x1 −→u2  · · · −→un xn are arbitrary, we
+   1) ∀xa0 ∈Xa0, ∃xb0 ∈Xb0 : (xa0, xb0) ∈R;                                      a      a      a                                                           conclude that Sa is δ-approximate current-state opaque.   ■
+   2) ∀(xa, xb) ∈R : d(Ha(xa), Hb(xb)) ≤ε;
+   3) for any (xa, xb) ∈R, we have
+                 ua           ub                           C. Approximate Inﬁnite-Step Opacity-Preserving                                    x′           a) ∀xa −→                       x′a, ∃xb −→                                         b : (x′a, x′b) ∈R;           Simulation Relation                  a                                    b
+                      x′                                         x′          b) ∀xa −→ua                     a ∈XaS, ∃xb −→ub                                               b ∈XbS : (x′a, x′b)∈        Finally, by combining the ε-CurSOP simulation relation and                 a                                          b
+          R;                                             theε-InitSOPsimulationrelation,weprovideanotionofapprox-
+           c) ∀xb −→ub  x′b, ∃xa −→ua x′a : (x′a, x′b) ∈R;            imate simulation relation for preserving inﬁnite-step opacity.                      b           a
+                   ub                      ua                     Deﬁnition V.8 (Approximate inﬁnite-step opacity-preserving                       x′                                                 x′          d) ∀xb −→                                             a ∈Xa \                          b ∈Xb \ XbS, ∃xa −→                                         a                      b                                                               simulation   relation):   Let  Sa = (Xa, Xa0, XaS, Ua, −→,
+                                                                                                                    a
+         XaS : (x′a, x′b) ∈R.                                                           Ya, Ha) and Sb = (Xb, Xb0, XbS, Ub, −→, Yb, Hb) be two
+  We say that Sa is ε-CurSOP simulated by Sb, denoted by                                                    b
+Sa ⪯εC Sb, if there exists an ε-CurSOP simulation relation R   metric systems with the same output sets Ya = Yb and metric d.
+from Sa to Sb.                                             For ε ∈R+0 , a relation R ⊆Xa × Xb is called an ε-approximate
+                                                                  inﬁnite-step opacity-preserving simulation relation (ε-InfSOP  The following theorem provides a sufﬁcient condition for δ-
+                                                               simulation relation) from Sa to Sb if it is both an ε-CurSOPapproximate current-state opacity based on related systems, as
+                                                               simulation relation from Sa to Sb and an ε-InitSOP simulationin Deﬁnition V.6.
+  Theorem V.7: Let  Sa = (Xa, Xa0, XaS, Ua, −→, Ya, Ha)   relation from Sa to Sb, i.e.,
+                                               a                1)
+and  Sb = (Xb, Xb0, XbS, Ub, −→, Yb, Hb)  be  two  metric                                     b                                            a) ∀xa0 ∈Xa0, ∃xb0 ∈Xb0 : (xa0, xb0) ∈R;
+systems with the same output sets Ya = Yb and metric d, and             b) ∀xa0 ∈Xa0 ∩XaS, ∃xb0 ∈Xb0 ∩XbS :
+let ε, δ ∈R+0 .  If Sa ⪯εC Sb and ε ≤δ2, then the following               (xa0, xb0) ∈R;
+implication holds:                                                            c) ∀xb0 ∈Xb0 \ XbS, ∃xa0 ∈Xa0 \ XaS :
+                                                                           (xa0, xb0) ∈R;
+        Sb is (δ −2ε)-approximate current-state opaque                                                                   2) ∀(xa, xb) ∈R : d(Ha(xa), Hb(xb)) ≤ε;
+   ⇒Sa is δ-approximate current-state opaque.                  3) for any (xa, xb) ∈R, we have
+                                                                              a) ∀xa −→ua x′a, ∃xb −→ub  x′b : (x′a, x′b) ∈R;
+   Proof: Let us consider an arbitrary initial state x0 ∈Xa0 and                    uaa             b    ub                                                                                                               x′                                                                                  a ∈XaS, ∃xb −→                                                                                                                          b ∈XbS : (x′a, x′b)∈ﬁnite run x0 −→u1 x1 −→u2  · · · −→un xn in Sa such that xn ∈XaS.             b) ∀xa −→a  x′                                                                                                                     b             a                    a                           a
+                                                             R;We consider the                 following                        two                                  cases: n = 0 and  n̸ = 0. If                                                                                      ub          ua
+                                                                                              a : (x′a, x′b) ∈R.n = 0, we know that x0 ∈XaS. Since we assume that {x ∈X0 :              c) ∀xb −→b  x′b, ∃xa −→a  x′
+
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 13,2021 at 08:17:27 UTC from IEEE Xplore. Restrictions apply.
+
+YIN et al.: ON APPROXIMATE OPACITY OF CYBER-PHYSICAL SYSTEMS                                                                    1639
+
+
+          d) ∀xb −→ub  x′b ∈Xb \ XbS, ∃xa −→ua x′a ∈Xa \        of normed vector spaces with appropriate ﬁnite dimensions.
+                      b                      a                   Set S ⊆X is a set of secret states. The map f : X × U →X
+         XaS : (x′a, x′b) ∈R.                                                                               is called the transition function, and h : X →Y is the output
+  We say that Sa is ε-InfSOP simulated by Sb, denoted by                                              map and assumed to satisfy the following Lipschitz condition:
+Sa ⪯εIF Sb, if there exists an ε-InfSOP simulation relation R                                                      ∥h(x) −h(y)∥≤α(∥x −y∥) for some α ∈K∞and all x, y ∈
+from Sa to Sb.                                                    X. The discrete-time control system Σ is described by difference
+  Similar to the cases of initial-state opacity and current-state
+                                                              equations of the form
+opacity, we have the following theorem as a sufﬁcient condition
+for δ-approximate inﬁnite-step opacity based on related systems                     ξ(k + 1) = f(ξ(k), υ(k))                                             Σ :                                       (14)
+as in Deﬁnition V.8.                                                          ζ(k)   = h(ξ(k))
+  Theorem V.9: Let  Sa = (Xa, Xa0, XaS, Ua, −→                                                                              , Ya, Ha)                                                      where ξ : N0 →X, ζ : N0 →Y, and υ : N0 →U are the state,                                               a
+and  Sb = (Xb, Xb0, XbS, Ub, −→, Yb, Hb)  be  two  metric   output, and input signals, respectively.
+                                     b
+systems with the same output sets                            Ya = Yb and metric d, and   We write ξxυ(k) to denote the point reached at time k under
+let ε, δ ∈R+0 . If Sa ⪯εIF Sb and ε ≤δ2, then the following   the input signal υ from initial condition x = ξxυ(0). Similarly,
+implication holds:                                 we denote by ζxυ(k) the output corresponding to state ξxυ(k),
+                                                                                          i.e., ζxυ(k) = h(ξxυ(k)). In the above deﬁnition, we implicitly
+        Sb is (δ −2ε)-approximate inﬁnite-step opaque       assumed that set X is positively invariant.1
+                                                    Now, we introduce the notion of incremental input-to-state
+   ⇒Sa is δ-approximate inﬁnite-step opaque.                                                                          stability (δ-ISS) leveraged later to show some of the main results
+                                                               of the article.   Proof: Let us consider an arbitrary initial state x0 ∈Xa0 and
+             u1     u2     un                                   Deﬁnition VI.2 (see [48]): System Σ = (X, S, U, f, Y, h)ﬁniterunx0 −→ x1 −→ · · · −→ xn inSa suchthatxk ∈XaS for
+             a      a      a                                           is called incrementally input-to-state stable (δ-ISS) if there exist
+some k = 0, . . . , n. We consider the following two cases:                                                           a KL function β and K∞function γ such that ∀x, x′ ∈X and
+   If k = 0,  then we  have x0 ∈XaS.  Since Sa ⪯εIF Sb   ∀υ, υ′ : N0 →U, the following inequality holds for any k ∈N:
+implies  Sa ⪯εI Sb,  by   the   proof   of  Theorem   V.2,
+we  know  that  there  exist  an   initial  state  x′0 ∈Xa0 \    ∥ξxυ(k)−ξx′υ′(k)∥≤β(∥x −x′∥, k)+γ(∥υ −υ′∥∞).  (15)
+                                    u′1       u′2       u′n
+XaS  and  a  run   x′0 −→ x′1 −→ · · · −→ x′n   such   that     Example VI.3: As an example, for a linear control system
+                          a      a      a
+maxi∈{0,1,...,n} d(Ha(xi), Ha(x′i)) ≤δ.                             ξ(k + 1) = Aξ(k) + Bυ(k),  ζ(k) = Cξ(k)    (16)
+   If k ≥1, then similar to the proof of Theorem V.7, by
+                                                      where all eigenvalues of A are inside the unit circle, the functionsconditions 1)-a), 2), 3)-a), 3)-b), 3)-c), and 3)-d) in Deﬁ-
+                                               β and γ can be chosen asnition V.8 and the fact Sb  is (δ −2ε)-approximate inﬁnite-
+step opaque, there exist an initial state x′0 ∈Xa0 and a ﬁnite                         ∞
+           u′1       u′2       u′n                                          β(r, k) = ∥Ak∥r;  γ(r) = ∥B∥     ∥Am∥   r.    (17)             x′                            x′                            · · · −→run x′0 −→              1 −→                       n such that x′k ∈Xa \ XaS and                              m=0        a               a                      a
+maxi∈{0,1,...,n} d(Ha(xi), Ha(x′i)) ≤δ.                                                                  In general, it is difﬁcult to check inequality (15) directly for                                   un
+                                                   · · · −→  Since x0 ∈Xa0, x0 −→u1                       x1 −→u2                                xn and index k are   nonlinear systems. Fortunately, δ-ISS can be characterized using                       a                              a                                     a
+arbitrary, we conclude that Sa is δ-approximate inﬁnite-step  Lyapunov functions.
+opaque.                           ■     Deﬁnition VI.4 (see [48]): Consider a control system Σ and
+                                                           a continuous function V  : X × X →R+0 . Function V  is called
+                                                           a δ-ISS Lyapunov function for Σ if there exist K∞functions            VI. OPACITY OF CONTROL SYSTEMS
+                                                          α1, α2, ρ and K function σ such that:
+  In the previous section, we have introduced notions of ap-                                                                   1) for any x, x′ ∈X,
+proximate opacity-preserving simulation relation and discussed        α1(∥x −x′∥) ≤V (x, x′) ≤α2(∥x −x′∥);
+their properties. This allows us to verify approximate opacity                                                                   2) for any x, x′ ∈X and u, u′ ∈U,
+for inﬁnite systems, e.g., continuous dynamic systems, based        V(f(x, u),f(x′, u′))−V (x, x′)≤−ρ(V (x, x′))+σ(∥u −
+on their ﬁnite abstractions. Then, the following question arises           u′∥).
+naturally: How can we construct such an abstraction for a given                                                     The following result characterizes δ-ISS in terms of existence
+system possibly with inﬁnite number of states? In general, how                                                               of δ-ISS Lyapunov functions.
+to construct ﬁnite abstractions is system-dependent and not all                                                       Theorem VI.5 (see [48]): Consider a control system Σ.
+systems admit symbolic models. In this section, we show that a                                                                   1) Σ is δ-ISS if it admits a δ-ISS Lyapunov function.
+class of discrete-time control systems do admit symbolic models                                                                   2) If U is compact and convex and X is compact, then the
+for the purpose of verifying approximate opacity under certain                                                                       existence of a δ-ISS Lyapunov function is equivalent to
+stability assumption.                                                  δ-ISS.
+  To be more speciﬁc, we consider a class of discrete-time                                                     The following technical lemma will be used later to show
+control systems of the following form.                                                  some of the main results of this section.
+   Deﬁnition VI.1: A discrete-time control system Σ is deﬁned
+by the tuple Σ = (X, S, U, f, Y, h), where X, U, and Y are      1Set X is called positively invariant under (14) if ξxυ(k) ∈X for any k ∈N,
+the state, input, and output sets, respectively, and are subsets   any x ∈X, and any υ : N0 →U.
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 13,2021 at 08:17:27 UTC from IEEE Xplore. Restrictions apply.
+
+1640                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 66, NO. 4, APRIL 2021
+
+
+  Lemma VI.6: Consider a control system Σ. Suppose V  is a     Consider any u ∈U. Choose an input uq ∈Uq satisfying
+δ-ISS Lyapunov function for Σ. Then, there exist κ, λ ∈K∞,                                                                   ∥u −uq∥≤μ.                   (23)where κ(s) < s for any s ∈R+, such that
+                                                      Note that the existence of such uq is guaranteed by the inequality V (f(x, u), f(x′, u′))≤max{κ(V (x, x′)), λ(∥u −u′∥)}  (18)
+                                            μ ≤span(U) which guarantees that U ⊆   p∈[U]μ Bμ(p). Con-
+for any x, x′ ∈X and any u, u′ ∈U.                                                             sidertheuniquetransitionx −→x′u  = f(x, u)inS(Σ).Itfollows
+  The proof is similar to that of [49, Th. 1] and is omitted here                                                      from the δ-ISS assumption on Σ and (23) that the distance
+due to lack of space.                                                       between x′ and f(xq, uq) is bounded as
+  In order to provide the main results of this section, we ﬁrst
+                                                                    ∥x′ −f(xq, uq)∥≤β (∥x −xq∥, 1) + γ (∥u −uq∥)describe control systems in Deﬁnition VI.1 as metric systems
+as in Deﬁnition II.1. More precisely, given a control system             ≤β  α−1(ε), 1 + γ (μ) .         (24)
+Σ = (X, S, U, f, Y, h), we deﬁne an associated metric system
+                                                           Since X ⊆   p∈[X]η Bη(p), there exists x′q ∈Xq such that          S(Σ) = (X, X0, XS, U, −→, Y, H)         (19)
+                                                                           ∥f(xq, uq) −x′q∥≤η                (25)where X = X, X0 = X, XS = S, U = U, Y = Y, H = h, and
+x −→x′u      if and only if x′ = f(x, u). We assume that the output   which, by the deﬁnition of Sq(Σ), implies the existence of
+set Y is equipped with the inﬁnity norm: d(y1, y2) = ∥y1 −y2∥,  xq −→uq  x′q in Sq(Σ). Using the inequalities (21), (24), (25), and
+∀y1, y2 ∈Y . We have a similar assumption for the state set X.        q
+                                                                     triangle inequality, we obtain
+  Now, we introduce a symbolic system for the control system
+Σ = (X, S, U, f, Y, h). To do so, from now on, we assume        ∥x′ −x′q∥≤∥x′ −f(xq, uq) + f(xq, uq) −x′q∥
+that sets X, S and U are of the form of ﬁnite union of boxes.
+                                                         ≤∥x′ −f(xq, uq)∥+ ∥f(xq, uq) −x′q∥Consider a concrete control system Σ and a tuple q = (η, μ, θ)
+of parameters, where 0 < η ≤min{span(S), span(X \ S)} is          ≤β  α−1(ε), 1 + γ (μ) + η ≤α−1(ε).
+the state set quantization, 0 < μ ≤span(U) is the input set
+quantization, and θ is a design parameter. Now, let us introduce   Therefore, we conclude that (x′, x′q) ∈R, and condition 3)-a)
+                                                                    in Deﬁnition V.1 holds. Let us now show that condition 3)-b) inthe symbolic system
+                                                           Deﬁnition V.1 also holds.
+        Sq(Σ) = (Xq, Xq0, XqS, Uq, −→                                                               , Yq, Hq)      (20)    Now, consider any (x, xq) ∈R and any uq ∈Uq. Choose the                                           q
+                                                                input u = uq and consider the unique x′ = f(x, u) in S(Σ).
+where   Xq = Xq0 = [X]η,   XqS = [Sθ]η,   Uq = [U]μ,   Using δ-ISS assumption for Σ, we bound the distance between
+Yq = {h(xq) | xq ∈Xq}, Hq(xq) = h(xq), ∀xq ∈Xq, and   x′ and f(xq, uq) as
+        x′xq −→uq         q if and only if ∥x′q −f(xq, uq)∥≤η.
+     q                                                                 ∥x′ −f(xq, uq)∥≤β (∥x −xq∥, 1) ≤β  α−1(ε), 1  .  (26)
+  We can now state the ﬁrst main result of this section showing
+that, under some condition over the quantization parameters η     Using the deﬁnition of Sq(Σ), inequalities (21) and (26), and
+and μ, Sq(Σ) and S(Σ) are related under an approximate initial-   the triangle inequality, we obtain
+state opacity-preserving simulation relation.                          ∥x′ −x′q∥≤∥x′ −f(xq, uq) + f(xq, uq) −x′q∥
+  Theorem VI.7: Let Σ = (X, S, U, f, Y, h) be a δ-ISS con-
+                                                         ≤∥x′ −f(xq, uq)∥+ ∥f(xq, uq) −x′q∥trol system. For any desired precision ε > 0, and any tuple
+q = (η, μ, 0) of parameters satisfying                                         ≤β  α−1(ε), 1 + η ≤α−1(ε).
+         β  α−1(ε), 1 + γ(μ) + η ≤α−1(ε)         (21)                                                               Therefore, we conclude that (x′, x′q) ∈R, and condition 3)-b)
+we have S(Σ) ⪯εI Sq(Σ) ⪯εI S(Σ).                               in Deﬁnition V.1 holds.
+   Proof: We start by proving S(Σ) ⪯εI Sq(Σ). Consider the     In a similar way, one can prove that Sq(Σ) ⪯εI S(Σ).   ■
+relation R ⊆X × Xq deﬁned by (x, xq) ∈R if and only if ∥x −     Remark VI.8: Note  that  there always  exist  quantization
+xq∥≤α−1(ε). Since η ≤span(S), XS ⊆   p∈[S]η Bη(p), and   parameters q such  that  inequality  (21) holds  as long  as
+by (21), ∀x ∈XS, ∃xq ∈XqS such that                      β(α−1(ε), 1) < α−1(ε). By assuming that the discrete-time
+                                                                 control system Σ  is a sampled-data version of an original
+              ∥x −xq∥≤η ≤α−1(ε).              (22)                                                             continuous-time one with the sampling time τ, one can ensure
+Hence, (x, xq) ∈R and condition 1)-a) in Deﬁnition V.1 is   the latter inequality by choosing the sampling time large enough
+satisﬁed. For every xq ∈Xq \ XqS, by choosing x = xq, which   given that β(r, 1) = ˆβ(r, τ) < r for some KL function ˆβ es-
+is also inside set X \ XS, one gets (x, xq) ∈R, and hence,   tablishing the incremental stability of the original continuous-
+condition 1)-b) in Deﬁnition V.1 holds as well. Now, consider   time system. For example, for the function in (17), one has
+any (x, xq) ∈R. Condition 2) in Deﬁnition V.1 is satisﬁed by   β(r, 1) = ∥A∥r = ∥e Aτ∥r,ˆ    where ˆA is the state matrix of the
+the deﬁnition of R and the Lipschitz assumption:                 original continuous-time linear control system.
+                                                     The following example illustrates how to use Theorem VI.7
+ ∥H(x) −Hq(xq)∥= ∥h(x) −h(xq)∥≤α(∥x −xq∥) ≤ε.
+                                                                    to verify approximate opacity for an inﬁnite system based on its
+Let us now show that condition 3) in Deﬁnition V.1 holds.        ﬁnite abstraction.
+
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 13,2021 at 08:17:27 UTC from IEEE Xplore. Restrictions apply.
+
+YIN et al.: ON APPROXIMATE OPACITY OF CYBER-PHYSICAL SYSTEMS                                                                    1641
+
+
+                                                          such that ∥x −xq∥≤η. Then, we have
+                                                 V (x, xq) ≤α2(∥x −xq∥) ≤α2(η) ≤α1(α−1(ε))
+                                                          because of (29) and α2 being a K∞function. Hence, (x, xq) ∈
+                                                    R, and condition 1)-a) in Deﬁnition V.1 is satisﬁed. For every
+                                                       xq ∈Xq \ XqS, by choosing x = xq, which is also inside set
+                                X \ XS, one gets trivially (x, xq) ∈R, and hence, condition 1)-
+                                                               b) in Deﬁnition V.1 holds as well. Now, consider any (x, xq) ∈
+                                                    R. Condition 2) in Deﬁnition V.1 is satisﬁed by the deﬁnition of
+                                   R and the Lipschitz assumption on map h as in Deﬁnition VI.1
+Fig. 4.  Symbolic model Sq(Σ) associated with control systems Σ of     ∥H(x) −Hq(xq)∥= ∥h(x) −h(xq)∥≤α(∥x −xq∥)
+(27) with η = 0.1, μ = 0.001, and ε = 0.9.
+                                                           ≤α(α−11 (V (x, xq)) ≤ε.
+  Example VI.9: Let us consider the following simple system:   Let us now show that condition 3) in Deﬁnition V.1 holds.
+                                                             Consider any u ∈U. Choose an input uq ∈Uq satisfying
+                 ξ(k + 1) = 0.1ξ(k) + υ(k)
+        Σ :                                        (27)                    ∥u −uq∥≤μ.                   (31)                 ζ(k) = sin(2.5πξ(k)) + 1
+                                                      Note that the existence of such uq is guaranteed by the inequality
+where X = [0, 1.6[, S = [0, 0.1[ and U = {0.001}. This system  μ ≤span(U) which guarantees that U ⊆   p∈[U]μ Bμ(p). Con-is clearly δ-ISS, and according to (17), we have β(r, k) = 0.1kr                             u
+and γ(r) =  ∞m=0 0.1mr. In addition, function h satisﬁes the   sider the unique transition x −→x′ = f(x, u) in S(Σ). Given                                                          δ-ISS Lyapunov function V for Σ, inequality (18), and (31), oneLipschitz condition with α(r) = 2.5πr. By (21), the param-
+eters q = (η, μ, 0) and the abstract precision ε should sat-   obtains
+isfy 0.04π ε + 109 μ + η ≤0.4π ε. Let us consider desired abstract     V (x′, f(xq, uq)) ≤max{κ (V (x, xq)) , λ (∥u −uq∥)}
+precision ε = 0.9 and quantization parameters q = (η, μ, 0) =
+(0.1, 0.001, 0) satisfying the inequality. Then, we obtain sym-              ≤max{κ α1(α−1(ε))  , λ (μ)}.    (32)
+bolic system Sq(Σ) shown in Fig. 4  , and by Theorem VI.7, we                                                           Since X ⊆   p∈[X]η Bη(p), there exists x′q ∈Xq such that
+have S(Σ) ⪯0.9I  Sq(Σ) ⪯0.9I  S(Σ). Essentially, we discretize
+the state space of [0,1.6[ into 16 discrete states based on pa-                    ∥f(xq, uq) −x′q∥≤η                (33)
+rameter η. One can easily check that Sq(Σ) is 0-approximate
+                                                           which, by the deﬁnition of Sq(Σ), implies the existence of
+initial-state opaque since for any run from secret initial state 0,       uq
+                                                                             q in Sq(Σ). Using the inequalities (28), (30), (32), andthereexistsarunfromnonsecretstate8suchthattheiroutputsare   xq −→q  x′
+exactly the same. Therefore, by Theorem V.2, we can conclude   (33), we obtain
+that Σ is 1.8-approximate initial-state opaque.
+                                                V (x′, x′q) ≤V (x′, f(xq, uq)) + ˆγ(∥f(xq, uq) −x′q∥)  The next theorem provides similar results as in Theorem VI.7
+but by leveraging δ-ISS Lyapunov functions. To show the next                                                 ≤max{κ α1(α−1(ε))  , λ (μ)} + ˆγ (η)
+result, we will make the following supplementary assumption on
+the δ-ISS Lyapunov functions: there exists a function ˆγ ∈K∞              ≤α1(α−1(ε)).
+such that
+                                                               Therefore, we conclude that (x′, x′q) ∈R, and condition 3)-a)
+ ∀x, x′, x′′ ∈X,  V (x, x′) −V (x′, x′′) ≤ˆγ(∥x −x′′∥). (28)   in Deﬁnition V.1 holds. Let us now show that condition 3)-b) in
+                                                           Deﬁnition V.1 also holds.
+Inequality (28) is not restrictive at all, provided that we are    Now, consider any (x, xq) ∈R. Consider any uq ∈Uq.
+interested in the dynamics of the control system on a compact  Choose the input u = uq and consider the unique x′ = f(x, u)
+subset of the state set X (see the discussion in [34]).              in S(Σ). Given δ-ISS Lyapunov function V for Σ and inequality
+  Theorem VI.10: Let Σ = (X, S, U, f, Y, h) admit a δ-ISS   (18), one gets
+Lyapunov function V satisfying (28). For any desired precision
+                                               V (x′, f(xq, uq)) ≤κ (V (x, xq)) ≤κ α1(α−1(ε))  .   (34)ε > 0, and any tuple q = (η, μ, 0) satisfying
+                                                         Using the deﬁnition of Sq(Σ), and inequalities (28), (30), and
+                            α2(η) ≤α1(α−1(ε))    (29)                                                                     (34), we obtain
+   max{κ(α1(α−1(ε))), λ(μ)} + ˆγ(η) ≤α1(α−1(ε))    (30)     V (x′, x′q) ≤V (x′, f(xq, uq)) + ˆγ(∥f(xq, uq) −x′q∥)
+we have S(Σ) ⪯εI Sq(Σ) ⪯εI S(Σ).                      ≤κ α1(α−1(ε)) + ˆγ(η) ≤α1(α−1(ε)).
+   Proof: We start by proving S(Σ) ⪯εI Sq(Σ). Consider the
+relation R ⊆X × Xq deﬁned by (x, xq) ∈R  if and only   Therefore, we conclude that (x′, x′q) ∈R, and condition 3)-b)
+if V (x, xq) ≤α1(α−1(ε)).  Since η ≤span(S) and XS ⊆   in Deﬁnition V.1 holds.
+  p∈[S]η Bη(p), for every x ∈XS, there always exists xq ∈XqS     In a similar way, one can prove that Sq(Σ) ⪯εI S(Σ).   ■
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 13,2021 at 08:17:27 UTC from IEEE Xplore. Restrictions apply.
+
+1642                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 66, NO. 4, APRIL 2021
+
+
+  Remark VI.11: One can readily verify that there always ex-   inﬁnite-state opacity-preserving simulation relation, we conse-
+ists a choice of quantization parameter q = (η, μ) such that   quently get the following results.
+inequalities (29) and (30) hold simultaneously. Although the     Theorem VI.14: Let Σ = (X, S, U, f, Y, h) be a δ-ISS con-
+result in Theorem VI.10 seems more general than that of   trol system. For any desired precision ε > 0, and any tuple
+Theorem VI.7 in terms of the existence of quantization pa-  q = (η, μ, θ) of parameters satisfying
+rameter q, the symbolic model Sq(Σ), computed by using the
+                                                        β  α−1(ε), 1 + γ(μ) + η ≤α−1(ε)quantization parameters q provided in Theorem VI.7 whenever
+existing, is likely to have fewer states than those of the model                             α−1(ε) ≤θ
+computed by using the quantization parameters provided in The-
+orem VI.10 owing to the conservative nature of δ-ISS Lyapunov  we have S(Σ) ⪯εIF Sq(Σ).
+functions.                                               Theorem VI.15: Let Σ = (X, S, U, f, Y, h) admit a δ-ISS
+  The following theorems illustrate the other main results of  Lyapunov function V satisfying (28). For any desired precision
+this section showing that, under similar conditions over the   ε > 0, and any tuple q = (η, μ, θ) satisfying
+quantization parameters η and μ, Sq(Σ) and S(Σ) are related un-
+der an approximate current-state opacity-preserving simulation                                α2(η) ≤α1(α−1(ε))
+relation.                                                    max{κ(α1(α−1(ε))), λ(μ)} + ˆγ(η) ≤α1(α−1(ε))
+  Theorem VI.12: Let Σ = (X, S, U, f, Y, h) be a δ-ISS con-
+trol system. For any desired precision ε > 0, and any tuple                               α−1(ε) ≤θ
+q = (η, μ, θ) of parameters satisfying
+                                             we have S(Σ) ⪯εIF Sq(Σ).
+         β  α−1(ε), 1 + γ(μ) + η ≤α−1(ε)
+                                                                                              VII. CONCLUSION
+                           α−1(ε) ≤θ
+                                                                  In this article, we extended the concept of opacity to met-
+we have S(Σ) ⪯εC Sq(Σ).                                             ric systems by proposing the notion of approximate opacity.
+   Proof: Consider  the  relation R ⊆X × Xq  deﬁned by   Veriﬁcation algorithms and approximate relations that preserve
+(x, xq) ∈R if and only if ∥x −xq∥≤α−1(ε). Note that con-   approximate opacity were also provided. We also discussed how
+ditions 1), 2), 3)-a), and 3)-c) of ε-CurSOP simulation rela-   to construct ﬁnite abstractions that approximately simulate a
+tion in Deﬁnition V.6 are similar to that of ε-InitSOP sim-   class of control systems in terms of opacity preservation. Our
+ulation relation; therefore, their proofs are similar to that in   result bridges the gap between the opacity analysis of ﬁnite
+Theorem VI.7 and are omitted here. Here, we show that con-   discrete systems and continuous control systems.
+ditions 3)-b) and 3)-d) in Deﬁnition V.6 hold.               Among the many possible directions for future work that will
+  Let us consider an arbitrary transition x −→x′u  = f(x, u)   be built based on the proposed framework, we mention several
+with x′ ∈XS in S(Σ). Similar to the proof of condition 3)-a),   directions of immediate interest. One direction is to extend our
+we can show the existence of a transition xq −→uq  x′q in Sq(Σ)  framework to the stochastic setting for almost opacity [14], [21]–
+                                                 q                  [23]. In addition, we are interested in constructing approximate
+where (x′, x′q) ∈R holds, where the input uq ∈Uq satisﬁes   opacity-preserving symbolic models for more classes of sys-
+∥u −uq∥≤μ. By the construction of the secret set in the sym-                                                              tems. Finally, we plan to extend approximate opacity-preserving
+bolic system, one has XqS = [Sθ]η with θ ≥α−1(ε) and 0 <                                                               simulation relation to approximate opacity-preserving alternat-
+η ≤min{span(S), span(X \ S)}. Therefore, since (x′, x′q) ∈   ing simulation relation [45] and solve the problem of controller
+R, which implies that ∥x′ −x′q∥≤α−1(ε), we obtain that   synthesis enforcing approximate opacity [46], [50]–[54].
+x′ q ∈XqS. Thus, we conclude that condition 3)-b) in Deﬁnition
+V.6 holds. In a similar way, we can show that condition 3)-d) in
+                                                                      APPENDIX
+Deﬁnition V.6 holds as well, which completes the proof.  ■
+  Theorem VI.13: Let Σ = (X, S, U, f, Y, h) admits a δ-ISS   A. Proofs not Contained in the Main Body
+Lyapunov function V satisfying (28). For any desired precision                                                             Proof of Proposition IV.2
+ε > 0, and any tuple q = (η, μ, θ) satisfying                                                                 Proof: It is straightforward to show (i). Hereafter, we prove
+                                                                                      (ii) by induction on the length of input sequence.
+                              α2(η) ≤α1(α−1(ε))                                              When n = 0, i.e., there is no input sequence, we have that
+     max{κ(α1(α−1(ε))), λ(μ)} + ˆγ(η) ≤α1(α−1(ε))        (x0, q0) ∈XI0. By the deﬁnition of XI0, we know that
+                             α−1(ε) ≤θ                             q0 = {x′0 ∈X : d(H(x0), H(x′0)) ≤δ}
+
+we have S(Σ) ⪯εC Sq(Σ).                                 which implies (ii) immediately.
+   Proof: The proof is similar to that of Theorems VI.10 and    To proceed the induction, we assume that (ii) holds when n =
+VI.12 and is omitted here due to lack of space.       ■   k. Now, we need to show that (ii) also holds when n = k + 1.
+  Since we show S(Σ) ⪯εI Sq(Σ) and S(Σ) ⪯εC Sq(Σ) under   Consider arbitrary pair (x0, q0) ∈XI0 and ﬁnite run
+the same relation in Theorems VI.7 and VI.12 (respectively,              u1          u2     un         un+1
+Theorems VI.10 and VI.13), by the deﬁnition of approximate    (x0, q0) −→I  (x1, q1) −→I   · · · −→I (xn, qn) −→I  (xn+1, qn+1).
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 13,2021 at 08:17:27 UTC from IEEE Xplore. Restrictions apply.
+
+YIN et al.: ON APPROXIMATE OPACITY OF CYBER-PHYSICAL SYSTEMS                                                                    1643
+
+
+Then, we have                                                                                                   u′1       u′2       u′n
+                                                           a    sequence     x′0 −→x′1 −→· · · −→x′n    such     that
+qn+1 = ∪ˆu∈U Preˆu(qn) ∩{x ∈X : d(H(xn+1), H(x))≤δ}    maxi∈{0,1,...,n} d(H(xi), H(x′i))≤δ. This is a contradiction,
+                                                                                          i.e., S has to be δ-approximate initial-state opaque.     ■
+   = {x ∈X : ∃x′ ∈qn, u′n+1 ∈U s.t. (x, u′n+1, x′) ∈−→}                                                             Proof of Proposition IV.6
+     ∩{x ∈X : d(H(xn+1), H(x)) ≤δ}                     Proof: The proof is similar to that of Proposition IV.2, which
+                                                         can be done by induction on the length of the sequence.   ■
+                  [∃x′ ∈qn, u′n+1 ∈U s.t. (x, u′n+1, x′) ∈−→]  .     Proof of Theorem IV.7   = x∈X :
+                    ∧[d(H(xn+1), H(x)) ≤δ]                                                                 Proof: ByPropositionIV.6,foreachstate(x, q)encountered,
+By the induction hypothesis, we know that                       the second component is exactly the set of all possible current
+                                                                       states consistent with the observation. Then, the proof is similar
+                                      u′n      u′n−1      u′1
+                     ∃x′0 −→x′1 −→· · · −→x′n s.t.           .    to that of Theorem IV.3.                   ■ qn =   x′0 ∈X :
+                    maxi∈{0,1,...,n} d(H(xi), H(x′n−i)) ≤δ        Proof of Theorem IV.8
+                                                                 Proof: By contraposition: suppose that there exist two states  Therefore, by combining the above two equations, one gets
+   ⎧                       ⎫   (xn, q′n) ∈XI, (xn, qn) ∈XC such that xn ∈XS and qn ∩
+
+                        n+1                                       un−1                                                                u′1                                            u′n                           ⎪⎬    q′n ⊆XS. Let   ⎪⎨         ∃x u′−→x′                       −→· · · −→x′                                            n                               0 −→x′                                       1
+    x∈X :qn+1=                                    H(x′                              d(H(xi),                       s.t. maxi∈{0,1,...,n}                                                                                     u1                                                                                             un   ⎪⎩                                                                                                                                                    · · · −→                                                n−i)) ≤δ⎪⎭              (x0, q0) −→                                                                                     (x1, q1) −→u2                                                                                                  (xn, qn)                              H(x))                         ≤δ                   ∧d(H(xn+1),                                                            C                                                                     C                                                                          C
+
+                                  u′                                                        u′1                                             u′n                                                            (xn+m, qn+m) un+m−→                                                                             (xn+m−1, qn+m−1)                                                         · · −→x′′                       ∃x′′0                  −→x′′n+1  1 −→·                                      n+1 s.t.           .                                                                                                          I   = x∈X :
+                maxi∈{0,1,...,n+1} d(H(xi), H(x′′n+1−i)) ≤δ                 un+1
+                                                                                                               · · · −→(xn, q′n)
+Therefore, one obtains that the induction step holds.     ■                     I
+  Proof of Theorem IV.3
+                                                        be two runs reaching (x, q) and (x, q′), respectively. By Propo-   Proof: (⇒) By contraposition: suppose that there exists a
+state (x, q) ∈XI such that x ∈X0 ∩XS and q ∩X0 ⊆XS.   sitions IV.2 and IV.6, we have x0 ∈X0 and
+Let                                                                            u1    un−1      un    un+1     un+2
+                                                               x0 −→· · ·−→xn−1 −→xn −→xn+1 −→
+                                                    · · · −→           (x0, q0) −→u1          u1     un                      (x1, q1) −→                                       (xn, qn)                          un+m                        I                                      I                                              I                                                                                                                     · · · −→xn+m.
+be a run reaching (x, q) =: (xn, qn). By Proposition IV.2, we
+have xn −→xn−1un       un−1−→· · · −→x1,u1    which is well-deﬁned in S as   Moreover, one has
+xn ∈X0. Moreover, by Proposition IV.2, we have
+                                                         qn ∩q′n =
+                                     u′n      u′n−1      u′1
+                     ∃x′0 −→x′1 −→· · · −→x′n s.t.            .                                                   u′1      u′n+mqn =   x′0 ∈X :                                                                                        0 ∈X0, ∃x′0 −→· · · −→x′n+m           .                    maxi∈{0,1,...,n} d(H(xi), H(x′n−i)) ≤δ           x′n ∈X :      ∃x′
+                                                                                                             s.t. maxi∈{0,1,...,n+m} d(H(xi), H(x′i)) ≤δHowever, since qn ∩X0 ⊆XS, we know that there does not
+                                                 u′                                                            u′1                                        u′n                     −→·n−1  · · −→x′                                         n such that   Since qn ∩q′n ⊆XS, we know that there does not exist x′0 ∈exist x′0 ∈X0 \ XS and x′0 −→x′                                    1
+                                                                                                                 u′                         ≤δ. Therefore,maxi∈{0,1,...,n} d(H(xi), H(x′n−i))                                                                                               1    · ·                                                  −→x′n+m n+m such that x′n ∈X \ XS and                                            by con-  X0 and x′0 −→·u′                              un                                          un−1     u1
+sidering xn ∈X0 ∩XS and xn −→xn−1 −→· · · −→x1, we   maxi∈{0,1,...,n+m} d(H(xi), H(x′i)) ≤δ. Therefore, the sys-
+know the system is not δ-approximate initial-state opaque.      tem is not δ-approximate inﬁnite-step opaque.
+  (⇐) By  contradiction: suppose  that  (3) holds and  as-    (⇐) By contradiction: suppose that (5) holds and assume, for
+sume that S is not δ-approximate initial-state opaque. Then,   the sake of contradiction, that S is not δ-approximate inﬁnite-
+there exists a secret  initial state x0 ∈X0 ∩XS and a se-   step opaque. Then, we know that there exists an initial state
+quence of transitions x0 −→x1u1   −→·u2    · · −→xnun    such that there  x0 ∈X0, a sequence of transitions x0 −→x1u1   −→·u2    · · −→xnun
+does not exist a nonsecret  initial  state x′0 ∈X0 \ XS and  and an index k ∈{0, . . . , n} such that xk ∈XS and there
+                                         u′1                                                  u′2                                                            u′n                                                              · · −→x′                                         n such that   does not exist an initial state x′0 ∈X0 and a sequence of tran-a sequence of transitions x′0 −→x′                                    1 −→·
+                                                                                             1                                                                                                               u′2                                                                                                                         u′n                                                                                                                                 · · −→x′maxi∈{0,1,...,n} d(H(xi), H(x′i)) ≤δ. Let us consider the fol-   sitions x′0 −→x′u′                                                                                   1 −→·                                                                               n such that x′k ∈X \ XS and
+lowing sequence of transitions in SI                                                                      maxi∈{0,1,...,n} d(H(xi), H(x′i)) ≤δ. Let us consider the fol-
+                un           un−1     u1                   lowing sequence of transitions in SC:        (xn, q0) −→ (xn−1, q1) −→ · · · −→ (x0, qn).
+                      I                I        I
+                                                                                     u1          u2     uk
+By Proposition IV.2, we know that                                         (x0, q0) −→ (x1, q1) −→ · · · −→ (xk, qk)
+                                                             C        C    C
+                                     u′n      u′n−1      u′1
+                     ∃x′0 −→x′1 −→· · · −→x′n s.t.          .    and the following sequence of transitions in SI:  qn =   x′0 ∈X :
+                     maxi∈{0,1,...,n} d(H(xi), H(x′i)) ≤δ
+                                                                                                     uk+1
+                                                                                                                                                       · · ·                                                      −→                                                                  (xn, q′n) −→un                                                                            (xn−1, q′n−1) un−1−→                                                                                                        (xk, q′k).By   (3),  we   have  qn ∩X0̸ ⊆XS.   Therefore,   there                                                                                               I                                                                                                                   I                                                                                                                            I
+exist   a   nonsecret    initial   state   x′0 ∈X0 \ XS   and
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 13,2021 at 08:17:27 UTC from IEEE Xplore. Restrictions apply.
+
+1644                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 66, NO. 4, APRIL 2021
+
+
+By Propositions IV.2 and IV.6, we know that                          [22]  J. Chen, M. Ibrahim, and R. Kumar, “Quantiﬁcation of secrecy in partially
+                                                                               observed stochastic discrete event systems,” IEEE Trans. Autom. Sci. Eng.,
+                                                     u′1       u′n                           vol. 14, no. 1, pp. 185–195, Jan. 2017.
+                                                                                      Yin, Z. Li, W.                                                                                  Wang, and S.                                                                                                                            Li, “Inﬁnite-step                                                                                                                                opacity                                                                                                                       and                                                                                                                                    K-step                                                                                                                                                  opacity                      ∃x′0 ∈X0, ∃x′0 −→· · · −→x′n s.t.     .     [23] X. qn ∩q′n =  x′k ∈X :                                                                                     of stochastic                                                                                                      discrete-event                                                                                                             systems,”                                                                                                                   Automatica,                                                                                                                                                    vol.                                                                                                                                          99,                                                                                                                                              pp. 266–274,                        maxi∈{0,1,...,n} d(H(xi), H(x′i)) ≤δ                                                                              2019.
+                                                                               [24] B. Ramasubramanian, R. Cleaveland, and S. Marcus, “A framework
+Since  (5)  holds, we  know  that  qn ∩q′n̸ ⊆XS.  There-          for opacity in linear systems,” in Proc. Amer. Control Conf., 2016,
+fore,  there  exists  x′0 ∈X0  and  a  sequence  of  transi-         pp. 6337–6344.                                                                               [25] B. Ramasubramanian, R. Cleaveland, and S. Marcus, “A framework for
+               u′1       u′n
+tions   x′0 −→· · · −→x′n   such   that  xk ∈X \ XS   and         decentralizedopacityinlinearsystems,”inProc.54thAnnu.AllertonConf.
+maxi∈{0,1,...,n} d(H(xi), H(x′i)) ≤δ , which is a contradiction,    [26] B.Commun.,Ramasubramanian,Control, Comput.,R. Cleaveland,2016, pp. 274–280.and S. Marcus, “Opacity  for
+i.e., S has to be δ-approximate inﬁnite-step opaque.     ■         switched linear systems: Notions and characterization,” in Proc. 56th IEEE
+                                                                                 Conf. Decis. Control, 2017, pp. 5310–5315.
+                                                                               [27] X. Yin and S. Lafortune, “A new approach for the veriﬁcation of inﬁnite-
+                 REFERENCES                                        step and K-step opacity using two-way observers,” Automatica, vol. 80,
+                                                                                     pp. 162–171, 2017.
+ [1] K.-D. Kim and P. Kumar, “Cyber-physical systems: A perspective at    [28] K. Zhang, X. Yin, and M. Zamani, “Opacity of nondeterministic transition
+      the centennial,” Proc. IEEE, vol. 100, no. Special Centennial Issue,        systems:A(bi)simulationrelationapproach,”IEEETrans.Autom.Control,
+     pp. 1287–1308, May 2012.                                                           vol. 64, no. 12, pp. 5116–5123, Dec. 2019.
+ [2] H. Sandberg, S. Amin, and K. Johansson, “Cyberphysical security in    [29] M. Noori-Hosseini, B. Lennartson, and C. Hadjicostis, “Compositional
+     networked control systems,” IEEE Control Syst., vol. 35, no. 1, pp. 20–23,          visible bisimulation abstraction applied to opacity veriﬁcation,” in Proc.
+     Feb. 2015.                                                                 14th Int. Workshop Discrete Event Syst., 2018, pp. 434–441.
+ [3] L. Mazaré, “Using uniﬁcation for opacity properties,” in Proc. Workshop    [30] M. Noori-Hosseini, B. Lennartson, and C. Hadjicostis, “Incremental
+      Issues Theory Secur., 2004, vol. 7, pp. 165–176.                                observer reduction applied to opacity veriﬁcation and synthesis,” 2018,
+ [4]  J. W. Bryans, M. Koutny, L. Mazaré, and P. Y. A. Ryan, “Opacity gener-        arXiv:1812.08083v3.
+      alised to transition systems,” In. J. Inf. Secur., vol. 7, no. 6, pp. 421–435,    [31] B. Wu and H. Lin, “Privacy veriﬁcation and enforcement via belief
+     2008.                                                                                abstraction,” IEEE Control Syst. Lett., vol. 2, no. 4, pp. 815–820, Oct. 2018.
+ [5] A. Saboori and C. Hadjicostis, “Veriﬁcation of K-step opacity and analysis    [32]  S. Mohajerani, Y. Ji, and S. Lafortune, “Compositional and abstraction-
+      of its complexity,” IEEE Trans. Autom. Sci. Eng., vol. 8, no. 3, pp. 549–559,        based approach for synthesis of edit functions for opacity enforcement,”
+      Jul. 2011.                                                      IEEE Trans. Autom. Control, to be published.
+ [6] A. Saboori and C. Hadjicostis, “Veriﬁcation of inﬁnite-step opacity and    [33] A. Girard and G. J. Pappas, “Approximation metrics for discrete and con-
+     complexity considerations,” IEEE Trans. Autom. Control, vol. 57, no. 5,         tinuous systems,” IEEE Trans. Autom. Control, vol. 52, no. 5, pp. 782–798,
+     pp. 1265–1269, May 2012.                                    May 2007.
+ [7] A. Saboori and C. Hadjicostis, “Veriﬁcation of initial-state opacity in secu-    [34] A. Girard, G. Pola, and P. Tabuada, “Approximately bisimilar symbolic
+       rity applications of discrete event systems,” Inf. Sci., vol. 246, pp. 115–132,        models for incrementally stable switched systems,” IEEE Trans. Autom.
+     2013.                                                                          Control, vol. 55, no. 1, pp. 116–126, Jan. 2010.
+ [8]  F. Lin, “Opacity of discrete event systems and its applications,” Automat-    [35] G. Reissig, “Computing abstractions of nonlinear systems,” IEEE Trans.
+      ica, vol. 47, no. 3, pp. 496–503, Mar. 2011.                                 Autom. Control, vol. 56, no. 11, pp. 2583–2598, Nov. 2011.
+ [9] Y. Wu and S. Lafortune, “Comparative analysis of related notions of    [36] M. Zamani, G. Pola, M. Mazo, and P. Tabuada, “Symbolic models for
+     opacity in centralized and coordinated architectures,” Discrete Event Dyn.         nonlinear control systems without stability assumptions,” IEEE Trans.
+       Syst., vol. 23, no. 3, pp. 307–339, Sep. 2013.                                Autom. Control, vol. 57, no. 7, pp. 1804–1809, Jul. 2012.
+[10] Y. Tong, Z. Li, C. Seatzu, and A. Giua, “Decidability of opacity veriﬁcation    [37] M. Zamani, A. Abate, and A. Girard, “Symbolic models for stochastic
+     problems in labeled Petri net systems,” Automatica, vol. 80, pp. 48–53,         switched systems: A discretization and a discretization-free approach,”
+     2017.                                                                      Automatica, vol. 55, pp. 183–196, 2015.
+[11] Y. Tong, Z. Li, C. Seatzu, and A. Giua, “Veriﬁcation of state-based    [38] C. Dwork, “Differential privacy,” in Encyclopedia of Cryptography and
+     opacity using Petri nets,” IEEE Trans. Autom. Control, vol. 62, no. 6,          Security. New York, NY, USA: Springer, 2011, pp. 338–340.
+     pp. 2823–2837, Jun. 2017.                                                [39]  J. Le Ny and G. Pappas, “Differentially private ﬁltering,” IEEE Trans.
+[12] X. Cong, M. Fanti, A. Mangini, and Z. Li, “On-line veriﬁcation of current-        Autom. Control, vol. 59, no. 2, pp. 341–354, Feb. 2014.
+      state opacity by Petri nets and integer linear programming,” Automatica,    [40] A. Jones, K. Leahy, and M. Hale, “Towards differential privacy for sym-
+      vol. 94, pp. 205–213, 2018.                                                       bolic systems,” in Proc. Amer. Control Conf., 2019, pp. 372–377.
+[13]  F. Basile and G. De Tommasi, “An algebraic characterization of language-    [41] K. Yazdani, A. Jones, K. Leahy, and M. Hale, “Differentially private LQ
+     based opacity in labeled Petri nets,” in Proc. 14th Int. Workshop Discrete          control,” 2018, arXiv:1807.05082v4.
+     Event Syst., 2018, pp. 329–336.                                           [42] G. Pola, E. De Santis, and M. Di Benedetto, “Approximate diagnosis of
+[14] A. Saboori and C. Hadjicostis, “Current-state opacity formulations in         metric systems,” IEEE Control Syst. Lett., vol. 2, no. 1, pp. 115–120,
+      probabilistic ﬁnite automata,” IEEE Trans. Autom. Control, vol. 59, no. 1,          Jan. 2018.
+     pp. 120–133, Jan. 2014.                                                   [43] G. Fiore, E. De Santis, G. Pola, and M. Di Benedetto, “On approximate
+[15] C. Keroglou and C. Hadjicostis, “Probabilistic system opacity in discrete          predictability of metric systems,” in Proc. 6th IFAC Conf. Anal. Des.
+     event systems,” Discrete Event Dyn. Syst., vol. 28, no. 2, pp. 289–314,        Hybrid Syst., 2018, pp. 169–174.
+     2018.                                                                    [44] X. Yin and M. Zamani, “Towards approximate opacity of cyber-physical
+[16] B. Wu, Z. Liu, and H. Lin, “Parameter and insertion function co-synthesis         systems,” in Proc. 10th ACM/IEEE Int. Conf. Cyber-Phys. Syst., 2019,
+      for opacity enhancement in parametric stochastic discrete event systems,”         pp. 310–311.
+      in Proc. Amer. Control Conf., 2018, pp. 3032–3037.                        [45]  P. Tabuada, Veriﬁcation and Control of Hybrid Systems: A Symbolic
+[17]  S. Chédor, C. Morvan, S. Pinchinat, and H. Marchand, “Diagnosis and        Approach, 1st ed. New york, NY, USA: Springer, 2009.
+     opacity problems for inﬁnite state systems modeled by recursive tile    [46]  F. Cassez, J. Dubreil, and H. Marchand, “Synthesis of opaque systems
+     systems,” Discrete Event Dyn. Syst., vol. 25, nos. 1/2, pp. 271–294, 2014.         with static and dynamic masks,” Formal Methods Syst. Des., vol. 40, no. 1,
+[18] K. Kobayashi and K. Hiraishi, “Veriﬁcation of opacity and diagnosability         pp. 88–115, 2012.
+      for pushdown systems,” J. Appl. Math., vol. 2013, 2013, Art. no. 654059.    [47] L. Clavijo and J. Basilio, “Empirical studies in the size of diagnosers and
+[19] R. Jacob, J.-J. Lesage, and J.-M. Faure, “Overview of discrete event sys-         veriﬁers for diagnosability analysis,” Discrete Event Dyn. Syst., vol. 27,
+     tems opacity: Models, validation, and quantiﬁcation,” Annu. Rev. Control,         no. 4, pp. 701–739, 2017.
+      vol. 41, pp. 135–146, 2016.                                               [48] D. N. Tran, “Advances in stability analysis for nonlinear discrete-time dy-
+[20]  S. Lafortune, F. Lin, and C. Hadjicostis, “On the history of diagnosability        namical systems,” Ph.D. dissertation, Dept. Elect. Eng., Univ. Newcastle,
+     and opacity in discrete event systems,” Annu. Rev. Control, vol. 45,         Callaghan, NSW, Australia, 2018.
+     pp. 257–266, 2018.                                                       [49] A. Swikir, A. Girard, and M. Zamani, “From dissipativity theory to
+[21] B. Bérard, J. Mullins, and M. Sassolas, “Quantifying opacity,” Math.         compositional synthesis of symbolic models,” in Proc. Indian Control
+      Struct. Comput. Sci., vol. 25, no. 2, pp. 361–403, 2015.                           Conf., 2018, pp. 30–35.
+
+
+      Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 13,2021 at 08:17:27 UTC from IEEE Xplore. Restrictions apply.
+
+YIN et al.: ON APPROXIMATE OPACITY OF CYBER-PHYSICAL SYSTEMS                                                                    1645
+
+
+
+[50]  J. Dubreil, P. Darondeau, and H. Marchand, “Supervisory control for                       Majid Zamani (Senior Member, IEEE) received
+      opacity,” IEEE Trans. Autom. Control, vol. 55, no. 5, pp. 1089–1100,                          the B.Sc. degree in electrical engineering from
+    May 2010.                                                                                the Isfahan University of Technology, Isfahan,
+[51] B. Zhang, S. Shu, and F. Lin, “Maximum information release while                              Iran, in 2005, the M.Sc. degree in electrical en-
+     ensuring opacity in discrete event systems,” IEEE Trans. Autom. Sci. Eng.,                          gineering from the Sharif University of Technol-
+      vol. 12, no. 4, pp. 1067–1079, Jul. 2015.                                                        ogy, Tehran, Iran, in 2007, the M.A. degree in
+[52] X. Yin and S. Lafortune, “A uniform approach for synthesizing property-                       mathematics and the Ph.D. degree in electrical
+     enforcingsupervisorsforpartially-observeddiscrete-eventsystems,”IEEE                         engineering from the University of California,
+     Trans. Autom. Control, vol. 61, no. 8, pp. 2140–2154, Aug. 2016.                            Los Angeles, CA, USA, both in 2012.
+[53] Y. Tong, Z. Li, C. Seatzu, and A. Giua, “Current-state opacity enforcement                    He is currently an Assistant Professor with
+      in discrete event systems under incomparable observations,” Discrete                          the Department of Computer Science, Univer-
+     Event Dyn. Syst., vol. 28, no. 2, pp. 161–182, 2018.                           sity of Colorado Boulder, Boulder, CO, USA. Between September 2012
+[54] Y. Ji, X. Yin, and S. Lafortune, “Enforcing opacity by insertion func-   and December 2013, he was a Postdoctoral Researcher with the Delft
+      tions under multiple energy constraints,” Automatica, vol. 108, 2019,   Centre for Systems and Control, Delft University of Technology, Delft,
+      Art. no. 108476.                                          The Netherlands. From 2014 to 2019, he was an Assistant Professor
+                                                                          with the Department of Electrical and Computer Engineering, Technical
+                                                                            University of Munich, Munich, Germany. From 2013 to 2014, he was
+                                                           an Assistant Professor with the Design Engineering Department, Delft
+                   Xiang Yin (Member, IEEE) was born in Anhui,   University of Technology. His research interests include veriﬁcation and
+                      China, in 1991. He received the B.Eng. degree    control of hybrid systems, embedded control software synthesis, net-
+                     from Zhejiang University, Hangzhou, China, in   worked control systems, and incremental properties of nonlinear control
+                     2012, and the M.S. and Ph.D. degrees from   systems.
+                       the University of Michigan, Ann Arbor, MI, USA,      Dr. Zamani received an ERC Starting Grant Award from the European
+                           in 2013 and 2017, respectively, all in electrical   Research Council in 2018.
+                       engineering.
+                            In 2017, he joined the Department of Automa-
+                            tion, Shanghai Jiao Tong University, Shanghai,                      Siyuan Liu (Student Member, IEEE) received
+                      China, where he is currently an Associate Pro-                          the B.Sc. degree in automation science and
+                         fessor. His research interests include control                          the M.Eng. degree in control engineering from
+and diagnosis of discrete-event systems, formal methods, security, and                       Beihang University, Beijing, China, in 2014 and
+their applications to cyber and cyber-physical systems.                                       2017, respectively. She is currently working to-
+  Dr. Yin received the Outstanding Reviewer Awards from the Automat-                      ward the Ph.D. degree with the Department of
+ica, the IEEE TRANSACTIONS ON AUTOMATIC CONTROL, and the Journal                             Electrical and Computer Engineering, Technical
+of Discrete Event Dynamic Systems. He also received the IEEE Con-                            University of Munich, Munich, Germany.
+ference on Decision and Control Best Student Paper Award Finalist in                        Her current research interests include  for-
+2016. He is the Co-Chair of the IEEE Control Systems Society Technical                      mal methods, security properties, and compo-
+Committee on Discrete Event Systems. He is also a member of the IEEE                               sitional methods for veriﬁcation and control of
+Control Systems Society Conference Editorial Board.                                             large-scale cyber-physical systems.
+
+
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on April 13,2021 at 08:17:27 UTC from IEEE Xplore. Restrictions apply.

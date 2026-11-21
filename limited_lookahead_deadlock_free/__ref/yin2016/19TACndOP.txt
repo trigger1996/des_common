@@ -1,0 +1,557 @@
+              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 10, OCTOBER 2019                                            4369
+
+
+         Opacity Enforcement Using Nondeterministic Publicly
+                   Known Edit Functions
+
+Yiding Ji    , Student Member, IEEE, Xiang Yin    , Member, IEEE, and St´ephane Lafortune    , Fellow, IEEE
+
+
+  Abstract—This note investigates enforcement of opacity by non-   extended to other types of system models, including inﬁnite-state sys-
+deterministic edit functions. The edit functions alter the system’s   tems [5], Petri nets [18], modular systems [14], and timed systems [3].
+output by inserting ﬁctitious events or erasing observed events.   Recently, opacity has also been evaluated quantitatively in stochas-
+The edit decisions are randomly made while not known by the out-
+                                                                                        tic settings, e.g., [6] and [12]. The readers are referred to the survey
+side environment a priori. There is an intruder characterized as a
+                                                                  paper [8] for a comprehensive review of results on opacity in DES.passive observer with malicious goals to infer the secrets of the
+system. We require that opacity be enforced when the intruder may     Opacity may not always hold so that the problem of opacity en-
+or may not know the implementation of edit functions. This require-   forcement arises, which has been investigated under various mecha-
+ment is termed as private and public safety. We also restrict the   nisms. One common approach is supervisory control [17], [21], where
+operation of edit functions by deﬁning edit constraints. Then, the   a supervisor disables some behaviors before the disclosure of secrets.
+opacity enforcement problem is transformed to a three-player game   While [23] also lies in this category and solves the problem from the
+among the edit function, the environment, and a dummy player,   complementary perspective of maximal information release. Another
+which helps to determine edit decisions. A game structure called   framework is sensor activation [4], where the observation of events are
+the all edit structure (AES) is introduced to characterize the interac-
+                                                                 dynamically changed while the system’s operation is not interrupted.
+tion among those players. It embeds all privately safe edit functions
+                                                                            Alternatively, Falcone and Marchand [7] propose a runtime technique.and may also embed publicly safe edit functions. Based on the AES,
+we present an algorithm that provably synthesizes nondeterminis-      In contrast to the aforementioned approaches, Wu and Lafortune
+tic edit functions that satisfy both private safety and public safety.    [19] introduce insertion functions as a new method, which insert ﬁc-
+                                                                                  titious events into the system’s output to obfuscate the intruder. The
+  Index Terms—Discrete event systems (DES), edit function, non-   insertion functions serve as an interface between the system’s output
+determinism, opacity enforcement, privacy.                       and the intruder’s observation. After that, Ji et al. [10] investigate opac-
+                                                                                   ity enforcement under the assumption that the intruder may or may not
+                                                     know the implementation of the insertion functions. To capture this sit-
+                                     I. INTRODUCTION                                                                           uation, two concepts of private safety and public safety are deﬁned and
+  Opacity is an information-ﬂow-based security property that charac-   studied for evaluating the performance of insertion functions. Further-
+terizes whether a system can defend its secrets from being inferred by   more, Ji et al. [11] discuss opacity enforcement by insertion functions
+an outside intruder with malicious intentions. The external intruder is   under quantitative constraints. Wu et al. [20] proceed to extend inser-
+often modeled as an observer that knows the structure of the system   tion functions to edit functions, which modify the system’s output by
+and attempts to infer secrets of the system by passively observing the    inserting, erasing, or replacing events. All these works enforce opacity
+output of the system. A system is called opaque if the intruder fails to   in a deterministic setting, i.e., any string is mapped to a unique string.
+determine the secrets unambiguously from its observations.                In this note, we assume that the edit function’s implementation is
+  Opacity has been extensively studied in computer security commu-  known to the intruder and discuss how to defend secrets under such an
+nity, starting with [1], and in discrete event systems (DES). In ﬁnite-   adversary. We improve [9], [10], [19], and [20] by considering opacity
+state automaton models, various opacity notions have been studied   enforcement using nondeterministic (ND) edit functions, whose out-
+to capture different privacy requirements, e.g., language-based opac-  come is randomly chosen from a precalculated set and the intruder does
+ity [13], current-state opacity (CSO) [15], initial-state opacity [16],   not know the result a priori. Both private safety and public safety are
+K-step opacity, and inﬁnite-step opacity [22]. Opacity has also been   deﬁned for edit functions to characterize their performance. Although
+                                         ND edit functions seem to release more information to the intruder by
+                                                                    allowing more potential outcomes, they essentially provide the system
+  Manuscript received October 4, 2018; revised January 17, 2019; ac-   more plausible denial of secret disclosure, which contributes to opacity
+cepted January 27, 2019. Date of publication February 5, 2019; date   enforcement. It is shown that an ND edit function may still achieve
+of current version September 25, 2019.  This work was supported in   private and public safety even when its deterministic counterpart fails
+part by the National Science Foundation under Grant CCF-1138860   to do so. To the best of our knowledge, this note is the ﬁrst to consider
+(Expeditions in Computing Project ExCAPE: Expeditions in Computer   nondeterminism of the defender in opacity enforcement. We introduce
+Augmented Program Engineering) and Grant CNS-1421122, in part by   a three-player game structure termed all edit structure (AES) to embed
+the TerraSwarm Research Center, one of six centers supported by the
+                                                                              edit functions. An algorithm is developed to synthesize privately and
+STARnet phase of the Focus Center Research Program a Semiconduc-
+                                                                        publicly safe ND edit functions based on the AES.1tor Research Corporation program sponsored by MARCO and DARPA,
+and in part by the National Natural Science Foundation of China un-     The remaining sections are organized as follows. Section II presents
+der Grant 61803259 and Grant 61833012. Recommended by Associate   the system model. Section III formally introduces the notions of ND edit
+Editor K. Cai. (Corresponding author: Yiding Ji.)                           functions, private safety, and public safety. Section IV deﬁnes the three-
+  Y. Ji and S. Lafortune are with the Department of Electrical Engineering   player observer (TPO), discusses its properties and introduces edit
+and Computer Science, University of Michigan, Ann Arbor, MI 48105   constraints. Section V deﬁnes a special TPO called AES and presents
+USA (e-mail:,jiyiding@umich.edu; stephane@umich.edu).                     its construction algorithm. Section VI develops an algorithm for syn-
+  X. Yin is with the Department of Automation, Shanghai Jiao Tong
+University, Shanghai 200240, China (e-mail:,yinxiang@sjtu.edu.cn).
+  Color versions of one or more of the ﬁgures in this paper are available
+online at http://ieeexplore.ieee.org.                                1A preliminary version of a subset of the results in this note, for deterministic
+   Digital Object Identiﬁer 10.1109/TAC.2019.2897553                         edit functions only, appears in [9].
+
+
+
+               0018-9286 © 2019 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                  See http://www.ieee.org/publications standards/publications/rights/index.html for more information.
+
+4370                                                         IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 10, OCTOBER 2019
+
+
+
+thesizing ND publicly and privately safe edit functions based on the   to be inserted or erased, and the intruder cannot distinguish between
+reachability tree of the AES. Finally, Section VII concludes this note.   an inserted event and its genuine counterpart. We deﬁne Ero = {eo →
+                                                                        ϵ : eo ∈Eo} to be the set of “event erasure” events. In this note, if we
+                                                                    concatenate an “event erasure” event eo →ϵ with the observable event                                    II. SYSTEM MODEL
+                                                                          eo, the result is simply ϵ.
+  We consider opacity in the framework of DES modeled as determin-     Given an ND edit function fne, the intruder infers secrets from its
+istic ﬁnite-state automata [2]                                           current state estimate Efne : P [L(G)] →2X obs and Efne(s) = {xobs ∈
+                                                                  Xobs : ∃t ∈fne(s), s.t. xobs = δ(xobs,0, t)}. Since fne is ND, Efne(s) is             G = (X, E, f, x0)
+                                                                       generally a set of states in Xobs.
+where X is the ﬁnite set of states, E is the ﬁnite set of events, f :
+X × E →X is the partial state transition function, and x0 ∈X is the
+initial state. Speciﬁcally, we denote by XS ⊂X the set of secret states.   B. Private Safety and Public Safety
+The transition function is extended to domain X × E∗in the standard
+                                                                         In this section, we ﬁrst review the well-studied concept of CSO and
+manner [2]. Given two strings s, u, we denote by s ⪯u if s is a preﬁx
+                                                                    then derive two concepts from it.
+u and t ∈s if t is a substring of s. The language generated by G is
+                                                                     Deﬁnition 1 (Current-state opacity): System G is CSO w.r.t. pro-
+deﬁned as L(G) = {s ∈E∗: f(x0, s)!} where ! means “is deﬁned.”
+                                                                           jection P and secret states XS if ∀t ∈LS := {t ∈L(G) : f(x0, t) ∈
+  For simplicity, we write x e−→x′, if x′ = f(x, e) for x, x′ ∈X and                                               XS },  ∃t′ ∈LNS := {t ∈L(G) : f(x0, t) ∈(X\XS )}  s.t. P (t) =
+e ∈E. Given system G, a run is a sequence of alternating states and  P (t′).
+             e1       e2       en −1
+events x1 −→x2 −→· · · −−−→xn , where  ∀i ≤n, xi ∈X and ei ∈   A system is current-state opaque if for every string reaching a secret
+E. A run contains a cycle if ∃1 ≤i < j ≤n, s.t. xi = xj .                 state, there exists another string reaching a nonsecret state and both
+  The system is partially observed with the event set E partitioned    strings share the same projection. CSO can be veriﬁed by building
+as E = Eo ∪Eu o, where Eo is the set of observable events and Eu o    the observer and checking whether any observer state contains solely
+is the set of unobservable events. Given a string t ∈E∗, its natural   secret states. If CSO is violated, an edit function may be used to enforce
+projection P  : E∗→E∗o  is recursively deﬁned as P (t) = P (t′e) =   opacity, which is the problem studied in this note.
+P (t′)P (e), where t′ ∈E∗and e ∈E. The projection of an event is     Based on CSO, we deﬁne the safe language [19] as:  Lsafe =
+P (e) = e if e ∈Eo and P (e) = ϵ if e ∈Eu o ∪{ϵ}, where ϵ is the  P [L(G)]\{[P [L(G)]\P (LNS)]E∗o}, which is preﬁx closed, whereas
+empty string. Then, by the standard technique in [2], the observer of G   the unsafe language is Lunsafe = P [L(G)]\Lsafe. Intuitively, we view
+is deﬁned as: Obs(G) = (Xobs, Eo, δ, xobs,0), where Xobs ⊆2X is the    all observable continuations of P [L(G)]\P (LNS) as “unsafe.” If we
+state space, Eo is the set of observable events, δ : Xobs × Eo →Xobs   delete all states violating CSO from Obs(G), i.e., all observer states
+is the transition function, and xobs,0 ∈Xobs  is the initial state. An    that solely contain secret states, and then take the accessible part, the
+observer state can be viewed as an estimate of the system’s current   resulting automaton just generates Lsafe. We call it desired observer:
+states. Therefore, the observer is often called “state estimator” in the   Obsd(G) = (Xobsd, Eo, δd, xobsd,0), see [10] and [19] for more details.
+literature, e.g., [19].                                                       Inspired by private safety and public safety of insertion functions
+                                                                           in [10], we redeﬁne those two concepts for ND edit functions and call
+                 III. EDIT FUNCTIONS AND OPACITY NOTIONS            them ND private safety and ND public safety, respectively.
+                                                                     Deﬁnition 2 (ND private safety): Consider system G with P , Lsafe,
+  In this section, we formally deﬁne ND edit functions and discuss   and Obsd(G), an ND edit function fn e  is privately safe,  if ∀s ∈
+the edit mechanism. We also deﬁne private safety and public safety to  P [L (G)], fn e(s) ⊆Lsafe.
+further characterize how the edit function defends the secrets of the       If fne is privately safe, we denote it by fne ⊨ϕndpri, where ϕndpri stands
+system against intruders with different knowledge.                       for ND private safety. ND private safety is based on the assumption that
+                                                                        the intruder does not know about the implementation of edit functions.
+A. Edit Mechanism                                              Thus, as long as for a given string s and an edit function fne, every
+                                                                 element in fne(s) is also in Lsafe, then, the intruder’s state estimate
+  We ﬁrst review the concept of deterministic edit function in [9]:                                                           would never reveal the secrets of the system.
+fe : E∗o × Eo →E∗oEϵo, where Eϵo = Eo ∪{ϵ}. Given s ∈P [L (G)],      Deﬁnition 3 (ND public safety): Consider a system G, Lsafe, and
+eo ∈Eo, fe(s, eo) = sI eo if sI is inserted before eo; fe(s, eo) = ϵ if                                                                                      Lunsafe, an ND edit function fn e is publicly safe, if ∀s ∈Lunsafe, ∀˜s ∈
+eo is erased; fe(s, eo) = sI if sI is inserted and eo is erased.                                                                 fn e(s), ∃t ∈Lsafe, s.t. ˜s ∈fn e(t).
+  By deﬁnition, the outcome of a deterministic edit function is unique.                                                                                           If fne is publicly safe, we denote it by fne ⊨ϕndpub, where ϕndpub
+                                                                                 : E∗Then,    we         extend                         it                and                    deﬁne                          an ND edit function:                               × Eo →                                                        fne                                                                          o                                                                      stands for ND public safety. ND public safety is based on the assump-       ∗o E ϵo2E        that           outputs                 a                      string                          nondeterministically                                        from                                                a set                                                        of                                                               potential                                                                           tion that the implementation of edit functions is known to the intruder.
+outcomes. Its output is based on the past observed string and the cur-                                         A sophisticated intruder may learn the implementation of the edit func-
+rent observed event. Given an observable string s ∈P [L (G)] and an                                                                           tion and potentially does some reverse engineering to infer the source of
+observable event eo ∈Eo, a potential outcome of an ND edit function                                                                        the edited string. Thus, for ND public safety, we require that no matter
+may be sI eo if sI is inserted before eo or ϵ if eo is erased or sI  if sI                                                    how an unsafe string is edited, it should share the same edited behavior
+is inserted and eo is erased. In contrast to deterministic edit functions                                                                  with some safe string. As the intruder does not know how a string is
+in [9], the outcome is not precalculated and is chosen randomly when                                                                        edited before it makes an observation, ND public safety and ND private
+the ND edit function is implemented. Notice that sI may be ϵ so that                                                                          safety guarantee that the system’s secrets are never disclosed. A ND
+nothing is inserted. The outcome of such a function is not known by the                                                                              edit function fne is ND-public-private enforcing (ND-PP-enforcing),
+intruder before it is observed. With a slight abuse of notation, we also                                                                 denoted by fne ⊨ϕndpp, if fne ⊨ϕndpri and fne ⊨ϕndpub. In this note,
+deﬁne a string based ND edit function fne recursively as: fne(ϵ) = {ϵ}                                                  we require that an edit function should be able to map every string in
+and fne(seo) = {lpls ∈E∗o  : lp ∈fne(s), ls ∈fne(s, eo)}.         P [L(G)] to some strings and we term this property as admissibility.
+  An edit function is an interface between the system’s output and
+the outside world, which includes the intruder eavesdropping on the
+system. The edit function works as follows: upon observing a string, it
+                                                                                                     IV. THREE-PLAYER OBSERVER
+makes a decision to insert ﬁctitious events before the last observed event
+or to erase the last observed event; then, the edited string is emitted as      In this section, we propose the TPO, which is a three-player game
+the actual output. We assume that all observable events Eo are allowed   structure that provides a systematic way of embedding edit functions
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 10, OCTOBER 2019                                                          4371
+
+
+
+and evaluating their performance. Then, we discuss some properties of     The TPO is deﬁned to describe the game among a “dummy” player,
+the TPO and deﬁne edit constraints.                                      “edit function,” and “system/environment.” All three players have com-
+  The TPO is an information-state-based structure, whose current state   plete information in the sense that they know exactly the actions of each
+contains enough information for analysis of opacity enforcement and   other at any moment of the game.
+no future information is necessary. We denote the set of information   A QY -state (Y -state)  is an information  state, from which the
+states as I. The formal deﬁnition is as follows.                   “dummy” player executes observable events. A Y -state contains both
+   Deﬁnition 4 (Three-player observer): Given a system G, its ob-   the intruder’s estimate and the system’s estimate. Actually, the events
+server Obs(G) and desired observer Obsd(G),  let I ⊆Xobsd ×   from Y -states do not really occur and they are the events to be observed
+Xobs be the set of information states. A TPO  is the tuple T =   by the edit function player. fy z is deﬁned only to help determine what
+(QY , QZ , QW , Eo, Ero , Θ, fy z , fz z , f zinw , f zerw , f winy , f wery , y0),  where    edit decisions can be made by the edit function in the next step. That is
+we have the following.                                   why we call this player a dummy player.
+  1) QY ⊆I is the set of information states.                 A QZ -state (Z-state) is an information state augmented with the
+  2) QZ ⊆I × Eo  is the set of information states augmented with   event executed by the dummy player, where the edit function makes
+     observable events. Let I(z) and E(z) denote the information   decisions. If the edit function chooses to insert an event, a succeeding
+                                                                      Z-state will be reached under an fz z transition. If another event is in-      state component and observable event component of z ∈QZ ,
+                                                                          serted following the last inserted event, then another succeeding Z-state
+      respectively, so that z = (I(z), E(z)).
+                                                                                        is reached until the edit function stops inserting. This corresponds to
+  3) QW ⊆I × (Eo ∪Ero ) is the set of information states augmented   insertion of multiple events. If the edit function keeps inserting events,
+     with observable events or event erasure events. Let I(w) and  we can expect that a cycle of Z-states and fz z transitions is formed
+    A(w) denote the information state component and edit action   in the TPO. When an event is inserted, only the intruder’s estimate
+    component of w ∈QW , respectively, so that w = (I(w), A(w)).    is updated, whereas the system’s estimate remains the same, which
+  4) Eo ⊆E is the set of observable events.                                  is reﬂected in deﬁning fz z . This is consistent with the edit function’s
+  5) Ero is the set of “event erasure” events.                       mechanism as the edit function serves as an interface to modify the in-
+  6) Θ ⊆Eo ∪{ϵ} ∪Ero is the set of edit decisions at QZ -states.       truder’s observation but does not interfere with the system’s operation.
+  7) fy z  : QY × Eo →QZ is the transition function from QY -states  When the edit function decides to stop insertion or to erase the last ob-
+                                                                    served event, the turn of the game is passed to the system/environment
+      to QZ -states. For y = (xd, xf ) ∈QY , eo ∈Eo, we have                                   in            er                                                          in        er
+                                                                      player by f z w and f z w transitions. We denote by fz w = f z w ∪f z w ,
+       fy z (y, eo) = z ⇒[δ(xf , eo)!] ∧[I(z) = y] ∧[E(z) = eo].     where f zinw stands for ϵ-insertion (termination of insertion) and f zerw
+                                                                      stands for erasure of the observable event executed by the dummy
+  8) fz z  : QZ × Θ →QZ  is the transition function from QZ -states   player. We will use fz w for simplicity in the following discussion if
+      to QZ -states. For z = ((xd, xf ), eo) ∈QZ , θ ∈Θ, we have       there is no confusion. There may be multiple transitions deﬁned out of
+                                                                  a Z-state, i.e., multiple edit decisions, and we let Θ(z) be the set of
+          fz z (z, θ) = z′ ⇒[θ ∈Eo] ∧[I(z′) = (x′d, xf )]               edit decisions deﬁned at z ∈QZ in a TPO.
+                                          A QW -state (W -state) is an information state augmented with an
+                        ∧[x′d = δd(xd, θ)] ∧[E(z′) = eo].        observable event or an “event erasure” event, from which the system
+                                                                           plays. If a W -state contains an observable event that means that the
+  9) f zinw  : QZ × Θ →QW  is the ϵ-insertion transition from QZ -    edit function player has inserted ϵ from its preceding Z-state. When
+      states to QW -states. For z = ((xd, xf ), eo) ∈QZ , θ ∈Θ we    that event is executed,  it will be observed by the intruder. Thus, a
+     have                                                    f winy transition leads to a Y -state, whose ﬁrst- and second-state compo-
+                                                                     nents are both updated. If a W -state contains an “event erasure” event
+       f zinw (z, θ) = w ⇒[θ = ϵ] ∧[I(w) = I(z)] ∧[A(w) = eo]      that means that the edit function has decided to erase the observable
+                                                                          event. So, when the event is executed, it will not be observed by the
+                       ∧[δd(xd, eo)!] ∧[δ(xf , eo)!].                 intruder. Hence, an f wery transition leads to a Y -state, whose ﬁrst-state
+        er                                                    component (intruder’s estimate) is updated, whereas the second state
+ 10) f z w  : QZ × Θ →QW  is the event erasure transition from QZ -                                                           component (system’s estimate) remains unchanged. We just denote by
+      states to QW -states. For z = ((xd, xf ), eo) ∈QZ , θ ∈Θ, we                                                            fw y = f winy ∪f wery and will use fw y when there is no confusion.
+     have                                                       Given two TPOs T1  and T2, T1  is a subsystem of T2, de-
+              er                                                      noted by T1 ⊑T2,  if QTY 1 ⊆QTY 2 , QTZ 1 ⊆QTZ 2 , QTW1 ⊆QTW2 , and
+        f z w (z, θ) = w ⇒[θ = eo →ϵ] ∧[I(w) = I(z)]                                1                    1                1                                                        ∀y ∈QTY  , ∀z, z′ ∈QTZ  , ∀w ∈QTW , ∀eo ∈Eo, ∀θ, θ′ ∈Θ, we have:
+                    ∧[A(w) = eo →ϵ] ∧[δ(xf , eo)!].         ﬁrst, f yTz1 (y, eo) = z ⇒f yTz2 (y, eo) = z; second, f zTz1 (z, θ) = z′ ⇒
+                                                                             T                                                                                                              2                                           =                                                                             (z,                                                                        θ)                                                                                                       (z,                                                                                                                θ′)                                                            f                                                                                                    z′;                                                                                                      third,                                                                                                z                                                                                                  z                                                                                 f zTw1                                                        = w ⇒f zTw2 (z, θ′) = w;  fourth,
+                                                                             T                                                                                                              1                                                                                                  T 2 11) f winy  : QW × Eo →QY   is the transition function from QW -                                            =                                                      =                                                                (w,                                                                        y ⇒f                                                            f                                                                                                             y.                                                                         eo)                                                                                            eo)                                                              w                                                                                             y                                                                               w                                                                                                                      y (w,
+      states whose edit action component is in Eo to QY -states. For                                                                   e0       θ 01       θ 02
+   w = ((xd, xf ), eo) ∈QW , we have                   A  run  in  a TPO  is  of  the  form:  r = y0 −→z10 −→z20 −→
+                                                                m 0 −1                                                                                                               m 1
+                                                                                                                 0                                                                                                                    θ 0m 0                                                                                                                                                                                                   1                                                                                                                                                   θ 11                                                                                                                                                            θ 12                                                                     −→z1e1                                                                                                                               0 −−→w0                                                                 −→y1e0                                                                                                                                      1 −→z2                                                                                                                                               1 −→·                                                                                                       0                                                                                                                                                                                      · · zm1  1 −−→θ        f winy (w, eo) = y ⇒[y = (x′d, x′f )] ∧[x′d = δd(xd, eo)]           · · · −−−−→zmθ
+                                                                                             e1                                                                                                 en                                                                                                                          θ 1n                                                                                                                                   en                                                                                                                                           θ nm n                                                                                                                               n                                                       w1 −→y2 · · · −→z1n −→· · · zmn  −−−→wn −→yn + 1, where y0  is                         ∧[x′f = δ(xf , eo)].                                                                        the initial state of T , ei ∈Eo, θji ∈Θ(zji ), ∀0 ≤i ≤n, 1 ≤j ≤mi,
+ 12) f wery  : QW × Eo →QY   is the transition function from QW -   and n ∈N, mi ∈N+ .  It characterizes the information ﬂow in a
+                                               TPO and we denote the set of runs in a TPO T by Run(T ). We also      states whose edit action component is in Ero to QY -states. For                                                                       write yi ∈r (zi ∈r or wi ∈r) if yi (zi or wi) is a state in r. A run
+   w = ((xd, xf ), eo →ϵ) ∈QW , we have                                                                   corresponds to an unedited string and an edited string, then we have
+             er                                                           the following deﬁnitions.
+        f w y (w, eo) = y ⇒[y = (xd, x′f )] ∧[x′f = δ(xf , eo)].                                                                                          e0
+                                                                     Deﬁnition 5 (String generated by a run): Given a run r = y0 −→
+                                                                                                                                                                     θ 11       θ 12 13) y0 ∈QY  is the initial QY -state, where y0 = (xobsd,0, xobs,0).         θ 01       θ 02        θ 0m 0 −1       0  θ 0m 0       e0       e1                                                                     z10 −→z20 −→· · · −−−−→zm0  −−→w0 −→y1 −→z11 −→z21 −→· · ·      xobsd,0 and xobs,0 are the initial states of Obsd(G) and Obs(G),                                                                  m 1
+                                                                                                                   1                                                                                                                                                         θ nm n      respectively.                                                                                                                                            n −−−→wn                                                                              −→ynen    + 1, the                                                     zm1  1 −−→w1θ                                                         −→y2e1       · · · −→z1en   n −→·θ 1n    · · zmn
+
+4372                                                         IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 10, OCTOBER 2019
+
+
+
+string generated               by r  is deﬁned                                         as:  lg (r) = θ10 θ20 · · · θm                                                                        0                                                                                         0 −1 θm0  0    Algorithm I: Construction of the AES.                 1                                                                                                                            i                                        ne0θ11 · · · θm1  e1 · · · en −1θ1n · · · θmn  en , where ∀i ≤n, θmi   ei = ϵ  if
+θmi   i = ei →ϵ.                                                   Input    :Obs(G), Obsd(G), Ero , φdec, φy
+                                                                                e0     Output  :AES
+   Deﬁnition 6 (Edit projection): In a TPO T , given a run r = y0 −→                                                QA                                                                              1:                                               = {(xobsd,0,                                                                                                         xobs,0)},                                                                                    Y = {y0}                                                                      QAZ = ∅,                                                                            QAW = ∅;                m 0 −1                                                                                  1
+                            0                                         θ 0m 0     θ 01              θ 02                                                                                  1                                                                                 θ 12                                                                              2:                                                      AESpr                                                                                                                e = DoDF                                                                                     S(y0, φdec,                                                                                               φy , Obs(G),                                                                                                 Obsd(G),                                                                                                 Ero );                       · · −−−−→zmθ                                          0 −−→w0z10 −→z2          0 −→·                           −→y1e0   −→z1e1    1 −→z2θ                                                                         1 −→                                 0
+                                                                              3: AES = P rune(AESpr e);                                                                θ nm n       en         1           θ 1m 1       e1          en       θ 1n          n· · · zm1  −−→w1 −→y2 · · · −→z1n −→· · · zmn  −−−→wn −→yn + 1,
+edit  projection  Pe : Run(T ) →P [L(G)]  is  deﬁned  such  that
+Pe(r) = e0e1 · · · en .
+  That is, the edit projection projects away the edit decisions in a run
+and “recovers” the unedited string, whereas the generated string of a
+run is just the string after considering the edit decisions.
+  From a given TPO, we may extract an edit function from it and we
+deﬁne the edit function embedded in a TPO. With a slight abuse of
+notation, we write fne ∈T if fne is embedded in T .
+   Deﬁnition 7 (ND edit function embedded in TPO): Given a TPO
+T , ND edit function fn e  is embedded in T  if ∀s ∈P [L(G)], ∀˜s ∈
+fn e(s), ∃r ∈Run(T ), s.t. Pe(r) = s, and lg (r) = ˜s.
+  In a TPO, y ∈QY  is a terminating state if ∄eo ∈Eo, s.t. fy z (y, eo)!
+and w ∈QW is a deadlocking state if ∄eo ∈Eo, s.t. fw y (w, eo)!. Also,
+z ∈QZ is a deadlocking state if ∄θ ∈Θ, s.t. fz z (z, θ)! or fz w (z, θ)!.
+We call a TPO complete if: ﬁrst, there are no deadlocking W or Z states;
+second, ∀s ∈P [L(G)], ∃r ∈Run(T ), s.t. Pe(r) = s. In a complete
+TPO, all embedded edit functions are admissible and they can always
+make a decision no matter what event occurs; also the events executed
+by the system cannot be blocked from happening. From now on, we
+will only consider complete TPOs. Notice that a complete TPO only
+terminates at Y -states, being consistent with the deﬁnition of run.
+  In practice, the edit functions may be constrained by the outside
+environment or the preference of the system’s designer so that certain
+edit decisions may not be taken and some Y -states may not be preferred.
+Thus, we introduce constraints on edit decisions and constraints on Y -
+states, both in a generic form.
+   Deﬁnition 8 (Constraints on edit decisions): The constraint on edit
+decisions is a binary function φdec  : Θ →{0, 1} and an edit decision
+θ ∈Θ satisﬁes the constraint if φdec(θ) = 1.
+   Deﬁnition 9 (Constraints on Y -states): The constraint on Y -states
+is a binary function φy  : QY →{0, 1} and a Y-state y ∈QY satisﬁes
+the constraint if φy (y) = 1.
+  Both constraints are problem-dependent and will be speciﬁed when
+a problem is discussed. They will reduce the state space of the TPO and
+bring in deadlocking states. In the following section, we will deﬁne the
+“largest” TPO satisfying both constraints.
+
+
+                     V. ALL EDIT STRUCTURE
+
+  In  this  section, we deﬁne a complete TPO such  that: [∀y ∈
+QY  : φy (y) = 1] ∧[∀θ ∈Θ : φdec(θ) = 1] and T  is “as  large as
+possible.” We  call  this  structure the AES. The property of be-
+ing  as  large  as  possible  is  as  follows:  if T1  and T2  are two
+TPOs  satisfying  edit  constraints, then  their union,  in the graph
+merging  sense,  is  also  a TPO  satisfying  edit  constraints. The
+union of T1  and T2  is deﬁned  as:  ﬁrst, QTY 1 ∪T 2 = QTY 1 ∪QTY 2 ,    start searching from y0 = (xobsd,0, xobs,0) and expand the state space
+QTZ 1 ∪T 2 = QTZ 1 ∪QTZ 2 , and QTW1 ∪T 2 = QTW1 ∪QTW2 ; second, ∀y ∈   recursively by computing all possible successors of the current state.
+     1 ∪T 2                     1 ∪T 2                  1 ∪T 2                   We terminate searching on a path when a Y -state violates the edit                                         ∈QT                z′         ∈QT                  ∀w                   ∈QT                                         ∀θ,                                                         θ′             , ∀z,                                           ,                                                                     ,                               ∈Θ,                                                 and                                                         ∀eo  Y                  Z                        W                                                 =                                                                               0                                                                                   (y)                                                                                                 or                                                                                        an                                                                                                                   edit                                                                                                            decision                                                                                                                                                  is                                                                                                                    not                                                                                                                  allowed                                                                                                             by                                                                                                                                          the                                                                             constraint,                                                                                                                   i.e.,                                                                            φy                                                         T                             1                                                                                                                       i                 =                                       2}                                  =                     ∪T 2 (y,                              z                     ⇔∃i                               ∈{1,                                                                            : f                                                         (y,    we          have:                                                                       z,Eo,                          eo)                                                       eo)              f yT                          z                                                                    y                                                                         z                                                  =                                                                                                         0.                                                                                             This                                                                                                                                 is an                                                                                                                              iterative                                                                                                              procedure                                                                                                                                             that                                                                                                                               allows                                                                             constraints,                                                                                                                    i.e.,                                                                                       φdec(θ)                                       T                                                         T                                                        ∪T    1 ∪T                                                                                  1                                                                                       2       =                         2}                                                  :                        =                                   =         2 (z,           θ′)                   z′           ⇔∃i                  ∈{1,                              f                                                                                  i (z,                                              θ′)                                            f                                                              (z,                                                          θ)                                                           z′,f zT   z                                                 z                                                  z                                                                        z                                               w                                                                  us                                                                              to build the                                                                        whole                                                                                         reachable                                                                                                                   state                                                                                                           space.                                                                        We also                                                                                                         add                                                                                                                                          transitions                                                                                                                                                 in
+w ⇔∃i ∈{1, 2} : f zTwi (z, θ) = w  and  f wT 1y ∪T 2 (w, eo) = y ⇔∃i ∈    this process.
+{1, 2} : f zTwi (w, eo) = y.                                                  Speciﬁcally, at a newly added Z-state, we need to determine feasible
+   Deﬁnition 10 (All edit structure): Given system G, edit constraints    edit decisions. There may be consecutive Z-states between a Y -state
+φdec  and φy ,  the AES  is  the  largest complete TPO: AES =   and a W -state. Then, we search them in the procedure EXT END −
+(QAY , QAZ , QAW , Eo, Ero , Θ, f yAz , f zAz , f zAw , f wA y , y0), where ∀y ∈QAY  :   Z, which is also a depth-ﬁrst search process. In EXT END −Z, we
+φy (y) = 1 and ∀θ ∈Θ : φdec(θ) = 1. The largest TPO is such that: for   add succeeding Z-states until no more fz z transitions are deﬁned and no
+all TPO T satisfying the above-mentioned two conditions, T ⊑AES.   more insertions are made. In this process, for each z ∈QAZ , we deﬁne
+  Algorithm I shows a general procedure for constructing the AES   Zext(z) to be the set of Z-states that can be reached from z through fz z
+and it calls Algorithms II and III in its operation. In Algorithm II, we    transitions. We keep growing Zext(z) until no more Z-states are added
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 10, OCTOBER 2019                                                          4373
+
+
+
+
+
+                                                                          reveals the correctness and completeness of the AES, namely, the
+                                               AES embeds all ND privately safe edit functions satisfying the edit
+                                                                             constraints.
+                                                             Theorem 1: Given system G, an ND edit function fn e is ND pri-
+                                                                         vately safe if and only if fn e ∈AES.
+                                                                        Proof: (⇒) By contradiction. Suppose fne ⊨ϕndpri but fne /∈AES.
+                                                                Then, there should exist a TPO T such that fne ∈T . This means that
+                                                         ∃s ∈P [L(G)], ∃r ∈Run(T ), s.t. Pe(r) = s, lg (r) ∈fne(s) but r /∈
+                                                         Run(AES). Thus, there are some states or transitions in r that are not
+                                                                           in the AES. However, this implies that the union of T and the AES is
+                                                                                    strictly larger than the AES, which contradicts with the deﬁnition that
+                                                                        the AES is the largest TPO satisfying the edit constraints.
+                                                   (⇐) Suppose that fne ∈AES, then ∀s ∈P [L(G)], ∀˜s ∈fne(s),
+                                                          ∃r ∈Run(T ), s.t. Pe(r) = s ∧lg (r) = ˜s. Since ∀y = (xd, xf ) ∈r,
+                                                               xd ∈Xobsd, we know fne(s) ⊆L(Obsd(G)) = Lsafe and fne is pri-
+                                                                         vately safe.                             ■
+                                                           Remark 1: We brieﬂy analyze the complexity of constructing the
+                                                       AES. First, we evaluate the complexity of Algorithm II. Here, we
+and no new fz z transitions are deﬁned at states in Zext(z). Consecutive   deﬁne QenZ  t = {z ∈QAZ  : ∃y ∈QAY , ∃eo ∈Eo s.t. fy z (y, eo) = z} as
+Z-states may form a cycle in the AES, which indicates that a loop is   the Z-states that can be reached from certain Y -states by fy z transi-
+inserted by the edit function. Since the information state component    tions. Given system G with |X|-states, its observer Obs(G) has at most
+of a Z-state comes from 2X × 2X and its event component comes   |Xobs| = 2|X |  states. Since QAY ⊆Xobsd × Xobs, |QAY | ≤|Xobs|2.
+from Eo, both of which are ﬁnite sets, then only a ﬁnite number of Z-   Also, each Y -state can execute at most |Eo| observable events in
+states is added in each iterate and EXT END −Z always terminates.    line 1, so |QenZ  t | ≤|Eo||Xobs|2. In DoDF S, we apply procedure
+Similarly, the information state components of Y -states and W -states  EXT END −Z at each QenZ  t in line 8 to determine edit choices
+also come from 2X × 2X , whereas the edit action components of W -   step by  step. This procedure creates  at most (|Xobs| −1)-states
+states come from Eo or Ero . All of them are ﬁnite sets. Overall, only   for each QenZ  t -state. Thus, |QAZ | ≤|Eo||Xobs|2(|Xobs| −1 + 1) =
+ﬁnite states will be added to AESpre until some states or transitions   |Eo||Xobs|3. Furthermore, every Z-state may lead to a W -state by
+violate the edit constraints. Thus, Algorithm II terminates after a ﬁnite   fz w  transition, so |QAW | ≤|Eo||Xobs|3. Thus, the state space com-
+number of steps and returns a ﬁnite structure.                            plexity of AESpr e is O(|Xobs|3). The complexity of Algorithm III is
+  We denote the output of Algorithm II by AESpre, which may con-   quadratic in the size of AESpr e as one state is visited at most once in
+tain deadlocking states since edit constraints preclude transitions out   an iteration. Overall, the space complexity of constructing the AES is
+of them or their succeeding states. We prune away deadlocking states   polynomial in terms of |Xobs|.
+as well as their predecessor states in Algorithm III in an iterative     Remark 2:  It can be shown by induction on the length of strings that
+manner until the structure converges. If a state is deadlocking, then    if the AES is not empty, then all edit functions embedded in it are ad-
+the edit decisions leading to it should not be considered for synthe-   missible. This is a consequence of the pruning process in Algorithm III
+sizing edit functions. Thus, we also prune away its preceding states.   and we omit the proof here. By the same argument, no admissible
+This process is similar to calculating the supremal controllable sublan-    edit function exists if the AES is empty. Hence, we will rule out this
+guage in nonblocking supervisory control under full observation [2],   situation in the remainder of the note.
+by viewing the deadlocking states as undesired marked states and f yAz      Example 1: We show an AES. The observer of system G is de-
+and f wA y  transitions as uncontrollable, whereas f zAz and f zAw  transi-   picted in Fig. 1. All events {a, b, c, d} are observable and observer
+tions as controllable. Algorithm III also terminates after a ﬁnite num-    state 4 is solely composed of secret states from G. The desired ob-
+ber of steps when no more states are to be removed, then it returns   server Obsd(G) is simply without state 4 and we omit its ﬁgure here.
+the AES after  it is called in Algorithm  I. The following theorem   To begin with, we follow the ﬁrst two steps of Algorithm I and build
+
+4374                                                         IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 10, OCTOBER 2019
+
+
+
+                                                                        the same edited behavior with some safe string. However, the state
+                                                                    information in the AES is insufﬁcient to verify this condition as a Y -
+                                                                                state may appear in multiple runs and different strings may be edited to
+                                                                        the same one by different edit decisions. Therefore, additional analysis
+                                                                                        is necessary, which is discussed in the following section.
+
+
+                                                                              VI. SYNTHESIS OF ND PRIVATELY SAFE AND PUBLICLY
+                                                                     SAFE EDIT FUNCTIONSFig. 1.  Observer in Example 1.
+                                                                         In this section, we synthesize ND-PP-enforcing edit functions. From
+                                                         Theorem 1, any edit function embedded in the AES is ND privately safe
+                                                                  so we only need to consider ND public safety. Unfortunately, we cannot
+                                                                  only consider the state information in the AES for synthesis. Thus, we
+                                                                      introduce the reachability tree of the AES, which is the “unfolded”
+                                               AES with respect to unedited strings and edited strings. Then, we have
+                                                                     access to strings before/after edit and develop a synthesis algorithm
+                                                                based on the tree.2
+
+
+                                                              A. Reachability Tree of the AES
+
+                                                           The  reachability  tree  of  the AES  is  denoted  by AESt =
+                                                   (QAY T , QAZ T , QAWT , Eo, Ero , Θ, f yAzT , f zAzT , f zAwT , f wA yT , y0)  and  con-
+                                                                          structed in Algorithm VI. It is built by unfolding the state space in
+                                                                  a breadth-ﬁrst search manner in line 2. The AESt is an acyclic struc-
+Fig. 2.  AESpre in Example 1 (without dashed states and transitions).                                                                           ture by construction, so all its runs are ﬁnite. The transitions in the
+                                                       AESt are deﬁned in a similar way as in the AES. Within DoDF S,
+                                                                                                if an examined state is visited again, we stop searching on the current
+                                                                    path and know there is a cycle in the AES. Since the number of states
+                                                                           in the AES is ﬁnite, DoBF S stops after a ﬁnite number of steps when
+                                                                                        all states in the AES are examined. In line 3, we call Algorithm III and
+                                                                    achieve two goals: ﬁrst, all leaf states in the AESt are Y -states; second,
+                                                           no deadlocking states exist in the AESt. We denote by QAY T−leaf the leaf
+                                                                               states in the AESt. Since states are completely split in terms of state
+                                                             and string components, there is a unique run from the root y0 to every
+                                                                                state in the AESt. Finally, we label each Y -state in the tree with both
+                                                                        the edited string and the original string in line 6.
+                                                                         Edit functions embedded in the AESt only make ﬁnite insertion
+                                                                        choices. However, this does not compromise the performance of edit
+                                                                       functions in opacity enforcement. We use Example 1 to illustrate this
+Fig. 3.  AES in Example 1.                                                point. If we build the reachability tree for this example, the cycle
+                                                              between Z-states ((3, 0), b) and ((2, 0), b) is broken and the transition
+                                                                    c is removed. Thus, if we consider edit functions embedded in the
+                                                          AESt, then string b can only be mapped to dab. However, all strings ofAESpr e in Fig. 2, where squared states, oval states, and diamond states
+                                                                        the form da(bc)n b where n ≥1 reach state 2. It does not really matterstand for Y , Z, and W states, respectively.
+                                                                whether b is edited to a string containing a loop or not.  The game is initialized at y0 = (0, 0), where the dummy player
+                                                                         In the following discussion, we let the edit function make the sameexecutes b and d since both events are deﬁned at state 0 in Obs(G).
+                                                                       decisions every time a Z-state in the AES is reached. Hence, if thereIf b is executed, Z-state ((0, 0), b) is reached, where the edit function
+                                                                              exists a cycle in the AES, the edit function does not change decisionsplays and there are two edit decisions. At ((0, 0), b), if the edit function
+                                                             whenever the cycle is visited. Therefore no information is lost if wechooses to erase b, then the system plays at W -state ((0, 0), b →ϵ);
+                                                                     consider edit functions embedded in the AESt and repeat the same editif the edit function inserts d, then Z-state ((1, 0), b) is reached since
+                                                                       decisions when two states share the same state components.δd(0, d) = 1. If a is also inserted after d is inserted, then another
+                                                           Remark 3: We brieﬂy                                                                                           analyze                                                                                                          the space                                                                                                          complexity of the AESt.Z-state ((2, 0), b) is reached. Then, at Z-state ((2, 0), b), if the edit                                                                                                      T                                                                                                              T                                                                                                                      T                                                                                    First, let Q = max{|QAY   |, |QAZ   |, |QAW  |}. The number of nodesfunction decides to stop inserting, W -state ((2, 0), b) is reached. When
+                                                                  reached by the initial state in one step transition in the AES is atthe system plays, say, at ((0, 0), b →ϵ), b occurs and leads to Y -
+                                                            most Q. Also, each node may have at most Q succeeding nodes bystate (0, 4), since b is not observed by the intruder and the ﬁrst-state
+                                                             one step transition in the AES. Thus, the number of states reached bycomponent is not updated. When the system plays at ((2, 0), b), b
+                                                                                           same process                                                                                                                  goes                                                                                                             on and                                                                      y0 by two transitions is at most Q2. Theoccurs and leads to Y -state (3, 4) since δd(2, b) = 3 and δ(0, b) = 4.                                                                                                                      T                                                                                                                                T                                                                                                                                          T                                                  we know that there may be at most |QAY   | + |QAZ   | + |QAW  | statesThe whole structure is interpreted in a similar way.
+                                                              between the root y0 and any leaf state in the tree. Thus, the number of  In this         example,                   the                         edit                            constraints                                        prohibit                                               the                                                       edit                                                      function                                                      from
+                                              1))                            =                                   =    states in the AESt is at most in the order of Q|Q AY T |+ |Q AZ T |+ |Q AW T |+ 1.            ((1, 0),                           ((3,erasing       b at                   b) and                                2), b), also                                     φy ((0,                                                φy ((1, 2))
+φy ((2, 3)) = 0. We use dashed lines in Fig. 2 to indicate the transitions  From aforementioned section’s discussion, we know that the com-
+and states that violate edit constraints. Those transitions/states are not    plexities of Q and |QAY T | + |QAZ T | + |QAWT | are both of the order
+in AESpr e. In Fig. 2, there are some deadlocking W -states, such as   (O(|Xobs|3)). Therefore, the complexity of the AESt does not exceed
+((0, 0), d →ϵ), ((1, 0), a →ϵ), and ((2, 2), b →ϵ) and no deadlock-   O(|Xobs|3(|X o b s |3 + 1)).
+ing Z-states exist. Then, we prune away those deadlocking states by
+Algorithm III and ﬁnally obtain the AES in Fig. 3.
+  Then, it is natural to ask when there exists an ND-PP-enforcing edit     2The terminology of reachability tree is from the Petri net literature; it is
+function in the given AES. The key point is every unsafe string shares   employed here as it is well suited to the construction procedure in this note.
+
+IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 10, OCTOBER 2019                                                          4375
+
+
+  In the AESt, some Y -states are labeled by an unsafe string and      Besides, we call states in QAY T−leaf(li)\Spp(li)1            bad candidate states
+a safe string, whereas others by two safe strings. We partition Y -   since the edited behaviors of  li indicated in those states cannot be
+states as: QAY T 1 = {((xd, xf ), (t, s)) ∈QAY T  : t ∈Lsafe, s ∈Lunsafe}   matched with edited behaviors of any other safe string. Thus, if those
+and QAY T 2 = {((xd, xf ), (t, s)) ∈QAY T  : t, s ∈Lsafe}.                    states are reached by the edit function, ND public safety cannot be
+  Next, we deﬁne the last preserved QAY T 2 state as: QAY T−lp2 = {y2t ∈   achieved. Those states are expected to be avoided when synthesizing
+QAY T 2 : ∃y1t ∈QAY T 1 , ∃θ1, . . . θm ∈Θ, ∃eo ∈Eo, s.t. f wA yT (f zAwT (f zAzT    ND-PP-enforcing edit functions.
+     A T   A T                                                   Based on those concepts, we propose Algorithm V for synthesis.. . . (f z z (f y z (y1t , eo), θ1), · · · θm −1), θm ), eo) = y2t }, which serves
+                                T 1         T 2                                 First, we group the leaf states by their unsafe string components li ∈as the “boundary” between QAY   and QAY    states.                                                        T 1              T 1         T          T 1         T 2         T          T 2   Luleaf in line 2. Each state in QAY −leaf(li) corresponds to a potentially  Deﬁne QAY −leaf = QAY −leaf ∩QAY   and QAY −leaf = QAY −leaf ∩QAY                                                                             different edited behavior of li. Then, we search through the AESt to ﬁnd
+as leaf states that contain and do not contain unsafe string components.
+                       T 2       T 2        T 2                       bad candidate states and remove them from the AESt. As the removal ofBesides, we deﬁne QAY −l = QAY −leaf ∪QAY −lp. Then, we deﬁne                                                                     those states may bring in deadlocking states, we apply Algorithm III to
+                                                       T 1                 resolve deadlocking states in line 7 and denote the remaining structureLuleaf = {l ∈Lunsafe : ∃y1leaf = ((xd, xf ), (t, s)) ∈QAY −leaf, s.t. s = l}                                                           by AESrt . In this process, some states in Spp(li) may also be removed.
+Lsleaf = {l ∈Lsafe : ∃y2leaf = ((xd, xf ), (t, s)) ∈QAY T−leaf,2    s.t. s = l}   We use QAY T−r1 e and QAY T−r2 e to denote the Y -states with and without
+                                                                   unsafe string components in the AESrt , respectively. For unsafe string
+ Lslp = {l ∈Lsafe : ∃y2lp = ((xd, xf ), (t, s)) ∈QAY T−lp,2   s.t. s = l}         li, we deﬁne Srpp(li) in line 5 as the set of PP-enforcing candidate
+                                                                               states remaining in the AESrt after pruning. We claim that if Srpp(li) is                                             T 1
+as the set of unsafe strings appearing in QAY −leaf, the set of safe strings   not empty for each li, then there exist ND-PP-enforcing edit functions
+appearing in QAY T−leaf2  and QAY T−lp,2  respectively. We further group some   in the AESt. Finally, we may extract the edit function by following
+Y -states by their components of original strings (safe or unsafe)          transitions in the AESrt
+      T 1                                  T 1                          Theorem 2: Given the AESrt , ND-PP-enforcing edit functions exist
+  QAY −leaf(l) = {((xd, xf ), (t, s)) ∈QAY −leaf : s = l ∈Luleaf}               if and only if ∀li ∈Luleaf, Srpp(li)̸ = ∅.
+  QAY T−leaf(l)2   = {((xd, xf ), (t, s)) ∈QAY T−leaf2   : s = l ∈Lsleaf}              Proof: (⇒) By contradiction. Suppose ∃fne ∈AESrt , fne ⊨ϕndpp,
+                                                             and ∃li ∈Luleaf, s.t. Srpp(li) = ∅. Then, we can ﬁnd s ∈fne(li), s.t.
+  QAY T−lp(l)2  = {((xd, xf ), (t, s)) ∈QAY T−lp2  : s = l ∈Lslp}            ∄t ∈Lsafe and s ∈fne(t), which contradicts fne ⊨ϕndpp.
+        T 2                                T 2                      (⇐) Given the AESt and the AESrt , it is sufﬁcient to consider unsafe
+   QAY −l (l) = {((xd, xf ), (t, s)) ∈QAY −l  : s = l ∈Lslp ∪Lsleaf}.      strings in Luleaf and safe strings in Lsleaf ∪Lslp for synthesis. Besides, we
+                                                                  only need to check ND public safety since the AES is not empty.  In this note, we assume that events are inserted or erased one by one,
+                                                                                        If ∀li ∈Luleaf, Srpp(li)̸ = ∅, we know ∀y1(li) = ((xd, xf ), (t, li)) ∈so observed one at a time. Also, both the observer’s language and the
+safe language are preﬁx closed. Therefore, if a string s is mapped to   Srpp(li), ∃y2 = ((x′d, x′f ), (t′, l′)) ∈QAY T−l2 ∩QAY T−r2 e, s.t. t ⪯t′. Since
+string l, then all the preﬁxes of s are mapped to some preﬁxes of string    fne ∈AESrt , fne ∈AES also holds. We let all the players make the
+l. This result is formally stated as follows.                        same decisions speciﬁed at states in the AESrt whenever a state is
+  Lemma 1: Consider an ND edit function fn e, if s, t ∈P [L(G)]   reached again in the AES. So, we can design an edit function fne
+satisfy fe(s) ⊆fe(t), then ∀s′ ⪯s, ∃t′ ⪯t, s.t. fe(s′) ⊆fe(t′).        such that fne(li) = {t : ∃y1(li) = ((xd, xf ), (t, li)) ∈Srpp(li)} and
+  This lemma has the implication that we can restrict attention to     t′ ∈fne(l′). Since t ⪯t′, we know fne(li) ⊆Lsafe, ∀li ∈Luleaf. There-
+unsafe strings in Luleaf since all the other unsafe strings in the AESt,    fore, fne is both privately safe and publicly safe.          ■
+being their preﬁxes, can be mapped to safe strings if strings in Luleaf can     Theorem 2 gives a necessary and sufﬁcient condition for verifying
+be mapped to safe strings. Besides, we can focus on safe strings in Lslp ∪   the existence of ND-PP-enforcing edit functions. It also shows the
+Lsleaf for opacity enforcement as the other safe strings in the AESt are   completeness and soundness of Algorithm V, so the synthesis of ND-
+their preﬁxes. This result further justiﬁes why we build the reachability   PP-enforcing edit functions is reduced to ﬁnding Srpp(li) for every
+tree AESt: since the AESt explicitly contains unsafe strings in some     li ∈Luleaf in the AESrt . When running Algorithm V, we collect all
+of its leaf states, we can evaluate those leaf states and determine how   edited strings appearing in states from Srpp(li) and include them as
+those unsafe strings are edited.                                          the potential edited behavior of li ∈Luleaf. In that way, the synthesized
+                                         ND edit function is “most permissive” in the sense that it preserves
+                                                                                        all feasible edit decisions to achieve ND private safety and ND public
+B. Synthesis Algorithm
+                                                                                safety.
+  We proceed to synthesize ND-PP-enforcing edit functions based on     Remark 4: Compared with deterministic edit functions, ND edit
+the AESt. We will give a condition for verifying the existence of ND-   functions perform better at enforcing public safety. The intuition is
+PP-enforcing edit functions and show that the veriﬁcation problem is   as follows. Consider the case when a safe string is edited to multiple
+closely related with the synthesis problem. Then, we will solve these    (safe) strings, which may be the edited behaviors of several unsafe
+two problems together. To begin with, we derive the following result    strings. In the deterministic case, every string is mapped to a unique
+from Theorem 1, which shows that ND private safety is always ensured   one so in the above-mentioned case, we are only able to guarantee that
+by the AES.                                                   one unsafe string shares the same edited behavior with a safe string,
+  Lemma 2:  If the AES is not empty, then there exists a privately safe   hence, public safety is violated. Thus, a deterministic PP-enforcing
+ND edit function.                                                           edit function may not always exist. However, if nondeterminism is
+  The ND public safety case is more challenging and we start by   allowed, as long as we ﬁnd an edited string whose edited behaviors
+evaluating the unsafe strings in the leaf states of the AESt. For   correspond to the edited behaviors of (potentially multiple) unsafe
+each unsafe string li ∈Luleaf, we deﬁne the set of PP-enforcing can-    strings, then ND public safety is satisﬁed. The above-mentioned ar-
+didate states as Spp(li) = {((xd, xf ), (t, li)) ∈QAY T−leaf(li)1         : ∃y2 =   gument further justiﬁes why we explore ND edit functions, given
+((x′d, x′f ), (t′, l′)) ∈QAY T−l2 , s.t. t ⪯t′}. That  is, we search through    that both deterministic and ND edit functions may enforce private
+AESt to ﬁnd ((x′d, x′f ), (t′, l′)) where some preﬁx of the edited string    safety.
+                                                             Example 2: Let the observer in Fig. 4 be with Eo = {a, b, c, d},t′ is just t, whereas the unedited unsafe string is also li. So, if the edit
+                                                                               states 7 and 8 are composed of only secret states from the system. Wefunction reaches those states, it will be publicly safe by deﬁnition. On
+                                                                omit the steps of building the AES and the AESt, instead we directlythe other hand, if Spp(li) = ∅for some li, then, we know we cannot
+                                                        show the AESt in Fig. 5 . While we only label leaf states with stringsﬁnd a safe string that shares the same edited behavior with unsafe string                T 1                                                                    here and QAY −leaf states are marked in red (those states contain an unsafeli, in which case no ND-PP-enforcing edit function exists.
+
+4376                                                         IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 64, NO. 10, OCTOBER 2019
+
+
+
+                                                                          REFERENCES
+
+                                                                                      [1]  J. W. Bryans, M. Koutny, and P. Y. A. Ryan, “Modelling opacity using
+                                                                                             Petri nets,” Electr. Notes Theor. Comput. Sci., vol. 121, pp. 101–115, 2005.
+                                                                                      [2] C. G. Cassandras and S. Lafortune. Introduction to Discrete Event Systems,
+                                                                       2nd ed. Berlin, Germany: Springer, 2008.
+                                                                                      [3]  F. Cassez, “The dark side of timed opacity,” in Int. Conf. Inf. Secur.
+Fig. 4.  Observer in Example 2.                                               Assurance, 2009, pp. 21–30.
+                                                                                      [4]  F. Cassez, J. Dubreil, and H. Marchand, “Synthesis of opaque systems
+                                                                               with static and dynamic masks,” Formal Methods Syst. Des., vol. 40,
+                                                                                     no. 1, pp. 88–115, 2012.
+                                                                                      [5]  S. Ch´edor, C. Morvan, S. Pinchinat, and H. Marchand, “Diagnosis and
+                                                                                    opacity problems for inﬁnite state systems modeled by recursive tile sys-
+                                                                                    tems,” Discrete Event Dyn. Syst., Theory Appl., vol. 25, no. 1/2, pp. 271–
+                                                                                 294, 2015.
+                                                                                      [6]  J. Chen, M. Ibrahim, and R. Kumar, “Quantiﬁcation of secrecy in partially
+                                                                               observed stochastic discrete event systems,” IEEE Trans. Autom. Sci. Eng.,
+                                                                                              vol. 14, no. 1, pp. 185–195, 2017.
+                                                                                      [7] Y. Falcone and H. Marchand, “Enforcement and validation (at runtime)
+                                                                                     of various notions of opacity,” Discrete Event Dyn. Syst., Theory Appl.,
+                                                                                              vol. 25, no. 4, pp. 531–570, 2015.
+                                                                                      [8] R. Jacob, J.-J. Lesage, and J.-M. Faure, “Overview of discrete event sys-
+                                                                           tems opacity: Models, validation, and quantiﬁcation,” Annu. Rev. Control,
+                                                                                              vol. 41, pp. 135–146, 2016.
+                                                                                      [9] Y. Ji and S. Lafortune, “Enforcing opacity by publicly known edit func-
+                                                                                                tions,” in Proc. 56th IEEE Conf. Decis. Control, 2017, pp. 4866–4871.
+Fig. 5.  AESt in Example 2.                                                 [10] Y. Ji, Y.-C. Wu, and S. Lafortune, “Enforcement of opacity by public and
+                                                                                           private insertion functions,” Automatica, vol. 93, pp. 369–378, 2018.
+                                                                               [11] Y. Ji, X. Yin, and S. Lafortune, “Opacity enforcement by insertion func-
+                                                                                           tions under energy constraints,” in Proc. 14th Int. Workshop Discrete Event
+string label). Due to the edit constraints (not explicitly stated here), the           Syst., 2018, pp. 291–297.
+edit function can only make decisions and reach states as indicated    [12] C. Keroglou and C. N. Hadjicostis, “Probabilistic system opacity in dis-
+                                                                                           crete event systems,” Discrete Event Dyn. Syst., Theory Appl., vol. 28,in the AESt. We can see that ((6, 8), (ab, b)) shares the ﬁrst string
+                                                                                     pp. 289–314, 2018.
+component with ((6, 4), (ab, dabc)), ((4, 7), (dabc, abc)) shares the                                                                               [13]  F. Lin, “Opacity of discrete event systems and its applications,” Automat-
+ﬁrst string component with ((4, 4), (dabc, dabc)). Also, unsafe string          ica, vol. 47, no. 3, pp. 496–503, 2011.
+b is edited to ab, unsafe string abc is edited to dabc, and safe string    [14]  T. Masopust and X. Yin, “Complexity of detectability, opacity and A-
+dabc is edited to dabc or ab.                                                        diagnosability for modular discrete event systems,” Automatica, vol. 101,
+   It is interesting to notice that if we let the edit function be determin-         pp. 290–295, 2019.
+istic, i.e., every string is mapped to a unique one, then no PP-enforcing    [15] A. Saboori and C. N. Hadjicostis, “Notions of security and opacity in
+edit functions exist here since unsafe strings b and abc cannot share the          discrete event systems,” in Proc. 46th IEEE Conf. Decis. Control, 2007,
+same modiﬁed behavior with safe string dabc simultaneously. However,         pp. 5056–5061.
+                                                                               [16] A. Saboori and C. N. Hadjicostis, “Veriﬁcation of initial-state opacityan ND-PP-enforcing edit function exists by Algorithm V. No states are
+                                                                                           in security applications of discrete event systems,” Inf. Sci., vol. 246,
+removed from the AESt and we have Srpp(b) = {((6, 4), (ab, dabc)}         pp. 115–132, 2013.
+and Srpp(abc) = {((4, 4), (dabc, dabc)}. So, the edit function inserts    [17]  S. Takai and Y. Oka, “A formula for the supremal controllable and opaque
+a before event b occurs from state 0; inserts d before event a occurs        sublanguage arising in supervisory control,” SICE J. Control, Meas., Syst.
+from state 0; inserts nothing before event d occurs from state 0 or just           Integr., vol. 1, no. 4, pp. 307–311, 2008.
+erases that d. This example reveals that introducing nondeterminism    [18] Y. Tong, Z. Li, C. Seatzu, and A. Giua, “Veriﬁcation of state-based opacity
+to edit functions may contribute to opacity enforcement by allowing         using Petri nets,” IEEE Trans. Autom. Control, vol. 62, no. 6, pp. 2823–
+more plausible denial for the intruder’s inference, compared with the        2837, Jun. 2017.
+                                                                               [19] Y.-C. Wu and S. Lafortune, “Synthesis of insertion functions for enforce-deterministic counterpart.
+                                                                       ment of opacity security properties,” Automatica, vol. 50, no. 5, pp. 1336–
+                                                                              1348, 2014.
+                           VII. CONCLUSION                               [20] Y.-C. Wu, V. Raman, B. C. Rawlings, S. Lafortune, and S. A. Seshia,
+                                                                                  “Synthesis of obfuscation policies to ensure privacy and utility,” J. Autom.
+  We discussed opacity enforcement by edit functions in ND settings.         Reason., vol. 60, no. 1, pp. 107–131, 2018.
+Based on the knowledge of the adversary, we deﬁned private safety    [21] X. Yin and S. Lafortune, “A uniform approach for synthesizing property-
+and public safety of ND edit functions and then investigated their         enforcing supervisors  for  partially-observed  discrete-event systems,”
+enforcement. This note is the ﬁrst to apply ND edit functions to enforce       IEEE Trans. Autom. Control, vol. 61, no. 8, pp. 2140–2154, Aug. 2016.
+opacity. The concept of edit constraint was introduced to restrict the    [22] X. Yin and S. Lafortune, “A new approach for the veriﬁcation of inﬁnite-
+choices of edit functions. Then, we reformulated the problem as a three-         step and K-step opacity using two-way observers,” Automatica, vol. 80,
+player game and proposed the AES, which embedded all privately safe         pp. 162–171, 2017.
+                                                                               [23] B. Zhang, S. Shu, and F. Lin, “Maximum information release while en-edit functions satisfying edit constraints. Finally, an algorithm was
+                                                                                     suring opacity in discrete event systems,” IEEE Trans. Autom. Sci. Eng.,
+presented for synthesizing ND-PP-enforcing edit functions based on                                                                                              vol. 12, no. 3, pp. 1067–1079, Jul. 2015.
+the reachability tree of the AES.

@@ -1,0 +1,411 @@
+              2019 IEEE 15th International Conference on Automation Science and Engineering (CASE)
+
+Supervisory Control for Delayed Detectability of Discrete Event Systems
+
+
+                                   Xiang Yin and Shaoyuan Li
+
+
+
+  Abstract— Detectability is an important property that char-    in some situations, we are able to use future information
+acterizes whether or not the state of a system can be precisely    to improve our knowledge of the system’s state at some
+determined under imperfect observation. In  this paper, we                                                             previous instant [11], [23], [25]. This is also referred to as
+investigate the supervisor synthesis problem for a speciﬁc class
+                                                                the “smoothing” process in the systems theory. Essentially,of  detectability,  called delayed  detectability,  in the context
+of Discrete Event Systems. Speciﬁcally, delayed detectability   by using future information, we are able to eliminate the
+requires that the state of the system can always be determined    possibility of those states that do not have the observed future
+after some bounded information delays. That is, one is allowed   behavior from the state estimate in order to enhance precision
+to use future information to “smooth” the state estimate of                                                              of the state estimation for a previous instant. In order to
+previous instant. Our goal is to design a maximally-permissive
+                                                                         utilize the delayed information in the state detection problem,supervisor that restricts the behavior of the original system
+such that the closed-loop system under control  is delayed    in [13], Shu and Lin proposed a new type of detectability
+detectable. To this end, we propose a new supervisor synthesis    called delayed detectability. Speciﬁcally, delayed detectabili-
+approach that appropriately handles the delayed information    ty requires that, after k1 steps, we can always unambiguously
+in the control problem . Our work generalizes previous results                                                           determine the precise state of the system with at most k2
+on supervisory control of detectability, where only non-delayed
+                                                                 steps of delay. More recently, delayed detectability has beeninformation is considered.
+                                                          extended to the nondeterministic observation setting by [29].
+                           I. INTRODUCTION                          In many applications, however, the open-loop system may
+                                                             not be detectable directly. Therefore, in order to obtain better
+   State estimation and detection are central problems in the
+                                                             information about the system,  it  is important to enforce
+systems theory. In most of the real-world systems, the state
+                                                                    detectability via some enforcement mechanisms. One widely
+of the system cannot be perfectly measured due to mea-
+                                                         used property enforcement mechanism in the DES literature
+surement noises or measurement uncertainties. Therefore,
+                                                                              is the supervisory control theory initiated by Ramadge and
+it  is necessary to perform state estimation and detection
+                                            Wonham [2]. The supervisory control approach has already
+algorithms to obtain more precise knowledge of the system.
+                                                       been applied in the literature to enforce detectability; e.g.,
+State estimation and detection are useful for many practical
+                                                                    [14], [19]. For example, in [14], the authors show how to
+purposes,  e.g., supervisory  control,  fault  diagnosis,  fault
+                                                            design a supervisor that enforces strong detectability; it has
+prognosis and security analysis.
+                                                       been pointed out that maximally-permissive supervisor does
+  In  the DES  literature,  the study of  the  state estima-
+                                                             not exist in general for this problem. In [19], the authors
+tion problem dates back to [9], [10], where the notion of
+                                                            study the enforcement of strong K-detectability using super-
+observability  is investigated. More recently, Shu and Lin
+                                                              visory control, where maximally-permissive supervisor does
+investigated this problem more systematically and proposed
+                                                                         exists.
+the concept of detectability. In [15], four different notions of
+                                                                 In this paper, we investigate how to synthesize a supervi-
+detectability were proposed including (periodically) strong
+                                                                sor that enforces detectability when delayed information is
+detectability and  (periodically) weak  detectability. Since
+                                                                involved. Speciﬁcally, we study the enforcement of (k1, k2)-
+then, detectability has drawn increasing attention in the past
+                                                                    detectability proposed by [13]. To this end, we propose a
+few years; see, e.g., [1], [3], [6], [8], [8], [12]–[14], [17],
+                                                new structure called the (k1, k2)-observer that precisely cap-
+[19], [21], [22], [24], [26], [26], [27]. For example, in [4],
+                                                                   tures the delayed information in the synthesis problem. An
+[5], [16], [18], [28], the authors extended detectability to the
+                                                                    effective approach is provided to synthesize an detectability
+stochastic setting by explicitly considering the probability of
+                                                             enforcing supervisor for this case. In particular, we show
+detection. In [8], [17], [27], detectability has been extended
+                                                                     that a maximally-permissive supervisor always exists and it
+to systems modeled as labeled Petri nets. In [6], [7], [26],
+                                                                              is unique,  i.e., supremal, when all controllable events are
+the complexity of checking different notions of detectability
+                                                               observable.
+has been investigated.
+  Most of the state detection problems in the literature focus                            II. PRELIMINARIES
+on the detection of the current state of the system. However,   A. System Model
+                                                             Let Σ be a ﬁnite set of events. A string is a ﬁnite sequence  This work was supported by the National Natural Science Foundation of
+China (61803259, 61833012).                                       of events and a language is a set of strings. We denote by Σ∗
+  Xiang  Yin  and  Shaoyuan  Li  are  with  Department  of  Automa-    the set of all strings over Σ including the empty string ϵ. For
+tion  and Key  Laboratory  of  System  Control  and  Information  Pro-                                                       any string s ∈Σ∗, we denote by |s| its length with |ϵ| = 0;cessing,  Shanghai  Jiao  Tong  University,  Shanghai  200240,  China.
+{yinxiang,syli}@sjtu.edu.cn.                   we denote by σsi the ith event in s, i.e., s = σs1σs2 . . . σs|s|.
+
+978-1-7281-0355-6/19/$31.00 ©2019 IEEE              480
+
+                                                                                         𝑐  We consider a DES modeled by a ﬁnite-state automaton
+                                                             𝑎      𝑐     𝑏                                                                 1     3      5      7           G = (X, Σ, δ, X0),
+                                                              𝑢1          𝑏   𝑎    𝑏
+where X is a ﬁnite set of states, Σ is a ﬁnite set of events,
+δ  : X × Σ →2X  is a non-deterministic partial transition              0                 9
+function and X0 ⊆X is the set of initial states. The transition               𝑢2         𝑎   𝑎    𝑎
+function is also extended to δ : X × Σ∗→2X recursively
+                                                                 2  𝑎  4  𝑐   6  𝑏   8by: ∀s ∈Σ∗, σ ∈Σ, x ∈X : δ(x, sσ) = ∪x′∈δ(x,s)δ(x′, σ).
+The language generated by G from state x ∈X is deﬁned                                      𝑐
+by L(G, x) := {s ∈Σ∗:  δ(x, s)!}, where “!” means                                           (a) G
+“is deﬁned”. We deﬁne L(G) := ∪x0∈X0L(G, x0) as the
+language generated by the system.                                                    𝑐
+                                                                                                                   {0,1,2}  For any ﬁnite-state automaton G = (X, Σ, δ, X0), we                                                       𝑎     𝑐      𝑏
+denote by GR = (X, Σ, δR, X) the reversed automaton of           1     3      5      7            𝑎
+G. Speciﬁcally, the transition function δR  : X × Σ →2X       𝑢1          𝑏   𝑎    𝑏                {3,4}                                                                                                                    𝑎, 𝑏
+is deﬁned by: ∀x, x′ ∈X, σ ∈Σ : x′ ∈δR(x, σ) ⇔x ∈                                                    𝑐
+                                                     0                 9
+δ(x′, σ). Note that the initial state of GR is the entire state                                             {9} 𝑎 {5,6}                                                      𝑢2         𝑎   𝑎    𝑎space. For any string s ∈Σ∗, we denote by sR its reversed                                                                                        𝑏   𝑐
+string, i.e., sR = σs|s| . . . σs2σs1.                                  2  𝑎  4  𝑐   6  𝑏   8         𝑎, 𝑏 {7,8}
+  We assume that the system G is partially-observed. Specif-
+                                                                                 𝑐
+ically, we assume that the event set is partitioned as Σ =
+Σo ˙∪Σuo, where Σo is the set of observable events and Σuo                             (b) GR                             (c) Obs(G)
+is the set of unobservable events. The natural projection from
+P : Σ∗→Σ∗o is deﬁned recursively by: ∀s ∈Σ∗, σ ∈Σ           {3,4,7,8}  𝑐   {0,1,2,3,4,5,6,7,8,9} 𝑎 {0,1,2,4,8,9} 𝑎
+                         P(s)σ   if σ ∈Σo                 𝑐  𝑏  𝑎     𝑐     𝑏
+      P(ϵ) = ϵ,  P(sσ) =                          P(s)     if σ ∈Σuo                 {5,6}   {0,1,2}    {3,5,6,7} 𝑎 {0,1,9} 𝑎  {4,8} 𝑎  {0,2}
+                                                       𝑎               𝑏        𝑏
+The natural projection is also extended to P  : 2Σ∗→2Σ∗o                            𝑎
+                                                                                 {0,1}                  {3,7}    𝑏  𝑐     𝑎
+by: ∀L ⊆Σ∗: P(L) = {P(s) ∈Σ∗o : s ∈L}.                                       𝑏                                                                 𝑎                                                                                            𝑐  𝑏  𝑎
+                                                       𝑏              𝑏                 𝑎    𝑏
+B. Delayed Detectability                                                       {3,6,7}      {5}   𝑎   {9}      {6}   {0,2,4,8}
+                                                                                 𝑐
+  Let G be a system and αβ ∈P(L(G)) be an observable
+string. We denote by ˆX(α | αβ) the set of states the system                                     (d) Obs(GR)
+could have been in for the instant when α is observed given
+                                                                                  Fig. 1.  System G with Σo = {a, b, c} and Σc = {a, c}. Note that all
+the entire observation αβ, i.e.,                                              states are initial in GR.
+              ∃x0 ∈X0, s1s2 ∈L(G, x0) s.t. 
+ˆXG(α | αβ) :=  ∈X :  P(s1) = α ∧P(s1s2) = αβ 
+                                                     where Xobs ⊆2X \ ∅,  xobs,0 = UR(X0) and δobs   :         x          ∧x ∈δ(x0, s1)    
+                                                     Xobs × Σo →Xobs  is a deterministic transition function
+We deﬁne ˆXG(α) := ˆXG(α | α). Therefore, ˆX(α | αβ) and   deﬁned by: ∀q ∈Xobs, σ ∈Σo : δ(q, σ) = UR(Nextσ(q)).
+ˆXG(α) are also referred to as the delayed state estimate and   Then we have L(Obs(G)) = P(L(G)) and for any α ∈
+the current state estimate, respectively.                  P(L(G))   : ˆXG(α) =  δobs(q0, α), which computes the
+  The current-state estimate ˆXG(α) can be computed by    current-state estimate upon the occurrence of α.
+the well-known observer automaton. Let q ∈2X be a set of     To compute the delayed-state estimate, one can construct
+states and σ ∈Σo be an observable event. Then we deﬁne    both the observer of the original system and the observer of
+                                                                the reversed system, i.e., Obs(G) and Obs(GR). It has been
+ UR(q) := {x′ ∈X : ∃x ∈q, w ∈Σ∗uo s.t. x′ ∈δ(x, w)}    shown in [20] that, for any string αβ ∈P(L(G)), we can
+                                                     compute the delayed-state estimate byas the unobservable reach of q and deﬁne
+                                                             ˆXG(α | αβ) = ˆXG(α) ∩ˆXGR(βR).          (1)    Nextσ(q) := {x′ ∈X : ∃x ∈q s.t. x′ ∈δ(x, σ)}
+                                                      Note that ˆXGR(βR) is the state reached via βR in Obs(GR).as the observable reach of q upon the occurrence of σ.
+                                                      Example 1: Let us consider system G shown  in Fig-  To compute the current-state estimate, we can construct
+                                                             ure 1(a) with Σo = {a, b, c}. Its reversed automaton GRthe observer. Speciﬁcally, the observer of G is a ﬁnite-state
+                                                                              is shown in Figure 1(b), where all states are initial. Thenautomaton
+                                                Obs(G) and Obs(GR) are shown in Figures 1(c) and 1(d),
+          Obs(G) = (Xobs, Σo, δobs, xobs,0),                 respectively. For example, when we observe string ac ∈
+
+                                                 481
+
+P(L(G)), we have ˆXG(ac) = δobs(q0, ac) = {5, 6}. If we      In the closed-loop system under control, since some possi-
+observe string ba after observing ac, then we have             ble string can be disabled by the supervisor, the information
+                                                              of the system may be changed under supervision. Therefore,
+ˆXG(ac | acba)= ˆXG(ac)∩ˆXGR(ab)={5, 6}∩{3, 6, 7}={6}                                             we deﬁne
+i.e., the system must be at state 6 two steps ago when acba                 ∃x0 ∈X0, ∃s1s2 ∈L(S/G) s.t. 
+is observed.                                           ˆXS/G(α | αβ):=  ∈X : P(s1) = α ∧P(s1s2) = αβ 
+                                             x          ∧x ∈δ(x0, s1)    C. Delayed Detectability
+  In the state detection problem, the goal is to precisely   as the delayed state estimate under control. Compared with
+determine the state of the system, possibly with some infor-   ˆXG(α  | αβ), ˆXS/G(α  | αβ) only consider observation
+mation delay. To this end, in [13], Shu and Lin propose the    consistent strings in L(S/G).
+notion of (k1, k2)-detectability, which is reviewed as follows.     The detectability enforcement problem is to synthesize a
+  Deﬁnition 1: ((k1, k2)-Detectability) Let k1, k2 ∈N be   supervisor such that the closed-loop system is detectable.
+two non-negative integers. System G is said to be (k1, k2)-   This problem is formulated as follows.
+detectable w.r.t. Σo  if, for any αβ ∈P(L(G)) such that     Problem 1: Given system G with Σc ⊆ Σo ⊆  Σ,
+|α|≥k1 and |β|≥k2, we have |ˆXG(α | αβ)|=1.              synthesize a supervisor S  : P(L(G)) →Γ such that, for
+   Intuitively, (k1, k2)-detectability says that, after k1 (obser-   any αβ ∈P(L(S/G))   :  |α| ≥k1, |β| ≥k2, we have
+vational) steps from the initial state, any state of the system     |ˆXS/G(α | αβ)|=1.
+can be precisely determined within at most k2 steps. This    We say that a solution S to Problem 1 is optimal if for
+deﬁnition is weaker than strong (current-state) detectability   any other solution S′, we have L(S′/G) ⊆L(S/G).
+[15] since we can use future information to improve our
+knowledge of the system for some previous instant.           B. Separability in Delayed State Estimation
+  Example 2: We  still consider system G shown in Fig-      In order to solve Problem  1, we need to provide an
+ure 1(a) with Σo = {a, b, c}. This system  is not (1, n)-    effective approach to compute the closed-loop delayed state
+detectable for any n, since ac(bc)n ∈P(L(G)) and ˆXG(a |   estimate ˆXS/G(α  | αβ). Note that, in general, we always
+ac(bc)n) =  {3, 4}. That  is, we may never be able  to                                                        have ˆXS/G(α | αβ) ⊆ˆXG(α | αβ).
+determine the precise state of the system for the instant of                                                                 In [19], the authors have shown that, under the assumption
+the occurrence of a within any ﬁnite delay.                                                              of Σc ⊆Σo,  the  current  state estimates of  the open-
+                                                           loop system and the closed-loop system are the same, i.e.,        III. SUPERVISORY CONTROL FOR DELAYED
+                                                       ˆXS/G(α) = ˆXG(α) for any supervisor S. Therefore, the                 DETECTABILITY
+                                                                       state estimation and the control synthesis can be separated.
+A. Problem Formulation                                                           Here, we further generalize this separability result to the case
+  In many situations, the open-loop system G may not be   of delayed state estimate.
+detectable. Therefore, we need to enforce detectability via      Proposition 1: Assume that Σc ⊆Σo. For any supervisor
+some mechanism in order to maintain precise knowledge  S  : P(L(G)) →Γ and any string αβ ∈P(L(S/G)), we
+of the system. One of the most widely used enforcement   have ˆXS/G(α | αβ) = ˆXG(α | αβ).
+mechanisms is the supervisory control theory initiated by
+Ramadge and Wonham. In this framework, we assume that                  IV. THE (k1, k2)-OBSERVER
+the event set is further partitioned as Σ = Σc ˙∪Σuc, where
+                                                                 In this section, we present the structure of the (k1, k2)-
+Σc and Σuc are the set of controllable events and the set of                                                                observer, which generalizes the standard observer structure
+uncontrollable events, respectively. We assume that Σc ⊆Σo,                                                                   to handle delayed information. This structure will be used as
+i.e., we can only disable observable events which is the case
+                                                                the basis for solving the control synthesis problem.
+in many applications.
+                                                                Before, we formally present the deﬁnition of the (k1, k2)-
+ A control decision is a set of events that includes Σuc;
+                                                                observer, we ﬁrst introduce some necessary notations.
+we denote by Γ = {γ ∈2Σ  : Σuc ⊆γ} the set of control                                                           For any non-negative integer n ∈N, we deﬁne
+decisions. Then a partial-observation supervisor is a function
+                                                     Σ≤n := {s ∈Σ∗: |s| ≤n}                S : Σ∗o →Γ,
+i.e., for any observable string α ∈P(L(G)), S(α) is the set   as the set of strings whose lengths are smaller than or equal
+of events enabled upon the observation of α. We denote by    to n. Also, for any string s = σs1σs2 . . . σs|s| ∈Σ∗and non-
+S/G the closed-loop system under control. The language   negative integer n ∈N, we denote by Lastn(s) the string
+generated by the closed-loop system L(S/G)  is deﬁned    consisting of the last n events of s, i.e.,
+recursively by:                                                                            s                       if |s| ≤n
+  • ϵ ∈L(S/G); and                                          Lastn(s) =   σs|s|−n+1 . . . σs|s|   if |s| > n
+  • ∀s ∈Σ∗, σ ∈Σ : sσ ∈L(S/G) ⇔s ∈L(S/G) ∧σ ∈
+    S(P(s)) ∧sσ ∈L(G);                      We are now ready to deﬁne the (k1, k2)-observer.
+
+                                                 482
+
+  Given system G with Σo ⊆Σ and two non-negative         will not update the state estimate immediately. Instead,
+integers k1, k2 ∈N, the (k1, k2)-observer for G is deﬁned as      we will keep the ﬁrst component unchanged and store
+a new ﬁnite-state automaton                                        the observable string following the receiving order until
+                                                                      there are k2 events in the string. Note that the  last
+             Obsk1,k2(G) = (Q, Σo, f, q0)                                                         component will not change anymore since the transient
+where                                                        phase has expired.
+  • Q ⊆(2X \∅)×Σ≤k2 ×{0, 1, . . . , k1} is the set of states;      •  Finally, the system goes to the evaluation phase after
+  • Σo is the set of observable events;                     k1+k2 observable events are generated. This is because
+  • f  : Q × Σo →Q is the deterministic partial transition      we need to evaluate whether or not the state of the
+     function deﬁned as follows:                                      instant k2 steps ago can be determined. In this phase,
+                                                                     the string in the second component is used to record the      – For any state ı = (q, s, n) and any observable event
+                                                                                 last k2 observable events after k1 observable events have       σ ∈Σo, f(ı, σ) is deﬁned if and only if δobs(q, sσ)
+                                                                   occurred. Therefore, whenever a new event is observed,            is deﬁned.
+                                                                     the last event will be erased by the Lastk2 operator and      – Moreover, if f((q, s, n), σ) is deﬁned, then it leads
+          to state ı′ = (q′, s′, n′) deﬁned by:                        the new event will be added to the rear of the string; the
+                                                                          string in this component is essentially a queue. Hence,
+       ∗If n < k1, then                                           for any α = σα1 . . . σα|α| such that(q, s, k) = f(q0, α),
+                                                we have
+                      (q′, s′, n′) = (δobs(q, σ), ϵ, n + 1)     (2)
+                                                                                ϵ                                if |α| ≤k1
+                                                                                                                               (5)       ∗If n = k1 and |s| < k2, then                           s =                                                                  Lastk2(σαk1+1 . . . σα|α|)   if |α| > k1
+                            (q′, s′, n′) = (q, sσ, k1)          (3)                                                       Then the state estimate component is updated based on
+       ∗If n = k1 and |s| = k2, then                            the event erased at each instant, i.e., σs1. Therefore, each
+                                                                            state at the phase contains the current state estimate
+                (q′, s′, n′) = (δobs(q, σs1), Lastk2(sσ), k1)  (4)                                                                        for the instant k2 steps ago and the string with length
+  • q0 := (UR(X0), ϵ, 0) ∈Q is the initial state.                 k2 that is executed from that instant. Formally, for any
+                                            α = σα1 . . . σα|α| such that f(q0, α) = (q, s, n), we haveFor the sake of simplicity, we only consider the reachable
+part of the (k1, k2)-observer.
+                                                                                                   ˆXG(α)                    if |α| < k1  The (k1, k2)-observer is the key information structure in                                  this paper. Essentially, it divides the evolution of the system         q =   ˆXG(σα1 . . . σαk1)         if k1 ≤|α| < k1 + k2
+into three phases:                           ˆXG(σα1 . . . σα|α|−k2)   if k1 + k2 ≤|α|
+  • the transient phase: less than k1 observable events are                                                                (6)
+     generated; and                                                Finally, we note that the transition function of the (k1, k2)-
+  • the event-delay phase: more than k1 but less than k2   observer is deﬁned if and only if the transition function of
+     observable events are generated;                          the standard observer is deﬁned. Therefore, we also have
+  • the evaluation phase: more than k1 + k2 observable   L(Obsk1,k2(G)) = L(Obs(G)) = P(L(G)).
+     events are generated.                                     Let us illustrate this structure by the following example.
+More intuitively, each phase works as follows.                Example 3:  Still,  let us consider system G shown  in
+  • We say that system is at the transient phase when less   Figure 1(a). We consider k1 = 1 and k2 = 2. Then the
+     than k1 observable events are executed, since we do    (k1, k2)-observer Obs1,2(G) is shown in Figure 2.
+     not need to determine the precise state of the system       Initially,  Obs1,2(G)  starts  from  state  ({0, 1, 2}, ϵ, 0),
+     for these instants. Therefore, the ﬁrst component simply   where {0, 1, 2} is the initial state of Obs(G) and the string
+     tracks the current state estimate following the dynamic   queue is empty. Upon the occurrence of the ﬁrst observable
+     of the system, and the second component  will not   event a, the system moves to state ({3, 4}, ϵ, 1). Speciﬁcally,
+     store any string information. The last integer component    since 0 < k1 =  1, the observer  is  still at the transient
+      is simply a counter  that determines whether or not   phase, i.e., (i) {3, 4} is computed by updating the current-
+     the system  is at the transient phase,  i.e., how many    state estimate {0, 1, 2} using event a; and (ii) the string queue
+     observable events have occurred from the initial state.   remains as the empty string; and (iii) the integer component
+     Therefore, upon the occurrence of each new observable    is added to 1.
+     event, its value is added by one and it will only record    When state ({3, 4}, ϵ, 1) is reached, the observer becomes
+      at most k1 steps.                                            to the event-delay phase, since 1 =  k1  but  |ϵ| <  k2.
+  • We say that system is at the event-delay phase when   Therefore,  if event c  is observed, then we move to state
+    more than k1 but less than k1+k2 observable events are   ({3, 4}, c, 1), where (i) state estimate {3, 4} is not changed;
+     executed, since we need to determine the precise state   and (ii) the string queue becomes to c by adding event c to
+     of the system for these instants, but not for now, i.e.,    the queue; and (iii) the integer component is not changed
+     the detection bound k2 has not expired. Therefore, we   anymore by remaining as 1 = k1.
+
+                                                 483
+
+                             ( 0,1,2  , 𝜖, 0)                                                                ( 0,1,2  , 𝜖, 0)
+                         𝑎                                                         𝑎
+                              ( 3,4  , 𝜖, 1)                                                                  ( 3,4  , 𝜖, 1)
+                    𝑎                                 𝑏                                             𝑎          𝑏                               𝑐
+             ( 3,4  , 𝑎, 1)     ( 3,4  , 𝑐, 1)     ( 3,4  , 𝑏, 1)                                        ( 3,4  , 𝑎, 1)     ( 3,4  , 𝑏, 1)
+             𝑎            𝑏            𝑎                                      𝑎             𝑎
+             ( 3,4  , 𝑎𝑎, 1)    ( 3,4  , 𝑐𝑏, 1)    ( 3,4  , 𝑏𝑎, 1)                                       ( 3,4  , 𝑎𝑎, 1)    ( 3,4  , 𝑏𝑎, 1)
+                   𝑎       𝑐        𝑏                                            𝑏             𝑏
+                                                                                                             ( 9  , 𝑎𝑏, 1)
+             ( 5,6  , 𝑏𝑎, 1)    ( 5,6  , 𝑏𝑐, 1)    ( 5,6  , 𝑏𝑏, 1)                                 𝑎             𝑏
+             𝑎        𝑎   𝑐  𝑏  𝑏        𝑏
+                                                                                                   ( 5,6  , 𝑏𝑎, 1)    ( 5,6  , 𝑏𝑏, 1)
+             ( 7,8  , 𝑎𝑎, 1)    ( 7,8  , 𝑐𝑏, 1)    ( 7,8  , 𝑏𝑎, 1)
+                                                                           𝑏    𝑎             𝑎    𝑏
+                       𝑏        𝑏
+        𝑎                             𝑐           𝑏                                      ( 7,8  , 𝑎𝑎, 1)    ( 7,8  , 𝑏𝑎, 1)                              ( 9  , 𝑎𝑏, 1)
+                      𝑏          𝑏                                                                                                                              (a) S
+
+Fig. 2.   The (k1, k2)-observer Obsk1,k2(G) for system G shown in                                                                                    𝑏
+Figure 1(a), where k1 = 1 and k2 = 2.                                     𝑎    𝑏    𝑎   𝑏    𝑏    𝑎
+                                                                                    𝑎
+                                                               𝑢1
+                                                                                    𝑏
+  When state ({3, 4}, cb, 1) is reached, the observer becomes
+to the evaluation phase, since |cb| = 2 = k2. If event a is                                      𝑏                                                              𝑢2
+observed from state ({3, 4}, cb, 1), then state ({5, 6}, ba, 1)                                       𝑎
+is reached. Speciﬁcally, the state estimate {3, 4} is updated                𝑎   𝑎    𝑎   𝑏    𝑎    𝑎
+                                                                                    𝑏
+to {5, 6} by using the ﬁrst event c in the queue. Therefore,
+event c is consumed and we add new event a to the end of                (b) The closed-loop language under control L(S∥G).
+the queue, which gives ba. Still, the integer component is                                                                                  Fig. 3.  System G with Σo = {a, b, c} and Σc = {a, c}. Note that all
+not changed anymore by remaining as 1 = k1.                       states are initial in GR.
+
+              V. SYNTHESIS PROCEDURE
+  In order to enforce delayed detectability, we need to avoid     Based on the Theorem 1, we are able to ﬁnd an optimal
+the occurrence of observable string αβ ∈P(L(G)) such that    solution to Problem 1. Speciﬁcally, we need to ﬁrst build the
+|α| ≥k1, |β| ≥k2 and |ˆXG(α | αβ)| > 1. Since the delayed    (k1, k2)-observer Obsk1,k2(G). Then we just need to solve
+state estimate for the instant of α can only be improved when   a standard fully observed supervisory control problem by
+β goes longer, it sufﬁces to consider the case of |β| = k2.   considering Obsk1,k2(G) as the system model, Σc as the
+As we discussed in Equations (5) and   (6), for any α =    set of controllable events and Qillegal as the set of illegal
+σα1 . . . σα|α| such that |α| ≥k1 + k2 and f(q0, α) = (q, s, n),    states in Obsk1,k2(G). The reader  is referred to [2] for
+we have                                            more details on the standard supervisory control algorithm
+  • q = ˆXG(σα1 . . . σα|α|−k2); and                           under the full observation setting. Essentially,  it performs
+  • s = Lastk2(α) = σα|α|−k2+1 . . . σα|α|.                   an ﬁxed-point computation by iteratively removing illegal
+                                                                      states and states with uncontrollable out-going transitions
+According to Equation (1), we can actually use the informa-
+                                                      from Obsk1,k2(G). The synthesis procedure resulting a sub-tion of q and s to reconstruct ˆXG(σα1 . . . σα|α|−k2 | α) by                                                       automaton of Obsk1,k2(G), say S, which can be used as the
+        ˆXG(σα1 . . . σα|α|−k2 | α)                             optimal (maximally-permissive) supervisor. The closed-loop
+                                                        system can be represented as S∥G, where “∥” denotes the
+    =ˆXG(σα1 . . . σα|α|−k2) ∩ˆXGR((Lastk2(α))R)     (7)   standard parallel composition operator (see, e.g., p. 80 of
+     =q ∩ˆXGR(sR)                                              [2])1.
+                                         We  illustrate the synthesis procedure by the following
+Based on this intuition, we deﬁne the set of illegal states in                                                         example.
+Obsk1,k2(G) as follows.                                  Example 4: We still consider our running example system
+  Deﬁnition 2: Let Obsk1,k2(G) = (Q, Σo, f, q0) be the  G shown in Figure 1(a). Its (k1, k2)-observer Obsk1,k2(G)
+(k1, k2)-observer of G. For any state ı = (q, s, n) ∈Q, we                                                           has been shown in Figure 2 when k1 = 1 and k2 = 2.
+say that ı is an illegal state if (i) n = k1; and (ii) |s| = k2;                                        We can check that states ({3, 4}, cb, 1), ({5, 6}, bc, 1) and
+and (iii) |q ∩ˆXGR(sR)| > 1. We denote by Qillegal ⊆Q the   ({7, 8}, cb, 1) highlighted by solid red lines are illegal states.
+set of illegal states in Obsk1,k2(G).                         For example, for ({3, 4}, cb, 1), we have 1 = k1, |cb| = 2 =
+  The following result reveals that a supervisor S enforces
+(k1, k2)-detectability if and only if it avoids the occurrences       1In general, for partially-observation supervisor, we need to ﬁrst add
+of strings leading to illegal states in Obsk1,k2(G).                 controllable and unobservable self-loops at each supervisor state, and take
+                                                                                the product composition with the original system to get the closed-loop
+  Theorem 1: Supervisor S solves Problem 1 if and only if    system. However, since we assume here that all controllable events are
+∀α ∈P(L(S/G)), f(q0, α) /∈Xillegal.                               observable, it sufﬁces to consider the parallel composition directly.
+
+                                                 484
+
+k2 and                                                                            [3] X. Han, Z. Chen, and J. Zhao.  Matrix approach to detectability of
+                                                                                          discrete event systems under partial observation. In 13th IEEE Conf.
+    {3, 4} ∩ˆXGR((cb)R) ={3, 4} ∩δRobs(X, bc)                       Automation Science and Engineering, pages 187–192, 2017.
+                                                                                     [4] C. Keroglou and C.N. Hadjicostis. Detectability in stochastic discrete
+                     ={3, 4} ∩{3, 4, 7, 8} = {3, 4}              event systems. Syst. Control Letters, 84:21–26, 2015.
+                                                                                     [5] C. Keroglou and C.N. Hadjicostis.  Veriﬁcation of detectability in
+where δRobs denotes the  transition function of Obs(GR);           probabilistic ﬁnite automata. Automatica, 86:192–198, 2017.
+recall  that  the  initial  state  of Obs(GR)  is X.  Clearly,      [6]  T. Masopust. Complexity of deciding detectability in discrete event
+({3, 4}, cb, 1) ∈Qillegal since |{3, 4} ∩ˆXGR((cb)R)| = 2 >          systems. Automatica, 93:257–261, 2018.
+1.                                                                                   [7]  T. Masopust and X. Yin.  Complexity of detectability, opacity and                                                                                   A-diagnosability for modular discrete event systems.  Automatica,
+  In order to solve the standard supervisory control problem         101:290–295, 2019.
+based on Obsk1,k2(G), Σc and Qillegal, ﬁrst, we need to      [8]  T. Masopust and X. Yin. Deciding detectability for labeled Petri nets.
+                                                                               Automatica, 104:238–241, 2019.
+remove all illegal states from Obsk1,k2(G). However, since s-      [9] C.M. ¨Ozveren and A.S. Willsky.   Observability of discrete event
+tate ({3, 4}, cb, 1) is removed and event b is an uncontrollable        dynamic systems.  IEEE Trans. Automatic Control, 35(7):797–806,
+event, state ({3, 4}, c, 1), which is highlighted by red dashed         1990.
+                                                                              [10]  P. Ramadge. Observability of discrete event systems. In 25th IEEE
+line, also needs to be removed in the second iteration. This                                                                                Conf. Decision and Control, number 25, pages 1108–1112, 1986.
+gives automaton S shown in Figure 3(a), which is the optimal    [11] A. Saboori and C.N. Hadjicostis. Veriﬁcation of k-step opacity and
+(maximally permissive) supervisor that solves Problem 1. By          analysis of  its complexity.  IEEE Trans. Automation Science and
+                                                                                Engineering, 8(3):549–559, 2011.
+taking the parallel composition between S and G, we obtain                                                                              [12]  S. Shu and F. Lin. Detectability of discrete event systems with dynamic
+the closed-loop behavior under control, which is shown in          event observation. Syst. Control Let., 59(1):9–17, 2010.
+Figure 3(b).                                                               [13]  S. Shu and F. Lin. Delayed detectability of discrete event systems.
+                                                                IEEE Trans. Automatic Control, 58(4):862–875, 2013.
+  Remark 1: Finally, we discuss the computational com-                                                                              [14]  S. Shu and F. Lin. Enforcing detectability in controlled discrete event
+plexity for solving Problem 1 using the proposed approach.          systems. IEEE Trans. Automatic Control, 58(8):2125–2130, 2013.
+First, we need to construct Obsk1,k2(G), which contains at    [15]  S. Shu, F. Lin, and H. Ying. Detectability of discrete event systems.
+                                                                IEEE Trans. Automatic Control, 52(12):2356–2359, 2007.
+most k1 × |Σo|k2 × 2|X| states and k1 × |Σo|k2+1 × 2|X|    [16]  S. Shu, F. Lin, H. Ying, and X. Chen. State estimation and detectability
+transitions. In order to determine Qillegal, we need to ﬁrst          of probabilistic discrete event systems.  Automatica, 44(12):3054–
+construct Obs(GR), which contains  at most 2|X|  states         3060, 2008.
+                                                                              [17] Y. Tong and H. Lan. Veriﬁcation of detectability in labeled Petri nets.
+and |Σo| × 2|X| transitions, and then test whether or not          In American Control Conference, 2019.
+|q ∩ˆXGR(sR)| > 1 for each (q, s, n) in Obsk1,k2(G) such    [18] X. Yin. Initial-state detectability of stochastic discrete-event systems
+that |s| = k2 and n = k1. Therefore, the entire complexity         with probabilistic sensor failures. Automatica, 80:127–134, 2017.
+                                                                              [19] X. Yin and S. Lafortune.  A uniform approach for synthesizing
+for determining Qillegal is O(k1 × |Σo|k2 × 4|X|). Finally,          property-enforcing supervisors for partially-observed discrete-event
+solving a standard supervisory control problem for  state          systems. IEEE Trans. Automatic Control, 61(8):2140–2154, 2016.
+avoidance can be done in linear time in the size of the system.    [20] X. Yin and S. Lafortune. A new approach for the veriﬁcation of
+                                                                                       inﬁnite-step and k-step opacity using two-way observers. Automatica,
+Therefore, the overall complexity is O(k1×|Σo|k2+1×4|X|).         80:162–171, 2017.
+                                                                              [21] X. Yin and S. Lafortune. Veriﬁcation complexity of a class of obser-
+                  VI. CONCLUSION                                     vational properties for modular discrete events systems. Automatica,
+                                                                            83:199–205, 2017.
+  In this paper, we solved the supervisory control problem    [22] X. Yin and S. Lafortune. A general approach for optimizing dynamic
+for delayed detectability. The synthesized supervisor guar-          sensor activation for discrete event systems. Automatica, 105:376–383,
+antees that the state of any instant of the system after k1         2019.
+                                                                              [23] X.  Yin  and   S.   Li.      Synthesis  of  dynamic  masks   for
+steps can be determined unambiguously with at most k2          inﬁnite-step  opacity.    IEEE  Trans.  Automatic  Control,  2019.
+steps of delay. To this end, a new information structure called         DOI:10.1109/TAC.2019.2916940.
+the (k1, k2)-observer is proposed to capture all information    [24] X. Yin, Z. Li, and W. Wang. Trajectory detectability of discrete-event
+                                                                                  systems. Syst. Control Let., 119:101–107, 2018.
+needed in the synthesis problem in a ﬁnite domain. Based    [25] X. Yin, Z. Li, W. Wang, and S. Li.  Inﬁnite-step opacity and k-step
+on  this  structure, we  further show  that, under the mild          opacity of stochastic discrete-event systems. Automatica, 99:266–274,
+assumption of  all controllable events are observable, the         2019.
+                                                                              [26] K. Zhang.  The problem of determining the weak (periodic) de-
+synthesis problem can be reduced to a standard supervisory           tectability of discrete event systems is PSPACE-complete. Automatica,
+control problem under full observation for state avoidance         81:217–220, 2017.
+speciﬁcation.                                                              [27] K. Zhang and A. Giua. Weak (approximate) detectability of labeled
+                                                                                               petri net systems with inhibitor arcs. IFAC-PapersOnLine, 51(7):167–
+                                                                                171, 2018.
+                 REFERENCES                                 [28]  P. Zhao, S. Shu, F. Lin, and B. Zhang. Detectability measure for state
+                                                                                    estimation of discrete event systems. IEEE Transactions on Automatic [1] M.V.S. Alves and J.C. Basilio.  State estimation and detectability of
+                                                                                    Control, 64(1):433–439, 2019.     networked discrete event systems with multi-channel communication
+                                                                              [29] L. Zhou, S. Shu, and F. Lin. N-(k1, k2)-detectability of discrete event     networks. In American Control Conference, 2019.
+                                                                             systems under nondeterministic observations.  In American Control [2] C. Cassandras and S. Lafortune.   Introduction to Discrete Event
+                                                                               Conference, pages 294–299, 2018.     Systems. Springer, 2nd edition, 2008.
+
+
+
+
+
+                                                 485

@@ -1,0 +1,540 @@
+                                                            Automatica 80 (2017) 127–134
+
+
+
+                                            Contents lists available at ScienceDirect
+
+                              Automatica
+
+
+                                         journal homepage: www.elsevier.com/locate/automatica
+
+
+Brief paper
+
+Initial-state detectability of stochastic discrete-event systems with
+probabilistic sensor failures✩
+
+Xiang Yin 1
+
+Department of Automation, Shanghai Jiao Tong University, Shanghai 200240, China
+
+
+a r t i c l e    i n f o            a b s t r a c t
+
+
+Article history:                                       Initial-state estimation is an important problem in discrete-event systems. In this problem, the initial-
+Received 4 April 2016                             state of the system is unknown and one wants to determine the initial-state of the system based on
+Received in revised form                               its observation. In this paper, we investigate the problem of initial-state detection of partially-observed
+23 January 2017
+                                              discrete-event systems in the stochastic setting. We consider two sources of randomness in this problem:
+Accepted 27 January 2017
+                                                stochastic dynamic of the system and probabilistic sensor failures. Specifically, we model a stochastic
+                                              discrete-event system by a probabilistic finite-state automaton and we use a probabilistic projection
+                                             function as the observation model. The notion of stochastic initial-state detectability (SI-detectability)
+Keywords:
+Discrete-event systems                                 is introduced in order to capture whether or not the probability of detecting the initial-state converges to
+State estimation                           one even in the presence of potential sensor failures. An approach for the verification of SI-detectability
+Initial-state detectability                               is proposed. We also investigate the complexity of the SI-detectability verification problem and we show
+PSPACE-completeness                           that this problem is PSPACE-complete.
+                                                              © 2017 Elsevier Ltd. All rights reserved.
+
+
+
+
+
+1. Introduction                                              2015b) and by supervisory control (Shu & Lin, 2013a; Yin &
+                                                                      Lafortune, 2016).
+   State estimation is one of the most fundamental problems      One important class of state estimation problems is the initial-
+in Discrete-Event Systems  (DES).  In many  applications, our     state estimation problem; see, e.g., Li and Hadjicostis (2013), Saboori
+information about the system is limited and we need to estimate    and Hadjicostis (2013) and Shu and Lin (2013b). In this problem,
+the state of the system in order to make some decision. Due   we assume that the initial-state of the system is fully unknown
+to  its importance, the state estimation problem has received    or only partially known. Then, we want to infer the initial-state of
+considerable attention in the DES literature; see, e.g., Cabasino,    the system by observing the output of the system. In particular,
+Hadjicostis, and Seatzu (2015), Özveren and Willsky (1990), Sears     in Shu and Lin (2013b), the notion of I-detectability was proposed
+and Rudie (2014), Shu, Lin, and Ying (2007) and Yin and Lafortune     to capture whether or not we can always uniquely determine the
+(2015a). Recently, the state estimation problem has been studied     initial-state of the system by observing a finite sequence of events.
+systematically in the framework of detectability; see, e.g., Keroglou   A polynomial-time algorithm for checking I-detectability was also
+and Hadjicostis (2015), Shu and Lin (2013b) and Shu et al. (2007);    provided in Shu and Lin (2013b). In Li and Hadjicostis (2013), an
+Shu, Lin, Ying, and Chen (2008). Particularly, in Shu et al. (2007),    algorithm for recursively computing the minimum initial-marking
+the authors defined four types of detectability in order to capture     of a Petri net was proposed. In Saboori and Hadjicostis (2013), the
+different requirements in the current-state estimation problem.    notion of initial-state opacity was investigated. This notion can be
+When the original system is not detectable, several approaches    considered as the dual of I-detectability, since it requires that the
+have also been proposed in order to actively enforce detectability,     intruder, which is modeled as an observer, can never determine the
+e.g., by sensor activations (Shu, Huang, & Lin, 2013; Yin & Lafortune,     initial-state of the system.
+                                                                Although the initial-state estimation problem and the notion
+                                                                        of I-detectability have been studied in the literature, several
+                                                               important issues still remain. First, the notion of I-detectability
+ ✩The material in this paper was not presented at any conference. This paper
+                                                                                       is defined for logical DES. Specifically, it requires that we canwas recommended for publication in revised form by Associate Editor Christoforos
+Hadjicostis under the direction of Editor Christos G. Cassandras.                 always uniquely determine the initial-state of the system based
+    E-mail address: xiangyin@umich.edu.                              on an arbitrarily long observation. However, this requirement
+ 1 Fax: +86 7347638041.                                         sometimes is too strong when stochastic dynamic of the system
+
+http://dx.doi.org/10.1016/j.automatica.2017.02.032
+0005-1098/© 2017 Elsevier Ltd. All rights reserved.
+
+128                                                                     X. Yin / Automatica 80 (2017) 127–134
+
+is considered. For example, it is possible that the probability of     probabilistic sensor  failures. However, diagnosability  is more
+detecting the initial-state of the system becomes arbitrarily close     related to the current-state estimation problem rather than the
+to one as we observe more and more events. Such an asymptomatic     initial-state estimation problem. As a consequence, the verification
+property is also very useful in practice, but I-detectability fails to    procedure we propose in this paper is also very different from the
+capture this feature. Another issue is that, in all of the existing    approaches in Athanasopoulou et al. (2010) and Thorsley et al.
+works on detectability, it is assumed that each observable event     (2008). Overall, all of the above mentioned works are clearly
+can be reliably observed. However, this assumption may not hold     different from the problem considered in this paper. Our work
+in practice, since sensors for observable events may fail. This leads    provides a systematic study of the initial-state estimation problem
+to observation uncertainties and one has to handle this issue.        under a fully stochastic framework with both stochastic system
+   In order to address the above discussed issues, in this paper,    dynamic and probabilistic sensor outputs.
+we study the  initial-state estimation problem  for stochastic
+DES with probabilistic sensor failures. Specifically, this paper     2. Initial-state detection with probabilistic sensor failures
+has the following contributions.  First, we extend the  initial-
+state estimation problem from logical DES to the stochastic
+                                                                                   2.1. System model
+setting. We consider a DES modeled by a probabilistic finite-state
+automaton in order to describe the stochastic dynamic of the
+                                                                         Let Σ be a finite set of events. A string is a finite sequence of
+system. Moreover, we model the observation of the system by                                                                events and Σ∗denotes the set of all finite strings over Σ, including
+a probabilistic projection function in order to address the issue                                                                 the empty string ϵ. A language L is subset of Σ∗. For any string
+of sensor failures. Namely, we assume that the occurrence of an                                                                                s ∈Σ∗, |s| denotes its length, where |ϵ| = 0. We denote by s the
+observable event may not be observed with a given probability                                                                        set of prefixes of s, i.e., s = {t ∈Σ∗: ∃v ∈Σ∗s.t. tv = s}.
+if  its associated sensor  is not  reliable. Then, we define the
+                                                   A nondeterministic finite-state automaton (NFA) is a 4-tuple
+notion of stochastic initial-state detectability (SI-detectability)
+with probabilistic sensor failures in order to capture whether or   G = (X, Σ, δ, X0)                                                (1)
+not the probability of detecting the initial-state goes to one. This
+                                                       where X is the finite set of states, Σ is the finite set of events,
+notion is strictly weaker than logical I-detectability by taking the
+                                                                 δ : X×Σ →2X is the partial nondeterministic transition function,
+stochastic dynamic of the system into account. Then, we provide
+                                                         and X0 is the set of initial-states. The transition function δ is alsoan approach to verify SI-detectability. This is based on the structure                                                            extended to X × Σ∗in the usual manner; see, e.g., Cassandras and
+of robust initial-state estimator proposed in the paper. Finally, we
+                                                                  Lafortune (2008). The language generated by G from state x ∈X is
+also investigate the precise complexity of deciding SI-detectability.
+                                                       L(G, x) = {s ∈Σ∗: δ(x, s)!}, where ‘‘!’’ means ‘‘is defined’’. Then,
+We show that, unlike I-detectability, which can be verified in
+                                                                 the language generated by G is L(G) = ∪x∈X0 L(G, x).polynomial-time, checking SI-detectability is PSPACE-complete.
+                                                   A probabilistic finite-state automaton (PFA) is a 6-tuple
+   Our work is related to several works in the literature; we
+discuss the differences between our work and these works.   G = (X, Σ, δ, X0, π0, p)                                         (2)
+Property analysis of stochastic DES has been considered in many
+                                                       where (X, Σ, δ, X0) is a NFA and we call this NFA the support ofdifferent works in the literature; see, e.g., Bertrand, Haddad, and
+                                                                      G. Hereafter, we use G to denote the support of G. Also, π0   :Lefaucheux (2014), Chen and Kumar (2015a,b), Chen, Ibrahim, and
+                                                                X0 →[0, 1] is the initial-states distribution vector such thatKumar (2016); Chen, Keroglou, Hadjicostis, and Kumar (2017),
+                                                                                                              x∈X0 π0(x) = 1 and each element of π0 is nonnegative, andKeroglou and Hadjicostis (2013, 2015), Lunze and Schröder (2001),
+                                                          p : X ×Σ ×X →[0, 1] is the state transition probability function.Saboori and Hadjicostis (2014), Shu et al. (2008) and Thorsley
+                                                                  For any x, x′ ∈X, σ ∈Σ, we write p(x′, σ  | x) as the probabilityand Teneketzis (2005). The current-state detection problem in
+                                                                     that event σ occurs from state x and leads to state x′. We assumestochastic DES was studied in Keroglou and Hadjicostis (2015)
+                                                                     that p satisfies the following requirementsand Shu et al. (2008) under the assumption that all sensors are
+reliable. In particular, the notion of A-detectability was proposed in      1. ∀x, x′ ∈X, σ ∈Σ : x′ ∈δ(x, σ) ⇔p(x′, σ | x) > 0;
+Keroglou and Hadjicostis (2015). Our definition of SI-detectability      2. ∀x ∈X : σ∈Σ x′∈X p(x′, σ | x) = 1.
+is similar to A-detectability; both of them require to detect the
+                                                           Note that these two requirements together also implicitly implies(initial or current) state of the system for sure with probability
+                                                                     that the system is live, i.e., ∀x′ ∈X, ∃σ ∈Σ  : δ(x, σ)!. Functionone. However, we investigate the initial-state detection problem,
+                                                          p is also extended to X × Σ∗× X inductively as follows: for anywhich  is different from the current-state detection problem.
+                                                                                s ∈Σ∗, σ ∈Σ, we haveMoreover, we consider probabilistic sensor failures, which  is
+also not considered in Keroglou and Hadjicostis (2015) and Shu     p(x′, sσ | x) =  p(x′′, s | x)p(x′, σ | x′′).
+et al. (2008). In Keroglou and Hadjicostis (2013), the notion of                           x′′∈X
+initial-state opacity was investigated in the stochastic setting.
+                                                                Then, the probability that string s ∈Σ∗occurs from state x ∈X isHowever, initial-state opacity and initial-state detectability are
+                                                                      p(s | x) = x′∈X p(x′, s | x) and the probability that string s ∈Σ∗clearly incomparable; the former is an always property, while the
+                                                                 occurs from any initial-state is p(s) =                                                                                                                     p(s | x0)π0(x0). We                                                                                                                               x0∈X0latter is an eventually property. Moreover, Keroglou and Hadjicostis
+(2013) also assumes that the observation  is always  reliable.     also write L(G) = L(G) and L(G, x) = L(G, x), where NFA G is
+Regarding works on unreliable observations, Athanasopoulou, Li,    the support of PFA G.
+and Hadjicostis (2010), Carvalho, Basilio, and Moreira (2012),
+Takai and Ushio (2012) and Thorsley, Yoo, and Garcia (2008)      2.2. Observation model
+studied the sensor reliability issue in the fault diagnosis problem.
+In particular, Carvalho et al. (2012) and Takai and Ushio (2012)        In this paper, we consider a probabilistic observation model.
+investigated the effect of intermittent sensor failure, which is     Specifically, the observation is specified by a probabilistic projection
+stronger than the probabilistic sensor failure considered in this     function M  : Σ →[0, 1], where M(σ) denotes the probability
+paper. The models used in Athanasopoulou et  al. (2010) and     of observing event σ when it occurs. Note that this observation
+Thorsley et al. (2008) are more related to our setting. Specifically,     probability is independent from the probability that σ occurs at
+they also consider both stochastic dynamic of the system and    some state. For any event σ ∈Σ, we say that σ is (1) unobservable,
+
+                                                                         X. Yin / Automatica 80 (2017) 127–134                                                  129
+
+if M(σ) = 0; and (2) reliable, if M(σ) = 1; and (3) unreliable,    Definition 1 (I-Detectability Shu & Lin, 2013b). NFA G = (X, Σ,
+if 0 < M(σ) <  1. We denote by Σuo, Σre and Σur the sets of     δ, X0) is said to be I-detectable w.r.t. Σre ⊆Σ if
+unobservable, reliable and unreliable events, respectively. We also
+define Σo = Σ \ Σuo = Σre ∪Σur. Clearly, this observation model    (∃n ∈N)(∀x ∈X0)(∀α ∈P(L(G, x)) : |α| ≥n)[| In(α)| = 1]
+is more general than the standard natural projection (Cassandras
+                                                       where In(α) = {x ∈X0  :  ∃s ∈L(G, x) s.t. Pre(s) = α} and
+& Lafortune, 2008) that is widely used in logical DES, where each
+                                                                                    Pre : Σ∗→Σ∗re is the natural projection.event is either unobservable or reliable.
+   Let s = σ1σ2 · · · σn ∈L(G) be a string. Let I = {i1, i2, . . . , ik} be         Intuitively, I-detectability requires that there do not exist two
+a set of integers such that 1 ≤i1 < · · · < ik ≤n. We say that I is a     arbitrarily long strings starting from two distinct initial-states such
+realization index set for s (w.r.t. M) if, for any i ∈{1, . . . , n}, we have     that the observations of these two strings are equivalent. The
+(1) M(σi) = 1 ⇒i ∈I; and (2) M(σi) = 0 ⇒i̸ ∈I. We denote by    following example illustrates I-detectability and its drawback in
+IM(s) the set of realization index sets for string s w.r.t. M. Then, for    the stochastic setting.
+any string s = σ1σ2 · · · σn ∈L(G), we say that σi1σi2 · · · σik is an
+output realization of s under M, if {i1, . . . , ik} ∈IM(s). We denote    Example 1. Let us consider NFA G1, which is the support of PFA G1
+by Pr(σi1σi2 · · · σik  | s) the probability of this output realization    shown in Fig. 1(a). The initial-states are X0 = {1, 2}. Suppose that
+given the occurrence of string s. Note that two different output    Σre = Σ = {a, b}, i.e., all events can be reliably observed. Then,
+realizations may yield the same observation. For example, for string   we know that G1 is not I-detectable, since string (ba)n is defined
+abb, where a ∈Σre and b ∈Σur, abϵ and aϵb are two different     at both initial-states 1 and 2 for any n ∈N. Now, let us assume
+output realizations which have the same observation ab. (We use     that the transition probability function p for G1 is specified by the
+ϵ to denote that the corresponding observation at that place is lost.)    number associated with each transition in Fig. 1(a), e.g., we have
+Then, the probability that α ∈Σ∗o is observed given the occurrence    p(2, a  | 1) = 0.1. We also assume that π0(1) = π0(2) = 0.5.
+of s is                                                           Then, we know that the probability that string (ba)n occurs is
+Pr(α | s) =              Pr(σi1σi2 · · · σik | s).               p((ba)n) = p((ba)n | 1)π0(1) + p((ba)n | 2)π0(2) = 0.5 × (0.9 ×                                                                     1)n + 0.5 × (1 × 0.9)n = 0.9n, which goes to zero as n increases.
+                  {i1,...,ik}∈IM(s): σi1σi2···σik=α                                                        Once two a (respectively, two b) are observed in succession, we
+We define a mapping O   : Σ∗→ 2Σ∗o by, for any s ∈Σ∗,   know immediately that the initial-state of the system is state 1
+α ∈O(s) ⇔Pr(α  | s) > 0. Mapping O is also extended to O  :     (respectively, state 2). In other words, the probability of detecting
+2Σ∗→2Σ∗o by, for any L ⊆Σ∗: O(L) = {α ∈Σ∗o  : ∃s ∈L s.t. α ∈    the initial-state of G1 goes to one when the system executes infinite
+O(s)}. Therefore, O(L(G)) is the set of all possible observations of    number of steps.  □
+the system. Note that mapping O is essentially equivalent to the      The above example illustrates that I-detectability for logical
+language dilation operator defined in Carvalho et al. (2012) or the    DES may not be adequate for the initial-state detection problem
+communication loss operator defined in Lin (2014) if we do not     in the stochastic setting even without considering the issue
+consider the observation probability Pr(α | s). Finally, we denote     of probabilistic sensor failures. In order to resolve this issue,
+by Pr(α | x) the probability that α ∈Σ∗o is observed starting from   we introduce the notion of stochastic initial-state detectability
+state x ∈X.                                                               (SI-detectability) with probabilistic sensor failures.
+
+2.3. Initial-state detection problem                                                                  Definition 2 (SI-Detectability). Let G = (X, Σ, δ, X0, π0, p) be a
+                                                        PFA and M  : Σ →[0, 1] be a probabilistic projection function.
+   In this paper, we investigate the initial-state detection problem.
+                                         We say that G is SI-detectable w.r.t. M if
+Initially, our knowledge about the initial-state distribution is given
+by π0. However, this knowledge can be improved by observing   (∀∆> 0)(∃n ∈N)    s.t. Pr[s ∈L(G) : ND ∧|s| = n] < ∆
+more events generated by the system. Specifically, the posterior
+                                                       where we have Pr[s ∈L(G) : ND∧|s| = n] = s∈Σ∗: |s|=n α∈O(s)probability that the initial-state of the system is x ∈X0 given
+                                                                (1 −D(α))Pr(α | s)p(s).α ∈Σ∗o observed is
+              Pr(α | x)π0(x)                         We make several comments on SI-detectability.
+ˆπ0(x | α) =                                                      (3)      Pr(α | x0)π0(x0).                          Remark 1. Intuitively, SI-detectability requires that the probabil-
+              x0∈X0
+                                                                                ity of detecting the initial-state of the system will converge to
+We say that the  initial-state of the system  is detected after    one as the length of the string generated by the system increases.
+observing α ∈Σ∗o  if ∃x ∈X0  :  ˆπ0(x  | α) =  1, i.e., for all    One can easily verify that SI-detectability for a PFA is strictly
+x′ ∈X \ {x} :  ˆπ0(x′ | α) = 0. We define a detectability function    weaker than I-detectability for its support even without consid-
+D : Σ∗o →{0, 1} by, for any α ∈Σ∗o                                 ering probabilistic observations. For example, we have shown in
+                                                         Example                                                               1 that PFA                                                                            G1 is SI-detectable although its support G1 is      1    if ∃x ∈X0 : ˆπ0(x | α) = 1                                                       □                                                                  (4)    not                                                                             I-detectable.D(α) =
+        0  otherwise
+i.e., the initial-state is detected after observing α ∈Σ∗o if and only   Remark 2. In Keroglou and Hadjicostis (2015), the notion of
+if D(α) = 1.                                                           A-detectability is defined for the current-state detection problem.
+                                                                              Specifically, under the assumption that all sensors are reliable,
+3. Stochastic initial-state detectability with probabilistic sen-     A-detectability requires ∀∆> 0, ∃N ∈N  :  Pr({s ∈Σ∗:  |s|
+sor failures                                ≥N, |R(X0, O(s))| > 1}) < ∆, where R(X0, O(s)) is the current-
+                                                                         state estimate of the system. Comparing SI-detectability with
+   In Shu and Lin (2013b), the notion of I-detectability was     A-detectability, one can easily verify that these two notions are in-
+introduced for logical (non-stochastic) DES in order to capture    comparable; none of them implies the other. On the other hand,
+whether or not the initial-state of the system can be detected    these two notions do bear some similarities, since in both of these
+within a finite delay. Let G = (X, Σ, δ, X0) be a NFA and suppose    two problems, we need to know the (current or initial) state of the
+that all observable events are reliable, i.e., Σ = Σre ˙∪Σuo. First, we    system for sure with probability one. Similar criteria in the form of
+recall the definition of I-detectability.                ∀∆> 0, ∃N ∈N are also used in the fault diagnosis (Thorsley &
+
+130                                                                     X. Yin / Automatica 80 (2017) 127–134
+
+
+
+
+
+                                                                (a) G1.                         (b) G2.
+
+Fig. 1. Examples for stochastic initial-state detectability. The number associated with each transition denotes the probability of this transition rather than the observation
+probability.
+
+Teneketzis, 2005) and the fault prognosis (Chen & Kumar, 2015b) of    Definition 3 (Robust Initial-State Estimator). Let G be a PFA and M
+stochastic DES. However, our definition focuses on the initial-state    be a probabilistic projection function. Let G be the support of G
+detection problem rather than the current-state detection prob-    and Σ = Σre ˙∪Σur ˙∪Σuo Then, the robust initial-state estimator
+lem. Moreover, we consider the issue of observation uncertainty,     for G and M  is the deterministic finite-state automaton (DFA)
+which is not considered in Keroglou and Hadjicostis (2015).            Gobs =  (Qobs, Σo, δobs, qobs,0), where Qobs ⊆2X×X is the set of
+                                                                              states, δobs : Qobs × Σo →Qobs is the transition function such that,
+Remark 3. We note that I-detectability is defined in terms of the    ∀q ∈Qobs, σ ∈Σo : δobs(q, σ) = q ◦Ξ(σ) and the initial-state is
+length of the observed string, while our SI-detectability is defined    defined by qobs,0 = Ξ(ϵ) ∩(X0 × X). For the sake of simplicity, we
+in terms of the length of the generated string. The reason why we    only consider the reachable part of Gobs.
+choose the generated string to defined SI-detectability is that, for
+any string s, the length of its observation may not be unique under   Remark 5. For each (x, x′) ∈2X×X, we call x the starting state
+the probabilistic projection function.                           and call x′ the ending state. Intuitively, Gobs tracks all possible
+                                                                       pairs of starting state and ending state that are consistent with
+Remark 4. The probabilistic sensor failure model we use in this    the observation. The difference between the robust initial-state
+paper is also different from the intermittent sensor failure model    estimator and the  initial-state estimator without observation
+used in Carvalho et  al. (2012) and Takai and Ushio (2012).    uncertainty (Saboori & Hadjicostis, 2013; Shu & Lin, 2013b) is that,
+Specifically, in the intermittent sensor model, we need to consider    here we need to treat an unreliable event σ as both observable
+the worst-case where failure always occurs in each unreliable    event and unobservable event. Specifically, the possibility that the
+sensor. However, such a worst-case analysis may be too strong in    sensors for events in Σur fail is considered in Ξ(σ), where mapping
+practice. For example, let us consider PFA G2 shown in Fig. 1(b) and   O is used. On the other hand, the transition function δobs is defined
+assume that π0(1) = π0(2) = 0.5, M(a) = M(b) = 1, M(c) = 0.5     for all events in Σre∪Σur. This essentially allows us to ‘‘encode’’ the
+and M(d) =  0. By using the intermittent sensor failure model,    sensor reliability issue into the plant model. A similar feature also
+we need to consider the case where we always cannot observe     exists in the stochastic fault diagnosis problem; see, e.g., Thorsley
+the occurrence of event c. Therefore, we cannot detect the initial     et al. (2008).
+state since string bn can be observed from both initial-states 1 and                                                                          In order to compute Ξ(σ), we construct a new NFA  ˆG =
+2 for any n ∈N. However, G2 is SI-detectable, since the probability                                                                (X, ˆΣ, ˆδ, X0) as follows. The event set is ˆΣ = Σ ∪ˆΣur, where
+that the sensor for c always fails goes to zero as the length of the      ˆΣur = {ˆσ : σ ∈Σur} is a set of new events. The transition functionstring increases. Specifically, for initial-state 1, reliable event a will
+eventually occur due to the stochastic dynamic of the system and         ˆδ is obtained as follows. First, we copy all transitions in δ. Then,
+                                                                          for any σ ∈Σur and any x′ ∈δ(x, σ), we add a new transitionits occurrence will reveal this initial-state. For initial-state 2, we
+know that c will eventually be observed and its occurrence will      x′ ∈ˆδ(x, ˆσ). We define Re : ˆΣ →Σ as the function that renames
+also reveal this initial-state. This example also illustrates that the    events in ˆΣ back to Σ, i.e., Re(ˆσ) = σ if ˆσ ∈ˆΣur and Re(σ) = σ
+stochastic dynamic of the system and the probabilistic observation       if σ ∈Σ. We denote by Po  : ˆΣ∗→Σ∗o the natural projection.
+play different roles in our problem.                                Then, we have ∀s ∈L(ˆG) : Po(s) ∈O(Re(s)). This is because that
+                                                                 the possibility that an unreliable event σ ∈Σ may fail has been
+4. Verification of SI-detectability                                taken care by the corresponding event ˆσ ∈ˆΣur, which is added in
+                                                                           parallel with σ . Then, for any x, we have
+4.1. Robust initial-state estimator                                                 {x′ ∈X : ∃s ∈Σ∗s.t. α ∈O(s) ∧x′ ∈δ(x, s)}
+                                      = {x′ ∈X : ∃s ∈ˆΣ∗s.t. α ∈Po(s) ∧x′ ∈ˆδ(x, s)}.   In order to check SI-detectability, the first question is how to
+determine whether or not D(α) = 1 after observing α ∈O(L(G)).     Therefore, Ξ(σ) can be computed by taking the standard unob-
+Note that this cannot be done by directly using the initial-state                                                                    servable reach in ˆG under natural projection Po. Similar construc-
+estimator proposed in Saboori and Hadjicostis (2013) and Shu
+                                                                       tions are also used in Carvalho et al. (2012) and Lin (2014) for
+and Lin (2013b) since we also need to consider the observation                                                                         different purposes.
+uncertainties. To resolve this issue, we propose the structure of
+robust initial-state estimator that estimates all possible initial-    Example 2. Let us consider PFA G2 shown in Fig. 1(b), where π0(1)
+states in the presence of unreliable sensors. First, we introduce  = π0(2) =  0.5. Suppose that the projection function M is de-
+some necessary definitions.                                          fined by M(a) = M(b) = 1 and M(c) = M(d) =  0.5, i.e.,
+  Mapping Ξ : Σ∗o →2X×X is defined by: for any α ∈Σ∗o ,          Σre = {a, b} and Σur = {c, d}. Then, the robust initial-state es-
+                                                                  timator Gobs is shown in Fig. 2. Initially, since all events definedΞ(α) = {(x, x′) ∈2X×X : ∃s ∈Σ∗s.t. α ∈O(s) ∧x′ ∈δ(x, s)}.
+                                                                         at X0 are reliable, we have that qobs,0 = Ξ(ϵ) ∩(X0 × X) =
+Composition operator ◦: 2X×X × 2X×X →2X×X is defined by: for     {(1, 1), (2, 2)}. Once event b is observed, we know that Ξ(b) =
+any q1, q2 ∈2X×X, we have q1 ◦q2 = {(x1, x3) ∈2X×X  : ∃x2 ∈     {(1, 1), (1, 3), (2, 2), (2, 4)} and we have δobs(qobs,0, b) = {(1, 1),
+X s.t. (x1, x2) ∈q1 ∧(x2, x3) ∈q2}. We are now ready to introduce     (2, 2)} ◦{(1, 1), (1, 3), (2, 2), (2, 4)} =  {(1, 1), (1, 3), (2, 2),
+the robust initial-state estimator.                                     (2, 4)}.  □
+
+                                                                         X. Yin / Automatica 80 (2017) 127–134                                                  131
+
+                                                      Example 3. We still consider PFA G2 shown in Fig. 1(b) and func-
+                                                                      tion M defined in Example 2. The robust initial-state estimator Gobs
+                                                              has been shown in Fig. 2. The corresponding ˆG, ˆGobs are shown in
+                                                                                  Fig. 3(a) and (b), respectively. Specifically, ˆG is obtained by adding
+                                                 new transitions labeled with ˆc and ˆd to G in parallel with transi-
+                                                                       tions label with unreliable events c and d, respectively. The prod-
+                                                                   uct NFA Gaug is also shown in Fig. 3(c), which has seven SCCs; each
+                                                                        set of states in a dashed rectangular in Fig. 3(c) represents a SCC.
+                                                                Then, NFA T is just the NFA by considering each dashed rectan-
+                                                                    gular in Fig. 3(c) as a single state. For example, we know that state
+Fig. 2. The robust initial-state estimator Gobs for G2. For each q ∈2X×X, we connect                                                                      (4, q2) ∈Gaug is not a certain state, since S(q2) = {1, 2}. Therefore,state x on the LHS with state x′ on the RHS to denote that (x, x′) ∈q.
+                                                        SCC v3 is an uncertain SCC. However, SCCs v6 and v7 are certain and
+                                                             both of them are also terminal SCCs.  □
+   For any state q ∈Qobs, we denote by S(q) the set of starting
+states in q, i.e., S(q) = {x1 ∈X  : ∃x2 ∈X s.t. (x1, x2) ∈q}. By   Remark 6. Note that NFA T is acyclic, i.e., there is no cycle in T,
+definition, we know that L(Gobs) = O(L(G)), i.e., any potential     since states in the same cycle are merged into the same SCC. We
+observation is defined in Gobs. The following result reveals that Gobs     also note that, if a SCC v ∈V contains one certain state (respec-
+correctly estimates the initial-state of the system.                        tively, uncertain state), then we know that all states in this SCC are
+                                                                       certain (respectively, uncertain). Namely, V = Vcer ˙∪Vunc, and, for
+Proposition 1. For any α ∈O(L(G)), we have                      each SCC v ∈V, v̸ ⊆Qcer and v ∩Qcer = ∅are equivalent. This
+                                                                                       is because that, once we detect the initial-state, we will detect the
+S(δobs(qobs,0, α)) = {x ∈X0 : ˆπ0(x | α) > 0}.                   (5)                                                                               initial-state forever.  □
+
+                                                               Based on NFA T, we are now ready to present the main result to
+4.2. Verification algorithm                                               verify SI-detectability.
+
+   Let Gobs = (Qobs, Σo, δobs, qobs,0) be the robust initial-state es-   Theorem 1. Let G be a PFA and M be a probabilistic projection
+timator. We construct the DFA ˆGobs =  (Qobs, ˆΣ, ˆδobs, qobs,0) by     function. Let T be the acyclic NFA constructed from Gaug = ˆG × ˆGobs.
+adding a self-loop at each state in Qobs for each event in ˆΣur ∪Σuo.     Then, G is SI-detectable w.r.t. M, if and only if, Vter ∩Vunc = ∅, i.e., any
+Next, we construct the product of ˆG and ˆGobs denoted by Gaug =     terminal SCC is certain.
+(Qaug, ˆΣ, δaug, Qaug,0) :=  ˆG × ˆGobs, where ‘‘×’’ is the usual prod-      The following example illustrates how to use Theorem 1 to
+uct composition operation of automata; see, e.g., Cassandras and     verify SI-detectability.
+Lafortune (2008). The product automaton Gaug has the following
+property. Suppose that a string s ∈L(Gaug) leads to (x, q) ∈Qaug.    Example 4. Let us still consider PFA G2 shown in Fig. 1(b), where
+Then, it implies that the string generated by the system is Re(s),    π0(1) = π0(2) = 0.5 and M is defined by M(a) = M(b) = 1 and
+which leads to x in G, and the observation of Re(s) is Po(s), which    M(c) = M(d) = 0.5. The NFA T has been shown in Fig. 3(c). Since
+leads to q in Gobs. We call a state (x, q) ∈Qaug in Gaug a certain state    the only two terminal SCCs v6 and v7 are certain, by Theorem 1, G2
+if S(q) is a singleton; otherwise, we call it an uncertain state. We      is SI-detectable w.r.t. M.  □
+denote by Qcer ⊆Qaug the set of certain states, i.e., Qcer = {(x, q) ∈
+Qaug : |S(q)| = 1}.                                      Remark 7. In  Keroglou  and  Hadjicostis  (2015),  a  Markov-
+                                                                chain-based approach was proposed  for  the  verification  of  A strongly connected component (SCC) in Gaug is a maximal set
+                                                                         A-detectability. Specifically, the approach in Keroglou and Had-of states v ⊆Qaug such that ∀q1, q2 ∈v, ∃s ∈ ˆΣ∗:  q2 ∈
+                                                                                 jicostis (2015) evaluates some properties on the set of recurrent
+δaug(q1, s). We denote by {v1, . . . , vm} the set of SCCs in Gaug. Then,
+                                                                             states in a Markov-chain. Moreover, the trellis-based initial-state
+we construct a new NFA
+                                                                  estimation is also related to the approach in Shu and Lin (2013b)
+T = (V, ˆΣ, δT, V0)                                              (6)     that augments the system model by tracking the initial states; both
+                                                                        of them essentially require to record a pair of states. One may
+where                                                                 also use similar ideas to verify SI-detectability by constructing a
+ • V = {v1, . . . , vm} is the set of SCCs in Gaug;                     Markov-chain based on Gaug and estimating the initial-states based
+ • δT  : V × ˆΣ →2V is the nondeterministic transition function    on the augmented model. In fact, computing all recurrent states in a
+                                                            Markov-chain is equivalent to computing the set of terminal SCCs.   defined by: for any v1, v2 ∈V, σ ∈ˆΣ, we have v2 ∈δT(v1, σ)
+                                                              Hence, this alternative approach should be equivalent to our ap-
+     if
+                                                                   proach, which verifies SI-detectability directly based on the struc-
+   ∃q1 ∈v1, ∃q2 ∈v2 : [q2 ∈δaug(q1, σ)] ∧[v1̸ = v2].                 tural analysis of Gaug.
+ • The set of initial-states V0 is the set of SCCs in Gaug that contain
+   a state in Qaug,0, i.e., V0 = {v ∈V : v ∩Qaug,0̸ = ∅}.            Remark 8. Theorem 1 also reveals a structural property of SI-
+                                                                           detectability. In particular, we see that SI-detectability does not
+Moreover, for each SCC v ∈V, we say that                       depend on the specific transition probability of G or the specific
+ • v is a certain SCC, if v ⊆Qcer, and we denote by Vcer ⊆V the set    value of M. Instead, it only depends on the support of G, i.e., G, and
+                                                                 the partition on Σ induced by M, i.e., which events are reliable,
+   of certain SCCs.
+                                                                      unreliable or unobservable. In other words, given a threshold ∆,
+ • v is an uncertain SCC if, v̸ ⊆Qcer, and we denote by Vunc ⊆V
+                                                              without changing the support of G and the partition on Σ induced
+   the set of uncertain SCCs.
+                                                          by M, modifying the values of p and M will only affect the value • v is a terminal SCC if, ∀σ ∈ˆΣ : δT(v, σ)¬!, where ‘‘¬!’’ means
+                                                                        of the corresponding integer n. However, it will not affect the
+     ‘‘is not defined’’, and we denote by Vter ⊆V the set of terminal
+                                                                         existence of such an integer. Namely, the probability of detecting
+   SCCs.
+                                                                 the initial-state will still converge to one but with a different
+
+132                                                                     X. Yin / Automatica 80 (2017) 127–134
+
+
+
+
+
+                           (a) ˆG.                     (b) ˆGobs.                                 (c) Gaug = ˆG × ˆGobs.
+
+                                          Fig. 3. Examples for the verification of SI-detectability, where Σre = {a, b} and Σur = {c, d}.
+
+
+rate of convergence. This structural property is very useful in
+practice, since in many cases, we only know that a transition or
+an observation is possible, but it may be very hard to obtain the
+precise value of p or M.
+
+  We conclude this section by discussing the complexity of the
+proposed approach for verifying SI-detectability. First, we need to
+construct Gobs, which has 2|X0|×|X| states and |Σ|2|X0|×|X| transitions               Fig. 4. Conceptual illustration of how to construct G from A and B.
+in the worst-case. Constructing ˆG and ˆGobs are linear in the sizes of G
+and Gobs, respectively. Therefore, in the worst case, Gaug = ˆG× ˆGobs    Corollary 2. Let A and B be two NFAs with unique initial-states xA,0
+has |X|2|X0|×|X| states and |Σ| |X|2|X0|×|X| transitions. Computing    and xB,0, respectively. Deciding whether or not L(A) and L(B) are
+all SCCs for Gobs is linear in the size of Gobs. Therefore, the overall    comparable is PSPACE-hard.
+complexity is O(|Σ| |X|2|X0|×|X|), which is exponential in the size
+                                                                   Proof. We reduce the language inclusion problem to the lan-
+of G. However, we will show later that this exponential complexity
+                                                           guage comparison problem. Let A and B be two NFAs, where
+is unavoidable.
+                                                            L(A), L(B) ⊆Σ∗and x0,A and x0,B are the unique initial-states of
+                                                     A and B, respectively. We construct a new NFA B′ by adding a self-
+5. The complexity of SI-detectability
+                                                                loop transition labeled with # at the initial-state x0,B in B, where
+                                                                                               #̸ ∈Σ is a new event. Then, we claim that L(A) ⊆L(B) if and
+   So  far, we have provided an approach  for  verifying  SI-                                                                only if L(A) and L(B′) are comparable.
+detectability. However, the complexity of our approach is expo-      (⇒) By construction, we have that L(B) ⊂L(B′). Therefore,
+nential in the size of G. It was shown in Shu and Lin (2013b)                                                       L(A) ⊆L(B) implies that L(A) ⊂L(B′), which means that L(A)
+that, for logical DES, the notion of I-detectability can be checked                                                         and L(B′) are comparable.
+in polynomial-time. Unfortunately, we show in this section that      (⇐) Suppose that L(A) and L(B′) are comparable, i.e., L(B′) ⊆
+checking SI-detectability is PSPACE-complete, which means that                                                       L(A) or L(A) ⊆L(B′). Since #∗∈L(B′) \ L(A), we know that
+it is highly unlikely that such a polynomial-time algorithm ex-                                                                 the only possibility is L(A) ⊆L(B′). This implies that L(A) ⊆
+ists. Note that, in Keroglou and Hadjicostis (2015), the authors also    L(B′) ∩Σ∗= L(B).  □
+show that verifying A-detectability is PSPACE-hard by reducing
+the Universality Problem for NFA to the A-detectability verification       Using the above corollary, we are now ready to show that
+problem. However, the universality problem is more related to the    checking SI-detectability is PSPACE-complete.
+current-state estimation problem rather than the initial-state es-
+timation problem. Hereafter, we provide a different approach for   Theorem 3. Let G be a PFA and M be a probabilistic projection func-
+establishing the complexity result.                                          tion. Deciding whether or not G is SI-detectable w.r.t. M is PSPACE-
+    It is well-known that the Language Equivalence Problem for NFAs     complete.
+are PSPACE-complete, which is stated as follows.                                                                   Proof. It is in PSPACE, since we can check the condition in Theo-
+                                                    rem 1 by constructing Gaug and T on the fly in a nondeterministic
+Theorem 2 (Stockmeyer & Meyer, 1973). Let A and B be two NFAs                                                           manner, which only requires polynomial space. Then, by the Sav-
+with unique initial-states xA,0 and xB,0, respectively. Deciding whether     itch’s theorem (Savitch, 1970), we know that it is in PSPACE.
+or not L(A) = L(B) is PSPACE-complete.                                Next, we show that this problem is PSPACE-hard by reducing
+                                                                 the language comparison problem to the SI-detectability verifica-  We will not directly use the language equivalence problem
+                                                                      tion problem. Let A = (XA, Σ, δA, x0,A) and B = (XB, Σ, δB, x0,B)for NFAs to prove the PSPACE-hardness of the SI-detectability
+                                                           be two NFAs with unique initial-states xA,0 and xB,0, respectively.verification problem. Instead, we consider a variation of this
+problem. Note that, to test whether or not L(A) = L(B), it suffices   We assume that A and B are both live. Otherwise, we can add a
+                                                                        self-loop with a new symbol at each state in A and B; this will notto test whether or not L(A) ⊆L(B) and L(B) ⊆L(A). First, we
+                                                                            affect the result. We construct a PFA G = (X, Σ ∪{#}, δ, X0, π0, p),have the following corollary.
+                                                       where #̸ ∈Σ is a new event. Its support G = (X, Σ ∪{#}, δ, X0)
+                                                                                       is obtained as follows. First, we take the union of A and B, i.e., X =
+Corollary 1. Let A and B be two NFAs with unique initial-states xA,0
+and xB,0, respectively. Deciding whether or not L(A) ⊆L(B) is    XA ∪XB, X0 = {xA,0, xB,0} and δ is consistent with δA and δB. Then,
+                                               we add a transition labeled with # from each state in XA \ {xA,0}PSPACE-hard.
+                                                                          (respectively, XB \ {xB,0}) to initial-state xA,0 (respectively, xB,0). A
+   For any two languages L1, L2 ⊆Σ∗, we say that L1 and L2 are    conceptual illustration of this construction is shown in Fig. 4. The
+comparable if L1 ⊆L2 or L2 ⊆L1. Then, we also have the following     initial-state distribution is π0(xA,0) =  π0(xA,0) =  0.5. We set
+result.                                                           the transition probability by uniform distribution at each state, i.e.,
+
+                                                                         X. Yin / Automatica 80 (2017) 127–134                                                  133
+
+∀x, x′ ∈X, σ ∈Σ ∪{#} : p(x′, σ | x) = |Tran(x)|,1   where Tran(x) =    Proof of Theorem 1. (⇒) By contraposition. Suppose that there
+{(x, σ, x′) ∈X × (Σ ∪{#}) × X  :  x′ ∈δ(x, σ)} is the set of tran-     exists an uncertain terminal SCC in T; say v ∈V. Let (x, q) ∈v be
+sitions defined at x. The projection function M is defined by ∀σ ∈    an uncertain state in v and let s ∈L(Gaug) be a string that reaches
+Σ∪{#} : M(σ) = 1, i.e., all events are reliable. Note that the size of     (x, q) in Gaug. We define sR = Re(s) and α = Po(s). Then, we know
+G is linear in the sizes of A and B. Hereafter, we show that L(A) and     that x ∈δ(x0, sR), δobs(qobs,0, α) = q and α ∈O(sR). We choose
+L(B) are comparable if and only if G is not SI-detectable w.r.t. M.  ∆= Pr(α  | sR)p(sR) and we claim that, for any integer n ∈N,
+  (⇒) Suppose that L(A) and L(B) are comparable. We assume   we have that Pr[s ∈L(G) : ND ∧|s| = n] ≥∆. To see this, we
+without loss of generality that L(A) ⊆L(B). Then, we know that,    consider the following two cases for n.
+for any n ∈N, we have s∈L(G, xA,0): |s|=n(1 −D(s))Pr(s | xA,0) = 1.       Case 1: n ≤|sR|. Since (x, q) is uncertain, we know that D(α) =
+                                                                                0, which implies that, for any prefix β ∈α, we have D(β) = 0.This is because, for any s ∈L(G, xA,0), there exists s ∈L(G, xB,0).
+Therefore, by choosing ∆= π0(xA,0) −ε, where ε is an arbitrarily     Therefore, for any n ≤|sR|, we can choose t ∈  sR such that
+                                                                                         |t| = n. Then, we know that Pr[s ∈L(G)  : ND ∧|s| = n] =small number, we know that G is not SI-detectable w.r.t. M.
+  (⇐) By contraposition. Suppose that L(A) and L(B′) are not  s∈L(G): |s|=n  α∈O(s)(1 −D(α))Pr(α  | s)p(s) ≥ β∈α Pr(β  | t)
+comparable, i.e., L(B)̸ ⊂L(A) or L(A)̸ ⊂L(B). Let s ∈L(A)\L(B)     p(t) ≥Pr(α | sR)p(sR) = ∆
+and t ∈L(B) \ L(A). Clearly, whenever s or w#s occurs, where       Case 2: n >  |w|. Since (x, q) ∈Vter ∩Vunc, we know that
+w ∈(Σ ∪{#})∗, we know immediately that the initial-state is    ∀t ∈L(G, x), ∀β ∈O(t)  :  D(αβ) =  0. Therefore, for any
+xA,0; similarly, whenever t or w#t occurs, where w ∈(Σ ∪{#})∗,    n > |w|, Then, we know that Pr[s ∈L(G)  : ND ∧|s| = n] =
+                           s∈L(G): |s|=n  α∈O(s)(1−D(α))Pr(α | s)p(s) ≥ sRt∈L(G): |sRt|=n Prwe know immediately that the initial-state is xB,0. Due to the pres-
+ence of event #, we can always reset to initial-states infinite of-    (α | sR)Pr(sRt) = Pr(α | sR)p(sR) = ∆.
+ten. Therefore, if the system starts from initial-state xA,0, then the      (⇐) Suppose s ∈L(G) is generated and α ∈O(s) is observed.
+probability that string s or w#s occurs goes to one as the length of     Let x ∈δ(X0, s) and q =  δobs(qobs,0, α). We know that (x, q) ∈
+the generated string increases. Similarly, if the system starts from     Qaug. We denote by p(x, q) the probability that the initial-state
+initial-state xB,0, then the probability that string t or w#t occurs    can be detected in the future given that the current state is x
+goes to one as the length of the generated string increases. There-    and the current estimator state is q. Note that p(x, q) is non-
+fore, the probability of detecting the initial-state goes to one, i.e., G     zero, since Vter ∩Vunc = ∅and (x, q) can always reach a certain
+is SI-detectable w.r.t. M.  □                                               state, i.e., (∃t ∈L(G, x))(∃β ∈O(t))[|S(δobs(q, β))| =  1]. We
+                                                             denote by tmin(x, q) the shortest t satisfying the above condition
+6. Conclusion                                             and define nmin(x, q) := |tmin(x, q)|. Then, we know that, given x
+                                                         and q, the probability that the initial-state is detected in the next
+   In this paper, we investigated the initial-state detectability     nmin(x, q)-steps is non-zero and we denote by pD(x, q) > 0 this
+                                                                         probability. Then, we define nmax := maxx∈X,q∈Qobs nmin(x, q) andproblem in the stochastic setting. Both stochastic dynamic of
+the system and probabilistic sensor failures were considered.     pmin := minx∈X,q∈Qobs pD(x, q). We know that, for any instant, the
+                                                                      probability that the initial-state can be detected in the next nmax-The notion of SI-detectability was introduced in order to capture
+                                                                    steps is greater than or equal to pmin. Therefore, for any k ∈N, wewhether or not the probability of detecting the initial-state con-
+                                                           have that Pr[s ∈L(G) : ND ∧|s| = knmax] ≤(1 −pmin)k. Then,verges to one. An algorithm for the verification of SI-detectability                                                                                                  ∆                                                                                                                                                                      ⌉,                                                                          for any ∆> 0, by taking n ∈N such that n ≥nmax⌈logwas provided. Finally, we proved that checking SI-detectability is                                                                                                                                             1−pmin
+PSPACE-complete.                                         where ⌈k⌉denotes the smallest integer greater than or equal to
+                                                                                      k, we have that Pr[s ∈L(G)  : ND ∧|s| = n] ≤∆, i.e., G is
+                                                                      SI-detectable w.r.t. M.  □
+Appendix. Proofs not contained in main body
+
+                                                              References
+Proof of Proposition 1. First, we claim that
+δobs(qobs,0, α) = {(x1, x2) ∈2X×X :                                         Athanasopoulou,  E.,  Li,  L., & Hadjicostis,  C. N. (2010). Maximum likelihood
+                                                                                                   failure diagnosis in finite state machines under unreliable observations. IEEE
+  ∃x1 ∈X0, x2 ∈X, ∃s ∈Σ∗s.t. α ∈O(s) ∧x2 ∈δ(x1, s)}.   (A.1)          Transactions on Automatic Control, 3(55), 579–593.
+                                                                                     Bertrand, N., Haddad, S., & Lefaucheux, E. (2014). Foundation of diagnosis and
+                                                                                                predictability in probabilistic systems. In 34th IARCS conf. foundations of soft.We prove this claim by induction on the length of α ∈Σ∗o .
+   For |α| = 0, i.e., α = ϵ, we know that Eq. (A.1) holds by the           tech. theo. computer sci. (pp. 417–429).
+definition of qobs,0. Let us assume that Eq. (A.1) holds for |α| = k.      Cabasino,estimationM.  P.,in Hadjicostis,labeled petri C.nets.N., IEEE& Seatzu,TransactionsC. (2015).on AutomaticProbabilisticControl,marking60(2),
+Then, we need to show that Eq. (A.1) still holds for α′ = ασ , where        528–533.
+|α| = k and σ ∈Σo. We have that                                            Carvalho, L. K., Basilio, J. C., & Moreira, M. V. (2012). Robust diagnosis of discrete                                                                                  event systems against intermittent loss of observations. Automatica, 48(9),
+δobs(qobs,0, ασ) = δobs(qobs,0, α) ◦Ξ(σ)                                     Cassandras,2068–2078.C., & Lafortune, S. (2008). Introduction to discrete event systems (2nd ed.).
+ = {(x1, x2) ∈2X×X : ∃x1 ∈X0, x2 ∈X, ∃s ∈Σ∗                       Chen,Springer.J., Ibrahim, M., & Kumar, R. (2016). Quantification of secrecy in partially
+       s.t. α ∈O(s) ∧x2 ∈δ(x1, s)}                                             observed stochastic discrete event systems. IEEE Transactions on Automation
+                                                                                            Science and Engineering, 14(1), 185–195.
+  ◦{(x2, x3) ∈2X×X : ∃s ∈Σ∗s.t. σ ∈O(s) ∧x3 ∈δ(x2, s)}           Chen,   J., Keroglou,  C.,  Hadjicostis,  C.  N., & Kumar,  R. (2017). Revised  test
+                                                                                                 for stochastic diagnosability of discrete-event systems. IEEE Transactions on
+ = {(x1, x3) ∈2X×X : ∃x1 ∈X0, x3 ∈X, ∃s ∈Σ∗                          Automation Science and Engineering,.
+                                                                               Chen, J., & Kumar, R. (2015a). Failure detection framework for stochastic discrete
+       s.t. ασ ∈O(s) ∧x3 ∈δ(x1, s)}.                                           event systems with guaranteed error bounds. IEEE Transactions on Automatic
+                                                                                                 Control, 60(6), 1542–1553.
+Therefore, we know that Eq. (A.1) always holds. Then, by the defini-     Chen, J., & Kumar, R. (2015b). Stochastic failure prognosability of discrete event
+tion of ˆπ0(x | α), we know that ˆπ0(x | α) > 0 iff Pr(α | x) > 0 and         systems. IEEE Transactions on Automatic Control, 60(6), 1570–1581.
+π0(x) > 0. Moreover, Pr(α | x) > 0 iff ∃s ∈L(G, x) : α ∈O(s).      Keroglou, C., & Hadjicostis, C.N. (2013). Initial state opacity in stochastic DES. In 18th
+Therefore, {x ∈X0 : ˆπ0(x | α) > 0} = {x ∈X0 : ∃s ∈L(G, x) s.t.      Keroglou,IEEE conf.C., &emergingHadjicostis,tech.C.factoryN. (2015).automationDetectability(pp. 1–8).in stochastic discrete event
+α ∈O(s)} = S(δobs(qobs,0, α)).  □                                              systems. Systems & Control Letters, 84, 21–26.
+
+134                                                                     X. Yin / Automatica 80 (2017) 127–134
+
+
+Li, L., & Hadjicostis, C. N. (2013). Minimum initial marking estimation in labeled      Takai, S., & Ushio, T. (2012). Verification of codiagnosability for discrete event
+    petri nets. IEEE Transactions on Automatic Control, 58(1), 198–203.                    systems modeled by mealy automata with nondeterministic output functions.
+Lin,  F. (2014). Control  of networked discrete event systems: dealing with          IEEE Transactions on Automatic Control, 57(3), 798–804.
+   communication delays and losses. SIAM Journal on Control and Optimization,      Thorsley, D., & Teneketzis, D. (2005). Diagnosability of stochastic discrete-event
+    52(2), 1276–1298.                                                                 systems. IEEE Transactions on Automatic Control, 50(4), 476–492.
+Lunze, J., & Schröder, J. (2001). State observation and diagnosis of discrete-event      Thorsley, D., Yoo, T.-S., & Garcia, H.E. (2008). Diagnosability of stochastic discrete-
+   systems described by stochastic automata. Discrete Event Dynamic Systems,         event systems under unreliable observations. In American control conference
+    11(4), 319–369.                                                                          (pp. 1158–1165).
+Özveren, C. M., & Willsky, A. S. (1990). Observability of discrete event dynamic       Yin, X., & Lafortune, S. (2015a). Codiagnosability and coobservability under dynamic
+    systems. IEEE Transactions on Automatic Control, 35(7), 797–806.                        observations: Transformation and verification. Automatica, 61, 241–252.
+Saboori, A., & Hadjicostis, C. N. (2013). Verification of initial-state opacity in security       Yin, X., & Lafortune, S. (2015b). A general approach for solving dynamic sensor
+    applications of discrete event systems. Information Sciences, 246, 115–132.              activation problems for a class of properties. In 54th IEEE conf. decision and
+Saboori, A., & Hadjicostis, C. N. (2014). Current-state opacity formulations in           control (pp. 3610–3615).
+    probabilistic finite automata. IEEE Transactions on Automatic Control, 59(1),       Yin, X., & Lafortune, S. (2016). A uniform approach for synthesizing property-
+   120–133.                                                                           enforcing supervisors  for partially-observed discrete-event systems. IEEE
+Savitch, W. J. (1970). Relationships between nondeterministic and deterministic          Transactions on Automatic Control, 61(8), 2140–2154.
+    tape complexities. Journal of Computer and System Sciences, 4(2), 177–192.
+Sears, D., & Rudie, K. (2014). On computing indistinguishable states of nondeter-
+    ministic finite automata with partially observable transitions. In 53rd IEEE conf.
+    decision and control (pp. 6731–6736).                                                           Xiang Yin was born  in Anhui,  China,  in 1991. He
+Shu,  S., Huang,  Z., & Lin, F. (2013). Online sensor activation for detectability                             received the B.Eng. degree from Zhejiang University in
+    of discrete event systems. IEEE Transactions on Automation Science and                            2012, the M.S. degree from the University of Michigan,
+    Engineering, 10(2), 457–461.                                                            Ann Arbor, in 2013, and the Ph.D. degree from the
+Shu,  S., & Lin, F. (2013a). Enforcing detectability in controlled discrete event                              University of Michigan, Ann Arbor, in 2017, all in electrical
+    systems. IEEE Transactions on Automatic Control, 58(8), 2125–2130.                                         engineering. His research interests include supervisory
+Shu, S., & Lin, F. (2013b). I-detectability of discrete-event systems. IEEE Transactions                              control  of  discrete-event systems, model-based  fault
+   on Automation Science and Engineering, 10(1), 187–196.                                                       diagnosis, formal methods, security and their applications
+Shu, S., Lin, F., & Ying, H. (2007). Detectability of discrete event systems. IEEE                              to cyber and cyber–physical systems. He received the
+    Transactions on Automatic Control, 52(12), 2356–2359.                                                 Outstanding Reviewer Award from Automatica in 2016,
+Shu, S., Lin, F., Ying, H., & Chen, X. (2008). State estimation and detectability of                            the Outstanding Reviewer Award from IEEE Transactions
+    probabilistic discrete event systems. Automatica, 44(12), 3054–3060.            on Automatic Control in 2017 and the IEEE Conference on Decision and Control
+Stockmeyer, L.J., & Meyer, A.R. (1973). Word problems requiring exponential time.     (CDC) Best Student Paper Award Finalist in 2016. He is the co-chair of the IEEE CSS
+    In Proc. 5th ACM symp. theory of computing (pp. 1–9).                              Technical Committee on Discrete Event Systems.

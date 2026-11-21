@@ -1,0 +1,460 @@
+2023 62nd IEEE Conference on Decision and Control (CDC)
+December 13-15, 2023. Marina Bay Sands, Singapore
+
+
+  Abstraction-Based Synthesis of Controllers for Approximate Opacity
+
+
+                        Junyao Hou, Siyuan Liu, Xiang Yin and Majid Zamani
+
+
+
+  Abstract— Opacity is an important information-flow security   was initiated from a secret state. When the original system
+property which characterizes the plausible deniability of certain    is not opaque, different approaches have also been proposed
+“secret behaviors” in dynamical systems. In this paper, we study                                                                   to enforce opacity. Among them, one known approach is to
+the problem of synthesizing controllers enforcing a notion of
+                                                           use the supervisory control theory, where a controller is usedopacity over discrete-time control systems with continuous state
+sets. In this paper, we develop an abstraction-based approach to    to restrict the behavior of the system such that the closed-
+tackle the controller synthesis problem. Specifically, we adopt a   loop system under control is opaque [2], [19].
+notion of approximate opacity which is suitable for continuous-     The aforementioned results on the verification or synthesis
+space control systems. We propose a notion of approximate                                                              of opacity mainly deal with DES with discrete-state sets
+initial-state  opacity preserving  alternating simulation  relation
+                                                      and event-triggered dynamics. However, many real-worldwhich characterizes the closeness between two systems in terms
+of opacity preservation. We show that, based on this new notion   systems are hybrid involving both continuous state sets and
+of system  relation, one can synthesize an opacity-enforcing   time-driven dynamics. More  recently, notions of opacity
+controller for the abstract system which  is  finite and then   have been further extended from DES to general CPS with
+refine  it back to enforce opacity over the original control                                                           continuous state sets; see, e.g., [8], [12], [13]. Particularly,
+system. Finally, we present a method for constructing opacity-
+                                                                   in a  recent  result  [21], notions  of approximate opacitypreserving finite abstractions for discrete-time control systems
+under some stability properties. Our results are illustrated on   have been proposed, which generalize the opacity concepts
+a two-room temperature control problem.                    from DES to metric systems. Compared with notions of
+                                                              opacity in DES literature, approximate opacity takes into
+                          I. INTRODUCTION                                                           account the imprecise measurements which are typical in
+  With the advancements of cyber-physical systems (CPS)   real-world applications, and thus are more suitable for CPS
+such as smart manufacturing, and smart cities, information   with continuous state sets.
+security and privacy issues are becoming increasingly im-     Related work. Since the state sets for continuous systems
+portant for design considerations due to large information    are uncountable, the verification or synthesis are undecidable
+exchanges in real-time. For dynamical systems, an important    in general. To address this issue, a promising approach is
+aspect of security  is to analyze what crucial information    to use abstraction-based techniques [16]. In this context,
+can be released through its information flow. In this work,   one needs  to  build a  finite  abstraction  (a.k.a. symbolic
+we consider an important class of information-flow security   model) of the original concrete system such that these two
+properties  called opacity  [6]. Roughly speaking, opacity   systems have  certain  relations under which the analysis
+captures the system’s plausible deniability of  its “secret”   or synthesis results over the finite systems can be refined
+such  that  its  secret and non-secret behaviors should be   and carried over  to the  original ones. Abstraction-based
+indistinguishable for an intruder (passive eavesdropper).       techniques have been developed only  recently  to  tackle
+  In the last decades, a wide range of results on the analysis    security properties including the results in  [4],  [5], [10],
+of opacity have been developed in the context of discrete    [21], [22]. For the purpose of verifying approximate opacity
+event systems (DES). Depending on the secret requirements    for general control systems, opacity-preserving simulation
+and the information structure of the system, different notions    relations together with the corresponding abstraction algo-
+of opacity were proposed in the literature [15], [18], [20].   rithms are first developed in [7], [10], [21], [22]. However,
+Among the various notions, initial-state opacity requires that    all these works are only dealing with verification rather than
+the intruder can never determine for sure that the system    controller synthesis of opacity. In the context of synthesizing
+                                                              opacity-enforcing controllers, the results in [5] provide a
+  This work was supported by the National Natural Science Foundation
+of China (62061136004, 62173226, 61833012),  the German Research   notion of opacity-preserving alternating simulation relations
+Foundation under Grant ZA 873/7-1, the Shanghai Jiao Tong University    that allows controller refinement with respect to opacity.
+Scientific and Technological Innovation Funds, and the National science   However, the results in [5] are only applicable to systems
+Foundation under Grant ECCS-2015403.
+   J.  Hou,  X.  Yin   are  with  Department   of  Automation  and   with finite state sets and under the assumption of precise
+Key  Laboratory  of  System  Control  and  Information  Processing,    observations, which are not appropriate for general CPS.
+Shanghai  Jiao  Tong  University,  Shanghai  200240,  China.  E-mail:    Our contribution. In  this work, we propose a novel
+{houjunyao,yinxiang}@sjtu.edu.cn.
+   S. Liu is with Division of Decision and Control Systems, KTH Royal   approach for synthesizing controllers that enforce approx-
+Institute of Technology, Stockholm, Sweden. E-mail: siyliu@kth.se.   imate  initial-state opacity for CPS with continuous  state
+  M.  Zamani   is  with  Department  of  Computer  Science,  Univer-    sets. To this end, we  first propose a new system relation
+sity  of  Colorado  Boulder, CO  80309,  USA,  and  Department  of
+Computer  Science, LMU Munich, 80538 Munich, Germany.  E-mail:    called approximate  initial-state opacity-preserving  (AInit-
+majid.zamani@colorado.edu                       SOP) alternating simulation relation. We show that this new
+
+
+979-8-3503-0123-6/23/$31.00 ©2023 IEEE                    7924
+
+system relation preserves approximate initial-state opacity   A  finite state run  is an internal behavior of a system
+between the abstract and the concrete system in terms of  S  generated from an  initial  state x0 ∈ X0  under an
+controller synthesis. In particular, one can synthesize opacity-    input sequence u1 · · · un, and is a sequence of transitions
+                                                           u1-     u2-      un-                    ui+1-enforcing controllers directly by applying existing synthesis   x0      x1           · · ·      xn such that xi      xi+1 for
+algorithms to the finite abstractions that simulate the concrete    all 0 ≤i ≤n −1. The corresponding output run (external
+systems via AInitSOP alternating simulation relations. We   behavior) is a sequence of outputs H(x0)H(x1) · · · H(xn).
+further propose an  effective approach  to construct  finite      Let Ta =  (Xa, Xa0, Ua,  - , Y, Ha) and Tb =
+abstractions which preserve the proposed system relation for                                    a                                                       (Xb, Xb0, Ub,           , Y, Hb) be two metric systems with the                                                           b-a class of discrete-time control systems under some stability
+                                                   same output set and metric d. Let I ⊆Xa × Xb × Ua × Ub
+assumptions. To the best of our knowledge, this paper is the
+                                                       be an ε-approximate interconnection relation [16] such that
+first to provide directly a controller synthesis approach to
+                                                         ∀(xa, xb) ∈πX(I) : d(Ha(xa), Hb(xb)) ≤ε, where πX(·)
+enforce opacity for continuous-space control systems using
+                                                            denotes the projection to Xa × Xb. The composition of Ta
+abstraction-based techniques.
+                                                      and Tb with the interconnection relation I is a new system
+
+                        II. PRELIMINARIES                                                                                                                                                              , Y, Hab),                                                         Ta ×εI Tb = (Xab, Xab0, Uab,   ab-
+A. Notation
+                                                     where Xab =  πX(I), Xab0 =  Xab ∩(Xa0 × Xb0),
+  Given a vector x ∈Rn, we denote by ∥x∥the infinity norm                                       1
+                                                     Uab = Ua × Ub, Hab((xa, xb)) = 2(Ha(xa) + Hb(xb)) and
+of x. A set B ⊆Rm is called a box if B = Qmi=1[ci, di],              (ua,ub)                   ua               ub
+                                                                                                                           x′b;                                                                                   (x′a, x′b) if (i) xa  a-                                                                                                          x′a; (ii) xb  b-where ci, di ∈R with ci < di for each i ∈{1, . . . , m}.   (xa, xb)  ab-
+For any set A = SMj=1 Aj of the form of finite union of   and  (iii) (xa, xb, ua, ub) ∈I. The subscript I  will be
+boxes, where Aj = Qni=1[cji, dji], we define span(A) =   dropped when it is clear from the context.
+min{span(Aj)   |  j =  1, . . . , M}, where span(Aj) =   C. Approximate Opacity
+min{|dji −cji|  |  i = 1, . . . , m}. For any µ ≤span(A),
+define [A]µ = SMj=1[Aj]µ, where [Aj]µ = [Rm]µ ∩Aj and      In this paper, we consider internal behaviors as the in-                                                           formation available to the system,  i.e., state information,[Rm]µ = {a ∈Rm  | ai = kiµ, ki ∈Z, i = 1, . . . , m}.
+                                                           while external behaviors are considered as the information
+We denote the different classes of comparison functions
+                                                                  available to the outside(for example, to an intruder). Theby K, K∞, and KL, where K = {γ  : R≥0 →R≥0  :
+                                                             information of the system is released by the output mapping
+γ is continuous, strictly increasing and γ(0) = 0}; K∞=
+                               H  : X →Y . Besides, the system model and its dynamics{γ ∈K:limr→∞γ(r)=∞}; KL={β : R≥0×R≥0 →R≥0 :
+                                                                are also known by the outside intruders.
+for each fixed s, the map β(r, s) belongs to class K with
+                                                                 In many realistic CPS applications, the system might have
+respect to r and, for each fixed nonzero r, the map β(r, s)
+                                                 some “secret” that does not want to be revealed to the outside
+is decreasing with respect to s and β(r, s) →0 as s →∞}.
+                                                        world via the external behavior. Specifically, we assume that
+                                          S ⊆X  is a set of secret states, and hereafter, we writeB. System                                              -
+                                                           a system in the form of T = (X, X0, S, U,            , Y, H)
+  In this paper, we employ a notion of “system” introduced                                                    by incorporating the secret state set. The notion of opacity
+in  [16]  as  the underlying model  of systems  describing                                                              captures the plausible deniability of the system’s secret under
+both continuous-space and finite control systems, which is                                                                the information leakage. Note that for metric systems whose
+modeled by the 6-tuple                                                              outputs are physical signals, due to the imperfect measure-
+              -                      ment precision of outside observers,  it is very difficult to          T = (X, X0, U,           , Y, H),
+                                                                 distinguish two observations if their distance is very small.
+where X is a (possibly infinite) set of states, X0 ⊆X is the   Therefore, in this paper, we adopt a type of opacity called δ-
+set of initial states, U  is a (possibly infinite) set of inputs,   approximate initial-state opacity [21] which quantifies the
+ -   ⊆X ×U ×X is a transition relation, Y  is a (possibly   measurement precision of the intruder, and thus  is more
+infinite) set of outputs, and H  : X →Y  is an output map.    applicable to metric systems.
+                       -For simplicity, we also denote a transition (x, u, x′) ∈             Definition 1: Consider a system T = (X, X0, S, U,  -,
+     u-by x              x′, where we say that x′  is a u-successor, or   Y, H). We say that T  is δ-approximate initial-state opaque
+simply successor, of x. For each state x ∈X, we denote by     if  for  any  x0  ∈  X0 ∩S  and  any  finite  state  run
+                                                             u1-     u2-      un-U(x) the set of all inputs defined at x, i.e., U(x) = {u ∈   x0      x1           · · ·      xn, there exist x′0 ∈X0 \S and
+              u-                  post                                               u′1-       u′2-        u′n-U  : ∃x′ ∈X s.t. x        x′}, and by Uu   (x) the set of   a finite state run x′0       x′1           · · ·       x′n such that
+u-successors of state x. A system T is said to be
+                                                         max         H(x′i)) ≤δ.  • metric, if the output set Y  is equipped with a metric                   i∈{0,...,n}d(H(xi),
+   d : Y × Y →R≥0;                                                Intuitively, approximate initial-state opacity requires that
+  •  finite (or symbolic), if X and U are finite sets;          an intruder with imperfect measurement can never know that
+  •  deterministic,  if for any state x ∈X and any input    the system was initiated from a secret state. The following
+    u ∈U, |Uupost (x)| ≤1 and nondeterministic otherwise.   example illustrates this notion.
+
+
+                                                       7925
+
+                                        We say that Ta is ε-approximate alternatingly simulated by
+                                                        Tb (or Tb ε-approximate alternatingly simulates Ta denoted
+                                                    by Ta ⪯εAS Tb, if there exists an ε-approximate alternating
+                                                              simulation relation from Ta to Tb.
+                                            An alternating simulation relation R ⊆Xa × Xb from
+                                                   Ta to Tb can also be extended to an interconnection relation
+                                             Re ⊆Xa×Xb×Ua×Ub defined by: (xa, xb, ua, ub)∈Re if  Fig. 1.  Example for δ-approximate initial-state opacity on system T1.
+  Example 1: Consider system T1 =  (X1, X1,0, S1, U1,       (i) (xa, xb) ∈R;
+  -            , Y1, H1)  as shown  in  Figure  1, where X1 =      (ii) ua ∈Ua(xa), ub ∈Ub(xb); and
+                                                                  ub-         ua-
+{A, B, C, D}, X1,0 = {A, D}, S1 = {D}, U1 = {u},      (iii) ∀xb       x′b, ∃xa       x′a : (x′a, x′b) ∈R.
+Y1 = {1.1, 2.9, 3.1} ⊆R equipped with metric d defined    Intuitively, Re explicitly specifies which inputs we need to
+by  d(y1, y2) = |y1 −y2|, ∀y1, y2 ∈Y1. We mark all secret   choose to maintain the alternating simulation relation.
+states by red, and the output of each state is specified by     The detailed control mechanism of (approximate) alternat-
+a value associated to  it.  First, one can check that T1  is   ing simulation relation is explained for finite systems, e.g.,
+not 0-approximate/exact initial-state opaque since we know    [5], [16]. We recall this mechanism succinctly as follows.
+immediately that the system is at secret state when a finite   Consider two systems Ta and Tb under the above defined
+      u-path D         C which generates output path [1.1][2.9]   (approximate) alternating simulation relation, i.e., Ta ⪯εAS
+is observed. Next, consider an intruder with measurement    Tb. Then, Ta can be a controller that offers an input ua ∈
+precision δ =  0.2. One can observe that T1  is not 0.2-   Ua(xa); this input is then transferred to Tb as a matching
+approximate initial-state opaque due to existence of a self-    input ub ∈Ub(xb) via the interconnection relation Re. Due
+loop behavior at state C. For example, consider a secret-    to the non-determinism, Tb may go to any successor of ub.
+                u-                      u-                C                     C which generates out-   Once Tb measures the successor state, Ta will update its statestarting finite path D
+put path [1.1][2.9][2.9]. The intruder can infer for sure that   by matching the successor in Tb, and then offer a new input,
+the system started from a secret state since there is no path   and this continues. Note that controller Ta can also be non-
+which started from a non-secret state x0 /∈S1 generating an    deterministic as ua ∈Ua(xa) may not be unique. The above
+equivalent output path which is close to [1.1][2.9][2.9] up to   discussion is summarized by the following definition.
+precision δ = 0.2. However, once the self-loop is removed      Definition 3: (Approximate  Feedback  Composition) A
+from state C, we can readily see that the new system is 0.2-   system Tc is said to be ε-approximately feedback composable
+approximate initial-state opaque since for every path starting   with a system T1 if there exists an ε-approximate alternat-
+from a secret state, there always exists a path that starts from   ing simulation relation R from Tc to T1. When Tc  is ε-
+a non-secret state with δ-close observations.            ⋄   approximately feedback composable with T1, the feedback
+                                                          composition of Tc and T1 is given by
+   III. ABSTRACTION-BASED CONTROLLER SYNTHESIS
+                                                                                                                                                                        , Y, Hc1),                                                       Tc ×εF T1 = (Xc ×X1, Xc0 ×X1,0, Uc ×U1,  F-  In this section, we discuss how to leverage abstraction-
+based technique to synthesize controllers that enforce opacity                                                     where the interconnection relation F = Re is an extended
+of systems as defined in Subsection II-B.                                                          ε-approximate alternating simulation relation as in Defini-
+                                                                   tion 2. For the sake of simplicity, the subscript F will beA. Feedback Composition
+                                                        dropped when it is clear from the context.
+  When a system T does not satisfy some desired property,
+                                                       Based on  the above  definition, we  refer  to Tc  as a
+e.g., opacity, we can synthesize a controller for T  such
+                                                                  controller  for system T  if  it  is approximately feedback
+that the closed-loop system meets the specification. There
+                                                      composable with T.
+are several (equivalent)  definitions  for  controllers  in the
+literature. In this paper, we adopt the definition in [16],   B. Opacity-Enforcing Control Problem
+in which a controller is considered also as a system that                                                                 In this paper, in contrast to the existing results on veri-
+is composable  to  the  original one through approximate                                                                     fication of opacity [9], [21], our main goal is to tackle the
+alternating simulation relation defined as follows.                                                               opacity-enforcing control problem which requires to synthe-
+   Definition 2: (Approximate Alternating Simulation Rela-                                                                   size a controller Tc for system T such that it enforces approx-
+tion) Let Ta = (Xa, Xa0, Ua,                                                           , Y, Ha) and Tb =                   a-                                                           imate initial-state opacity on the composed system Tc ×εF T.
+(Xb, Xb0, Ub,                              , Y, Hb) be two systems with the same   More specifically, we say that Tc enforces δ-approximate           b-
+output  set. A relation R ⊆Xa × Xb  is said to be an    initial-state opacity over T  if for any (xc0, x0) ∈Xc0 ×
+approximate alternating simulation relation from Ta to Tb   (X0 ∩S) and any sequence
+if the following conditions hold:                                              (uc1,u1)-            (uc2,u2)-      (ucn,un)-
+                                                                (xc0, x0)          (xc1, x1)               · · ·          (xcn, xn),  1) ∀xa0 ∈Xa0, ∃xb0 ∈Xb0 : (xa0, xb0) ∈R;                     F            F         F
+  2) ∀(xa, xb) ∈R : d(Ha(xa), Hb(xb)) ≤ε;                                                                 there exist x′0 ∈X0 \ S and a sequence
+  3) ∀(xa, xb) ∈R, ∀ua ∈Ua(xa), ∃ub ∈Ub(xb) such that
+          ub-         ua-                                                                u′1-       u′2-        u′n-    ∀xb       x′b, ∃xa       x′a : (x′a, x′b) ∈R.                               x′0       x′1           · · ·       x′n
+
+
+                                                       7926
+
+                                                            preserved under controller refinement. The abstraction-based                                             [1.1]1       [3.1]                     controller refinement scheme is formalized in the following                             （�, �）            0A 1B                    subsection.                        （�, �）1     （�, �）              C. Abstraction and Controller Refinement                             （�, �）                     Although  approximate  alternating  simulation  relations             1C 0�                                                        have shown to be useful [16] for controller refinement of         (a) Controller Tc        (b) Closed-loop[3.0]    system[1.1]  Tc ×εc1Rc1 T1         properties such as ω-regular properties, unfortunately, they
+  Fig. 2.  Example to illustrate the opacity-enforcing control problem.     do not preserve security properties including opacity [1],
+such that i∈{0,...,n}d(H(xi),max         H(x′i)) ≤δ. Note that in this    [22]; check [22] for some counterexamples. Therefore, we
+paper, we assume that Tc ×εF T  is non-blocking, i.e., ∀x ∈   introduce a new notion of opacity-preserving approximate
+                                                                   alternating simulation relation, so that  it can be applied toX   : U(x)̸ =  ∅, which  is a conventional assumption in
+                                                                the abstraction-based opacity-enforcing control problem forsymbolic control. Below, we illustrate the above-mentioned
+                                                            continuous-space control systems.opacity-enforcing control problem on a simple finite system.
+                                                              Here, we propose a notion of so-called approximate initial-
+  Example 2: Let us  still consider system T1 shown  in                                                                     state opacity preserving (AInitSOP) alternating simulation
+Figure 1. To illustrate the opacity-enforcing control problem
+                                                                       relation. Specifically, this new notion of system relation from
+on T1, we assume  that  there  exists a  controller Tc =                                                     T1 to T2 is required to satisfy the following requirements:
+(Xc, Xc0, Uc,           , Yc, Hc) shown in Figure 2 (a), where            c-                                                         (i) it is still an alternating simulation relation; (ii) enforcing
+Xc = {0, 1}, Xc0 = {0}, Uc = {u}, Yc = {1.1, 3.1} ⊆R   opacity for T1 implies the enforcement of opacity for T2 after
+equipped with metric d defined by  d(y1, y2) = |y1 −y2|,    the controller refinement. The proposed notion of AInitSOP
+∀y1, y2 ∈Yc. The output of each state is specified by a value    alternating simulation relation is introduced in the following
+associated to it. One can readily check that Tc ⪯εc1AS T1 with    definition.
+εc1 = 0.2 through the approximate alternating simulation      Definition 4: (Approximate Initial-State Opacity Preserv-
+relation Rc1 = {(0, A), (1, B), (1, C), (0, D)}. By Defini-   ing Alternating Simulation Relation) Let T1, T2 be two
+tion 3, the closed-loop                                                                                                                                                                    , Y, Hi), i =                    system Tc×εc1Rc1 T1 = (Xc×X1, Xc0×   systems, where Ti = (Xi, Xi,0, Si, Ui,  i-       -
+X1,0, Uc × U1,           , Y, Hc1) is shown in Figure 2(b). One               Rc1                                              1, 2. A relation R ⊆X1 ×X2 is said to be an ε-approximate
+can readily verify that for any path that started from a secret    initial-state opacity preserving (AInitSOP) alternating simu-
+initial state in (xc0, x0) ∈Xc0 × (X1,0 ∩S1) in the closed-    lation relation from T1 to T2 if
+loop system Tc×εc1Rc1T1, there exists an output-equivalent path     1) a) ∀x1,0 ∈X1,0, ∃x2,0 ∈X2,0 : (x1,0, x2,0) ∈R;
+initiated from a non-secret state x ∈X1,0 \ S1 in system T1.                                                                  b) ∀x1,0 ∈X1,0 \ S1, ∃x2,0 ∈X2,0 \ S2 : (x1,0, x2,0)∈R;
+For example, for (0, D) ∈Xc0×(X1,0∩S1) and a finite path                                                                2) ∀(x1, x2) ∈R : d(H1(x1), H2(x2)) ≤ε         (u,u)-(0, D)              (1, C), there exist A ∈X1,0 \ S1 and a finite     3) ∀(x1, x2) ∈R, we have       R1c
+       u-path A       B such that |(Hc1(0, D) −H1(A)| = 0 ≤0.2        a) ∀u1 ∈U1(x1), ∃u2 ∈U2(x2), ∀x2 u2-x′2, ∃x1 u1-x′1
+and |Hc1(1, C) −H1(B)| = 0.1 ≤0.2. Therefore, we can          such that (x′1, x′2) ∈R;
+conclude that Tc is a controller that enforces 0.2-approximate       b) ∀x1  u1- x′1, ∃x2  u2- x′2 such that (x′1, x′2) ∈R.
+initial-state opacity over T1.                         ⋄                                        We say  that T1  is AInitSOP  alternatingly simulated by
+  Note that parameters δ and ε in this paper specify two   T2  (or T2 AInitSOP alternatingly simulates T1), denoted
+different types of precision. Parameter δ is used to specify   by T1 ⪯εAIAS T2,  if there exists an AInitSOP alternating
+the measurement precision of outside intruder under which   simulation relation from T1 to T2.
+we can guarantee the approximate opacity of a single system,       If T1 ⪯εAIAS T2, we say that T1 is an abstraction of T2.
+while the parameters ε in the definition of approximate alter-   In the sequel, we denote the original system by T2 and the
+nating simulation relation is used to describe the “distance”    abstract system by T1.
+between two systems.                                     Note that an AInitSOP alternating simulation relation is
+  Note that the opacity-enforcing control problem is known     still an alternating simulation relation, which makes the con-
+to be undecidable for continuous-space systems. To  this    troller refinement procedure still possible. Next, we present
+end, a promising approach is to leverage abstraction-based    the first main result of our paper which shows how to use
+approaches as a bridge for the purpose of controller syn-    the above-defined AInitSOP alternating simulation relation
+thesis  [16].  In  this  context, one  first needs  to  build a    for the purpose of opacity-enforcing controller synthesis.
+finite abstraction of the concrete continuous-space control     Theorem 1: Consider two systems T1 and T2, where Ti =
+                                                                                                                                  , Y, Hi), i = 1, 2, and suppose thatsystem, then synthesize a discrete controller based on the   (Xi, Xi,0, Si, Ui,   i-
+finite abstraction, and finally, refine the synthesized discrete   T1 ⪯ε12AIAS T2. Then for any controller Tc that enforces δ-
+controller back as a hybrid one to the original concrete   approximate initial-state opacity for the abstract system T1
+system. The key to abstraction-based approach  is to find   with Tc ⪯εc1AS T1, the refined controller Tref = Tc ×εc1Fc1
+appropriate relations between concrete systems and  their   T1 also enforces max{( 12εc1 + 32ε12 + δ), (εc1 + 32ε12)}-
+finite abstractions such that properties of interest can be   approximate initial-state opacity for the original system T2.
+
+
+                                                       7927
+
+  In essence, the role of AInitSOP alternating simulation   B. Construction of Finite Abstractions
+relation is to build a “bridge” between the original system                                                              Next, we present how to construct finite abstractions for a
+and the controller of the abstract system. Based on  this                                                                   class of discrete-time control systems. Specifically, the finite
+theorem, one can design a controller that enforces opacity                                                                 abstraction is built under the assumption that the concrete
+of the finite abstract system, and then refine the controller                                                                 discrete-time control system is incrementally input-to-state
+back to enforce opacity over the original control system.                                                                 stable as defined in [17] and recalled below.
+  Note that in symbolic control, the controllers synthesized      Definition 6: System Σ =  (X, S, U, f, Y, h)  is  called
+for abstract systems (with finite state set) are often precise,   incrementally input-to-state stable (δ-ISS) if there exist func-
+i.e., εc1 = 0. In this case, we get a more succinct result as    tions β ∈KL and γ ∈K∞such that ∀x, x′ ∈X and
+presented in the following corollary.                        ∀υ, υ′ ∈N →U, the following holds for any k ∈N:
+  Corollary 1: Consider two systems T1 and T2, where
+                                            , Y, Hi), i = 1, 2, and suppose     ∥ξxυ(k)−ξx′υ′(k)∥≤β(∥x −x′∥, k)+γ(∥υ −υ′∥).   (2)Ti = (Xi, Xi,0, Si, Ui,                   i-
+that T1 ⪯ε12AIAS T2. Then for any controller Tc that enforces      Next, in order to construct approximate initial-state opacity                                                              preserving  finite abstractions  for a control system Σ =
+δ-approximate initial-state opacity for the abstract system T1
+                                                        (X, S, U, f, Y, h) in Definition 5, we define an associatedwhere Tc ⪯0AS T1, the refined controller Tref := Tc ×εc1Fc1 T1                   -          3                                                  metric system T(Σ) = (X, X0, XS, U,           , Y, H), where
+enforces ( 2ε12+δ)-approximate initial-state opacity over the                               X = X, X0 = X, XS = S, U = U, Y = Y, H = h,
+original system T2.                                 u-                                                      and x        x′  if and only if x′ = f(x, u). In the sequel,
+                                             we will use T(Σ) to denote the concrete control systems
+    IV. APPROXIMATE OPACITY-PRESERVING FINITE                                                               interchangeably.
+                ABSTRACTIONS                                                              Next, we introduce a symbolic system for the control
+                                                        system Σ = (X, S, U, f, Y, h). To do so, in the rest of the  In the previous section, we introduced a notion of approx-
+                                                                paper, we assume that sets X, S and U are of the form ofimate initial-state opacity preserving alternating simulation
+                                                                            finite union of boxes. Consider a concrete control systemrelations. Naturally, the next question is how to construct an
+                                    Σ and a tuple q = (η, µ) of parameters, where 0 < η ≤opacity-preserving finite abstraction for a concrete control
+                                               min {span(S), span(X \ S)} is the state set quantization, andsystem so  that  it can be used  for the sake of opacity-
+                                                    0 < µ ≤span(U) is the input set quantization. Now let usenforcing controller synthesis. In general, the approach to
+                                                              introduce the symbolic systemconstruct finite abstractions is system-dependent, and not all
+                                                                                                                                                             , Yq, Hq),     (3)systems admit finite abstractions. Next, we show that a class         Tq(Σ) = (Xq, Xq0, XqS, Uq,  q-of discrete-time control systems admits opacity-preserving
+finite abstractions under certain stability assumptions.        where Xq = Xq0 = [X]η, XqS = [S]η, Uq = [U]µ, Yq =
+                                                       {h(xq) | xq ∈Xq}, Hq(xq) = h(xq), ∀xq ∈Xq, and
+                                                                               x′q if and only if ∥x′q −f(xq, uq)∥≤12η.A. Discrete-time Control Systems                                 • xq   uqq-
+  In this section, we consider a class of discrete-time control     Now, we are ready to present the main result of  this
+systems of the following form.                                   section, which shows that under some condition over the
+   Definition 5: A discrete-time control system Σ is defined    quantization parameters η and µ, the finite abstraction Tq(Σ)
+by the tuple Σ = (X, S, U, f, Y, h), where X, U, and Y are   constructed in (3) indeed simulates our concrete control
+the state, input, and output sets, respectively, and are subsets   system T(Σ) through the proposed relation.
+of normed vector spaces with appropriate dimensions. Set     Theorem 2: Let Σ = (X, S, U, f, Y, h) be a δ-ISS control
+S ⊆X is a set of secret states. The map f  : X × U →   system. For any desired precision ε > 0, and any tuple q =
+X is called the transition function, and h  : X →Y is the    (η, µ) of parameters satisfying
+output map and assumed to satisfy the following Lipschitz                                                                              1
+condition: ∥h(x) −h(x′)∥≤α(∥x −x′∥) for some α ∈K∞             β α−1(ε), 1 + 2η ≤α−1(ε),            (4)
+and all x, x′ ∈X. The discrete-time control system Σ is
+                                             we have Tq(Σ) ⪯εAIAS T(Σ).described by difference equations of the form
+                                                                           Intuitively, this theorem shows that under certain condi-
+                 ξ(k + 1) = f(ξ(k), υ(k)),                   tions over the quantization parameter η, one can construct
+       Σ :                                           (1)
+                     ζ(k) = h(ξ(k)),                      a finite abstraction as in (3) which is related to the original
+                                                                control system through the proposed AInitSOP alternating
+where ξ : N →X, ζ : N →Y, and υ : N →U are the state,   simulation relation. Let us recall that such an abstraction is
+output, and input signals, respectively.                       a crucial bridge to the opacity-enforcing controller synthesis
+  We denote by ξxυ(k) the point reached at time k under the   of continuous-space control systems. To be specific, one can
+input signal υ from initial condition x = ξxυ(0). Similarly,     first design symbolic controllers for the finite abstractions,
+let ζxυ(k) denote the output corresponding to state ξxυ(k),   and then leverage the results proposed in Theorem 1 to
+i.e. ζxυ(k) = h(ξxυ(k)). Note that we implicitly assumed    refine controllers to hybrid ones that render opacity over the
+that X is positively invariant.                                    original systems. Note that the design of symbolic controllers
+
+
+                                                       7928
+
+for  finite abstractions  is out of the scope of  this paper.
+However, since the abstractions are finite, one can readily
+utilize the existing works and computational tools in the DES
+literature (e.g., [3]) to design controllers that enforce opacity
+over the abstractions.
+  We should mention that one can always find quantization
+parameters η such that (4) holds as long as β α−1(ε), 1 ≤
+α−1(ε). This inequality can be ensured by regarding the
+discrete-time control system as a sampled-data version of an
+                                                                                  Fig. 3.  Trajectories of the augmented closed-loop abstract system projected
+original continuous-time system with large-enough sampling    on the first-room coordinate starting from initial region G0 (represented by
+time (see [21, Remark VI.8]).                                          the green area) under symbolic control. The black lines denote the state
+                                                                                        trajectories of the augmented abstract system. The red regions constitute
+                    V. CASE STUDY                               the unsafe set Gu.
+                                                                the state quantization parameter to be η = 0.9 and the
+  In this section, we demonstrate the proposed abstraction-
+                                                               input quantization parameter µ = 0.5. Then, following the
+based controller synthesis approach on a two-room temper-
+                                                         approach presented in Subsection IV-B, one can obtain a
+ature control problem, where each room is equipped with a
+                                                                            finite abstraction Tq(Σ) such that Tq(Σ) ⪯εAIAS T(Σ) holds.heater. This model is borrowed from [11]. The temperature
+                                                              Next, we proceed with the opacity-enforcing controller
+evolution of two rooms is:
+                                                                synthesis by leveraging the result in Corollary 1. Specif-
+           x(k + 1) = Ax(k) + αhxhu(k) + αexe,             ically,  in order  to enforce the  original system Σ  to be   Σ :                                                   (5)
+                y(k) = h(x(k)),                             3.5-approximate initial-state opaque, we can design a 2.0-
+                                                         approximate initial-state opacity-enforcing controller for the
+where x(k)=[x1(k); x2(k)], where xi(k), i ∈{1; 2}, repre-
+                                                                   abstract system Tq, and then refine it back to a controller that
+sents the temperature of each room at time k, u(k)=[u1(k);
+                                                             enforces 3.5-approximate initial-state opacity on the original
+u2(k)], where ui(k) ∈[0, 1], ∀i ∈[1; 2], represents the
+                                                        system Σ.ratio of the heater valve being open in room i, A ∈R2×2
+is a heat exchange matrix for  this model with elements
+{A}11 = {A}22 = α, {A}12 = 1 −2α −αe −αhc1,
+{A}21 = 1 −2α −αe −αhc2. The parameters α = 0.1,
+αh = 0.5, αe = 0.1, c1 = 0.4 and c2 = 3 are heat exchange
+coefficients of this model, xe = [xe1; xe2] = [5 ◦C; 5 ◦C]
+represents the environment temperature and xh = 50 ◦C
+represents the heater temperature. The output of this system
+is assumed to be the temperature of the second room, i.e.,
+                                                                                  Fig. 4.   First-room temperature trajectories initiated from different initial
+y(k) = h(x(k)) = x2(k). In this example, our region of     states (one from a secret state x = [24.3; 20] and the other one from a
+interest is as follows: X = [0, 40] × [0, 40], X0 = [20, 25] ×    non-secret state x′ = [22.9; 20].
+[20], Xs = [23.5, 25] × [20].
+   It  is assumed that the secret of the system  is whether
+the initial temperature of room 1 is higher than 23.5 ◦C,
+as this could mean that there are sensitive devices running
+or people are gathering in this room. We also assume that
+there is a malicious intruder interested in reasoning about
+the  initial temperature of the  first room by knowing the
+dynamics of the system and the output of the model. It is
+worth mentioning that due to the imperfect precision, the
+intruder cannot accurately obtain the output values of the     Fig. 5.  Distance between the output trajectories corresponding to the two
+system. Correspondingly, the measurement precision of the     state trajectories depicted in Figure 4.
+intruder is assumed to be δ1 = 3.5. Note that this can be
+captured as an δ1-approximate initial-state opacity property
+of the system. By the verification approach of [9], this system
+is not 3.5-approximate initial-state opaque. Now, we apply
+our proposed abstraction-based framework to synthesize a
+controller to enforce approximate initial-state opacity on Σ.
+To do this, let us first build a finite abstraction of Σ using
+the approach presented in Subsection IV-B with a desired
+precision ε = 1. One can readily check that the system Σ
+is incrementally input-to-state stable. Hence, by leveraging
+Theorem 2 and based on inequality (4), we simply choose     Fig. 6.  The input runs corresponding to the state trajectories in Figure 4.
+
+
+                                                       7929
+
+  For the sake of completeness of the example, we briefly    finite abstraction can be refined back to the original control
+discuss our symbolic controller design process with the help   system. We further showed that under an incremental input-
+of SCOTS [14] together with the ideas proposed in  [9].    to-state  stability assumption, a  finite  abstraction can be
+In order to utilize SCOTS to design an opacity-enforcing    readily computed for a control system through the proposed
+symbolic controller, we resort to an approach developed   system relation. Finally, we used a two-room temperature
+in [9] which essentially converts the opacity property of a    control example to illustrate our proposed abstraction-based
+single control system to a safety property of an augmented    controller synthesis framework.
+system which can be seen as the product of a control
+                                                               REFERENCESsystem and  itself. We refer interested readers to [9] for
+more  details on the translation of opacity property to a      [1] R. Alur,  P.  ˇCern`y, and S. Zdancewic.   Preserving secrecy under
+safety one. Here, we briefly recall some of the notations          refinement.  In International Colloquium on Automata, Languages,
+                                                                      and Programming, pages 107–118. Springer, 2006.
+that are used in this example: Given a single system Tq, an      [2]  J. Dubreil, P. Darondeau, and H. Marchand. Supervisory control for
+augmented system is defined as Tq ×Tq = (Xq ×Xq, Xq0 ×          opacity. IEEE Transactions on Automatic Control, 55(5):1089–1100,
+Xq0, XqS × XqS, Uq × Uq, fq × fq, Yq × Yq, Hq × Hq). We         2010.
+                                                                                     [3] Y. Falcone and H. Marchand. Enforcement and validation (at runtime)
+use G =Xq × Xq to denote the augmented symbolic state          of various notions of opacity.   Discrete Event Dynamic Systems,
+set. Recall that a safety property essentially requires that         25(4):531–570, 2015.
+any trajectory starting from a certain initial region should      [4]  J. Hou, S. Liu, X. Yin, and M. Zamani. Abstraction-based verification
+                                                                                    of approximate preopacity for control systems. IEEE Control Systems
+never reach an unsafe region. In this example, the initial           Letters, 7:1087–1092, 2022.
+and unsafe region for the obtained safety property  is as      [5]  J. Hou, X. Yin, S. Li, and M. Zamani. Abstraction-based synthesis of
+follows: the initial region is G0={(xq, ˆxq) ∈(Xq0 ∩XqS) ×          opacity-enforcing controllers using alternating simulation relations. In
+                                                                IEEE Conference on Decision and Control, pages 7653–7658, 2019.
+(Xq0 \ XqS)| ∥H(xq) −H(ˆxq)∥≤δ2}, the unsafe region      [6]  S. Lafortune,  F.  Lin, and C.N.  Hadjicostis.  On  the  history of
+is Gu={(xq, ˆxq) ∈Xq × Xq)| ∥H(xq) −H(ˆxq)∥> δ2},          diagnosability and opacity in discrete event systems. Annual Reviews
+where δ2 = 2. Then, the safety controller synthesis problem           in Control, 45:257–266, 2018.
+                                                                                     [7]  S. Liu, A. Swikir, and M. Zamani. Verification of approximate opacity
+is solved using SCOTS. In Figure 3, we show the state trajec-                                                                                          for switched systems: A compositional approach. Nonlinear Analysis:
+tories of the augmented closed-loop abstract system projected         Hybrid Systems, 42:101084, 2021.
+on the first-room coordinate under the controller provided      [8]  S. Liu, A. Trivedi, X. Yin, and M. Zamani.  Secure-by-construction
+                                                                                     synthesis of cyber-physical systems.  Annual Reviews in Control,
+by SCOTS. It can be readily seen that the safety property                                                                              53:30–50, 2022.
+is satisfied on the augmented system, which implies that      [9]  S. Liu and M. Zamani. Verification of approximate opacity via barrier
+the individual closed-loop abstract system is 2.0-approximate            certificates. IEEE Control Systems Letters, 5(4):1369–1374, 2020.
+                                                                              [10]  S.  Liu and M.  Zamani.    Compositional  synthesis  of  opacity-
+initial-state opaque.                                                                                  preserving finite abstractions for interconnected systems. Automatica,
+  So far, we have obtained a controller that enforces opacity         131:109745, 2021.
+on the abstract system with the closed-loop system denoted    [11]  P.-J. Meyer, A. Girard, and E. Witrant.  Compositional abstraction
+by Tref = Tc ×0Fc1 Tq(Σ). Then, according to Corollary 1,          Transactionsand  safety  synthesison AutomaticusingControl,overlapping63(6):1835–1841,symbolic models.2017.   IEEE
+let Tref be the refined controller for the original system.    [12] M. Mizoguchi and T. Ushio. Abstraction-based control under quan-
+We have the guarantee that the closed-loop control system           tized observation with approximate opacity using symbolic control
+Tref ×1F12T(Σ) is δ1-approximate initial-state opaque, where    [13]  barrierB. Ramasubramanian,functions. IEEE W.R.ControlCleaveland,Systems Letters,and S.2021.Marcus.  Notions
+δ1=( 32ε + δ2)=3.5, and the AInitSOP alternating simulation          of centralized and decentralized opacity in linear systems.  IEEE
+relation is as follows: R12 = {(xq,1, x1) ∈Xq,1 ×X1|∥x1 −          Transactions on Automatic Control, 265(4):1442–1455, 2020.
+xq,1∥≤1.0 ∧(xc, xq,1) ∈Rc1}. Figure 4 shows the sim-    [14] M. Rungger and M. Zamani.   Scots: A tool for the synthesis of                                                                            symbolic controllers. In HSCC, pages 99–104, 2016.
+ulation results of our implementation, which illustrates δ1-    [15] A. Saboori and C.N. Hadjicostis. Verification of infinite-step opacity
+approximate initial-state opacity of the closed-loop control         and complexity considerations. IEEE Transaction Automatic Control,
+                                                                             57(5):1265–1269, 2012.
+system. In particular, two trajectories are depicted in this fig-                                                                              [16]  P. Tabuada. Verification and Control of Hybrid Systems: A Symbolic
+ure, where one is initiated from a secret state [24.3; 20] while         Approach. Springer Science & Business Media, 2009.
+the other started from a non-secret state x′ = [22.9; 20].    [17] DN Tran. Advances in stability analysis for nonlinear discrete-time
+                                                                           dynamical systems. PhD thesis, 2018.
+The distance between the corresponding output trajectories
+                                                                              [18] A. Wintenberg, M. Blischke, S. Lafortune, and N. Ozay. A general
+of these two state runs is depicted in Figure  5. The input         language-based framework for specifying and verifying notions of
+runs of the trajectories are shown in Figure 6.                            opacity. Discrete Event Dynamic Systems, pages 1–37, 2022.
+                                                                              [19] X. Yin and S. Lafortune.  A uniform approach for synthesizing
+                  VI. CONCLUSION                                   property-enforcing supervisors for partially-observed discrete-event
+                                                                                  systems.  IEEE Transactions on Automatic Control, 61:2140–2154,
+  In this work, we developed an abstraction-based approach        08 2016.
+for synthesizing controllers that enforce approximate initial-    [20] X. Yin and S. Lafortune. A new approach for the verification of
+state  opacity over continuous-space  control systems. To           infinite-step and K-step opacity using two-way observers. Automatica,
+                                                                            80:162–171, 2017.
+this end, we proposed a notion of approximate initial-state    [21] X.  Yin, M. Zamani, and  S.  Liu.  On approximate  opacity  of
+opacity-preserving alternating simulation relation, which can          cyber-physical systems.  IEEE Transactions on Automatic Control,
+be used to capture the distance between a concrete con-         66(4):1630–1645, 2021.
+                                                                              [22] K. Zhang, X. Yin, and M. Zamani. Opacity of nondeterministic transi-
+trol system and  its  finite abstraction. Under  this system           tion systems: A (bi) simulation relation approach. IEEE Transactions
+relation, an opacity-enforcing controller designed for the        on Automatic Control, 64(12):5116–5123, 2019.
+
+
+                                                       7930

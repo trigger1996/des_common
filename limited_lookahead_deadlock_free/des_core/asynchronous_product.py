@@ -2,12 +2,29 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from collections.abc import Set
+from itertools import product as cartesian_product
 from functools import cached_property, lru_cache
 from math import prod
 
 from des_core.automata import DFA, Event, State
 
 ProductState = tuple[State, ...]
+
+
+class ProductStateSpace(Set):
+    """Known Cartesian state space with lazy iteration and constant-space membership."""
+    def __init__(self,components):self.components=components
+    def __len__(self):return prod(len(c.states) for c in self.components)
+    def __iter__(self):return cartesian_product(*(sorted(c.states) for c in self.components))
+    def __contains__(self,state):
+        return (isinstance(state,tuple) and len(state)==len(self.components)
+                and all(q in c.states for q,c in zip(state,self.components)))
+    @classmethod
+    def _from_iterable(cls,values):
+        # Set algebra materializes its result; it must not reinterpret states as
+        # component DFA objects through this view's constructor.
+        return frozenset(values)
 
 
 def product_event(index: int, event: Event) -> Event:
@@ -38,6 +55,10 @@ class AsynchronousProductDFA:
     @property
     def state_count(self) -> int:
         return prod(len(component.states) for component in self.components)
+
+    @cached_property
+    def states(self):
+        return ProductStateSpace(self.components)
 
     def _indexed_events(self, attribute: str) -> frozenset[Event]:
         return frozenset(

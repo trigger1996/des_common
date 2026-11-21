@@ -1,0 +1,415 @@
+          2025 IEEE 64th Conference on Decision and Control (CDC)
+         December 10-12, 2025. Rio de Janeiro, Brazil
+
+
+             Regret-Optimal Supervisory Control of Partially-Known
+                              Discrete-Event Systems
+
+                     Jianing Zhao†, Bohan Cui†, Dimos V. Dimarogonas, Rupak Majumdar and Xiang Yin
+
+
+            Abstract— This paper addresses a novel optimal supervi-   knows all system states but lacks prior information about fea-
+           sory control problem for reachability tasks in partially-known    sible transitions from certain states unless explored. Different
+            discrete-event systems (DES). We consider a setting where the                                                               from nondeterministic DES, where outcomes are random and
+           supervisor lacks prior knowledge of feasible events in certain
+                                                     may vary even under identical conditions, a partially-known             states and must discover this information by visiting them.
+         To assess performance in this context, we study regret as a  DES involves initial uncertainty about the system’s structure
+           metric that quantifies the difference between the actual cost   but remains deterministic. The main results of this paper
+           incurred and the optimal cost achievable with full knowledge.    are as follows: i) We propose a formal model for partially-
+       We  formalize  this problem and propose  the algorithm  to                                                         known DES and formulate the regret-optimal supervisory
+          compute an optimal supervisor that guarantees reachability
+                                                                           control problem;  ii) We define a novel tripartite transition10.1109/CDC57313.2025.11312480        while minimizing regret. Our results demonstrate that regret
+            serves as a meaningful performance measure for supervisory   system to capture all potential knowledge evolution paths
+DOI:|         control in partially-known DES, and our method is both correct   under different control decisions and actual environments;
+         and effective in practice.                                                        iii) We develop a game-theoretical approach to obtain an
+IEEE                                                                   optimal solution that minimizes regret.                                         I. INTRODUCTION
+©2025          Discrete-Event Systems (DES)  are an important  class    tiveOurobjectiveswork is [12],closely[13],relatedparticularlyto graphthegamesregretwithminimizationquantita-
+           of systems with discrete state spaces and event-triggered                                                                problem [11], [14]–[16]. However, their setting assumes the
+         dynamics [1]. Supervisory Control Theory (SCT) is a pow-                                                                        environment-player’s strategy is unrestricted, allowing it to
+            erful formal framework widely used for the synthesis of                                                                 change decisions freely each time it revisits the same state.
+       DES controllers under some desired specifications [2]–[4].                                                                     This assumption does not align with the partially-known
+        One important branch in SCT is the synthesis of optimal                                                                   environment scenario considered in our work. One of our
+           supervisors with respect to some performance measures. This                                                                       previous works [11] started the study of partially-known
+          problem, known as the optimal supervisory control problem,                                                                   environment for temporal logic specification. However, only
+          has been widely investigated in the literature [5]–[10]. In [7],979-8-3315-2627-6/25/$31.00                                                                        the path planning problem is solved in [11] and the effect of
+|        the authors proposed an optimal supervisory control frame-                                                                          uncontrollable events has not been investigated.
+(CDC)       workcost. Theconsideringsupervisor’sboth theobjectiveoccurrenceis to costreachandmarkeddisablementstates       II. SUPERVISORY CONTROL OF FULLY-KNOWN DES
+                                                                       A. System ModelControl        optimallyIn mostinexistingterms ofworksthe worst-caseon Supervisorytotal accumulatedControl Theorycost.                                                We follow the standard notations in DES [1] and consider
+and       (SCT), uncertainties are modeled as uncontrollable events.                                                                     a fully-known discrete-event system modeled by a determin-
+         While this approach is suitable for representing disturbances,                                                                                            istic finite-state automaton (DFA) G = (X, Σ, δG, x0, Xm),
+                it falls short in scenarios where the system structure itself is                                                              where X is the finite set of states, Σ is the finite set of events,Decision        unknown and the supervisor must actively explore the systemon                                                       δG : X ×Σ →X is the partial transition function, x0 ∈X is
+            to uncover the actual configuration. Relying solely on worst-                                                                           the initial state, and Xm ⊆X is the set of marked states. The
+          case analysis can result in an overly conservative supervisor.                                                                                 transition function δG can also be extended to δG : X×Σ∗→
+           In fact, a strategy that incurs a slightly higher worst-case                                     X in the usual manner. The language generated by G fromConference           cost may yield significantly lower regret by leveraging the                                                                                   state x  is defined by L(G, x) = {s ∈Σ∗: δG(x, s)!}.
+64th         potential benefits of exploring unknown regions [11].                                               We also define L(G, Q) := S x∈Q L(G, x). The language
+                                                                       generated by G  is L(G) := L(G, x0), and the languageIEEE           In the paper, we formulate and solve a novel optimal super-           visory control problem by considering scenarios where the                                                             marked by G is Lm(G) = {s ∈L(G)  : δG(s) ∈Xm}.
+2025        supervisor operates in a partially-known DES: the supervisor   For any s ∈L(G), we write δG(x0, s) simply as δG(s). For
+               This work was supported by the National Natural Science Foundation of   any x ∈X, we define ΛG(x) = {σ ∈Σ : δG(x, σ)!} as the
+            China (62573291,62173226,62188101). † indicates the equal contribution.    set of active events at x. For any s ∈L(G), we also write
+                     J. Zhao, B. Cui and X. Yin are with the School of Automation and   ΛG(δG(s)) as ΛG(s) for simplicity.
+               Intelligent Sensing, Shanghai Jiao Tong University, Shanghai 200240, China.
+         E-mail: {jnzhao,bohan cui,yinxiang}@sjtu.edu.cn.           In the supervisory control framework, the event set Σ
+              D. V. Dimarogonas is with the School of Electrical Engineering and    is partitioned as Σ = Σc ˙∪Σuc, where Σc  is the set of
+           Computer Science, KTH Royal  Institute of Technology, Stockholm SE    controllable events and Σuc  is the  set of uncontrollable
+            10044, Sweden. E-mail: dimos@kth.se.
+               R. Majumdar is with the Max-Planck Institute for Software Systems,    events. A control decision γ ∈2Σ is said to be admissible
+              Kaiserslautern 67663, Germany. E-mail: rupak@mpi-sws.org.          if Σuc ⊆γ. Without loss of generality, we consider the
+
+
+           979-8-3315-2627-6/25/$31.00 ©2025 IEEE                    1214
+
+                  Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on June 17,2026 at 01:57:30 UTC from IEEE Xplore. Restrictions apply.
+
+ Algorithm 1: Min-Max Game (SolveMinMax)            B. Controller Synthesis
+   Input: A BTS B with the set of marked states Xm and a cost             In  this subsection, we review the optimal supervisory
+           function wB
+   Output: Optimal strategy π⋆:QX →QY and the optimal minmax       control synthesis algorithm for reachability based on the
+            value minmax                                        following structure of bipartite transition system [17].
+ 1 foreach x ∈QX do                                                Definition 1 (Bipartite Transition System): Given system
+ 2        if x ∈Xm then
+                                                  G, we construct its bipartite transition system (BTS) as 3          Val(0)(x) ←0 and π(0)(x) ←ΛG(x) ∪Σuc
+ 4      else
+                                               B = (QX, QY , x0, hXY , hY X, Σ, Γ) 5          Val(0)(x) ←∞
+                                                     where QX = X ∪{d} is the set of X-states, where d is 6 repeat
+ 7      foreach y ∈QY do                                         the deadlocked state; QY = X × Γ is the set of Y -states;
+ 8         Val(k+1)(y) ← max   Val(k)(x′) + wB(y, x′)        x0 ∈QY  is the initial X-state; hXY  : QX × Γ →QY  is the
+                             x′∈Succ(y)                                   transition function from X-states to Y -states define by: for
+ 9      foreach x ∈QX do                                   any x ∈QX, γ ∈Γ and y = (x, γ) ∈QY , y = hXY (x, γ);
+10         Val(k+1)(x) ←  min   Val(k)(y) + wB(x, y)         hY X :QY ×(Σ ∪{ϵ})→QX is the transition function from
+                             y∈Succ(x)
+                                             Y -states to X-states define by: for any y = (x, γ) ∈QY ,11        π(k+1)(x) ←arg min  Val(k)(y) + wB(x, y)
+                            y∈Succ(x)                       we have  (i)  if ΛG(x) ∩γ̸ = ∅, we define hY X(y, σ) =
+12     k ←k + 1                                              δ(x, σ), ∀σ ∈ΛG(x) ∩γ; and (ii if ΛG(x) ∩γ = ∅, we
+13  until ∀z ∈QX ∪QY  : Val(k+1)(z) = Val(k)(z);                    define hY X(y, ϵ) = d. Σ is the set of events in G; Γ is the
+14 return π(k), Val(k)(x0)                                              set of admissible control decisions in G.
+                                                        Note that the marked states in G are implicitly included
+control decisions in which at most one controllable event    in X-states of B, i.e., Xm ⊂QX. We use Succ(·) to denote
+is included and Γ =  γ ∈2Σ : Σuc ⊆γ ∧|γ \ Σuc| ≤1  as    the successor-states of a given state in the graph, i.e.,
+the set of admissible control decisions. Then, a supervisor      •  for each x ∈QX, we have
+is a mapping S  : L(G) →Γ. We denote by Ψ(G) the set
+                                                                      Succ(x) = {hXY (x, γ) : γ ∈Γ}of all supervisors. Moreover, we use the notation S/G to
+represent the controlled system and the language generated      •  for each x ∈QY , we have
+by S/G is denoted by L(S/G). The language marked by
+                                                            Succ(x) = {hY X(y, σ) : σ ∈Σ ∪{ϵ} s.t. hY X(y, σ)!}S/G is denoted by Lm(S/G) = L(S/G) ∩Lm(G).
+   In this paper, we aim to synthesis a supervisor enforcing   To capture the optimality, we define a cost function for B
+reachability  objective, which requires  that the controlled   as follows: for each x ∈QX\{d} and each y ∈hXY (x),
+DES will eventually visit the marked states, i.e.,          we define wB(x, y) = 0; for each y ∈QY and each x′ =
+                                                  hY X(y, σ) ∈hY X(y), we define wB(y, x′) = w(σ).
+        ∀s ∈L(S/G), ∃n ∈N, ∀t ∈L(S/G)/s :            Then the optimal supervisor can be obtained by solving
+                                                            (1)
+             |t| ≥n ⇒{st} ∩Lm(G)̸ = ∅                      a standard min-max reachability game,  i.e., Algorithm 1.
+                                                      Given the optimal strategy π⋆returned by Algorithm 1, in
+Define ΨW (G) as the set of all winning supervisors that    execution, the optimal supervisor S⋆can work as follows:
+enforces reachability.                                                at each instant, S⋆remembers the current X-state x and
+  We consider the optimal supervisory control in a quanti-   pick the decision γ such that hXY (x, γ) = π⋆(x). Then we
+tative manner. For each event, we define the cost function   update the current to Y -state according to γ and wait for the
+w  : Σ →R≥0 describing the cost incurred whenever the   next event to occur. After that, we update the current state
+DES generates an event. Given a finite string t = σ1 · · · σn ∈   again to X-state and so forth.
+L(G), we define cost(t) = Pni=1 w(σi) as the total cost
+along the string s. For a string s ∈Lm(G), we define its                     III. PARTIALLY-KNOWN DES
+cost as the total cost when it first reaches the set of marked                                                         Although uncertainties in environments can be captured
+states Xm, i.e., cost(s) = cost(t), where                  by the uncontrollable events in the full-known DES, there
+                                                                are also scenarios where there are initially unknown states
+        t ∈{s} ∩Lm(G) ∧t′ /∈Lm(G), ∀t′ ∈{t}\{t}    (2)                                                                   in the system that could become known after being visited
+                                                    by system trajectories. We capture such kind of informationGiven a winning supervisor S ∈ΨW (G), we define the cost
+                                                               uncertainty by the following partially-known DES.of the controlled system S/G as
+                                                                    Definition 2 (Partially-Known DES): A  partially-known
+           cost(S/G) =  max   cost(s)           (3)  DES (PK-DES)  is a 6-tuple G = (X, Σ, δ, ∆, x0, Xm),
+                        s∈Lm(S/G)                     where X  is the set of states; Σ is the set of events; δ  :
+Then, we aim to synthesize an optimal supervisor S⋆that  X ×Σ →X is the transition function; x0 is the initial state;
+minimizes the cost with the reachability objective, i.e.,     Xm  is the set of marked states; different from the DFA,
+                                      ∆: X →22Σ is the event-pattern function that assigns each
+       cost(S⋆/G) ≤cost(S/G), ∀S ∈ΨW (G)      (4)    state a family of activated events.
+
+                                                       1215
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on June 17,2026 at 01:57:30 UTC from IEEE Xplore. Restrictions apply.
+
+   Essentially, PK-DES is used to describe the possible world      Finally, given a knowledge set, the system could refine
+for the system. That is, the system has some prior informa-    the PK-DES by eliminating uncertainties  that have been
+tion regarding the possible events of each unknown state but   explored. Given a PK-DES G and a knowledge set K ∈KW,
+does not know which ones are activated before the system    the refined PK-DES is a new PK-DES
+trajectory actually visits it. Therefore, in the PK-DES G, for
+                                               GK = (X, Σ, δ, ∆′, x0, Xm)              (6)
+each state x ∈X, we have ∆(x) = {o1, o2, . . . , o|∆(s)|}
+where each oi ∈2Σ is called an event-pattern representing a   such that for any x ∈X, we have
+possible set of activated events at state x. For convenience,             (                                                                             {oK(x)},    if x ∈K
+we refer each oi ∈∆(x) to as an observation at state x, since              ∆′(x) =
+                                                                          ∆(x),         if x /∈Kthe system “observes” the activated events when visiting state
+x. Therefore, for each x ∈X, we say x is a known state if      Therefore, under the setting of partially-known DES, the
+|∆(x)| = 1; and unknown state if |∆(x)| > 1. Accordingly,   supervisor should decide the control decision based on both
+we partition the state space as X = Xk ˙∪Xuk where Xk is   of what the system has visited and what it has known.
+the set of known states and Xuk is the set of unknown states.      Definition 4 (Strategic Supervisor): A  strategic  supervi-
+We refer the visit to an unknown state to as an exploration.    sor is a function S  : H(G) →Γ such that for any ℏ=
+   Definition 3 (Compatible DES): Given G, a DFA G =   κ0σ1κ1σ2 · · · κn where κi =  (xi, oi), we have S(ℏ) =
+(X, Σ, δG, x0, Xm) is a compatible DES with G, denoted   {σc}∪Σuc, σc ∈on∩Σc, i.e., the supervisor makes a control
+by G∈G, if for any x∈X, we have i) ΛG(x)∈∆(x); and   decision based on the observed set of activated events at xn.
+ii) for each σ∈ΛG(x), we have δG(x, σ)=δ(x, σ).       We denote by Φ(G) the set of all strategic supervisors in G.
+  In the partially-known  setting, a supervisor cannot be     Given a strategic supervisor S ∈Φ(G) and an actual
+synthesized only based on the finite string generated by the  DES G ∈G, the controlled system, denoted by S/G, whose
+system. In addition, the observed successor-pattern at each   language L(S/G) is recursively defined as: i) ϵ ∈L(S/G);
+state should also be taken into consideration. If the system     ii) for any ℏ= κ0σ1κ1σ2 · · · κn, we have σ1σ2 · · · σn ∈
+trajectory visits a known state, then there would not be any   L(S/G) iff σ1σ2 · · · σn−1 ∈L(S/G) and σn ∈S(ℏ).
+new information obtained, since ∆(x) is already a singleton.      In the partially-known setting, since the actual DES G ∈
+Only when the system trajectory visits unknown state, it will  G is unknown a priori, we aim to synthesize a strategic
+gain new information and successor-pattern at this state will   supervisor S ∈Φ(G) such that
+become known from then on.
+  To capture the result of an exploration, we call a tuple           ∀G ∈G : L(S/G) satisfies (1)             (7)
+κ = (x(κ), o(κ)) ∈X × 2Σ as a knowledge state, where  We denote by ΦW (G)⊆Φ(G) the set of all winning strategic
+o ∈∆(x) is the set of activated events of x that becomes   supervisors for the reachability objective.
+known to the agent after exploring x. We denote by Kw =     To evaluate the performance of a strategic supervisor S, a
+{κ ∈X × 2Σ  : o(κ) ∈∆(x(κ))} the set of all possible    natural approach is to consider the worst-case cost similar
+knowledge states. A history in G is a finite sequence ℏ=    to the definition of (3) among all possible actual DES, i.e.,
+(x0, o0)σ0(x1, o1)σ1 · · · (xn, on) ∈(Kw·Σ)∗Kw such that i)
+                                                                            Costworst(S) := max cost(S/G)            (8)for any i = 0, 1, . . . , n −1, we have σi ∈oi and xi+1 =                        G∈G
+δ(xi, σi); ii) for any i, j = 1, . . . , n, we have xi = xj ⇒   However, this metric cannot capture the potential benefit
+oi = oj. For such history ℏ, we call σ1σ2 · · · σn−1 ∈X∗   obtained from exploring unknown  states. To address this
+its string. We denote by H(G) and L(G) the set of all finite                                                                     issue, we propose to use regret to evaluate the performance
+histories and paths in PK-DES G, respectively.                                                              of a strategic supervisor, which is defined as follows.
+  Given knowledge on the PK-DES will be accumulated                                                                    Definition 5 (Regret): Given a partially-known DES G,
+along a history, which is captured by the following concept of                                                                the regret of a supervisor S ∈Φ(G) is
+knowledge set. A knowledge set K = ⟨κ1, . . . , κ|K|⟩where
+κi ∈K is an ordered set of knowledge states such that        Reg(S) = max  cost(S/G) −  min   cost(S′/G)
+                                                        G∈G              S′∈ΦW (G)       ∀κ, κ′ ∈K : x(κ) = x(κ′) ⇒o(κ) = o(κ′).                                                                           Intuitively, for each strategic supervisor S ∈Φ(G) and
+We denote by KW the set of all knowledge sets. With a slight                                                         each possible actual DES G ∈G, cost(S/G) is the actual
+abuse of notation, for each x∈X, we write x∈K if (x, o)∈K                                                                 cost incurred when applying S to this specific DES, while
+for some observation o∈∆(x). We denote by oK(x)∈∆(x)                                                   minS′∈ΦW (G) cost(S′/G) is the best-response cost if G had
+the unique observation such that (x, oK(x))∈K.             been known to the system with hindsight. Therefore, their
+  During  the system execution,  the system maintains a                                                                 difference is the regret of applying S in G. Since the system
+knowledge set to record its exploration history. Once a new                                                         does not know which G ∈G the actual DES is, the regret
+unknown state  is explored, the knowledge set  is updated                                                              of S is defined as the worst-case regret among all G ∈G.
+according to the following function. Given a knowledge set                                                        Problem 1 (Regret-Optimal Supervisory Control): Given
+K ∈KW and a knowledge state κ ∈Kw, we have                                                           a partially-known DES G, synthesize a strategic supervisor
+          (K,                        if x(κ) ∈K      S ∈ΦW (G) such that
+  update(K, κ) =                                       (5)
+                      ⟨κ1, . . . , κ|K|, κ⟩,   otherwise                     ∀S′ ∈ΦW (G) : Reg(S) ≤Reg(S′).         (9)
+
+
+                                                       1216
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on June 17,2026 at 01:57:30 UTC from IEEE Xplore. Restrictions apply.
+
+                   IV. MAIN RESULTS                     v0x = v0 and there are γi ∈Γ, σi ∈Σ ∪{ϵ} and oi ∈2Σ
+A. Tripartite Transition System                             such that viy = fXY (vix, γi), viz = fY Z(viy, σi), and vi+1x  =
+  We aim to incorporate the knowledge set into the state   fZX(viz, oi) hold for each i=0, 1, . . . , n−1 and vix =vnx for
+                                                                           i = n. It is obvious that each play in G induces a history inspace of the game arena and explicitly split the movements
+                                                   G, i.e., ℏρ = (x0, o0)σ0(x1, o1)σ1 · · · (xn, on) ∈H(G). Forof the control decision, the system execution, and the non-
+                                                            convenience, we still use ρ to denote the partial play thatdeterminism of the environment, which leads to the following
+                                                         does not necessarily end with a X-state.notion of tripartite transition system.
+                                                             Since only edges from Vz to Vx represent actual move-   Definition 6 (Tripartite Transition System): Given a PK-
+                                                           ments, we define a weight function for G as wG : V × V →DES G, its tripartite transition system (TTS) is a tuple
+                                             R≥0 where for any vz = (x, K, x′) and vx = (x′, K′), we
+      G = (VX, VY , VZ, v0, fXZ, fZY , fY X, Σ, Γ)          have wG(vz, vx) = w(x, x′), wG(vx, vy) = wG(vy, vz) = 0.
+                                                  The cost of a play ρ = v0v1 · · · vn ∈V ∗is defined aswhere
+                                                        costG(ρ) = Pn−1i=0 wG(vi, vi+1).  • VX = X × KW is the set of X-states;
+                                                        Given the above TTS G, the strategies are functions  • VY = X × KW × Γ is the set of Y -states;
+  • VZ = X × KW × X ∪{d} is the set of Z-states;       πx :V ∗VX →VY ∪{Null}, πy :V ∗VY →VZ, πz :V ∗VZ →VX
+  • v0 = (x0, K0) ∈QX is the initial state with K0 being    for X-player, Y -player and Z-player, respectively. We denote
+     the initial knowledge set;                           by SX(G), SY (G), SZ(G) the sets of all X-strategies, Y -
+  • fXY  : VX ×Γ →VY  is the transition function from X-    strategies and Z-strategies, respectively. In particular, we say
+     states to Y -states defined by: for any vx = (x, K) ∈VX,   a strategy π is positional if ∀ρ, ρ′  : last(ρ) = last(ρ′) ⇒
+    γ ∈Γ, and vy = (x, K, γ) ∈VY , we have              π(ρ) =  π(ρ′), where last(·) denotes the  last state of a
+                      vy = fXY (vx, γ)               (10)   sequence. We denote by S1j(G) the set of  all positional
+                                                                     strategies for j-player, where j = X, Y, Z. Given strategies
+  • fY Z : VY × (Σ ∪{ϵ}) →VZ is the transition function                                                   πx ∈SX, πy ∈SY , πz ∈SZ, the outcome play ρπx,πy,πz is
+    from Y -states to Z-states defined by: for any vy =                                                                the unique sequence v0v1 · · · vn ∈V ∗VX such that
+     (x, K, γ) ∈VY , we have
+                                                                  • ∀i < n : vi ∈VX ⇒πx(v0v1 · · · vi) = vi+1;
+      –  if γ ∩oK(x)̸ = ∅, we define                                                                  • ∀i < n : vi ∈VY ⇒πy(v0v1 · · · vi) = vi+1;
+        fY Z(vy, σ)=(x, K, δ(x, σ)), ∀σ∈γ ∩oK(x) (11)      • ∀i < n : vi ∈VZ ⇒πz(v0v1 · · · vi) = vi+1;
+      –  if γ ∩oK(x) = ∅, we define fY Z(vx, ϵ) = d            • πx(v0v1 · · · vn) = Null.
+  • fZX : VZ ×2Σ →VX is the transition function from Z-   Here we remark that, since the objective of the supervisor is
+     states to X-states defined by: for any vz = (x, K, x′) ∈    to satisfy the reachability w.r.t. the set Vm, once the system
+    VZ\{d} and any o ∈∆(x′), we define                     trajectory visits Vm, it is unncessary to restrict the behaviors
+                                                              of the system. To this end, in the TTS G, for a play ρ
+                vx = fZX(vz, o) = (x′, K′)          (12)    satisfying last(ρ) ∈Null, we set πx(ρ) = Null.
+                                                              Next, we aim to characterize the sets of strategies for the     with K′ = update(K, (x′, o));
+                                              X, Y, Z-players that are sufficient to solve the problem.
+  • Σ is the set of events in G;
+                                                           For the Y -player, since there  is no restriction for the
+  • Γ is the set of admissible control decisions in G.
+                                                               uncontrollable events and no causal relation between two
+   Intuitively, the graph is tripartite with three types of states:
+                                                                     different events, it is sufficient to consider ΠY = S1Y (G) forthe X-states from which the system chooses a  feasible
+                                                                              all the possible behaviors generated by Y -player.
+control decision; the Y -states from which the system  is
+                                                           For the Z-player, it cannot play arbitrarily since the actual
+executed according the control decision chosen before; and
+                                         DES  is fixed. Therefore, the Z-player must commit to a
+the Z-states from which the actual event-pattern is decided in
+                                                                    specific event-pattern it chooses at each unknown state when
+the possible world. Note that the knowledge sets are update
+                                                                the game begins. To  this end, we define the following
+monotonely since they are ordered sets. Consider the Z-
+                                                             notion of strongly positional strategy. We say a Z-strategy
+states with at least two successors, i.e., vz ∈VZ satisfying
+                                                       πz ∈SZ(G)  is strongly positional  if for any two plays
+Succ(vz) ≥2, which we call as “Z-states with decisions”.
+                                                                 ρ, ρ′ ∈V ∗VZ where πz(ρ)=(x, K) and πz(ρ′)=(x′, K′), weEssentially, the knowledge sets in G will be updated after
+                                                        have i) πz is positional; and ii) x = x′ ⇒oK(x) = oK′(x′).each Z-state with decisions. Then we build the following
+                                        We denote by ΠZ ⊆SZ(G) the set of all stronly positionalproperty for G.
+                                                                     strategies for the Z-player.
+  Proposition 1: In the TTS G, there are no cycles encom-
+                                                                        Finally, we aim to find a winning X-strategy that ensures
+passing two different Z-states with decisions.
+                                                                the outcome play visits the state in Vm. Therefore, we define
+B. Plays and Strategies
+                                      (               last(ρπx,πy,πz) ∈Vm, )
+  We denote by V = VX ∪VY ∪VZ the state space of G.    ΠX =  πx ∈SX(G) :                            (13)
+                                                                          ∀πy ∈ΠY , ∀πz ∈ΠZFurthermore, we define the set of marked states in G as Vm =
+{(x, K) ∈VX : x ∈Xm}. Given G, we call a finite sequence     Now, similarly to Definition 5, we define the regret of an
+ρ = v0xv0yv0zv1xv1yv1z · · · vnx ∈(VX · VY  · VZ)∗VX a play if   X-strategy πx ∈ΠX in G as (14). It suffices to synthesize
+
+
+                                                       1217
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on June 17,2026 at 01:57:30 UTC from IEEE Xplore. Restrictions apply.
+
+                RegG(πx) = max   max costG(ρπx,πy,πz) −min  max costG(ρπ′x,πy,πz)                   (14)
+                             πz∈ΠZ  πy∈ΠY                    π′x∈ΠX πy∈ΠY
+
+
+
+an X-strategy πX ∈ΠX  that minimizes RegG(πx). In    Algorithm 2: Find All Critical Micro-Strategies (FACMiS)
+what follows, we present the solution by introducing two       Input: The TTS G and an initial state vI
+algorithms for micro and macro-strategy synthesis.                Output: All micro-strategies from vI to VF (vI)
+                                                                                              1 Compute VF (vI) as in (16);
+C. Strategy Synthesis                                                               2 Define ΠvI  : 2VF (vI) →T × R≥0;
+                                                                                              3 Call DFS(vI, {vI}, 0);
+  Due to the possible existence of cycles in G, there  is      4 return ΠvI
+generally an infinite number of winning strategies for X-      5 procedure DFS(v, Vvis, C)
+player, which makes enumerating all of them infeasible. To      6 Define subtree Tv : Succ(v) →T;
+                                                                                              7 Tv ←Null;
+tackle this issue, we propose to compute micro-strategies to      8  if v ∈VF (vI) then
+capture the strategies that are sufficient to obtain the regret-      9    Acc ←Vvis ∩VF (vI);
+optimal X-strategy. Based on Proposition 1, we know that,     10        if Acc /∈ΠvI then
+                                                                                              11        ΠvI (Acc) ←(Tv, C);
+the evolution of Z-states is monotone and for any plays in     12      else
+G that end with the same state, they must visit the same Z-     13         (T , c) ←ΠvI (Acc);
+states with decisions in the same order. Therefore, it suffices     14              if C < c then
+                                                                                              15           ΠvI (Acc) ←(Tv, C);to compute the X-strategies between different layers of Z-
+states. To formally capture this, we define the set of initial     16     return Null
+states for all knowledge sets as                                               17  if v ∈VX then
+                                                                                              18      Define ˜C ←∞, ˜vy ←Null, ˜T ←Null;
+ VI ={v0} ∪{Succ(vz)∈VX :Succ(vz) ≥2, ∀vz ∈VZ} (15)     19      foreach vy ∈Succ(v) do
+For each vI ∈VI, we define the set of all end states as            20              if vy /∈Vvis then
+                                                                                              21             Vvis ←Vvis ∪{vy};
+ VF (vI) = {vx ∈Vm : K(vx) = K(vI)}               (16)     22          T ←DFS(vy, Vvis, C + wG(v, vy));
+                                                                                              23             Vvis ←Vvis\{vy};
+      (         ∃vz ∈VZ  s.t. K(vz) = K(vI)∧ )       24                    if C + wG(v, vy) + costT(T) < ˜C then
+      ∪  vx ∈VX :                                                                                                                   ˜C ←C + wG(v, vy) + costT(T);                     vx ∈Succ(vz) ∧K(vx)̸ = K(vz)           25
+                                                                                              26                         ˜vy ←vy;
+                                                                                                                 ˜T ←T;  For convenience, in what follows, we use a tree in the      27
+TTS G to represent a strategy and we denote by T the set of
+                                                                                              28        if   ˜vy̸ = Null then
+all trees in G. For each T ∈T, we denote by VT and ET  its     29          Tv(˜vy) ←˜T;
+sets of states and edges. We define the cost of T , denoted by
+costT(T ), as the maximum cost of its plays from the root to     30  if v ∈VY ∪VZ then
+                                                                                              31      foreach v′ ∈Succ(v) do
+the leaves. We denote by ρT the play with the maximum cost,     32              if v′ /∈Vvis then
+i.e., costG(ρT )=costT(T ). Furthermore, for each T ∈T, it     33             Vvis ←Vvis ∪{v′};
+                                                                                              34          T ←DFS(v′, Vvis, C + wG(v, v′));is a map T  : VT →T that assigns each state in T a subtree.
+                                                                                              35             Vvis ←Vvis\{v′};
+Specifically, we have T (vI) = T , where vI is the root of T .     36             Tv(v′) ←T;
+   Definition 7 (Micro-Strategy): Given the TTS G and for
+each vI ∈VI, a micro-strategy TvI ∈T for X-player is a     37 return Tv
+winning strategy (strategy-tree) such that
+   i) the root of TvI is vI;                               Now, we present the algorithm for finding  all  critical
+  ii)  for each vx ∈VTvI ∩VX, there is only one successor    micro-strategies as Algorithm 2.
+     vy ∈Succ(vx) in G such that (vx, vy) ∈ETvI ;              Proposition 2: For each vI ∈VI, all its the critical micro-
+ iii)  for each vy ∈VTvI ∩VY , for any successor vz ∈Succ(vy)    strategies are returned by Algorithm 2.
+     in G, we have (vy, vz) ∈ETvI ;                         With the  critical micro-strategies for one layer of Z-
+ iv)  for each vz ∈VTvI ∩VZ, all of the successors vx ∈    states with decisions, we next introduce the notion of macro-
+    Succ(vz) in G are the leaves;                              strategy that connects the different layers of Z-states with
+ v) All vx ∈VTvI ∩Vm are leaves.                           decisions by the micro-strategies.
+  For convenience, for each micro-strategy T ∈T, we denote      Definition 8 (Macro-Strategy): Given G, a macro-strategy
+by Acc(T ) the set of all leaves of T .                                is a map ξ : VI →{ΠvI  : vI ∈VI} such that for each vI ∈
+   Intuitively, each micro-strategy captures the partial strat-   VI, we have ξ(vI)=TvI for some micro-strategy TvI ∈ΠvI.
+egy for X-player in G that ensures for each vI ∈VI either     Given a partial macro-strategy ξ, we denote by dom(ξ) ⊆
+                                                        VI the domain of ξ. For each ξ, we definethe reachability of Vm or a new exploration. For any two
+micro-strategies TvI and T vI,′  we say they are similar if they                       
+have the same leaves. For each vI ∈VI, we call the micro-    Υ(ξ) = {v0} ∪ [   (Acc(ξ(v′)) ∩VX)\dom(ξ)
+strategy with the minimum cost as the critical micro-strategy.                       v′∈dom(ξ)
+
+
+                                                       1218
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on June 17,2026 at 01:57:30 UTC from IEEE Xplore. Restrictions apply.
+
+ Algorithm 3: Find Regret-Optimal Macro-Strategy          Due to space constraint, the reader is referred to https:
+   Input: The TTS G and an initial state v0                   //jnzhaooo.github.io/files/regret.pdf   for
+   Output: The regret-optimal macro-strategy ξ⋆and the minimized        detailed proofs as well as an illustrative example for our
+             regret Reg⋆
+                                                                control synthesis algorithm. 1 Construct an empty macro-strategy ξ : VI →T with dom(ξ) = ∅;
+ 2 Reg⋆←∞and ξ⋆←ξ;
+                                                                              V. CONCLUSION 3 Call DFS2(v0, ξ);
+ 4 procedure DFS2(v, ξ)                                            In this paper, we formulate and solve the regret-optimal
+ 5  if v /∈dom(ξ) then
+                                                             supervisory control problem for partially-known discrete- 6      foreach T ∈Πv do
+ 7         ξ(v) ←T ;                                           event systems. To model the system’s interaction with un-
+ 8        ADVANCE(ξ);                                            certain environments, we introduce a  tripartite  transition
+ 9         ξ(v) ←∅;
+                                                                   structure that captures all possible actual environments. By
+10  else                                                 decomposing the problem into a two-stage reachability game,
+11     ADVANCE(ξ);
+                                             we develop the solution algorithm. Our results demonstrate
+12 procedure ADVANCE(ξ)
+                                                                      that regret serves as a more meaningful performance metric13  if Υ(ξ) = ∅then
+14     r ←REGRET(ξ);                                         than conventional approaches for handling information that
+15        if r < Reg⋆then                                                    is deterministic yet initially unknown. This result extends
+16      Reg⋆←r and ξ⋆←ξ;
+                                                            optimal SCT beyond traditional worst-case analysis.
+17  else
+18     Choose any v′ ∈Υ(ξ);                                             REFERENCES
+19      Call DFS2(v′, ξ);
+                                                                                     [1] C. Cassandras and S. Lafortune, Introduction to Discrete Event Sys-
+                                                                                    tems. Springer, 2008.
+                                                                                     [2] M. Reniers and K.  Cai, “Supervisory  control theory with event
+as the set of frontier nodes of ξ, representing the X-states                                                                                         forcing,” IEEE Transactions on Automatic Control, 2024.
+for which the micro-strategies need to be assigned next.      [3] A. M. Mainhardt and A.-K. Schmuck, “Assume-guarantee synthesis
+Based on this, we say ξ is a complete strategy if Υ(ξ) = ∅.          of decentralised supervisory control,” IFAC-PapersOnLine, vol. 55,
+                                                                                    no. 28, pp. 165–172, 2022.
+Since VF (vI) ⊆VI, ∀vI ∈VI,  it  is sufficient to form a      [4] Y. Xie, S. Li, and X. Yin, “Optimal synthesis of opacity-enforcing su-
+complete X-strategy with one complete macro-strategy with          pervisors for qualitative and quantitative specifications,” IEEE Trans-
+corresponding micro-strategies, each of which starts from          actions on Automatic Control, vol. 69, no. 8, pp. 4958–4973, 2023.
+                                                                                     [5] Y. Ji, X. Yin, and S. Lafortune, “Optimal supervisory control with
+either initial state v0 or one leave of the last micro-strategy.        mean payoff objectives and under partial observation,” Automatica,
+  To compute regret of a given complete macro-strategy ξ,           vol. 123, p. 109359, 2021.
+we first characterize the set of all Z-strategies ΠZ as follows.      [6] L. V. Alves, P. N. Pena, and R. H. Takahashi, “Planning on discrete
+                                                                                  event systems using parallelism maximization,” Control Engineering
+Given the unknown states x1, . . . , xn ∈Xuk, we construct            Practice, vol. 112, p. 104813, 2021.
+Θ = {(x1, o1) : o1 ∈∆(x1)}×· · ·×{(xn, on) : on ∈∆(xn)}     [7] R. Sengupta and S. Lafortune, “An optimal control theory for discrete
+                                                                                  event systems,” SIAM Journal on control and Optimization, vol. 36,
+as the set of all knowledges to be explored at the unknown          no. 2, pp. 488–541, 1998.
+states. For each θ = ⟨(x1, o1), · · · , (xn, on)⟩∈Θ, we define      [8] Z. Ma and K. Cai, “Optimal  secret protections  in discrete-event
+πθz as: for any vz = (x, K, xi) where xi ∈Xuk, we have             systems,”pp. 2816–2828,IEEE 2021.Transactions on Automatic Control, vol. 67, no. 6,
+      πθz(vz) = (xi, K′), K′ = update(K, (xi, oi))               [9] Y. Xie, X. Yin, and S. Li, “Opacity enforcing supervisory control
+                                                                                using nondeterministic supervisors,” IEEE Transactions on Automatic
+For vz =(x, K, x′) where x′ ∈Xk, we have πθz(vz)=(x′, K).          Control, vol. 67, no. 12, pp. 6567–6582, 2021.
+By th above construction, we have ΠZ ={πθz : θ∈Θ}.           [10]  P. Lv, Z. Xu, Y. Ji, S. Li, and X. Yin, “Optimal supervisory control
+  Given a Z-strategy πθz, the TTS G is induced to a tree Gπθz          ofp. 111634,discrete 2024.event systems for cyclic tasks,” Automatica, vol. 164,
+which is essentially a game between X and Y . Therefore, we    [11]  J. Zhao, K. Zhu, M. Feng, S.  Li, and X. Yin, “No-regret path
+call Algorithm 1 to compute the best-response cost against         planning for temporal logic tasks in partially-known environments,”
+πθz,  i.e., minmax(Gπθz) ←SolveMinMax(Gπθz, Vm, wG).    [12] TheK. Chatterjee,InternationalM. J.Randour,RoboticsandResearch,J.-F. Raskin,p. 02783649251315758,“Strategy synthesis2025.for
+Given a complete macro-strategy ξ and a Z-strategy πθz,         multi-dimensional quantitative objectives,” Acta informatica, vol. 51,
+the TTS G  is induced  to a  tree  Gξ,πθz. We denote by          no. 3, pp. 129–163, 2014.                                                                              [13] M. Kwiatkowska, G. Norman, and D. Parker, “Probabilistic model
+ρ(Gξ,πθz) the play in tree Gξ,πθz  with the maximum cost         checking and autonomy,” Annual Review of Control, Robotics, and
+cost(ρ(Gξ,πθz)), which can be directly computed by a tree        Autonomous Systems, vol. 5, pp. 385–410, 2022.
+dynamic programming. Then, we define                             [14] E. Filiot, T. L. Gall, and J.-F. Raskin, “Iterated regret minimization in
+                                                                 game graphs,” in International Symposium on Mathematical Founda-
+  REGRET(ξ) = max  cost(ρ(Gξ,πθz)) −minmax(Gπθz)               tions of Computer Science, pp. 342–354, 2010.
+                 πθz∈ΠZ                                                  [15]  P. Hunter, G. A. P´erez, and J.-F. Raskin, “Reactive synthesis without
+                                                                                               regret,” Acta Informatica, vol. 54, no. 1, pp. 3–39, 2017.
+where we use Acc(Gξ,πθz) to denote all the leaves of Gξ,πθz.     [16] M. Cadilhac, G. A. P´erez, and M. v. d. Bogaard, “The impatient may
+  Now, we present the algorithm for finding the regret-         use limited optimism to minimize regret,” in International Conference
+                                                                      on Foundations of Software Science and Computation Structures,
+optimal macro-strategy as Algorithm 3.                                                                                    pp. 133–149, Springer, 2019.
+  Theorem 1: Given the TTS G, the X-strategy formed by    [17] X. Yin and S. Lafortune, “Synthesis of maximally permissive supervi-
+the macro-strategy returned by Algorithm 3 and the micro-          sors for partially-observed discrete-event systems,” IEEE Transactions
+                                                                      on Automatic Control, vol. 61, no. 5, pp. 1239–1254, 2015.strategies returned by Algorithm 2 minimizes the regret for
+X-player, i.e., Problem 1 is solved with minimized Reg⋆.
+
+
+                                                       1219
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on June 17,2026 at 01:57:30 UTC from IEEE Xplore. Restrictions apply.

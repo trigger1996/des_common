@@ -1,0 +1,485 @@
+2020 59th IEEE Conference on Decision and Control (CDC)
+Jeju Island, Republic of Korea, December 14-18, 2020
+
+
+      On Attack Mitigation in Supervisory Control Systems:
+             A Tolerant Control Approach
+
+
+                                   Jingshi Yao, Xiang Yin and Shaoyuan Li
+
+
+  Abstract— This paper investigates attack mitigation problem    [11], the authors investigate, from the attacker point of view,
+in supervisory control of discrete event systems. We consider   how to synthesize successful attacks such that the system
+the scenario where the system is subject to actuator enablement                                                        can be damaged while preventing itself from been detected.
+attack. We explicitly distinguish between controllable events
+                                                             Recently in [1], Carvalho et al. proposed a general frame-and defendable events; the former are events that can be
+disabled by the normal supervisor but may be subject to attack,   work for attack detection and mitigation for supervisory
+while the  latter are events that can be defensed (disabled    control systems, where four types of attacks are considered.
+deﬁnitely) by the mitigation module but possibly with higher   Automaton model is provided to describe the closed-loop
+costs. The objective is to design an attack mitigation strategy to                                                        system under each type of attacks. A generic attack detec-
+prevent serious damage from attack. We formulate the attack
+                                                                   tion and mitigation strategy, which is independent from themitigation problem as a tolerant control problem under partial
+observation. Particularly, in addition to guarantee safety, we   speciﬁc attack type, is also proposed. The strategy consists
+aim to maximize the desirable behavior (normal speciﬁcation)   of the following two parts: (i) ﬁrst, a diagnoser is used to
+while minimize the tolerable behavior (safe but not desirable).    detect whether or not the system has been attacked; and
+We provide an  effective  online algorithm  for  solving  this                                                                                     (ii) once the the diagnoser detects attack unambiguously, the
+problem, which yields a novel attack mitigation strategy that
+                                                               mitigation module will disable/defend all controllable eventsgeneralizes the existing one in the literature. Speciﬁcally, we
+show that the proposed strategy may still prevent damage even    to prevent the system from reaching unsafe states. Whether
+when the safe-controllability condition, which is required by   or not such a mitigation strategy works is characterized by
+the existing strategy, does not hold.                              the condition of safe-controllability that was modiﬁed based
+                                                    on the original concept proposed in [20] for the purpose of
+                          I. INTRODUCTION
+                                                                      fault-tolerant control.
+  Cyber-attacks  are  increasingly becoming  pervasive  in      Essentially, the attack mitigation strategy in [1] follows the
+safety-critical cyber-physical systems (CPSs) such as indus-   philosophy that “take action to defend after detecting attack
+trial control systems, intelligent transportation systems and    for sure”. However, such a strategy may be unnecessarily
+smart grids. To describe high-level behaviors of CPSs, cyber   conservative in the sense that  it may be too late to take
+or cyber-physical  control systems  are  usually  abstracted    actions when the attack is detected. In general, the attack
+as transition systems with discrete state spaces and event-    mitigation module may start to take early actions in advance
+driven dynamics, or discrete event systems (DESs). Due to   when  it is possible that the system has been attacked. In
+the importance of security and safety concerns in CPSs,    fact, this point has been mentioned in [1] that “we adopt
+detection and mitigation of attacks has been becoming a   simple and conservative approach to defend attacks, and
+very active research area in the past few years under the   have left the reﬁnement of our methodology to account for
+framework of supervisory control of DESs; see, e.g., [1]–   more sophisticated defense mechanisms”. Our work aims to
+[16] and the recent survey [17].                                   ﬁll in this gap and to improve the existing mitigation strategy.
+  In the context of DES, the study of attack detection      In this paper, we follow the basic framework of [1] for
+and mitigation dates back to the work of Thorsley and    attacks in supervisory control systems. However, we consider
+Teneketzis [18], where a language-measure-based dynamic   a more general setting by explicitly distinguishing between
+programming approach is proposed to synthesize an optimal    controllable events and defendable events, where controllable
+supervisor in the presence of an attacker that may allow   events stand for events that can be disabled by the normal
+the occurrences of disabled events, i.e., actuator enablement   supervisor but may be subject to attack, but defendable events
+attack. The problem of synthesizing supervisor under sensor   stand for events that can be defensed (disabled deﬁnitely) by
+insertion attack and removal attack is considered in [14]. In    the mitigation module but possibly with higher costs. Also,
+[15], the authors consider both sensor attacks and actuator    different from the mitigation strategy in [1], we propose a
+attacks in a uniﬁed model. The problem of synthesizing   more general attack mitigation strategy that allows the system
+attack-robust supervisor is studied in [4], [8], [19]. In [2], [3],    to defend even before the attack is precisely detected.
+                                                  More speciﬁcally, we formulate the attack mitigation prob-
+  This work was supported by the National Natural Science Foundation
+of China (61803259, 61833012) and by Shanghai Jiao Tong University   lem as a tolerant control problem. We treat the system under
+Scientiﬁc and Technological Innovation Funds.                          possible attacks as a new plant and our goal is to strictly
+   J.  Yao,  X.  Yin  and  S.  Li  are  with  Department  of  Automation   prevent the new system from reaching unsafe states while
+and  Key  Laboratory  of  System  Control  and  Information  Process-
+ing, Shanghai  Jiao Tong  University, Shanghai 200240, China. E-mail:   maximizing the desirable behavior, which is the closed-loop
+{yaojingshi,yinxiang,syli}@sjtu.edu.cn.            language without attack. Behavior between the desirable be-
+
+
+978-1-7281-7446-4/20/$31.00 ©2020 IEEE                    4504
+
+havior and the unsafe behavior is considered as the tolerable      (ii) ∀x, x′ ∈XH, σ ∈Σuo : δH(x, σ)=x′ ⇒x=x′.
+behavior for which we further need to minimize. We show    Intuitively, the ﬁrst condition says that the supervisor cannot
+that our approach is more general than that of [1] in the sense    disable uncontrollable events and the second condition says
+that the proposed strategy may successfully prevent damage    that only observable events can trigger decision changes.
+from attack even when the safe-controllability condition does   Therefore, H∥G is essentially the model of the closed-loop
+not hold.                                                    system, i.e., L(H∥G) = L(SP /G), where “∥” is the standard
+  Our approach is motivated by the tolerant control prob-    parallel composition operator.
+lem studied in [21]. However, the solution in [21] is only
+applicable for systems with full observation. In our setting       III. ATTACK MODEL AND MITIGATION STRATEGIES
+for attack mitigation, we need to solve a tolerant control   A. Actuator Enablement Attack Model
+problem under partial observation which has never been                                         We ﬁrst review the model of actuator enablement attack
+solved in the literature to our knowledge. Technically, our                                                             (AE-attack) proposed in [1]. In this setting, we assume that
+approach methodology also generalizes existing techniques                                              Σv ⊆Σc is a set of vulnerable actuator events, which can
+for solving the standard supervisory control problem under                                                       be either observable or unobservable. The attacker is able to
+partial observation [22]–[25] to the tolerant control setting by                                                            enable (attack) a vulnerable event even when it is disabled
+considering both desirable language and tolerable language                                                    by the supervisor, e.g., by replacing the control command in
+into account. Finally, we emphasize that we only focus on                                                                the communication channel. Then the set of attacked actuator
+actuator enablement attack in this paper to state our main                                                              events is deﬁned by Σac,v = {σa : σ ∈Σv} and we deﬁne
+results. However, the proposed tolerant control approach is                                             Σa = Σ ∪Σac,v. Intuitively, σa represents the occurrence
+generic and can be applied to any type of attack given the                                                              of σ when  it is originally disabled by the supervisor but
+attacked behavior can be modeled.                                                                              is enabled by the attacker. We also deﬁne the compression
+                        II. PRELIMINARIES                       operator C : Σa →Σ by: C(σ) = σ if σ ∈Σ and C(σa) =
+                                              σ if σa ∈Σac,v. The compression operator is also extended  We use standard notations in discrete-event systems [26].
+                                                                                                    a →2Σ∗. Also, we deﬁne the                                                                   to C : Σ∗a →Σ∗and to C : 2Σ∗A discrete-event system is modeled as a deterministic ﬁnite-
+                                                                    dilation operator D : Σ →2Σa as the inverse of C, whichstate automaton (DFA) G = (X, Σ, δ, x0), where X is the
+                                                                              is also extended to D : Σ∗→2Σ∗a and to D : 2Σ∗→2Σ∗a.ﬁnite set of states, Σ is the ﬁnite set of events, δ  : X ×
+                                                                 In order to model the closed-loop system under possi-Σ →X is the (partial) transition function and x0 ∈X is
+                                                                ble AE-attacks, one can construct two new DFAs Ga andthe initial state. The transition function is also extended to
+δ : X × Σ∗→X in the usual manner [26]. For simplicity,  Ha based on G and H, respectively. Speciﬁcally, Ga =
+                                                   (X, Σa, δa, x0) is a DFA such thatδ(x0, s) is abbreviated as δ(s). The language generated by
+G is L(G) = {s ∈Σ∗: δ(s)!}, where “!” means “is deﬁned”                                                ∀x ∈X, σ ∈Σa : δ(x, C(σ))! ⇒δa(x, σ)=δ(x, C(σ)).
+and Σ∗denotes the set of all ﬁnite strings over Σ including
+the empty string ϵ. The preﬁx closure of language L is L =    Intuitively, Ga  is obtained by adding a parallel transition
+{t ∈Σ∗: ∃u ∈Σ∗s.t. tu ∈L}. We denote by s ≤t if    labeled by σa ∈Σac,v for each feasible transition labeled by
+s ∈{t} and by s < t if s ≤t and s̸ = t.                σ ∈Σv, which captures the possibility of AE-attack on σ.
+  In the supervisory control framework, the event set  is   Also, DFA Ha = (XH, Σa, δH,a, x0,H) is deﬁned by: for
+partitioned as: Σ = Σc ˙∪Σuc, where Σc and Σuc are the   any x ∈XH, σ ∈Σa, we have
+sets of controllable and uncontrollable events, respectively.                                         ( δH(x, σ)   if δH(x, σ)!
+We denote by Γ = {γ ∈2Σ : Σuc ⊆γ} the set of admissible       δH,a(x, σ) =
+                                                            x             if σ ∈Σac,v ∧δH(x, σ)¬!control decisions or control patterns. The event set is further
+partitioned as Σ = Σo ˙∪Σuo, where Σo and Σuo are the    Intuitively, Ha  is obtained by adding self-loop labeled by
+sets of observable and unobservable events, respectively. The   σa ∈Σac,v for each σ ∈Σc that is originally disabled by the
+natural projection P  : Σ∗→Σ∗o is deﬁned as the mapping    supervisor. This captures the fact that σ is AE-attacked.
+that replaces each unobservable event in a string by ϵ.                                                 As shown in [1], the closed-loop system under all possible
+ A  partial-observation  supervisor  is  a mapping SP    :                                                           AE-attacks with the given supervisor can be computed by
+P(L(G)) →Γ  that enables/disables events dynamically                                                              taking the parallel composition of the modiﬁed plant Ga and
+based on its observation. We denote by L(SP /G) the closed-                                                                the modiﬁed supervisor recognizer Ha. We denote by
+loop language under control, which is deﬁned recursively by:
+  • ϵ ∈L(SP /G); and                           GM = Ha∥Ga = (XM, Σa, δM, x0,M)
+  •  for any s ∈Σ∗, σ ∈Σ, we have sσ ∈L(SP /G) iff                                                                the closed-loop system under attack.
+    s ∈L(SP /G), sσ ∈L(G) and σ ∈SP (P(s)).
+  In the problem of attack mitigation, it is assumed that there   B. Mitigation Strategy in [1] and its Limitation
+already exists a designed supervisor and the supervisor is      In the framework of  [1],  all  strings in L(SP /G) are
+assumed to be recognized by a DFA H = (XH, Σ, δH, x0,H)   considered as desirable. That is, the normal supervisor SP
+such that:                                                                  is designed to achieve the desirable speciﬁcation. However,
+  (i) ∀σ ∈Σuc, x ∈XH : δH(x, σ)!; and                      not all strings outside of L(SP /G) are considered unsafe
+
+
+                                                       4505
+
+                𝑎                       𝑏
+              1                   2                         3  𝑑                       possible solution is to defend event c in advance when a is
+                                                            observed; in the case, the mitigation module can prevent the                        𝑐
+                                                        system from reaching unsafe state even without detecting the
+                   4     5     6                    attack precisely. This example is straightforward as we are                     𝑑     𝑏
+                                                           defending at the boundary for c. In the following subsection,
+                                      (a) G
+                                             we will consider a more general setting where boundary
+                𝑎                       𝑏
+              1                   2                         3  𝑑                      events may not be defendable.
+                       𝑐𝑎                            Remark 1: (Mitigation Module v.s. Supervisor) Here we
+                                                    would like to emphasize  that, although both the original
+                   4     5     6                   supervisor and the mitigation module can disable/defend                     𝑑     𝑏
+                                                              events in Σc, their physical interpretations are different. A
+                                   (b) GM                          normal disablement in the supervisory control framework is
+Fig. 1: Systems for Examples 1, 2 and 3, where dashed states    usually done by sending a disable decision to actuators via
+denote states that are not desirable but tolerable and red states    control channels which may be attacked. On the other hand,
+denote unsafe states.                                           the mitigation module may take physical actions forcing to
+immediately. Speciﬁcally, Xbad ⊆X is assumed to be the    disable (defend) events in Σc; this is more reliable, in the
+set of unsafe states capturing states in which the plant is   sense of non-attackable, but is also more costly in general.
+physically damaged. Behavior between unsafe and desirable   This is why one need to separate the roles of the supervisor
+is called  tolerable. When the system  is attacked, unsafe   and the mitigation module, although the latter can also be
+states may be reachable in L(GM) (in terms of the second    treated as a supervisor mathematically.
+component for the plant).                                                         C. Defendable Events
+  In order to prevent the system from reaching unsafe states,                                                                 In the framework of [1], it is assumed that the mitigation
+[1] proposes an attack mitigation strategy. Speciﬁcally, the                                                    module can “disable” exactly the same  set of events as
+mitigation module  is assumed  to be able  to defend  all                                                                the supervisor can do, i.e., Σc are both normal controllable
+controllable events Σc; its observation mapping is speciﬁed                                                              events and dependable events. As we discussed earlier, the
+by PC  : Σ∗a →Σ∗o, where PC := P ◦C, since  it cannot                                                               physical meaning of disable decision issued by the mitigation
+distinguish between σ and σa.                                                    module and disable decision issued by the supervisor can
+  Then a simple diagnoser-based mitigation strategy was   be  different. Here, we  consider a more  general  setting
+proposed by [1] as follows. First, a diagnoser is used to infer,   by precisely distinguish between these two sets of events.
+based on mapping PC, whether an event σa has occurred.    Speciﬁcally, we assume that Σd is a set of defendable events,
+The mitigation module will remain silent before the attack is   where we have
+detected. Once the attack is detected, the mitigation module                  Σd ⊆Σv ⊆Σc.
+will defend by (possibly physically) disabling all events in
+                                                         That is, Σd are vulnerable in the original closed-loop systemΣc for the purpose of safety. It is shown that such a strategy
+                                                              but can be forced to be disabled (defended) possibly withcan successfully prevent unsafe states when the system is
+                                                             higher costs by the mitigation module. Then controllableGF-safe controllable.
+                                                              events are essentially partitioned into three categories in
+  However, as we mentioned earlier, the mitigation strategy
+                                                           terms of their controllability:
+in [1] as reviewed above is conservative as it follows the idea
+                                                                  • Σc \ Σv: events that can be disabled directly by theof “start to defend only when knows attack for sure”. This
+                                                                   supervisor in the normal manner as they are not subjectsetting unnecessarily restricts the power of the mitigation
+                                                                        to attack.module. In some cases, it may be worthwhile taking early
+                                                                  • Σv \ Σd: events that cannot be reliably disabled, i.e.,actions even when the attack is just suspected. This point is
+                                                                        for any σ ∈Σv \ Σd, σa can always be enabled by theillustrated by the following example.
+                                                                       attacker even when σ is disabled by the supervisor.
+  Example 1: Let us consider system G shown  in Fig-
+                                                                  • Σd: events that can be reliably disabled (defended) by
+ure 1(a). We assume that Σc = {c, d} and Σo = {a, b, d}.                                                                     the mitigation module (but possibly in a more costly
+We assume that the plant is controlled by supervisor SP                                                               manner).
+that always disables event c in order to achieve desirable
+                                                   Then the mitigation module is essentially a new supervisor
+speciﬁcation {ab}{d}∗. Now we assume that Σv = {c, d}                                            1                           M that treats Ga as a new plant.are vulnerable events and unsafe  state  is Xbad =  {6}.
+                                         We illustrate our setting with the role of defendable eventsThen the closed-loop system under AE-attack is shown in
+                                                    by the following examples.Figure 1(b). The strategy in [1] cannot prevent the system
+from reaching Xbad. This is because the diagnoser cannot     1One can also consider GM  as a new plant; this has no essentially
+infer the occurrence of ca for sure as  it is unobservable.    difference from the synthesis point of view. Here we consider Ga as a
+When the attack is detected by observing ad, it is already     plant to directly synthesize the combined decision of the supervisor and the
+                                                                               mitigation module. Then, at each instant, one can compare the synthesized
+too late as unsafe state will be reached uncontrollably via b.    decision and the original decision to distinguish whether a disable decision
+Therefore, this system is not safe controllable. However, one     is made by the normal supervisor or by the mitigation module.
+
+
+                                                       4506
+
+  Example 2: Consider again the system in Figure 1(a) with   such that Kdes = {s ∈L(Ga)  : δa(x0, s) ∈XD} and
+Σc = {c, d} and Σo = {a, b, d}. We assume that Σv = {c, d}   Ktol = {s ∈L(Ga) : δa(x0, s) /∈XF }. Therefore, XD, XT
+and Σd = {d}; hence, the previous strategy in Example 1   and XF  represent, respectively, desirable states, tolerable
+for depending the boundary c cannot be applied. Yet, we    states and unsafe states. Note that this assumption is without
+can design a mitigation strategy M by defending d when    loss of generality as we can always reﬁne the state-space of
+a is observed. In this case, although M does not know the  Ga in linear-time such that the partition holds.
+occurrence of ca for sure, it still defends d for the purpose      In our approach, since the mitigation module  is to be
+of safety. This strategy yields language {ab}{d}∗∪{ac}.   determined and we do not need to detect the attack precisely,
+Although ac is outside of the desirable behavior,  it is still    there is no need to distinguish between σ and σa. Therefore,
+tolerable as it does not reach Xbad. More interestingly, no  we simplify Ga as
+desirable behavior is sacriﬁced as L(SP /G) = {ab}{d}∗⊂
+                                                                                   ˜Ga = (X, Σa, ˜δa, x0){ab}{d}∗∪{aca}. This example shows that the failure of
+the mitigation strategy in [1] does not necessarily imply the                                                     which is obtained by only keeping the transition labeled with
+non-existence of a successfully strategy that can guarantee   σa for each pair of transitions in ˜Ga labeled with σ and
+safety without compromising the desirable behavior.          σa. Or equivalently, ˜Ga is obtained by replacing each event
+  The following example shows a more general scenario, in   σ ∈Σv by σa in G. Then the set of controllable events for
+which such a “non-sacriﬁce” solution does not exist but we    ˜Ga is deﬁned by
+may allow the mitigation module to sacriﬁce some desirable
+behavior in order to guarantee safety.                                    Σc,a = {σa : σ ∈Σd} ∪(Σc \ Σv)
+  Example 3: Let us still consider system G shown in Fig-
+                                                      and we denote by Γa the set of control patterns w.r.t. Σc,a.
+ure 1(a). However, we assume Σc = {c, d} and Σo = {a, d};                                                  The set of uncontrollable events in ˜Ga is denoted by Σuc,a.
+note that event b  is unobservable now. The plant  is also
+                                                  The observation is speciﬁed by mapping PC = P ◦C.
+controlled by a normal supervisor SP  that always disables                                                    Our goal is to design M  : PC(L(˜Ga)) →Γa which can
+event c in order to achieve desirable speciﬁcation {ab}{d}∗.
+                                                       be considered as the combined strategy of the mitigation
+We assume that Σv = {c, d} and Σd = {d}. In this case,
+                                                    module and the original supervisor such that  (i) the new
+it is not possible to avoid reaching 6 without compromising
+                                                             closed-loop system is safe; and  (ii)  it affects the original
+the desirable behavior. For the purpose of safety, one can
+                                                             closed-loop language Kdes in a least-restrictive manner. This
+choose to defend d when a is observed. However, since b
+                                                                              is formulated as the following problem.
+is unobservable, event d at state 3  is also disabled. This                                                        Problem 1: (Attack Mitigation Problem) Given plant ˜Ga
+strategy yields language {ab, ac}. In  this case, desirable
+                                                           with controllable Σc,a and observation mapping PC : Σ∗a →strings abdd . . . are sacriﬁced to avoid reaching Xbad.
+                                              Σ∗o, desirable language Kdes and tolerable language Ktol,
+                                                  ﬁnd a supervisor M : PC(L(˜Ga)) →Γa such that    IV. A GENERAL ATTACK MITIGATION PROBLEM
+                                                                   (1) L(M/˜Ga) ⊆Ktol;
+  With the previous discussions, we now formally formulate                                 ′                                                                   (2) For any M  such that L(M ′/ ˜Ga) ⊆Ktol, we have
+the general attack mitigation problem as a tolerant control
+problem under partial observation in this section.                L(M/˜Ga) ∩Kdes̸ ⊂L(M ′/˜Ga) ∩Kdes.
+  Speciﬁcally, we consider the system under possible attacks
+                                                                   (3) For  any M ′  such  that L(M ′/ ˜Ga) ⊆  Ktol  andGa = (X, Σa, δa, x0). In order to distinguish the desirable
+                                           L(M/˜Ga) ∩Kdes = L(M ′/ ˜Ga) ∩Kdes, we havebehavior and the safe behavior, we deﬁne
+                                                  L(M ′/˜Ga)̸ ⊂L(M/ ˜Ga).         Kdes = D(L(SP /G)) = D(L(H∥G))
+                                                    The ﬁrst condition in Problem 1 says  that no unsafe
+as the desirable language, which  is the normal language
+                                                                       state should be reachable,  i.e., the system should always
+generated by SP /G without attack. Note that we put the
+                                                       be within the tolerable language. The second condition saysdilation operator D(·) because σ and σa are the same event
+                                                                     that the system should achieve as much desirable behavior as
+in Ga when the supervisor  is to be speciﬁed. Also, not
+                                                                  possible. Finally, the third requirement says that the behavior
+all strings outside of Kdes is considerable as unsafe; those
+                                                              of the system should be as restrictive as possible outside of
+strings between the desired language and the unsafe language
+                                                        Kdes. Later in our solution, we will show that condition (2)
+are considered tolerable. Therefore, we deﬁne
+                                                        can only be achieved in a maximal manner rather than a
+      Ktol = {s ∈L(Ga) : ∀t ≤s, δa(x0, t)̸ ∈Xbad}         supremal manner. However, condition (3) can be achieved in
+                                                       an inﬁmal manner in the sense that L(M ′/˜Ga)̸ ⊂L(M/˜Ga)
+as the tolerable language. Clearly, we have Kdes ⊆Ktol as   can be replaced by L(M/ ˜Ga) ⊆L(M ′/˜Ga).
+the normal language should not reach unsafe states.            Note that, to guarantee safety, the system should not only
+  For the sake of simplicity, we assume that the state space   avoid reaching XF but also avoid reaching states that can
+of Ga is partitioned as                                       reaching XF uncontrollably. Therefore, we deﬁne
+          X = XD ˙∪XT ˙∪XF               X+F = {x ∈X : ∃s ∈(Σ \ Σc,a)∗s.t. ˜δa(x, s) ∈XF }
+
+
+                                                       4507
+
+as the set of extended unsafe states. To avoid the case of no     The key of Algorithm 1, which  is also the main part
+solution, we assume that the initial state x0 cannot reach XF    different from the previous supervisory control algorithm,
+via uncontrollable events, i.e., x0 /∈X+F .                            is how  to choose a  control  decision γ  at each  instant
+   Finally, we deﬁne some operators that will be used to   based on the  state estimate  ˆE(α);  this  part  is done by
+solve the problem. The unobservable reach of a set of states   procedure CHOOSEACTION(·). To describe the functionality
+q ⊆X under a set of events γ ∈Γa is deﬁned by             of CHOOSEACTION(·), for each state estimate ˆE(α) ∈2X,
+                                             we deﬁne Γdesγ  (ˆE(α)) as the set of events that are feasible                          ∃x′ ∈q, ∃w∈γ∗s.t.
+   URγ(q)= x∈X :                                               .        in XD via ˆE(α) under γ, i.e.,              x= ˜δa(x′, w) ∧PC(w) = ϵ
+                                                                              ∃x∈ˆE(α), sσ∈γ∗s.t.
+The observable reach of a set of states q ⊆X upon the      Γdesγ  (q) =  σ ∈Σa :                                                                                                     ˜δa(x, sσ)∈XD ∧PC(s) = ϵ
+occurrence of event σ ∈Σo is deﬁned by
+                                                                   Similarly, we deﬁne
+NXσ(q)={x∈X : ∃x′ ∈q s.t. x= ˜δa(x′, σ)∨x= ˜δa(x′, σa)}.
+                                                                               ∃x∈ˆE(α), sσ∈γ∗s.t.                                                      Γγ(ˆE(α)) =  σ ∈Σa :
+Then the extended unobservable reach of a set of states q ⊆                                      ˜δa(x, sσ)! ∧PC(s) = ϵ
+X under a set of events γ ∈Γa is deﬁned by                                                              as the set of events that are feasible within its unobservable
+                                                                 reach. Then CHOOSEACTION(ˆE(α))  essentially returns a  UR+γ (q)=URγ(q) ∪ ∪σ∈Σo∩C(γ)NXσ(URγ(q))  .
+                                                                control decision γ ∈Γa satisfying the following properties:
+                V. GENERAL SOLUTION                              (i) UR+γ (ˆE(α)) ∩X+F = ∅;
+                                                                                       (ii) For any γ′ such that UR+γ′(ˆE(α)) ∩X+F = ∅, we have  In this section, we provide an online solution to Problem 1.
+Our approach is motivated by the standard online supervisory                     Γdesγ  (ˆE(α))̸ ⊂Γdesγ′ (ˆE(α)).
+control algorithm for safety only [22], [23]. However, in our
+case, we need to handle both desirable behavior and tolerant      (iii) For any γ′ such that UR+γ′(ˆE(α)) ∩X+F = ∅and
+behavior.                                                       Γdesγ  (ˆE(α)) = Γdesγ′ (ˆE(α)), we have
+A. Online Mitigation Strategy                                            Γγ(ˆE(α)) ⊆Γγ′(ˆE(α)).
+  The proposed online mitigation strategy is described in   Therefore, CHOOSEACTION( ˆE(α)) essentially search for a
+Algorithm 1. The general idea is to iteratively estimate the    control decision γ in a greedy manner such that (i) no unsafe
+current state of the closed-loop system based on the decision    state can be reached within its extended unobservable reach;
+and observation history by using operators UR(·) and NX(·)   and (ii) no safe decision can activate more feasible events
+in an alternative manner. Speciﬁcally, we use parameter α to   than γ in the desirable language; and (iii) γ is the smallest
+track the current observation, and E(α) and ˆE(α) represent,    set within those safe decisions activating same feasible events
+respectively, the current-state estimate with and without the    in the desirable language as γ. Note that such a decision γ
+unobservable tail. The initial setting is α = ϵ since no event   may not be unique as decisions are compared in terms of set
+is observed and ˆE(α) = {x0} which is the initial state. Once    inclusion. To ﬁnd such a γ, one direct approach is to perform
+a new control decision γ is issued, ˆE(α) is updated to E(α) =   a brute force search to test whether each γ ∈Γa satisﬁes
+URγ(ˆE(α)), and once a new event σ is observed, ˆE(α) is    the above three properties. Such a search take exponential
+updated to ˆE(α) = NXσ(ˆE(α)).                             time in the number of controllable events. Here we provide
+                                                           a more efﬁcient approach to ﬁnd such a decision γ, which
+ Algorithm 1: Online Mitigation M                                 is speciﬁed in Algorithm 2.
+                                                    The basic idea for ﬁnding γ is to “add-and-test”. We start
+    Input: AE-attacked model Ga = (X, Σa, δa, x0)
+                                                                   to grow γ from the set of uncontrollable events by incremen-
+           with Σuc,a, observation mapping PC
+                                                                         tally adding new controllable events in it. Speciﬁcally, we use
+    Output: control decision γ at each instant
+                                                                      set EventList to denote the set of potential events to be
+   1 α ←ϵ ;
+                                                           added. At each instant, we pick its ith event EventList[i]
+   2 ˆE(α) ←{x0};                                                                   in the list to test whether it can be added and then take one
+   3 γ ←CHOOSEACTION( ˆE(α));                                                              of the following three actions:
+   4 defense by disabling events not in γ;
+                                                                  • Delete the event from the list: this situation is captured
+   5 E(α) ←URγ(ˆE(α));                                                        by lines 6 and 7, which happens when adding the event
+   6 while new event σ ∈Σo is observed do                                                 may lead to unsafe states;
+   7   α ←ασ;                                                                  • Add the event to the control decision: this situation is
+   8     ˆE(α) ←NXσ(ˆE(α));                                     captured by lines 9-11, which happens when adding the
+   9    γ ←CHOOSEACTION(ˆE(α));                              event is safe and it indeed introduces a new desirable
+  10     defense by disabling events not in γ;                       behavior;
+  11    E(α) ←URγ(ˆE(α));                                     • Skip the event currently: this situation happens when
+                                                              adding an event is safe but do not introduce anything
+
+
+                                                       4508
+
+                                                                                       𝑒
+     desirable: either it is not feasible or it only introduces                             9     10
+     tolerable but not desirable strings. Note that we just skip                        𝑑
+     the event rather than deleting it because it may become             𝑎      𝑐      𝑎      𝑒
+                                                         1     2     6     8     11
+     useful when some other events are added. This case is              𝑏     𝑎
+     captured by line 14 in which we only add the counter.
+                                                                                       𝑐      𝑎     𝑑
+Note that, once a new event is added, the counter i is reset to                3     4     7     12    13
+0 in line 12. However, the counter increases when the event                 𝑎
+is skipped. The while-loop terminates when all events are                5
+added or the counter achieves the cardinality of the event
+list. The latter means that we have tested all events in the                                           (a) G
+current list and nothing can be added anymore.                                                  𝑒
+                                                                              9     10
+                                                                       𝑑
+ Algorithm 2: CHOOSEACTION                                     𝑎      𝑐
+                                                            1     2     6
+    Input: estimate ˆE(α), controllable events Σa,c and                          𝑎
+            attacked system ˜Ga = (X, Σa, ˜δa, x0)                                            𝑐
+                                                                        4     7    Output: control action γ
+   1 γ ←Σuc,a;                                                                                                 (b) SP /G
+   2 i ←0;
+                                                                                       𝑒
+   3 EventList ←Σa,c;                                                       9     10
+                                                                     𝑑   4 while EventList̸ = ∅and i < |EventList| do
+   5    σ ←EventList[i];                                       𝑎𝑎     𝑐      𝑎𝑎     𝑒                                                         1     2     6     8     11
+   6       if UR+γ∪{σ}(ˆE(α)) ∩X+F̸ = ∅then                            𝑏𝑎    𝑎𝑎
+   7      EventList ←EventList \ {σ};                                         𝑐      𝑎𝑎    𝑑
+                                                               3     4     7     12    13
+   8     else                                                                    𝑎𝑎
+   9            if ∃x ∈URγ(ˆE(α)) : δ(x, σ) ∈XD then
+                                                               5  10          γ ←γ ∪{σ};
+  11         EventList ←EventList \ {σ};                                                    (c) ˜Ga
+  12               i ←0;
+                                                                   𝑎𝑎     𝑐      𝑎𝑎
+  13         else                                                1     2     6     8
+                                                                          𝑎𝑎
+  14               i ←i + 1
+                                                                                          𝑐      𝑎𝑎
+                                                                        4     7     12
+
+                                                                                                                     (d) M/ ˜Ga
+B. Correctness Proof and Complexity Analysis                     Fig. 2: Examples for the online mitigation algorithm.
+  Now we formally prove the correctness of Algorithms 1.   behavior can be achieved in an inﬁmal manner. Howev-
+Hereafter, M is always denoted as the supervisor (mitigation    er, requirement (2) in Problem 1 cannot be replaced by
+strategy) synthesized by Algorithm 1.               L(M ′/˜Ga) ∩Kdes ⊆L(M/˜Ga) ∩Kdes since there may
+   First, we show that the synthesized supervisor M is safe.    exist different incomparable but local maximal solutions. By
+  Lemma 1: L(M/˜Ga) ⊆Ktol.                             using different event orders for EventList, one may obtain
+  Second, we show  that M  achieves  tolerable  but  not    different solutions.
+desirable behavior in the most restrictive manner.
+  Lemma 2: For any M ′ such  that L(M ′/ ˜Ga) ⊆Ktol   C. Illustrative Example
+and L(M ′/˜Ga) ∩Kdes = L(M ′/˜Ga) ∩Kdes, we have      Finally, we explain the proposed mitigation strategy by an
+L(M/ ˜Ga) ⊆L(M ′/˜Ga).                                            illustrative example.
+   Finally, we show that M achieves the desirable behavior     Example 4: Let us consider system G shown  in Fig-
+in the least restrictive manner.                                ure 2(a) with Σc = {a, b, d, e} and Σo = {c}. Suppose
+  Lemma 3: For any M ′ such that L(M/ ˜Ga) ⊆Ktol, we    that the system is originally controlled by SP to achieve the
+have L(M/ ˜Ga) ∩Kdes̸ ⊂L(M ′/˜Ga) ∩Kdes.                 desirable speciﬁcation L(SP /G) = {acde, aac} and SP /G
+  Based on the above three lemmas, we obtain the following    is shown as Fig. 2(b). Speciﬁcally, the supervisor disables
+theorem.                                                     event b initially and disables event a after observing c.
+  Theorem 1: Algorithm 1 correctly solve Problem 1.       Now we assume that the vulnerable events set is Σv =
+  Remark 2: Based on our solution, one can see that re-   {a, b}, defendable events set  is Σd = {b} and Xbad =
+quirement (3) in Problem 1 can actually be replaced by   {5, 13} is the set of unsafe states. Clearly, under AE-attack,
+L(M/ ˜Ga) ⊆L(M ′/˜Ga). That is, tolerable but non-desirable   both unsafe state 5 and 13 can be reached. Furthermore, the
+
+
+                                                       4509
+
+strategy in [1] cannot prevent unsafe states.                           [3] R. Meira-G´oes, R. Kwong, and S. Lafortune, “Synthesis of sensor
+  To apply our online mitigation strategy, ﬁrst, we construct         deception attacks for systems modeled as probabilistic automata,” in
+                                                                        American Control Conference (ACC), 2019, pp. 5620–5626.
+DFA ˜Ga shown in Figure 2(c) with Σc,a =  {ba, d, e}.      [4] R. Meira-G´oes, H. Marchand, and S. Lafortune, “Towards resilient
+Note that the state space of ˜Ga  is already partitioned as          supervisors against sensor deception attacks,” in IEEE Conference on
+XD = {1, 2, 4, 6, 7, 9, 10}, XT = {3, 8, 11, 12} and XF =         Decision and Control (CDC), 2019, pp. 5144–5149.
+                                                                                     [5]  P. Lima, L. Carvalho, and M. Moreira, “Detectable and undetectable
+{5, 13}. Note that since state 3 can reach unsafe state 5 via         network attack security of cyber-physical systems,” in International
+uncontrollable event aa, we have X+F = {3, 5, 13}. Now we        Workshop on Discrete Event Systems (WODES), 2018, pp. 179–185.
+construct the mitigation strategy M using Algorithm 1. To      [6] R. Fritz, P. Schwarz, and P. Zhang, “Modeling of cyber attacks and
+                                                                              a time guard detection for ICS based on discrete event systems,” in
+start, we have α = ϵ and ˆE(α) = {1}. We call procedure        European Control Conference (ECC), 2019, pp. 4368–4373.
+CHOOSEACTION({1}) as detailed in Algorithm 2. Initially,      [7] R. Fritz and P. Zhang, “Modeling and detection of cyber attacks on
+we have γ ←{c, aa} and we assume events in EventList           discrete event systems,” in International Workshop on Discrete Event
+are order by [ba, d, e] First, we test whether or not event ba         Systems (WODE), 2018, pp. 285–290.                                                                                     [8] R. Su, “Supervisor synthesis to thwart cyber attack with bounded
+can be added to γ. However, by doing so, state 3 which          sensor reading alterations,” Automatica, vol. 94, pp. 35–44, 2018.
+is in X+F  will be reached; therefore, we delete it. Then we      [9] Y. Zhu, L. Lin, and R. Su, “Supervisor obfuscation against actuator
+                                                                            enablement attack,” in European Control Conference (ECC), 2019, pp.
+test events d and e in order and both events are not feasible                                                                         1760–1765.
+within the unobservable reach. Therefore, we skip both and    [10] L. Lin, Y. Zhu, and R. Su, “Towards bounded synthesis of resilient
+return M(ϵ) = {c, aa}, i.e., the mitigation module needs to          supervisors against actuator attacks,” in IEEE Conference on Decision
+                                                                      and Control (CDC), 2019, pp. 7659–7664.
+defend event b initially. Next, when event c is observed, we                                                                              [11] L. Lin, S. Thuijsman, Y. Zhu, S. Ware, R. Su, and M. Reniers,
+have α = c and ˆE(α) = {6, 7}. Again, we call procedure          “Synthesis of supremal successful normal actuator attackers on normal
+CHOOSEACTION({6, 7}) to compute the current decision.          supervisors,” in American Control Conference (ACC), 2019, pp. 5614–
+                                                                             5619.First, we check event ba, which is not feasible, and we skip
+                                                                              [12] Q. Zhang, Z. Li, C. Seatzu, and A. Giua, “Stealthy attacks for partially-
+it. Then by adding event d, states 13 will be reached and         observed discrete event systems,” in IEEE Conference on Emerging
+we delete d. For event e, although it is feasible from state         Technologies and Factory Automation (ETFA), 2018, pp. 1161–1164.
+8, which is in the unobservable reach of ˆE(α) = {6, 7},    [13] C. Gao, C. Seatzu, Z. Li, and A. Giua, “Multiple attacks detection
+                                                                      on discrete event systems,” in IEEE Conference on Systems, Man and
+it is not feasible in XD. Therefore, event e also needs to         Cybernetics (SMC), 2019, pp. 2352–2357.
+be skipped because it does not contributes to the desirable    [14] M. Wakaiki, P. Tabuada, and J. Hespanha, “Supervisory control of
+behavior although  it is safe. Then we obtain the returned          discrete-event systems under attacks,” Dynamic Games and Applica-
+                                                                                               tions, vol. 9, no. 4, pp. 965–983, 2019.
+decision M(c) = {c, aa}. The overall closed-loop system    [15] Y. Wang and M. Pajic, “Supervisory control of discrete event systems
+under the mitigate strategy M is shown in Figure 2(d). The           in the presence of sensor and actuator attacks,” in IEEE Conference
+closed-loop system sacriﬁces two desirable strings acd and        on Decision and Control (CDC), 2019, pp. 5350–5355.
+                                                                              [16] A. Khoumsi, “Sensor and actuator attacks of cyber-physical systems:
+acde, reaches two tolerable but not desirable states 8 and 12,      A study based on supervisory control of discrete event systems,” in
+but successfully avoids reaching unsafe states.                           International Conference on Systems and Control (ICSC), 2019, pp.
+                                                                          176–182.
+                  VI. CONCLUSION                              [17] A. Rashidinejad, B. Wetzels, M. Reniers, L. Lin, Y. Zhu, and R. Su,
+                                                                               “Supervisory  control  of  discrete-event systems under  attacks: an
+  In this paper, we considered the attack mitigation problem         overview and outlook,” in European Control Conference (ECC), 2019,
+for a supervisory control system. Our contributions are sum-          pp. 1732–1739.
+marized as follows. First, we introduced a general framework    [18] D. Thorsley and D. Teneketzis, “Intrusion detection in controlled
+                                                                                          discrete event systems,” in IEEE Conference on Decision and Control
+for attack mitigation that precisely distinguishes between        (CDC), 2006, pp. 6047–6054.
+controllable events and defendable events. Second, we for-    [19] Y. Wang and M. Pajic, “Attack-resilient supervisory control of discrete-
+mulated the attack mitigation problem as a tolerant control          event systems,” in IEEE Conference on Decision and Control (CDC),
+                                                                             2019, pp. 2015–2020.
+problem under partial-observation that aims to maximize    [20] A. Paoli and S. Lafortune, “Safe diagnosability  for  fault-tolerant
+the desirable behavior while minimizing tolerable but non-          supervision of discrete-event systems,” Automatica, vol. 41, no. 8, pp.
+desirable behavior. The new formulation is more general and         1335–1347, 2005.
+                                                                              [21]  S. Lafortune and F. Lin, “On tolerable and desirable behaviors in su-
+practical because the previous mitigation problem can easily          pervisory control of discrete event systems,” Discrete Event Dynamic
+be unsolvable. Finally, we provided an online solution to the          Systems, vol. 1, no. 1, pp. 61–92, 1991.
+attack mitigation problem. Our solution also generalizes the    [22] N. Hadj-Alouane, S. Lafortune, and F. Lin, “Centralized and distribut-
+                                                                          ed algorithms for on-line synthesis of maximal control policies under
+existing tolerant control problem from the full observation                                                                                               partial observation,” Discrete Event Dynamic Systems, vol. 6, no. 4,
+setting to the partial observation setting. Throughout this          pp. 379–427, 1996.
+paper, we consider actuator enablement attack to state our    [23] X. Yin and S. Lafortune, “A uniform approach  for synthesizing
+                                                                                   property-enforcing supervisors for partially-observed discrete-event
+result. In fact, our mitigation framework and solution strategy                                                                                   systems,” IEEE Transactions on Automatic Control, vol. 61, no. 8,
+is generic and can also to applied to other types of attacks.          pp. 2140–2154, 2016.
+                                                                              [24] ——, “Synthesis of maximally permissive supervisors for partially-
+                 REFERENCES                                    observed discrete-event systems,” IEEE Transactions on Automatic
+                                                                                    Control, vol. 61, no. 5, pp. 1239–1254, 2016.
+ [1] L. Carvalho, Y.-C. Wu, R. Kwong, and S. Lafortune, “Detection
+                                                                              [25] ——, “Synthesis of maximally-permissive supervisors for the range
+     and mitigation of classes of attacks in supervisory control systems,”
+                                                                                      control problem,” IEEE Transactions on Automatic Control, vol. 62,
+     Automatica, vol. 97, pp. 121–133, 2018.
+                                                                                    no. 8, pp. 3914–3929, 2017.
+ [2] R. Meira-G´oes, E. Kang, R. Kwong, and S. Lafortune, “Stealthy
+                                                                              [26] C. Cassandras and S. Lafortune, Introduction to Discrete Event Sys-
+     deception attacks for cyber-physical systems,” in IEEE Conference
+                                                                                    tems, 2nd ed.  Springer, 2008.
+     on Decision and Control (CDC), 2017, pp. 4224–4230.
+
+
+                                                       4510

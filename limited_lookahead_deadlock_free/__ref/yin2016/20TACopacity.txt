@@ -1,0 +1,863 @@
+              IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 65, NO. 4, APRIL 2020                                                 1429
+
+        Synthesis of Dynamic Masks for
+              Inﬁnite-Step Opacity
+
+               Xiang Yin    , Member, IEEE, and Shaoyuan Li    , Senior Member, IEEE
+
+
+
+  Abstract—We investigate the problem of synthesizing dy-   plausible deniability of the system’s “secret behavior.” In other
+namic masks that preserve the inﬁnite-step opacity in the   words, an opaque system should be secure in the sense that its
+context of discrete-event systems. Dynamic mask is an in-                                                                    secret should never be revealed to a passive observer (intruder)
+formation acquisition mechanism that controls the observ-
+                                                                      that is potentially malicious.ability of the system’s events dynamically online, e.g., by
+turning sensors on/off. A system equipped with a dynamic     In the context of a DES, opacity has drawn considerable
+mask is said to be inﬁnite-step opaque if an outside intruder   attention in the past decade; see, e.g., [1], [5], [17], [18], [24]–
+that can access all acquired information can never infer that   [26]. In particular, different notions of opacity were proposed in
+the system was at some secret state for any speciﬁc previ-                                                                 the literature in order to capture different secret requirements.
+ous instant. Existing works on the dynamic mask synthesis
+                                                           This includes, for example, the current-state opacity [41], initial-problem can only preserve the current-state opacity. How-
+ever, synthesizing dynamic masks for the inﬁnite-step opac-   state opacity [32], K-step opacity [29], and inﬁnite-step opacity
+ity, which is stronger than the current-state opacity, is much   [31], [46]. Veriﬁcations of different notions of opacity have
+more challenging. The main reason is that the delayed infor-   also been investigated in different system models. For example,
+mation is involved in this problem and whether or not a cur-                                                               Basile et al. [2], [6], [12], [36], [37] investigated how to verify
+rent secret can be revealed depends on sensing decisions
+                                                                      different notions of opacity for the DES modeled by Petri nets. Into be synthesized in the future. In this paper, a new type of
+information state is proposed to capture all the delayed in-   [3], [11], and [21], the veriﬁcation of opacity in a stochastic DES
+formation in the inﬁnite-step opacity synthesis problem. An  was investigated. Opacity has also been studied in inﬁnite-state
+effective algorithm is then presented to solve the synthesis   systems modeled by recursive tile systems [10] and pushdown
+problem, which extends existing dynamic mask synthesis                                                          systems [23]. More recently, Noori-Hosseini et al. [27], [51]
+techniques from the current-state opacity to inﬁnite-step
+                                                                  investigated how to reduce the veriﬁcation complexity of opacityopacity. Additionally, an information-state-reduction-based
+approach is proposed to further mitigate the computational   using abstraction-based approaches. The reader is referred to
+complexity of the synthesis procedure. Finally, we discuss   [18] and [24] for a more comprehensive literature review.
+how to generalize our results to a class properties with de-    Among many different notions of opacity, one most simple
+layed information including inﬁnite-step K-anonymity and                                                               version is the current-state opacity. Speciﬁcally, a system is said
+inﬁnite-step indistinguishability.
+                                                                    to be current-state opaque if the intruder cannot determine for
+  Index Terms—Delayed information, discrete-event sys-   sure that the system is currently at a secret state based on its lim-
+tems (DESs), dynamic masks, inﬁnite-step opacity.             ited observation. Therefore, whether or not a system is opaque
+                                                              purely depends on the current information of the system. How-
+                                I. INTRODUCTION                           ever, in many situations, even if the intruder cannot determine
+                                                                 the secret of the system currently, it can keep observing the
+   ECURITY and privacy are increasingly important issues                                                             behavior of the system and use additional future information
+     in the analysis of networked cyber-physical systems. InS                                                                to improve its knowledge of the system in the past. This is es-
+this paper, we investigate an information-ﬂow security property                                                                      sentially an information smoothing process. Therefore, even if
+called opacity in the context of discrete-event systems (DESs),                                                           a system is current-state opaque, the intruder may still be able
+an important class of man-made cyber-physical systems with                                                                    to know that it was at a secret state after some delay. In order
+discrete state-spaces and event-triggered dynamics [7]. Roughly                                                                    to capture this issue, inﬁnite-step opacity was proposed by re-
+speaking, opacity is a conﬁdentiality property that captures the                                                                quiring that the intruder should never know for sure that the
+                                                         system was/is at a secret state for any speciﬁc instant. Clearly,
+  Manuscript received August 24, 2018; revised March 20, 2019; ac-   inﬁnite-step opacity is stronger than current-state opacity. Veri-
+cepted May 11, 2019. Date of publication May 15, 2019; date of current   ﬁcation algorithms for inﬁnite-step opacity have been provided
+version March 27, 2020. This work was supported by the National Natu-
+ral Science Foundation of China (61803259, 61833012). Recommended   in [31] and [46] for systems modeled as ﬁnite-state automata.
+by Associate Editor C. Seatzu. (Corresponding author: Xiang Yin.)      More recently, inﬁnite-step opacity has also been studied in the
+  The authors are with the Department of Automation and Key Lab-   context of a stochastic DES [49].
+oratory of System Control and Information Processing, Shanghai Jiao
+Tong University, Shanghai 200240, China (e-mail:,yinxiang@sjtu.edu.cn;    When a system is veriﬁed to be nonopaque, another important
+syli@sjtu.edu.cn).                                          problem in opacity is to synthesize an opaque system. This
+  Color versions of one or more of the ﬁgures in this paper are available   problem has recently been widely studied in the literature and
+online at http://ieeexplore.ieee.org.
+   Digital Object Identiﬁer 10.1109/TAC.2019.2916940                   several different synthesis/enforcement mechanisms have been
+
+
+               0018-9286 © 2019 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                          See https://www.ieee.org/publications/rights/index.html for more information.
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on March 28,2020 at 18:20:52 UTC from IEEE Xplore. Restrictions apply.
+
+1430                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 65, NO. 4, APRIL 2020
+
+
+proposed. For example, Darondeau et al. [14], [15], [30], [35],   in partially observed synthesis problems related to current in-
+[38], [45] investigated how to synthesize a feedback supervisory   formation. An effectively algorithm is then presented to solve
+controller to restrict the behavior the system such that the closed-   the dynamic mask synthesis problem. Moreover, we show that
+loop system is opaque. In [19], [22], [39], [40], and [42], the   the proposed novel information state is applicable to the synthe-
+problem of synthesizing insertion/edit functions that enforce   sis problem for a class of properties with delayed information,
+opacity was studied. In [16], a runtime mechanism was used   including inﬁnite-step K-anonymity and inﬁnite-step indistin-
+to enforce opacity K-step opacity. More recently, Barcelos and   guishability, whose synthesis problems have never been consid-
+Basilio[20] proposed an approach for enforcing current-state   ered in the literature.
+opacity using events shufﬂe.                               To the best of our knowledge, most of the synthesis problems
+  In this paper, we consider the problem of synthesizing dy-   solved in the literature (for supervisory control, dynamic masks,
+namic masks that preserve inﬁnite-step opacity. Dynamic mask   or insertion functions) only consider the current-state-type prop-
+is an information acquisition mechanism that acquires informa-   erty. One exception is the study in [30], where how to synthesize
+tion from the system by dynamically turning ON/OFFthe asso-   supervisors that enforce inﬁnite-step opacity was investigated.
+ciated sensors. Therefore, it can also be treated as a controller  The general idea of the study in [30] is to design a ﬁnite bank of
+for sensors that can be controlled ON/OFFdynamically online.   supervisors where each supervisor enforces initial-state opac-
+The dynamic mask synthesis problem is also referred to as the   ity for a type of current-state estimate encountered. Then, all
+dynamic sensor activation problem in the DES literature; see,   supervisors in the bank work together to enforce inﬁnite-step
+e.g., [9], [13], [34], [47], and [50]. The goal of this problem is   opacity, such that an event is disabled if some supervisor dis-
+to synthesize dynamic masks such that some system properties   ables it. However, this “divide and conquer” approach does not
+hold. In particular, in [8], the problem of synthesizing dynamic  work for the dynamic mask synthesis problem since dynamic
+masks that preserve current-state opacity was investigated; an  masks do not restrict the behavior of the system; it does not
+algorithm with an exponential complexity was also provided.  make sense to obtain an overall dynamic mask from a bank of
+The general idea is to reduce the synthesis problem to a two-  masks as the case of supervisors. Therefore, we need to han-
+player reach-avoid game in a suitably deﬁned arena that captures   dle all possible instant history and their dependencies within a
+all possible current-state information of the system.               single information structure using the approach proposed in the
+  As we discussed above, inﬁnite-step opacity requires that the   paper. Finally, applications of opacity can also be found in, for
+intruder should never know that the system was at a secret state   example, web services [4], location-based services [43], ship
+for any speciﬁc previous instant with any possible future infor-   information systems [44], and mobile robots [28]. However,
+mation. Therefore, to synthesize dynamic masks for inﬁnite-step  most of the applications only consider the current-state opacity.
+opacity, the following main difﬁculty arises. In the inﬁnite-step  The proposed method can potentially be used to enforce the
+opacity, whether or not a secret can be revealed not only de-   inﬁnite-step opacity for these systems.
+pends on the current information, but also on the information    The rest of this paper is organized as follows. In Section II,
+in the future. This future information is known in the veriﬁca-  we present some necessary preliminaries and formulate the dy-
+tion problem when the mask (either dynamic or static) is given.  namic mask synthesis problem for the inﬁnite-step opacity.
+Therefore, the veriﬁcation algorithms for inﬁnite-step opacity   In Section III, we present a new class of information states
+proposed in [31] and [46] take the advantage that we can “bor-   for properties with delayed information. Using the newly pro-
+row” the future information to check whether or not a secret can   posed information state, we present a synthesis algorithm for
+be revealed. However, in the synthesis problem, this future in-   the inﬁnite-step opacity in Section IV. In Section V, we discuss
+formation depends on the sensing decisions in the future, which  how to reduce the complexity of the synthesis procedure and
+are unknown and to be synthesized. Moreover, the correctness  how to generalize the proposed approach to other properties.
+of any future decision again depends on other actions in its fur-   Finally, we conclude the paper in Section VI. Preliminary and
+ther future. Therefore, this future dependency is, in fact, the key   partial versions of some of the results in this paper are presented
+difference between the synthesis problem for the current-state   in [48]. Compared with [48], this paper contains 1) all technical
+opacity and the synthesis problem for inﬁnite-step opacity.       proofs omitted in [48]; 2) additional detailed explanations and
+  In this paper, we tackle the problem of synthesizing dynamic   examples; 3) an approach to further reduce the complexity of the
+masks for the inﬁnite-step opacity by addressing the above-   synthesis algorithm; and (iv) discussion on how to generalize
+mentioned key difﬁculty. The main contributions of this paper   the proposed approach to other properties.
+are as follows. First, we propose a new type of information
+state in order to capture the delayed information in this syn-
+thesis problem. Speciﬁcally, each information state is used to                                     II. PRELIMINARY
+represent the set of all possible delayed state estimates for all in-                                                        A. System Model
+stants along the decision trajectory. We show that such a choice
+of information state summarizes all information needed in the     Let Σ be a ﬁnite set of events; a string s = σ1 . . . σn, σi ∈Σ
+synthesis problem in a ﬁnite domain. Moreover, the newly pro-    is a ﬁnite sequence of events, where |s| denotes its length. We
+posed information state can also be updated recursively upon   denote by Σ∗the set of all strings over Σ including the empty
+the information change. Our new information state is more gen-   string ϵ. A language L ⊆Σ∗is a set of strings; L = {s∈Σ∗:
+eral than the subset-based information state that is widely used  ∃t∈Σ∗s.t. st∈L} denotes its preﬁx-closure.
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on March 28,2020 at 18:20:52 UTC from IEEE Xplore. Restrictions apply.
+
+YIN AND LI: SYNTHESIS OF DYNAMIC MASKS FOR INFINITE-STEP OPACITY                                                                1431
+
+
+ A DES is modeled as a ﬁnite-state automaton (FSA)
+           G = (X, Σ, δ, X0)
+where X is the set of states, Σ is the set of events, δ : X × Σ →
+X  is the transition function, and X0 ⊆X  is the set of ini-
+tial states. Transition function δ is also extended to X × Σ∗
+in the usual manner by: ∀x ∈X, s ∈Σ∗, σ ∈Σ : δ(x, sσ) =
+δ(δ(x, s), σ). For any state x ∈X, we denote by L(G, x) =
+                                                                               Fig. 1.  For G, we have Σo = {a}, Σu o = {u}, Σs = {e}. The observa-
+{s ∈Σ∗: δ(x, s)!} the set of all strings deﬁned from x, where    tion mapping Ω : AR →O is speciﬁed by each sensing decision associ-
+“!” means “is deﬁned.” We denote by L(G) = ∪x0 ∈X 0 L(G, x0)   ated with each state in R. (a) G with XS = {5}. (b) Ω = (R, Ω).
+the language generated by G. We denote by Acc(G) the acces-
+sible part of G; see, e.g., [7]. Let G1 = (X1, Σ, δ1, X0,1) and
+G2 = (X2, Σ, δ2, X0,2) be two FSAs. We say that G1 is a subau-   that Ω′ < Ω if Ω′ ≤Ω and ∃s∈L(G):Ω′(s)̸=Ω(s). Therefore,
+tomaton of G2, denoted by G1 ⊑G2, if X1 ⊆X2, X0,1 ⊆X0,2   Ω′ < Ω implies that Ω acquires strictly more information than
+and ∀x0 ∈X0,1, ∀s ∈L(G1, x0), δ2(x0, s) = δ1(x0, s).          Ω′.
+  In this paper, we consider a general dynamic observation
+mechanism. Speciﬁcally, we assume that the event set is parti-   B. Inﬁnite-Step Opacity
+tioned as Σ = Σo ˙∪Σuo ˙∪Σs, where
+                                                              Let Ω be a dynamic mask and αβ ∈PΩ(L(G)) be an observ-   1) Σo is the set of events whose occurrences can always be
+                                                               able string. We deﬁne      observed;
+                                      ⎧                 ⎫
+   2) Σuo is the set of events whose occurrences never be ob-          ⎨       ∃x0 ∈X0, ∃st ∈L(G, x0) ⎬
+      served; and                                        ˆXΩ(α | αβ) :=  ∈X :        s.t. x = δ(x0, s)∧                                              ⎩x                     ⎭.   3) Σs is the set of events whose occurrences can potentially                         PΩ(s) = α ∧PΩ(s.t.) = αβ
+      be observed. Whether or not the occurrence of an event
+       in Σs can be observed depends on whether or not it is   Intuitively, ˆXΩ(α | αβ) is the delayed state estimate that cap-
+      monitored, e.g., by turning ON its associated sensor.        tures the set of all possible states the system could be in at the
+ A sensing decision θ, where Σo ⊆θ ⊆Σo ∪Σs, is a set of   instant when α is observed given the entire observation αβ,
+events that determines which events are monitored. We denote  where β is a future information for the instant of α. We de-
+by O := {θ ∈2Σ : Σo ⊆θ ⊆Σo ∪Σs} the set of sensing de-  ﬁne ˆXΩ(α) := ˆXΩ(α | α) as the current state estimate upon
+cisions.                                                         the occurrence of α ∈PΩ(L(G)).
+  The observation of the system is then controlled by a dynamic    The information acquired by the dynamic mask is usually
+mask Ω = (R, Θ), where R = (AR, Σ, δR, {a0,R}) is a deter-   transmitted to other modules for different purposes, e.g., for the
+ministic automaton such that L(R) = Σ∗and Θ : AR →O is   purpose of supervisory control or for the purpose of fault diag-
+a mapping that determines the sensing decision of each state.   nosis. However, the transmission channel between the dynamic
+Furthermore, we require that                            mask and the utility module may be unreliable and could be
+                                                                  “listened” by a passive intruder that is potentially malicious. In
+    (∀a, a′ ∈AR, σ∈Σ:δR(a, σ) = a′)[a̸=a′ ⇒σ∈Θ(a)].
+                                                                 the context of opacity, we assume that the system has a “secret,”
+This condition essentially says that the sensing decision can  which is modeled as a set of secret states XS ⊂X. We want
+be updated (by updating the state of R) only when a moni-   that the secret should never be revealed to the intruder, which
+tored event occurs. In other words, events that are not moni-   can access the information acquired by the dynamic mask. In
+tored are deﬁned as self-loops in R. Then, for any s ∈L(G),   particular, inﬁnite-step opacity requires that the intruder should
+Θ(δR(a0,R, s)) is the set of currently observable (monitored)   never know that the system was at a secret state for some speciﬁc
+events; for the sake of simplicity, we also write Θ(δR(a0,R, s))   instant, which is formally deﬁned as follows.
+by Ω(s).                                                      Deﬁnition 1: System G is said to be inﬁnite-step opaque
+  The projection induced by a dynamic mask Ω = (R, Θ) is a    w.r.t. XS and Ω if ∀αβ ∈PΩ(L(G)) : ˆXΩ(α | αβ)̸ ⊆XS.
+mapping PΩ :L(G)→(Σo ∪Σs)∗deﬁned recursively by: ∀s ∈     Example 1: Let us consider system G shown in Fig. 1(a) with
+Σ∗, σ ∈Σ                                          Σo = {a}, Σuo = {u}, and Σs = {e}. Let us consider dynamic
+                                                  mask Ω shown in Fig. 1(b). Assume that state 5 is the unique                           PΩ(s)σ if σ ∈Ω(s)
+      PΩ(ϵ) = ϵ,  PΩ(sσ) =                                  .           secret state, i.e., XS = {5}. Then, G is not inﬁnite-step opaque                           PΩ(s)   if σ̸ ∈Ω(s)
+                                                                                 w.r.t. Ω and XS. To see this, we consider string eaae ∈L(G)
+For any L ⊆Σ∗, we deﬁne PΩ(L) = {PΩ(s) : s∈L}. Note   with PΩ(eaae) = aae. Note that the ﬁrst occurrence of event e
+that, for any s ∈L(G), we have Ω(s) = Ω(PΩ(s)) since it is    is not observable since the sensing decision at state 1 in R is
+string PΩ(s) that triggers state changes in Ω. Therefore, Ω(α)   {a}, while the second occurrence of e is observable since the
+also represents the current sensing decision upon the occurrence  dynamic mask is then at state 2. Then, we know that ˆXΩ(a |
+of any string s such that PΩ(s) = α.                         aae) = {5} ⊆XS , i.e., the system is not inﬁnite-step opaque.
+  Let Ω = (R, Θ) and Ω′ = (R′, Θ′) be two dynamic masks.   Intuitively, this says that when string aae is observed, we know
+We write that Ω′ ≤Ω if ∀s ∈L(G) : Ω′(s) ⊆Ω(s) and write   for sure that the system was at a secret state two steps ago.
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on March 28,2020 at 18:20:52 UTC from IEEE Xplore. Restrictions apply.
+
+1432                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 65, NO. 4, APRIL 2020
+
+
+  Given a system G, algorithms have been proposed in [31]  Note that, each element in ρ is a state pair; we use the second
+and [46] for the veriﬁcation of inﬁnite-step opaque for the case   state in the pair to represent the current state of the system
+of static observation; the algorithms can be easily modiﬁed for  and use the ﬁrst state in the pair to represent where the current
+the case of dynamic observation when Ω is given. In this paper,   state comes from. This is why, in the deﬁnitions of URθ(ρ) and
+we consider the synthesis problem, i.e., we want to synthesize  NXσ(ρ), only states in the second components are changed.
+a dynamic mask that controls the information acquisition pro-       Still, let q ∈2X be a set of states. We deﬁne
+cess such that the entire system is inﬁnite-step opaque. Clearly,
+the less information acquired, the system is more likely to be   ⊙θ(q) = {(x, x′) ∈q × q : ∃w ∈(Σ \ θ)∗s.t. δ(x, w) = x′} .
+opaque. An extreme case is to consider a dynamic mask that   Intuitively, ⊙θ(q) maps q to a set of state pairs such that, in each
+never monitors any event; such a system is clearly inﬁnite-step   pair of states, the ﬁrst state can reach the second state via strings
+opaque. However, in addition to the security constraint, dy-   that are unobservable under θ.
+namic mask is also an interface that acquires information for     Example 3: We still consider system G shown in Fig. 1(a).
+the user. Therefore, for the purpose of utility, we also want that   Let {(1, 2), (5, 6)} ∈2X ×X  be a set of  state  pairs, which
+the dynamic mask monitors as many events as possible when   represents that the system is either 1) currently at state 2 by
+the opacity constraint is satisﬁed. To this end, we formulate the   initialing from state 1; or 2) currently at state 6 by initialing
+optimal dynamic mask synthesis problem that we solve in this  from  state  5. Then, upon sensing  decision {a} ∈O, we
+paper.                                                    have   UR{a}({(1, 2), (5, 6)}) = {(1, 2), (1, 3), (5, 6), (5, 7)}.
+  Problem 1: Given system G and a set of secret states XS ⊂   Then, upon observable event a ∈Σo ∪Σs, we have NXa
+X, synthesize a dynamic mask Ω such that                       ({(1, 2), (1, 3), (5, 6), (5, 7)}) = {(1, 1), (5, 5)}. Additionally,
+   1) G is inﬁnite-step opaque w.r.t. XS and Ω; and              for {2, 3, 6, 7} ∈2X , {a}∈O, we have ⊙{a}({2, 3, 6, 7}) =
+   2) For any Ω′ satisfying 1), we have Ω̸ < Ω′.                 {(2, 2), (2, 3), (3, 3), (6, 6), (6, 7), (7, 7)}.
+  Remark 1: Note that, for the synthesized solution, we re-
+quire that ∀Ω′ : Ω̸ < Ω′, which is weaker than ∀Ω′ : Ω′ < Ω. In          III. INFORMATION STATE FOR INFINITE-STEP OPACITY
+the literature, the former is referred to as a maximal solution,
+                                                                  In this section, we discuss how to select suitable informa-while the latter is referred to as the supremal solution. How-
+                                                                    tion state for inﬁnite-step opacity and describe the informationever, it is well-known [33] that the supremal solution does not
+                                                                evolution of a dynamic mask.exist in general in the sensor activation problem. Instead, it is
+possible that there are two incomparable maximal solutions Ω1
+and Ω2, i.e., none of them can be improved but Ωi̸ < Ωj, i̸ = j.   A. Choice of Information State
+Our goal here is to ﬁnd one maximal solution for inﬁnite-step     Given a dynamic mask Ω = (R, Θ), it works as follows. Ini-
+opacity. There may also have other maximal solutions that are    tially, it provides an initial sensing decision Ω(ϵ). Then, only
+incomparable with our solution, but none of them can be strictly  some feasible and monitored event σ ∈Ω(ϵ) can be observed.
+better than the synthesized one.                         Upon the occurrence of σ, the transition function of R is trig-
+   Finally, we introduce several operators that will be used in   gered and it changes its sensing decision to Ω(σ) and waits for
+the paper. Let q ∈2X be a set of states, θ ∈O be a sensing   the occurrence of the next monitored event, and so forth.
+decision, and σ ∈Σo ∪Σs be an event. We deﬁne                 Let α = σ1σ2 . . . σn ∈PΩ(L(G)) be an observable string.
+                                                         Then, the information available upon the occurrence of α is an
+ URθ(q) = {x∈X : ∃x′ ∈q, ∃w∈(Σ \ θ)∗s.t. x = δ(x′, w)}    alternating sequence, called a run, deﬁned by
+                                                   RΩ(α) := Ω(ϵ)σ1Ω(σ1)σ2 . . . σnΩ(σ1 . . . σn).     (1) NXσ(q) = {x∈X : ∃x′ ∈q s.t. x = δ(x′, σ)} .
+                                                        Although a run contains the complete information available,
+Intuitively, URθ(q) is the set of states that can be reached from    it requires inﬁnite memory when the length of the observed
+states in q via strings that are unobservable under θ; and NXσ(q)   string goes to inﬁnite. In order to efﬁciently solve the synthesis
+is the set of states that can be reached immediately from states   problem, we need more compact ways to summarize the infor-
+in q upon the occurrence of σ.                               mation available; this is usually referred to as information state
+  Example 2: Let us still consider system G shown in Fig. 1(a).   in the systems theory. Roughly speaking, information states are
+Let {2, 6} ∈2X be a set of states. Then, upon sensing decision   (mostly ﬁnite) sufﬁcient statistics that contain all useful (poten-
+{a} ∈O, we have UR{a}({2, 6}) = {2, 3, 6, 7}. Then, upon    tially inﬁnite) information. The choice of information states is
+observable event a ∈Σo ∪Σs, we have NXa({2, 3, 6, 7}) =   problem dependent. For example, in many synthesis problems
+{1, 5}.                                                             for a partially observed DES, 2X is a suitable set of information
+   Similarly, let ρ ∈2X ×X be a set of state pairs, θ ∈O be a   states when only current-state-type properties are considered;
+sensing decision, and σ ∈Σo ∪Σs be an event. We deﬁne        see, e.g., the supervisory control problem [45] and the sensor
+                                                                    activation problems for current-state opacity [8] and diagnos-
+                              ∃(x1, x2)∈ρ, w∈(Σ \ θ)∗      ability [13]. However, 2X is not sufﬁcient for our purpose, since
+ URθ(ρ) =   (x1, x3)∈X × X :                                                     s.t. x3 = δ(x2, w)          inﬁnite-step opacity not only requires that the secret is not re-
+                                                             vealed currently, but also requires that the secret will not be
+NXσ(ρ) = {(x1, x3)∈X×X :∃(x1, x2)∈ρ, x3 = δ(x2, σ)} .   revealed at any instant in the future.
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on March 28,2020 at 18:20:52 UTC from IEEE Xplore. Restrictions apply.
+
+YIN AND LI: SYNTHESIS OF DYNAMIC MASKS FOR INFINITE-STEP OPACITY                                                                1433
+
+
+  In this paper, we propose to use the following set of informa-     Example 4: Again, let us consider system G in Fig. 1(a) and
+tion states:                                             dynamic mask Ω in Fig. 1(b). Let us consider observable string
+                                   ×X                      aa ∈PΩ(L(G)). Initially, we have                  I := 2X × 22X  × O
+                                                            IΩ(ϵ) = (URΩ(ϵ)(X0), {⊙Ω(ϵ)(URΩ(ϵ)(X0))}, Ω(ϵ))and  each  information  state  ı ∈I  has  the  form  of  ı =
+(C(ı), D(ı), O(ı)) such that                         = ({0, 4}, {{(0, 0), (4, 4)}}, {a}).
+   1) the ﬁrst component C(ı) ∈2X  is a set of states repre-
+                                                  Once event a is observed and new sensing decision Ω(a) =      senting the current state estimate of the system.
+   2) the second component D(ı) ∈22X ×X  is a set of state-   {e, a} is made, the information state is updated to
+       pair-sets representing all possible delayed state estimates    IΩ(a) = ({1, 5}, {{(0, 1), (4, 5)}, {(1, 1), (5, 5)}}, {e, a})
+       for all previous instants. More speciﬁcally, each ele-
+     ment ρ ∈D(ı) is a set of state pairs in the form of  which is computed by
+     ρ = {(x1, x′1), . . . , (x|ρ|, x′|ρ|)} ∈2X ×X , where xi rep-                                                         C(IΩ(a)) = UR{e,a}(NXa({0, 4})) = {1, 5}
+       resents a state the system could be in at some previous
+       instant and x′i represents a state the system could be in       D(IΩ(a)) = {UR{e,a}(NXa({(0, 0), (4, 4)}))}
+       currently from xi; and set D(ı) contains all possible such
+     ρ for all previous instants.                                              ∪{⊙{e,a}({1, 5})}
+   3) the third component O(ı) ∈O is a sensing decision rep-          = {{(0, 1), (4, 5)}} ∪{{(1, 1), (5, 5)}}
+      resenting the set of events being monitored currently.
+                                                         O(IΩ(a)) = {e, a}.
+
+B. Information State Evolution                                                                    Similarly,        we          have         IΩ(aa) =
+  Next, we describe how information states evolve. Now, sup-   ({2, 3, 6}, {{(0, 2), (0, 3), (4, 6)},{(1, 2),
+pose that we are at information-state                              (1, 3), (5, 6)}, {(2, 2), (2, 3), (3, 3), (6, 6)}}, {e, a}), which  is
+                                             ×X               computed by
+            ı = (C(ı), D(ı), O(ı)) ∈2X × 22X  × O
+                                                    C(IΩ(aa)) = UR{e,a}(NXa({1, 5})) = {2, 3, 6}and suppose that a monitored event σ ∈O(ı) is observed and
+a new sensing decision θ ∈O is made immediately after the  D(IΩ(aa)) = {UR{e,a}(NXa({(0, 1), (4, 5)}))}
+occurrence of σ. Then, we move to a new information state
+ı′ = (C(ı′), D(ı′), O(ı′)) as follows:                             ∪{UR{e,a}(NXa({(1, 1), (5, 5)}))}
+   ⎧
+                                                                                                3,                                                                                 6})}                                                                      ∪{⊙{e,a}({2,        C(ı′) =              URθ(NXσ(C(ı)))   ⎪⎪⎨        =        D(ı′)              {URθ(NXσ(ρ))∈2X ×X  : ρ ∈D(ı)}                                        =                                                                           {{(0, 2), (0,                                                                                                3),                                                                                                    (4, 6)}}∪{{(1, 2), (1, 3), (5, 6)}}                                                                                 .   (2)
+   ⎪⎪⎩        ∪{⊙θ(C(ı′))}        O(ı′) = θ                                                   ∪{{(2, 2), (2, 3), (3, 3), (6, 6)}}
+  Equation (2) is the key of this paper and it is also referred to as  O(IΩ(aa)) = {e, a}.
+                                                                   (σ,θ)
+the information state updating rule and we denote by ı −−−→ı′     Next, we show that the information states selected together
+if ı, ı′ and (σ, θ) satisfy this rule. Intuitively, C(ı′) is the updated   with the updating rule deﬁned in (2) and the initial information
+current state estimate upon the observation of σ and the newly   state deﬁned in (3) indeed capture all relevant information in the
+issue sensing decision θ. This is done by the unobservable reach   inﬁnite-step opacity synthesis problem. First, we characterize
+as the standard observer automaton. The computation of D(ı′)   each component in IΩ(α).
+is more involved. Speciﬁcally, the ﬁrst part essentially smooths      Proposition 1: Let Ω be a dynamic mask, α ∈PΩ(L(G))
+the delayed state estimates for all previous instants using the   be an observable string, and IΩ(α) be the information state
+new information obtained and the second part mainly adds the   reached. Then, we have
+current state estimate, which will become delayed state estimate      1) C(IΩ(α)) = ˆXΩ(α); and
+for future instants. Finally, O(ı′) simply remembers the latest      2) D(IΩ(α)) = {ρβ,α ∈2X ×X  : β ∈{α}}, where
+sensing decision θ.                            ⎧                      ⎫
+  Now,  let Ω be  a dynamic mask and α = σ1 . . . σn ∈        ⎨                ∃x0 ∈X0, st∈L(G, x0) s.t. ⎬
+PΩ(L(G)) be an observable string. Then, run RΩ(α) induces         ρβ,α = ⎩(x, x′) ∈X×X :  PΩ(s) = β ∧PΩ(st) = α∧ ⎭.                                                                                             δ(x0, s) = x ∧δ(x0, st) = x′the following information states evolution:
+          (σ1 ,Ω(σ1 ))      (σ2 ,Ω(σ1 σ2 ))      (σn ,Ω(σ1 ...σn ))              Proof: In  the  ﬁrst  component  of  the  updating  rule,
+       ı0 −−−−−−→ı1 −−−−−−−−→· · · −−−−−−−−−−→ın                                                   URθ(NXσ(C(·))) is actually the recursive computation of the
+where                                                           current state estimate in the dynamic observation setting; see,
+                                                                              e.g., [13]. This gives 1). Hereafter, we prove 2) by induction on
+        ı0 = (URΩ(ϵ)(X0), {⊙Ω(ϵ)(URΩ(ϵ)(X0))}, Ω(ϵ))    (3)                                                                 the length of α.
+is the initial information state. We denote by IΩ(α) the infor-     Induction  Basis:   Suppose  that  |α| = 0,   i.e., α =
+mation state reached by the run of α, i.e., IΩ(α) = ın.              ϵ.  Then,  we  know  that  IΩ(ϵ) = ı0  and  D(IΩ(ϵ)) =
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on March 28,2020 at 18:20:52 UTC from IEEE Xplore. Restrictions apply.
+
+1434                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 65, NO. 4, APRIL 2020
+
+
+{⊙Ω(ϵ)(URΩ(ϵ)(X0))}, where                               Moreover, we have
+                                                        ⊙Ω(ασ) (ˆXΩ(ασ))
+  ⊙Ω(ϵ) (URΩ(ϵ)(X0))
+                                                                ∃w∈(Σ                                                                                           \ Ω(ασ))∗                                                                          :∃x∈ˆXG(ασ),                 ∃x∈URΩ(ϵ)(X0),w∈(Σ \ Ω(ϵ))∗     =  (x, x′)∈X × X                                                                            w) = x′                                                                                                                                        s.t. δ(x, =   (x, x′)∈X×X :
+                                              s.t. δ(x, w) = x′                                ⎧                       ⎫
+                                ⎪⎨                 ∃x0 ∈X0, ∃s∈L(G, x0),  ⎪⎬                     ∃x0 ∈X0, ∃st∈(Σ \ Ω(ϵ))∗
+ =   (x, x′)∈X×X :                       =   (x, x′)∈X × X ∃w∈(Σ:      \ Ω(ασ))∗s.t. PΩ(s) = ασ
+                                  s.t. δ(x0, s) = x ∧δ(x, t) = x′       ⎪⎩                       ⎪⎭                                                                             ∧δ(x0, s) = x ∧δ(x0, sw) = x′
+  ⎧                      ⎫
+  ⎪⎨              ∃x0 ∈X0, ∃st ∈L(G, x0) s.t. ⎪⎬      ⎧                      ⎫
+                                ⎪⎨              ∃x0 ∈X0, ∃sw∈L(G, x0) s.t. ⎪⎬ =   (x, x′)∈X×X :    PΩ(s) = PΩ(st) = ϵ∧
+  ⎪⎩                      ⎪⎭     =   (x, x′)∈X × X :   PΩ(s) = PΩ(sw) = ασ
+                       δ(x0, s) = x ∧δ(x0, st) = x′       ⎪⎩                      ⎪⎭
+                                                                            ∧δ(x0, s) = x ∧δ(x0, sw) = x′
+ = ρϵ,ϵ.
+                                   = ρασ,ασ.                                                 (8)
+Therefore, D(IΩ(ϵ)) = {ρϵ,ϵ} and the induction basis holds.     Therefore, by combining (4), (7), and (8), we have
+   Induction Step:  Now,  let us assume that, for |α| = k,
+                                                    D(IΩ(ασ)) = {ρβ,ασ ∈2X ×X  : β ∈{α}} ∪{ρασ,ασ}2) holds. We need to prove that 2) still holds for any ασ ∈
+                                                                     ×X  : β ∈{ασ}}.PΩ(L(G)), where |α| = k and σ ∈Σo ∪Σs.                   = {ρβ,ασ ∈2X
+  By the updating rule in (2), we know that
+                                                           This completes the induction step.              ■
+ D(IΩ(ασ)) = {URΩ(ασ)(NXσ(ρ))∈2X ×X :ρ∈D(IΩ(α))}      Recall that, each information state ı is in the form of ı =
+                                                              (C(ı), D(ı), O(ı)), where D(ı) is a set of state-pair-sets. Then,
+             ∪{⊙Ω(ασ)(ˆXΩ(ασ))}.                    (4)  we deﬁne
+                                                               D1(ı) := {{x ∈X : (x, x′) ∈ρ} : ρ ∈D(ı)}
+Since |α| = k, by the induction hypothesis, we know
+                                                      which consists of the ﬁrst component of each state pairs in
+                                                            D(ı). For example, for  ı = ({1, 5}, {{(0, 1), (4, 5)}, {(1, 1),        D(IΩ(α)) = {ρβ,α ∈2X ×X  : β ∈{α}}.        (5)
+                                                                    (5, 5)}}, {e, a}), we have D1(ı) = {{0, 4}, {1, 5}}. Then, we
+                                                         have the following corollary.
+Additionally, by the deﬁnition of UR and NX, we have                                                                Corollary 1: Let Ω be a dynamic mask, α ∈PΩ(L(G)) be an
+                                                             observable string, and IΩ(α) be the information state reached.
+ URΩ(ασ)(NXσ(ρβ,α))                                     Then, we have
+                     ∃(x1, x2)∈ρβ,α, ∃w∈(Σ \ Ω(ασ))∗            D1(IΩ(α)) = {ˆXG(β | α)∈2X  : β ∈{α}}.
+ =   (x1, x3)∈X×X :
+                                            s.t. x3 = δ(x2, σw)                Proof: By  Proposition  1, we know  that D(IΩ(α)) =
+  ⎧                        ⎫   {ρβ,α ∈2X ×X  : β ∈{α}}. Therefore
+                           ⎪⎪⎪⎬    D1(IΩ(α))  ⎪⎪⎪⎪⎨                  ∃x0 ∈X0, ∃st∈L(G, x0),  ⎪                   ∃w∈(Σ \ Ω(ασ))∗s.t.
+ =   (x1, x3) ∈X × X :
+                           ⎪⎪⎪⎭   =  {x ∈X : (x, x′) ∈ρβ,α} : β ∈{α}  ⎪⎪⎪⎪⎩                  PΩ(s) = β ∧PΩ(st) = α∧  ⎪                       δ(x0, s) = x1 ∧δ(x0, stσw) = x3     ⎧⎧                 ⎫     ⎫
+  ⎧                        ⎫    ⎪⎨⎪⎨        ∃x0 ∈X0, ∃st ∈L(G, x0) ⎪⎬     ⎪⎬
+  ⎪⎨                ∃x0 ∈X0, ∃st′ ∈L(G, x0) s.t. ⎪⎬   =    x ∈X :           s.t. x = δ(x0, s)             : β ∈{α}
+ =                                ⎪⎩⎪⎩                                                   ⎪⎭     ⎪⎭      (x1, x3) ∈X × X : PΩ(s) = β ∧PΩ(st′) = ασ                                                                ∧PΩ(s) = β ∧PΩ(st) = α  ⎪⎩                           ⎪⎭
+                     ∧δ(x0, s) = x1 ∧δ(x0, st′) = x3
+                                   =  ˆXG(β | α)∈2X  : β ∈{α}   .                         (9)
+ = ρβ,ασ.                                                   (6)
+                                                           This completes the proof.                  ■
+Combining (5) and (6), we have                                  Corollary 1 tells that, using the proposed information state
+                                                            updating rule, D1(IΩ(α)) can capture all possible delayed state
+      {URΩ(ασ)(NXσ(ρ)) ∈2X ×X  : ρ ∈D(IΩ(α))}          estimates for all possible previous instants. Let us deﬁne
+                                                                          Ibad = {ı ∈I : ∃q ∈D1(ı) s.t. q ⊆XS}      (10)
+    = {URΩ(ασ)(NXσ(ρβ,α)) ∈2X ×X  : β ∈{α}}
+                                                               as the set of information states in which inﬁnite-step opacity is
+    = {ρβ,ασ ∈2X ×X  : β ∈{α}}.                     (7)                                                                  violated for some previous instant. Then, to check whether or
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on March 28,2020 at 18:20:52 UTC from IEEE Xplore. Restrictions apply.
+
+YIN AND LI: SYNTHESIS OF DYNAMIC MASKS FOR INFINITE-STEP OPACITY                                                                1435
+
+
+not a given dynamic mask Ω is inﬁnite-step opaque, it sufﬁces     Let T ⊑T be a subautomaton of T, where T = (AT , ΣT , δT ,
+to check whether or not Ω can reach some information state in   A0,T). For each state ı ∈AT , we deﬁne
+Ibad.                                                                   Σsucc                                                                        T   (ı) := {σ ∈O(ı) : ∃θ ∈O s.t. δT (ı, (σ, θ))!}   Finally, we would like to emphasize that the information-
+state-based characterization is not the most efﬁcient way for   as the set of observable events deﬁned at ı. For each observable
+the purpose of veriﬁcation of inﬁnite-step opacity. In particular,   event σ ∈ΣsuccT   (ı), we deﬁne
+to verify inﬁnite-step opacity, we can check, for each possible
+                                                     ΘT (σ, ı) := {θ ∈O : δT (ı, (σ, θ))!}
+current state estimate, whether or not any string that comes
+from a secret state in it has a string that comes from a nonsecret   as the set of sensing decisions associated with σ at state ı. Note
+state in the current state estimate such that they have the same   that, since the transition function of T is deﬁned for all events
+projection; see, e.g., [31] and [46]. This leads to an exponential   satisfying the updating rule, ΣsuccT   (ı) is the set of all possible
+complexity for the veriﬁcation of inﬁnite-step opacity rather   events that can be observed from ı. We say that subautomaton
+than the doubly exponential space of our information states.  T ⊑T is
+However, the idea of the above veriﬁcation procedure cannot      1) safe, if AT ∩Ibad = ∅;
+be applied to the synthesize problem, since the existence of      2) observation consistent, if ∀ı∈AT , ΣsuccT   (ı) = ΣsuccT   (ı);
+such an observational equivalent “nonsecret” depends on the      3) decision deterministic, if |A0,T | = 1 and ∀ı ∈AT , ∀σ ∈
+sensing decisions in the future, which are unknown and are to         ΣsuccT   (ı) : |ΘT (σ, ı)| = 1.
+be determined in the synthesis problem. Therefore, we cannot      Intuitively, observation consistency says that any feasible ob-
+“borrow” this future information as one can do in the veriﬁcation   servation should be deﬁned (associated with some θ) at each
+problem. This is, in fact, the main difﬁculty in the inﬁnite-   state in T. This captures the fact that a dynamic mask should be
+opacity synthesis problem, which is addressed by the new type   able to react to any possible observation. Decision determinism
+of information state proposed in this paper.                        essentially says that 1) the initial sensing decision is unique;
+                                                       and 2) upon the occurrence of a new observable event σ, the
+   IV. SYNTHESIS PROCEDURE OF INFINITE-STEP OPACITY     next sensing decision is also unique, which is the unique sens-
+                                                              ing decision associated with σ. Therefore, any safe, observation
+  In this section, we ﬁrst present an approach to synthesize
+                                                                  consistent and decision deterministic subautomaton T ⊑T can
+a dynamic mask that preserves inﬁnite-step opacity and then
+                                                        be modiﬁed as a dynamic mask that satisﬁes the inﬁnite-step
+prove its correctness.
+                                                               opacity requirement.
+                                             On the basis of the above discussion, Algorithm 1 is pro-
+A. Synthesis Algorithm                                                         posed to solve Problem 1. Let us explain how Algorithm 1
+  As we discussed earlier, to synthesize a dynamic mask Ω   works. Lines 1–4 aim to explore the entire reachable space of
+satisfying the inﬁnite-step opacity requirement,  it sufﬁces to   I \ Ibad represented by automaton T, whicis a subautomaton
+guarantee, by construction, that any run induced will not reach   of T. Speciﬁcally, line 1 deﬁnes the initial conﬁguration of T
+a bad information state in Ibad.                               with initial states representing all possible initial sensing de-
+  To this end, ﬁrst, we deﬁne an FSA                            cisions that do not violate inﬁnite-step opacity initially. Then,
+                                                           procedure EXPAND in lines 24–34 simply traverses the entire
+           T = (AT, ΣT, δT, A0,T)                    reachable space of I \ Ibad by a depth-ﬁrst-search implemented
+                                                                     recursively. Note that the resulting automaton T after line 4that captures all possible runs and all possible reachable infor-
+                                              may not be observation consistent since some events σ maymation states. Speciﬁcally
+   1) AT = I = 2X × 22X ×X × O is the set of states;           lead to states in Ibad no matter what θ they are associated with.
+   2) ΣT = (Σo ∪Σs) × O is the set of events;                Therefore, the while-loop in lines 5–7 mainly removes states
+   3) δT : AT × ΣT →AT is the transition function deﬁned   that violate observation consistency from AT . Note that remov-
+      by: for any ı, ı′ ∈AT, (σ, θ) ∈ΣT, δT(ı, (σ, θ)) = ı′ if   ing one state from T may destroy the observation consistency
+                           (σ,θ)                                      of other states; hence, the while-loop may execute at most |AT |
+     σ ∈O(ı) and ı −−−→ı′;                                                             times and the resulting T is the largest safe and observation con-
+   4) A0,T is the set of initial states deﬁned by                    sistent subautomaton of T. In the worst case, all initial states in
+     A0,T = {(URθ(X0), {⊙θ(URθ(X0))}, θ)∈AT : θ∈O}. T can be removed. This implies that opacity cannot be satisﬁed
+                                                     by any sensing strategy; this is implemented by lines 8–10.
+   Intuitively, T captures all possible information state evolu-    Now, suppose that automaton T obtained after line 7 contains
+tions since its transition function is deﬁned for any information    initial states. However, T may still not be decision determin-
+states that satisfy the updating rule. The initial states of T are    istic, i.e., for some ı ∈AT , σ ∈ΣsuccT   (ı), σ may be associated
+not unique in order to capture all possible initial sensing de-   with multiple sensing decisions. Therefore, lines 11–18 mainly
+cisions. Automaton T will serve as the basis for synthesizing  aim to ﬁnd a decision deterministic subautomaton of T. Specif-
+a dynamic mask satisfying inﬁnite-step opacity. This structure   ically, lines 11 and 12 select a single initial state from A0,T
+will not be constructed explicitly. Instead, we will construct a   and, similarly, lines 13–18 select a single sensing decision for
+subautomaton of T directly as a solution to Problem 1. First,   each observable event at each state in AT . Moreover, in lines 11
+we introduce some necessary notations and concepts.           and 15, we select sensing decisions that are local maximal; this
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on March 28,2020 at 18:20:52 UTC from IEEE Xplore. Restrictions apply.
+
+1436                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 65, NO. 4, APRIL 2020
+
+
+                                                L(T) = Σ∗. Finally, we deﬁne the output mapping Θ by the Algorithm 1: Synthesize Dynamic Mask Ω = (T, Θ).
+                                                                            last component of each state in T and return Ω := (T, Θ) as the
+   1: Deﬁne a FSA T = (AT , ΣT , δT , A0,T ) with                desired dynamic mask.
+  AT = A0,T =                                We will formally show later the properties of Algorithm 1
+    {(URθ(X0), {⊙θ(URθ(X0))}, θ)∈XT  : θ∈O} \ Ibad     and prove its correctness. First, we illustrate Algorithm 1 by
+  and                                                                 the following example.
+     δT is undeﬁned for any transition                        Example 5: Again, let us consider system G in Fig. 1(a) with
+   2: for ı0 ∈A0,T do                                 Σo = {a}, Σuo = {u}, Σs = {e}, and XS = {5}. We want to
+   3:    EXPAND(ı0, T)                                                               synthesize a dynamic mask Ω satisfying inﬁnite-step opacity.
+   4: end for                                                      Note that O = {{a}, {e, a}}, i.e., there are two choices for sens-
+   5: while ∃ı ∈AT  : ΣsuccT   (ı)̸=ΣsuccT   (ı) do                   ing decision, monitor event e or not. We apply Algorithm 1 to
+   6:   Remove ı from AT and remove its associated             this system. Speciﬁcally, after the execution of line 4, we obtain
+   transitions                                             T shown in the box marked with blue-dashed lines in Fig. 2. For
+       from δT                                                 the sake of clarity, we denote this intermediate automaton by
+   7: end while                                                         T1 and we rename each state in T1 by S1, . . . , S10 as shown in
+   8:  if A0,T = ∅then                                          the ﬁgure. At state S7, if we take transition (a, {e, a}), then
+   9:    return “No Solution”                                                                        state  ı′ = ({7}, {{(4, 7)}, {(5, 7)}, {(6, 7)}, {(7, 7)}}, {e, a})
+ 10: end if                                                                               is reached. However, since D1(ı′) = {{4}, {5}, {6}, {7}} and
+ 11: Find ı0 ∈A0,T such that ∀ı′0 ∈A0,T  : O(ı0)̸ ⊂O(ı′0)     {5} ⊆XS, we know that  ı′ ∈Ibad. This  is why transition
+ 12: Re-deﬁne initial states of T by A0,T ←{ı0}                (a, {e, a}) is not added to T1 at state S7 according to line 26; the
+ 13: for ı ∈AT do                                    same reason for state S10. Then, we execute the while-loop in
+                                                              = {a}̸ = 14:    for σ ∈ΣsuccT   (ı) do                                        lines 5–7. Speciﬁcally, for state S7, we have ΣsuccT1  (S7)
+ 15:       Find θ ∈ΘT (σ, ı) s.t. ∀θ′ ∈ΘT (σ, ı) : θ̸ ⊂θ′        Σsucc                                                  T  (S7) = {e, a}, i.e., feasible observable event e is not de-
+ 16:      At state ı, remove all transitions labeled with                                                     ﬁned at this state. Therefore, state S7 needs to be removed. Sim-
+              (σ, θ′), θ′̸ = θ                                                                                 ilarly, we need to remove state S10 for the same reason and the
+ 17:   end for                                                             while-loop terminates. This results in T (accessible part) shown
+ 18: end for                                                                    in the box marked with red-dashed lines in Fig. 2; for the sake of
+ 19: T ←Acc(T)                                                                             clarity, we denote this intermediate automaton by T2. Note that,
+ 20: Redeﬁne ΣT = Σ and rename each event (σ, θ) by σ        for state S3 in T2, although the transition to state S7 is removed,
+ 21: Make the transition function of T total by adding                                                                                               it does not violate observation consistency since (a, {a}) is de-
+   self-loops for                                                     ﬁned and event e is not a feasible observation at this state. Then,
+     undeﬁned events                                             we proceed to lines 11–19 to ﬁnd a decision deterministic subau-
+ 22: Deﬁne mapping Θ : AT →O by ∀ı∈AT  : Θ(ı) = O(ı)    tomaton of T2. Initially, we choose initial state S1 and remove
+ 23: return Ω = (T, Θ)                                                       S2 from initial states, since {a} = O(S2) ⊂O(S2) = {e, a}.
+ 24: procedure EXPAND(ı, T)                                                         Then, at state S1, for event e ∈ΣsuccT   (S1), we choose transition
+ 25:    for (σ, θ) ∈(Σo ∪Σs) × O : δT(ı, (σ, θ)) = ı′ do       (e, {e, a}) and remove (e, {a}); for event a ∈ΣsuccT   (S1), the
+ 26:          if ı′ /∈Ibad then                                                             choice is unique, i.e., (a, {e, a}). Then, for states S3, S4, S5,
+ 27:         add transition δT (ı, (σ, θ)) = ı′ to T             and S6, only event a is feasible and at each state the sensing
+ 28:              if ı′̸ ∈AT then                                  decision associated with a is unique. This gives automaton T
+ 29:         AT ←AT ∪{ı′}                       shown as the red highlighted part in Fig. 2. Finally, by adding
+ 30:            EXPAND(ı′, T)                                                                   self-loops and renaming event names, we obtain dynamic mask
+ 31:        end if                         Ω = (T, Θ) shown in Fig. 3, which is a solution to Problem 1.
+ 32:      end if                                                     Remark 2: At state S2 in Fig. 2, event (a, {a}) should also
+ 33:   end for                                                        be deﬁned according to the updating rule. However, this sensing
+ 34: end procedure                                                               decision is equivalent to (a, {e, a}) at this state since event
+                                                         e is redundant in the sense that  it is not feasible within the
+                                                            unobservable reach encountered, i.e., e cannot be observed from
+guarantees, by construction, that no sensing decision can im-   {1, 5} even if we choose to monitor it. Hence, taking (a, {a})
+prove the selected one. By removing transitions from T, some  from S2 will reach an information state that has exactly the same
+states may not be reachable anymore and line 19 takes the ac-   future behavior as state S3. Therefore, for the sake of simplicity,
+cessible part of T. After line 19, we have obtained a safe, ob-  we only depict one transition with all redundant events included
+servation consistent and decision deterministic subautomaton   instead of depicting all equivalent decisions.
+of T, i.e., T. Then, lines 20–22 modify it as a dynamic mask.     Let us discuss the computational complexity of Algorithm 1.
+Speciﬁcally, line 20 erases the sensing decision associated with   In the worst case, automaton T contains at most 2|X | · 22|X |×|X | ·
+                                                                      2|Σs | states and |Σ| · 2|X | · 22|X |×|X | · 4|Σs | transitions. The run-each observation (this decision has already been encoded in the
+last component of each state in T). Line 21 simply adds self-   ning time of procedure EXPAND is linear in the number of tran-
+loops for either infeasible events or unmonitored events so that   sitions in T and the running time of the while-loop is quadratic
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on March 28,2020 at 18:20:52 UTC from IEEE Xplore. Restrictions apply.
+
+YIN AND LI: SYNTHESIS OF DYNAMIC MASKS FOR INFINITE-STEP OPACITY                                                                1437
+
+
+
+
+
+Fig. 2.  For the sake of clarity, we put the sensing decision as the second component of each state in the ﬁgure.
+
+
+                                                        subautomaton of T denoted by TΩ′ = (AΩ′, ΣΩ′, δΩ′, A0,Ω′) as
+                                                                 follows:
+                                                                   1) AΩ′ = {IΩ′(α)∈I :α∈PΩ′(L(G))} is the set of states;
+                                                                   2) A0,Ω′ = {(URΩ′(ϵ)(X0), {⊙Ω′(ϵ)(URΩ′(ϵ)(X0))}, Ω′(ϵ))},
+                                                                                                   i.e., the initial state is unique;
+Fig. 3.   Solution Ω = (T, Θ).
+                                                                   3) The transition function δΩ′  is deﬁned by: for any ı ∈
+                                                               AΩ′, (σ, θ) ∈(Σo ∪Σs) × O, δΩ′(ı, (σ, θ)) is deﬁned if
+                                                                         there exists sσ ∈L(G) such that IΩ′(PΩ′(s)) = ı, σ ∈
+in the number of states in T. Therefore, the overall complexity         Ω′(s) and θ = Ω′(sσ).
+is doubly exponential in the number of states of G and expo-                                                              Since Ω′ is inﬁnite-step opaque, by Corollary 1, we know
+nential in the number of events. For current-state opacity, only                                                                      that TΩ′  is safe. Therefore, all states and transitions in TΩ′
+exponential complexity is required for the synthesis of dynamic                                                                    will be included in T after line 4 in Algorithm 1. Moreover,
+masks; see, e.g., [8]. Our higher complexity comes from the                                                             TΩ′ is observation consistent since transitions are deﬁned for
+fact that inﬁnite-step opacity is fundamentally more difﬁcult                                                                               all feasible events. Therefore, we know that no state or transi-
+than current-state opacity and delayed information is involved                                                                    tion is removed in the while-loop in Algorithm 1. Hence, all
+in this problem.                                                                       states and transitions in TΩ′  still remain in T after line 7 in
+                                                         Algorithm 1.
+B. Correctness of the Synthesis Algorithm                                                    Now, since Ω < Ω′, we know  that ∀s ∈L(G) : Ω(s) ⊆
+  In this section, we show that Algorithm 1 correctly solves   Ω′(s);  and  ∃t ∈L(G) : Ω(t) ⊂Ω′(t).  Therefore,   let  us
+Problem 1, in the sense that                                    consider  a   string   t ∈L(G)  such   that  Ω(t) ⊂Ω′(t)
+   1) Algorithm 1 is sound, i.e., any solution returned by Al-  and   ∀s ∈{t} \ {t} : Ω(s) = Ω′(s).   Let   us   consider
+      gorithm 1 is indeed maximal and inﬁnite-step opaque;   the  following two  cases.  If  t = ϵ,  then we know  that
+     and                                                                                       ı′0 := ((URΩ′(ϵ)(X0), {⊙Ω′(ϵ)(URΩ′(ϵ)(X0))}, Ω′(ϵ))) ∈A0,T
+   2) Algorithm 1 is complete, i.e., it will not return “no solu-  and Ω(ϵ) = O(ı0) ⊂O(ı′0) = Ω′(ϵ), where  ı0  is  the  ini-
+       tion” when a solution to Problem 1 exists.                      tial  state  chosen  in  line 11  of  Algorithm  1.  However,
+  Throughout this section, we use Ω = (T, Θ) to denote the   this  is  a  contradiction  since we  should choose  at  least
+dynamic mask returned by Algorithm 1.                                        ı′0  in  this  case.  If    t̸ = ϵ,  then we  write  t = t′σ, where
+   First, we show the soundness of Algorithm 1.             σ ∈Ω(t′). Since ∀s ∈{t} \ {t} : Ω(s) = Ω′(s), we know that
+  Lemma 1: G is inﬁnite-step opaque w.r.t. XS and Ω. More-   PΩ(t′) = PΩ′(t′) =: α and IΩ(α) = IΩ′(α). Therefore, event
+over, for any Ω′ such that G is inﬁnite-step opaque w.r.t. XS and   (σ, Ω′(t)) is deﬁned at IΩ(α) in T. However, this contradicts
+Ω′, we have Ω̸ < Ω′.                                               to our choice in line 15 as Ω(t) ⊂Ω′(t).
+   Proof: Let αβ ∈PΩ(L(G)) be any observable string under     Next, we show the completeness of Algorithm 1.     ■
+Ω. By Corollary 1, we know that ˆXΩ(α | αβ) ∈D1(IΩ(α)).    Lemma 2: Algorithm 1 will not return “no solution” when a
+By line 26 in Algorithm 1, we know that IΩ(α) /∈Ibad, which   solution to Problem 1 exists.
+implies that ˆXΩ(α | αβ)̸ ⊆XS. Since αβ is an arbitrary string,      Proof: Suppose that there exists a dynamic mask Ω′ that
+we know that Ω is inﬁnite-step opaque.                          solves Problem 1. Then, we deﬁne a new subautomaton of
+  To see the second point, we assume, for the sake of contradic-  T denoted by TΩ′ by the same construction in the proof of
+tion, that there exists Ω′ such that 1) G is inﬁnite-step opaque  Lemma 2. As we discussed in the proof of Lemma 2, all
+w.r.t. XS and Ω′; and 2) Ω < Ω′. Then, let us deﬁne a new   states and transitions in TΩ′  still remain in T after line 7 in
+
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on March 28,2020 at 18:20:52 UTC from IEEE Xplore. Restrictions apply.
+
+1438                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 65, NO. 4, APRIL 2020
+
+
+Algorithm 1. Therefore, AT ,0 is not empty and line 8 will not   information state updating rule as follows. For each informa-
+return “no solution.”                     ■   tion state ı = (C(ı), D(ı), O(ı)) ∈2X × 22X ×X × O, suppose
+   Finally, we summarize Lemmas 1 and 2 by the following   a monitored event σ ∈O(ı) is observed and a new sensing deci-
+theorem.                                                       sion θ ∈O is made immediately after the occurrence of σ. Then,
+  Theorem 1: Algorithm 1 correctly solves Problem 1.          the new information state reached ı′ = (C(ı′), D(ı′), O(ı′)) is
+  Remark 3: In the proof of Lemma 1, we show that, for any  deﬁned by
+inﬁnite-step opaque dynamic mask Ω′, its corresponding TΩ′ is  ⎧
+                                                                  C(ı′) =                                                              URθ(NXσ(C(ı)))
+“included”            in T after                       line 7 in Algorithm                                             1.                                           Therefore,                                      T after                              ⎪⎪⎪⎪⎨                                       =line 7 in Algorithm               1 essentially                          “embeds”                                                   all                                            possible solutions                                                                D(ı′)                                                                 {URθ(NXσ(ρ))∈2X ×X  : ρ ∈D(ı)} ∩ΞS
+                                                                                                                                                                                      .in    it.     Recall that,                  in                      this                        paper, we aim                                        to ﬁnd                                      one logical                                                                 ∪({⊙θ(C(ı′))} ∩ΞS)
+mal    dynamic          mask                    for                       inﬁnite-step                                    opacity.                                     Another                                                       interesting                                                 maxi-  ⎪⎪⎪⎪⎩
+question is how to compare two incomparable maximal solu-       O(ı′) = θ
+tions. This may require us to introduce new numerical measure                                                           (11)
+for optimality, e.g., quantitative cost. This direction has actually                                                           Equations (11) is also referred to as the reduced information
+been explored in [8] for current-state opacity by solving a mean                                                                      state updating rule. The difference between the reduced updat-
+payoff game. In our context, one could also apply similar tech-                                                              ing rule and the original updating rule is the second component
+niques over the structure obtained after line 7 in Algorithm 1.   D(ı′). Speciﬁcally, in the original updating rule, we need to
+This numerical optimization problem is beyond the scope of                                                           update all previous delayed state estimates and always add the
+this paper as the main purpose of this paper is to show what is                                                                 current state estimate (after mapping) ⊙θ(C(ı′)) to this com-
+the right information structure to handle delayed information in                                                              ponent. However, in the reduced updating rule, we only need
+inﬁnite-step opacity.                                                                    to update those delayed state estimates in which the secret be-
+                                                               haviors are still possible. Note that some secret states contained
+     V. COMPLEXITY REDUCTION AND GENERALIZATION
+                                                                    in previous delayed state estimates may be smoothed by the
+  In this section, we ﬁrst present an approach to reduce the state  new information. Therefore, we can just forget those delayed
+space of information states for inﬁnite-step opacity. Then, we   state estimates for which the possibility of secret states has been
+discuss how to generalize the proposed synthesis algorithm to   eliminated. Similarly, we will only add the current state estimate
+other properties with delayed information.                  when it contains a secret state. Otherwise, the current instant will
+                                                             never be a source that violates inﬁnite-step opacity in the future
+A. Information-State Reduction                          and we do not need to remember this information.
+                                                                  In order to synthesize a dynamic mask that preserves inﬁnite-  In the previous sections, we have provided an approach
+                                                                  step opacity, we can then use exactly the same algorithm, i.e.,for synthesizing dynamic masks  that preserve inﬁnite-step
+                                                         Algorithm 1, except the following differences.opacity. The idea is to explore the information state space
+2X × 22X ×X × O following the proposed information state up-      1) The initial states A0,T in lines 1 should be replaced by
+dating rule. Nevertheless, this is still a very large state space;    {(URθ(X0), {⊙θ(URθ(X0))} ∩ΞS, θ)∈XT  : θ∈O} \ Ibad.
+the main complexity comes from the fact that we need to store
+                                                                   2) The transition function δT considered in line 25 shouldall possible delayed state estimates for each instant in order
+                                                                   follow the reduced information state updating rule, asto check whether or not the current information reveals some
+                                                           deﬁned in (11), not the originally one.secret in the past. For the purpose of preserving inﬁnite-step
+                                                     Compared with the original information state updating ruleopacity, however, not all delayed state estimates along the de-                                          ×X
+                                                                      that may explore the entire 2X × 22X  × O state space, thecision history are needed. It is possible that a current/delayed
+                                                          reduced information state updating rule will only explore a sub-state estimate of an instant does not contain a secret state. This
+                                                           spacemay correspond to the following two cases: 1) the current-state
+estimate for that instant does not even contain a secret state; or                                                                               Ireduc := 2X × (22X ×X \ 22( X \X S ) ×X ) × O
+2) the possibility that the system was in a secret state for that
+instant, which has been “smoothed” by the future information.   that contains at most 2|X |+|Σs | · (22|X |×|X | −22|X \X S |×|X |) states.
+Then, for such a scenario, no matter what information is released   Therefore, the complexity of the synthesis algorithm can be re-
+in the future, such an instant will not be a source that reveals the   duced considerably when the number of secret states is relatively
+secret. Therefore, we do not need to store state estimate and its   smaller (which is usually the case for most of the applications).
+induced delayed state estimates in the future. This observation     Next, we illustrate how to synthesize a dynamic mask using
+allows us to further reduce the state space of the information   the reduced information state updating rule.
+state.                                                   Example 6: Let us still consider system G in Fig. 1(a) with
+  Formally, we deﬁne                                 Σo = {a}, Σuo = {u}, Σs = {e} and XS = {5}. We apply
+      ΞS = {ρ ∈2X ×X  : ∃(x, x′) ∈ρ s.t. x ∈XS}          Algorithm 1 using the reduce information state updating rule.
+                                                   The synthesis procedure is depicted in Fig. 5. For example,
+as the set of all state-pair-sets in which the ﬁrst component  we consider that the initial state of T  is ({0, 4}, {∅}, {e, a})
+of some state pairs is a secret state. Then, we modiﬁed the   not the  original one ({0, 4}, {{(0, 0), (4, 4)}}, {e, a});  this
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on March 28,2020 at 18:20:52 UTC from IEEE Xplore. Restrictions apply.
+
+YIN AND LI: SYNTHESIS OF DYNAMIC MASKS FOR INFINITE-STEP OPACITY                                                                1439
+
+
+
+
+
+                                                                               Fig. 6.   Ω′′ = (T ′′, Θ′′) with a minimal state space.
+
+
+
+                                                                    to further reduce the state space of the synthesized dynamic
+                                                  mask in order to save memory for its online implementation.
+
+                                                         B. Synthesis for Initial-State Opacity
+
+                                                     The proposed synthesis procedure and the reduction rule can
+                                                                  also be easily extended to initial-state opacity. Speciﬁcally, sys-
+                                                     tem G is said to be initial-state opaque w.r.t. XS and Ω if the
+                                                                   intruder can never know for sure that the system is initially from
+                                                           a secret state, i.e.,
+                                                     ∀α ∈PΩ(L(G)) : ˆXΩ(ϵ | α)̸ ⊆XS .
+
+                                                                    Similarly, to synthesize a dynamic mask that preserves initial-
+                                                                        state opacity, we can still use Algorithm 1 with the following
+Fig. 4.   Illustration of Algorithm 1 using the reduced information state
+updating rule.                                                 modiﬁcations.
+                                                                   1) The initial states A0,T in lines 1 is also replaced by
+                                                      {(URθ(X0), {⊙θ(URθ(X0))} ∩ΞS, θ)∈XT  : θ∈O} \ Ibad.
+
+                                                                   2) The second component of the transition function δT con-
+                                                                      sidered in line 25, i.e., the part for D(ı), is replaced by
+
+                                                                    D(ı′) = {URθ(NXσ(ρ))∈2X ×X  : ρ ∈D(ı)} ∩ΞS.
+Fig. 5.  Ω′ = (T ′, Θ′) obtained based on the reduced information state.
+                                                                            Intuitively, the above modiﬁcation says that, when we update
+                                                                 the information state, we will only update the delayed-state-
+                                                               estimate that corresponds to the initial state and do not need
+is because {(0, 0), (4, 4)}̸ ∈ΞS. From  state S′1  to S′3, we   to add any current-state estimate encountered. Therefore, for
+                                                                            initial-state opacity, we only need to explore a subspace 2X ×need to add {⊙{e,a}({1, 5})} to the second component since
+                                                      (2X ×X \ 2X                                                                                                      S ×X ) × O as D(ı) is always a singleton. Hence,{(1, 1), (5, 5)} ∈ΞS. However, from state S′3 to S′4, we do
+not need to add {⊙{e,a}({2, 3, 6, 7})} to the second compo-   the complexity for the case of initial-state opacity is just single
+nent since {(2, 2), (2, 3), (3, 3), (6, 7), (6, 7), (7, 7)}̸ ∈ΞS and   exponential.
+                                                        Note that, although it has been show by [41] that initial-statewe  just need  to update  the delayed  state  estimate from
+{(1, 1), (5, 5)} to {(1, 2), (1, 3), (5, 6), (5, 7)}. Following the   opacity and current-state opacity can be mapped from one to
+                                                                 the other for the purpose of veriﬁcation, it is not the case forsame synthesis procedure as we discussed in Example 5, we
+                                         ′                                             the purpose of synthesis. To the best of our knowledge, how toobtain automaton T shown as the part highlight in red in Fig. 4.
+                                                               synthesize a dynamic mask for initial-state opacity has neverBy adding self-loops and renaming event names, we obtain dy-
+namic mask Ω′ = (T ′, Θ′) shown in Fig. 5.                   been solved in the literature. This problem can now be solved
+  Remark 4: By comparing Ω′ = (T ′, Θ′) in Fig. 5 with Ω =   within our framework.
+(T, Θ) in Fig. 3, we see that these two dynamic masks work
+essentially the same, but T ′ contains less states than T. This il-  C. Generalization to a Class of Properties
+lustrates that some states in the dynamic mask synthesized (even     In fact, the proposed information state and its updating rule
+using the reduced information state updating rule) may be redun-   can be applied to the synthesis problems for other properties
+dant. For example, in Ω′ = (T ′, Θ′) shown in Fig. 5, since states  where delayed information is involved.
+S′3 and S′5 are equivalent states in the sense that they have the     For example, in the computer science literature, K-anonymity
+same current decision and future behaviors. This dynamic mask    is a property requiring that the observer should never know the
+can then be further reduced to Ω′′ = (T ′′, Θ′′) shown in Fig. 6   current state of the system “too precisely” in the sense that the
+by merging states S′3 and S′5 without changing its functionality.   cardinality of the current-state estimate should always be larger
+Therefore, after the execution of Algorithm 1, one can apply   than or equal to K, i.e.,
+the standard automaton minimization algorithm, which can be
+                                                      ∀α ∈PΩ(L(G)) : |ˆXΩ(α)| ≥K.done in polynomial-time for deterministic ﬁnite-state automata,
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on March 28,2020 at 18:20:52 UTC from IEEE Xplore. Restrictions apply.
+
+1440                                                             IEEE TRANSACTIONS ON AUTOMATIC CONTROL, VOL. 65, NO. 4, APRIL 2020
+
+
+Note that the standard deﬁnition of K-anonymity only considers  and we also obtain dynamic mask Ω = (T, Θ) shown in Fig. 3
+current information; it can be enforced using the approach in   but for inﬁnite-step 2-anonymity.
+[47]. However, similar to the case of inﬁnite-step opacity, the
+observer may also use future information to better know the
+                                                                                       VI. CONCLUSIONstate of the system for some previous instant. Therefore, we can
+deﬁne inﬁnite-step K-anonymity as a stronger condition that   We investigated the problem of synthesizing dynamic masks
+takes the effect of future information into account. Speciﬁcally,   that preserve inﬁnite-step opacity while maximizing the infor-
+system G is said to be inﬁnite-step K-anonymous w.r.t. a positive   mation acquired. A new type of information state was proposed
+integer K ∈N if                                                  to capture all delayed information for all previous instants. An
+                                                                     effective algorithm was provided to solve the synthesis problem.        ∀αβ ∈PΩ(L(G)) : |ˆXΩ(α | αβ)| ≥K.
+                                                   Our result extends previous work on the synthesis of dynamic
+Intuitively, inﬁnite-step K-anonymity says that the intruder  masks from current-state opacity to inﬁnite-step opacity. We
+should never know the state of the system at any speciﬁc in-   believe that the new type of information state proposed in this
+stant “too precisely” in the sense that, for each instant, there   paper can also be applied to the supervisor synthesis problem
+always exist at least K distinct states that are indistinguish-  and the insertion function synthesis problem for the purpose of
+able even by using future information. We can also synthesize a   enforcing inﬁnite-step opacity. We will explore these directions
+dynamic mask that preserves inﬁnite-step K-anonymity using   in the future.
+the proposed approach. The only difference with inﬁnite-step
+opacity is that, instead of considering illegal information states
+                                                                  REFERENCES
+Ibad deﬁned in (10), we need to consider the following illegal
+information states:                                                              [1] E. Badouel, M. Bednarczyk, A. Borzyszkowski, B. Caillaud, and P. Daron-
+                                                                                   deau, “Concurrent secrets,” Discrete Event Dyn. Syst.: Theory Appl.,
+          Ianobad = {ı ∈I : ∃q ∈D1(ı) s.t. |q| < K}.                        vol. 17, no. 4, pp. 425–446, 2007.
+                                                                                      [2]  F. Basile and G. De Tommasi, “An algebraic characterization of language-
+According to Corollary 1, for each state in Ianobad, there must exist        based opacity in labeled Petri nets,” in Proc. 14th Int. Workshop Discrete
+                                                                              Event Syst., 2018, pp. 340–347.
+a previous instant in the trajectory reaching this information     [3] B. B´erard, J. Mullins, and M. Sassolas, “Quantifying opacity,” Math.
+such that the observer knows for sure that the cardinality of          Struct. Comput. Sci., vol. 25, no. 2, pp. 361–403, 2015.
+the delayed state estimate is smaller than K, i.e., inﬁnite-step     [4] A. Bourouis, K. Klai, N. Ben Hadj-Alouane, and Y. El Touati, “On the
+                                                                                      veriﬁcation of opacity in web services and their composition,” IEEE Trans.
+K-anonymity is violated.                                                      Services Comput., vol. 10, no. 1, pp. 66–79, Jan./Feb. 2017.
+  Another related property that can be enforced by the pro-     [5]  J. W. Bryans, M. Koutny, L. Mazar´e, and P. Ryan, “Opacity generalised to
+posed approach is inﬁnite-step indistinguishability. Speciﬁcally,          transition systems,” Int. J. Inf. Security, vol. 7, no. 6, pp. 421–435, 2008.
+                                                                                      [6]  J. W. Bryans, M. Koutny, and P. Ryan, “Modelling opacity using Petri
+let X1, X2 ⊆X be two disjoint sets of states. Then, inﬁnite-step          nets,” Electron. Notes Theor. Comput. Sci., vol. 121, pp. 101–115, 2005.
+indistinguishability requires that the intruder should never be     [7] C. G. Cassandras and S. Lafortune, Introduction to Discrete Event Systems,
+able to distinguish X1 and X2 for any speciﬁc instant, i.e.,            2nd ed. New York, NY, USA: Springer, 2008.
+                                                                                      [8]  F. Cassez, J. Dubreil, and H. Marchand, “Synthesis of opaque systems
+     (∀αβ ∈PΩ(L(G)))(∀i, j ∈{1, 2} :  i̸ = j)                       with static and dynamic masks,” Formal Methods Syst. Des., vol. 40,
+                                                                                     no. 1, pp. 88–115, 2012.
+                                                                                      [9]  F. Cassez and S. Tripakis, “Fault diagnosis with static and dynamic ob-
+                                                                                            servers,” Fundamenta Informaticae, vol. 88, no. 4, pp. 497–540, 2008.     ˆXΩ(α | αβ) ∩Xi̸ = ∅⇒ˆXΩ(α | αβ) ∩Xj̸ = ∅.
+                                                                               [10]  S. Ch´edor, C. Morvan, S. Pinchinat, and H. Marchand, “Diagnosis and
+Similarly, we can synthesize a dynamic mask that preserves         opacity problems for inﬁnite state systems modeled by recursive tile sys-
+                                                                                    tems,” Discrete Event Dyn. Syst.: Theory Appl., vol. 25, nos. 1/2, pp. 271–
+inﬁnite-step indistinguishability by replacing the original illegal         294, 2015.
+information states Ibad as                                                [11]  J. Chen, M. Ibrahim, and R. Kumar, “Quantiﬁcation of secrecy in partially
+                                                                               observed stochastic discrete event systems,” IEEE Trans. Autom. Sci. Eng.,
+                   ∃q ∈D1(ı), ∃i, j ∈{1, 2} s.t.                      vol. 14, no. 1, pp. 185–195, Jan. 2016.
+      Iindisbad =   ı ∈I :                                                 .          [12] X. Cong, M. P. Fanti, A. M. Mangini, and Z. Li, “On-line veriﬁcation
+                        q ∩Xi̸ = ∅∧q ∩Xj = ∅                      of current-state opacity by petri nets and integer linear programming,”
+                                                                                Automatica, vol. 94, pp. 205–213, 2018.
+  In fact, our synthesis algorithm can be applied to any property    [13] E. Dallal and S. Lafortune, “On most permissive observers in dynamic
+that can be written as a safety-type predicate ϕ : 2X × 22X →         sensor activation problems,” IEEE Trans. Autom. Control, vol. 59, no. 4,
+{0, 1}, where ﬁrst part represents the current-state estimate of    [14]  P.pp.Darondeau,966–981, Apr.H. Marchand,2014.    and L. Ricker, “Enforcing opacity of regular
+the system and the second part represents all possible delayed-         predicates on modal transition systems,” Discrete Event Dyn. Syst.: Theory
+state estimates of the system.                                                    Appl., vol. 25, nos. 1/2, pp. 251–270, 2015.
+                                                                               [15]  J. Dubreil, P. Darondeau, and H. Marchand, “Supervisory control for
+  Example 7: Let us still consider system G in Fig. 1(a) with          opacity,” IEEE Trans. Autom. Control, vol. 55, no. 5, pp. 1089–1100, May
+Σo = {a}, Σuo = {u} and Σs = {e}. However,  instead of        2010.
+considering inﬁnite-step opacity, we consider inﬁnite-step K-    [16] Y. Falcone and H. Marchand, “Enforcement and validation (at runtime)
+anonymity for K = 2. Then, for the structure in Fig. 2, we also         ofvol.various25, no.notions4, pp. 1–40,of opacity,”2014.  Discrete Event Dyn. Syst.: Theory Appl.,
+have    ı = ({7}, {e, a}, {{(4, 7)}, {(5, 7)}, {(6, 7)}, {(7, 7)}}) ∈    [17] L. H´elou¨et, H. Marchand, and L. Ricker, “Opacity with powerful attack-
+Ianobad  since {4} ∈D1(ı) but |{4}| = 1 < 2. Therefore, both           ers,” in Proc. 14th Int. Workshop Discrete Event Syst., 2018, pp. 475–482.
+                                                                               [18] R. Jacob, J.-J. Lesage, and J.-M. Faure, “Overview of discrete event sys-
+states S7 and S10 still need to be violated. Then, the remaining        tems opacity: Models, validation, and quantiﬁcation,” Annu. Rev. Control,
+part of the synthesis procedure is exactly the same as Example 5          vol. 41, pp. 135–146, 2016.
+
+
+
+     Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on March 28,2020 at 18:20:52 UTC from IEEE Xplore. Restrictions apply.
+
+YIN AND LI: SYNTHESIS OF DYNAMIC MASKS FOR INFINITE-STEP OPACITY                                                                1441
+
+
+
+[19] Y. Ji, Y.-C. Wu, and S. Lafortune, “Enforcement of opacity by public and    [42] Y.-C. Wu and S. Lafortune, “Synthesis of insertion functions for enforce-
+      private insertion functions,” Automatica, vol. 93, pp. 369–378, 2018.           ment of opacity security properties,” Automatica, vol. 50, no. 5, pp. 1336–
+[20] R. J. Barcelos and J. C. Basilio, “Enforcing current-state opacity through        1348, 2014.
+     shufﬂe in event observations,” in Proc. 14th Int. Workshop Discrete Event    [43] Y.-C. Wu, K. A. Sankararaman, and S. Lafortune, “Ensuring privacy in
+       Syst., 2018, pp. 106–111.                                                       location-based services: An approach based on opacity enforcement,” in
+[21] C. Keroglou and C. N. Hadjicostis, “Probabilistic system opacity in dis-         Proc. 12th Int. Workshop Discrete Event Syst., 2014, pp. 33–38.
+      crete event systems,” Discrete Event Dyn. Syst.: Theory Appl., vol. 28,    [44] B. Xing, J. Dai, and S. Liu, “Enforcement of opacity security properties
+     no. 2, pp. 289–314, 2018.                                                           for ship information system,” Int. J. Naval Archit. Ocean Eng., vol. 8,
+[22] C. Keroglou, L. Ricker, and S. Lafortune, “Insertion functions with mem-         no. 5, pp. 423–433, 2016.
+     ory for opacity enforcement,” in Proc. 14th Int. Workshop Discrete Event    [45] X. Yin and S. Lafortune, “A uniform approach for synthesizing property-
+       Syst., 2018, pp. 405–410.                                                      enforcing supervisors  for  partially-observed  discrete-event systems,”
+[23] K. Kobayashi and K. Hiraishi, “Veriﬁcation of opacity and diagnosability       IEEE Trans. Autom. Control, vol. 61, no. 8, pp. 2140–2154, Aug. 2016.
+      for pushdown systems,” J. Appl. Math., vol. 2013, 2013, Art. no. 654059.    [46] X. Yin and S. Lafortune, “A new approach for the veriﬁcation of inﬁnite-
+[24]  S. Lafortune, F. Lin, and C. N. Hadjicostis, “On the history of diagnos-         step and K-step opacity using two-way observers,” Automatica, vol. 80,
+      ability and opacity in discrete event systems,” Annu. Rev. Control, vol. 45,         pp. 162–171, 2017.
+     pp. 257–266, 2018.                                                       [47] X. Yin and S. Lafortune, “A general approach for optimizing dynamic sen-
+[25]  F. Lin, “Opacity of discrete event systems and its applications,” Automat-         sor activation for discrete event systems,” Automatica, vol. 105, pp. 376–
+      ica, vol. 47, no. 3, pp. 496–503, 2011.                                         383, 2019.
+[26]  J. Mullins and M. Yeddes, “Opacity with orwellian observers and intran-    [48] X. Yin and S. Li, “Synthesis of dynamic masks for inﬁnite-step opacity,”
+      sitive non-interference,” in Proc. 12th Int. Workshop Discrete Event Syst.,          in Proc. 14th Int. Workshop Discrete Event Syst., 2018, pp. 354–359.
+     2014, pp. 344–349.                                                       [49] X. Yin, Z. Li, W. Wang, and S. Li, “Inﬁnite-step opacity and K-step opacity
+[27] M. Noori-Hosseini, B. Lennartson, and C. Hadjicostis, “Compositional         of stochastic discrete-event systems,” Automatica, vol. 99, pp. 266–274,
+      visible bisimulation abstraction applied to opacity veriﬁcation,” in Proc.        2019.
+     14th Int. Workshop Discrete Event Syst., 2018, pp. 445–452.                [50] B. Zhang, S. Shu, and F. Lin, “Maximum information release while en-
+[28] A. Saboori and C. N. Hadjicostis, “Coverage analysis of mobile agent tra-         suring opacity in discrete event systems,” IEEE Trans. Autom. Sci. Eng.,
+      jectory via state-based opacity formulations,” Control Eng. Pract., vol. 19,          vol. 12, no. 4, pp. 1067–1079, Jul. 2015.
+     no. 9, pp. 967–977, 2011.                                                 [51] K. Zhang, X. Yin, and M. Zamani, “Opacity of nondeterministic transi-
+[29] A. Saboori and C. N. Hadjicostis, “Veriﬁcation of K-step opacity and          tion systems: A (bi) simulation relation approach,” IEEE Trans. Autom.
+      analysis of its complexity,” IEEE Trans. Autom. Sci. Eng., vol. 8, no. 3,         Control, doi: 10.1109/TAC.2019.2908726.
+     pp. 549–559, Jul. 2011.
+[30] A. Saboori and C. N. Hadjicostis, “Opacity-enforcing supervisory strate-
+      gies via state estimator constructions,” IEEE Trans. Autom. Control,                      Xiang Yin (M’17) was born in Anhui, China,
+      vol. 57, no. 5, pp. 1155–1165, May 2012.                                                               in 1991. He received the B.Eng. degree from
+[31] A. Saboori and C. N. Hadjicostis, “Veriﬁcation of inﬁnite-step opacity and                         Zhejiang University, Hangzhou, China, in 2012,
+     complexity considerations,” IEEE Trans. Autom. Control, vol. 57, no. 5,                      and the M.S. and Ph.D. degrees from the Univer-
+     pp. 1265–1269, May 2012.                                                                                 sity of Michigan, Ann Arbor, Ann Arbor, MI, USA,
+[32] A. Saboori and C. N. Hadjicostis, “Veriﬁcation of initial-state opacity                               in 2013 and in 2017, respectively, all in electrical
+      in security applications of discrete event systems,” Inf. Sci., vol. 246,                          engineering.
+     pp. 115–132, 2013.                                                                      Since 2017, he has been with the Depart-
+[33] D. Sears and K. Rudie, “Minimal sensor activation and minimal com-                      ment of Automation, Shanghai Jiao Tong Univer-
+     munication in discrete-event systems,” Discrete Event Dyn. Syst.: Theory                                    sity, Shanghai, China, where he is an Associate
+      Appl., vol. 26, no. 2, pp. 295–349, 2016.                                                        Professor. His research interests include formal
+[34]  S. Shu, Z. Huang, and F. Lin, “Online sensor activation for detectability   methods, control of discrete-event systems, model-based fault diagno-
+      of discrete event systems,” IEEE Trans. Autom. Sci. Eng., vol. 10, no. 2,    sis, security, and their applications to cyber and cyber-physical systems.
+     pp. 457–461, Apr. 2013.                                                    Dr. Yin received the Outstanding Reviewer Awards from Automatica,
+[35]  S. Takai and Y. Oka, “A formula for the supremal controllable and opaque   the IEEE TRANSACTIONS ON AUTOMATIC CONTROL, and the Journal of Dis-
+     sublanguage arising in supervisory control,” SICE J. Control, Measu. Syst.   crete Event Dynamic Systems. He also received the IEEE Conference
+       Integr., vol. 1, no. 4, pp. 307–311, 2008.                          on Decision and Control Best Student Paper Award Finalist in 2016. He
+[36] Y. Tong, Z. Li, C. Seatzu, and A. Giua, “Decidability of opacity veriﬁcation    is the Co-Chair of the IEEE CSS Technical Committee on Discrete Event
+     problems in labeled Petri net systems,” Automatica, vol. 80, pp. 48–53,   Systems.
+     2017.
+[37] Y. Tong, Z. Li, C. Seatzu, and A. Giua, “Veriﬁcation of state-based opacity
+     using Petri nets,” IEEE Trans. Autom. Control, vol. 62, no. 6, pp. 2823–
+     2837, Jun. 2017.                                                          Shaoyuan Li (SM’05) was born in Hebei, China,
+[38] Y. Tong, Z. Li, C. Seatzu, and A. Giua, “Current-state opacity enforce-                               in 1965. He received the B.S. and M.S. degrees
+     ment in discrete event systems under incomparable observations,” Discrete                               in automation from the Hebei University of Tech-
+     Event Dyn. Syst.: Theory Appl., vol. 28, no. 2, pp. 161–182, 2018.                                 nology, Tianjin, China, in 1987 and 1992, respec-
+[39] B. Wu, J. Dai, and H. Lin, “Synthesis of insertion functions to enforce                                   tively, and the Ph.D. degree from Nankai Univer-
+      decentralized and joint opacity properties of discrete-event systems,” in                                    sity, Tianjin, China, in 1997.
+     Proc. Am. Control Conf., 2018, pp. 3026–3031.                                               Since 1997, he has been with the Depart-
+[40] B. Wu, Z. Liu, and H. Lin, “Parameter and insertion function co-synthesis                      ment of Automation, Shanghai Jiao Tong Uni-
+      for opacity enhancement in parametric stochastic discrete event systems,”                                versity, Shanghai, China, where he is currently
+      in Proc. Annu. Am. Control Conf., 2018, pp. 3032–3037.                                 a Professor. His current research interests in-
+[41] Y.-C. Wu and S. Lafortune, “Comparative analysis of related notions of                         clude model predictive control, dynamic system
+     opacity in centralized and coordinated architectures,” Discrete Event Dyn.   optimization, and cyber-physical systems. He is the Vice-President of
+      Syst.: Theory Appl., vol. 23, no. 3, pp. 307–339, 2013.                   the Chinese Association of Automation.
+
+
+
+
+
+       Authorized licensed use limited to: Shanghai Jiaotong University. Downloaded on March 28,2020 at 18:20:52 UTC from IEEE Xplore. Restrictions apply.
