@@ -51,10 +51,13 @@ def _control_patterns_from_events(controllable: tuple[Event, ...]) -> tuple[Cont
     ``pattern | Sigma_uc``.  This is an exact encoding because uncontrollable
     events are mandatory in every admissible pattern.
     """
+
     patterns: list[ControlPattern] = []
+
     for size in range(len(controllable) + 1):
         for subset in combinations(controllable, size):
             patterns.append(frozenset(subset))
+
     return tuple(patterns)
 
 
@@ -71,15 +74,20 @@ def controlled_unobservable_reach(
     enabled_events = _enabled_events(plant, control_pattern)
     reached = set(seeds) & set(lookahead_states)
     queue: deque[State] = deque(reached)
+
     while queue:
         source = queue.popleft()
+
         for event, target in plant.enabled(source):
             if event in plant.observable or event not in enabled_events:
                 continue
+
             if target not in lookahead_states or target in reached:
                 continue
+
             reached.add(target)
             queue.append(target)
+
     return frozenset(reached)
 
 
@@ -101,9 +109,9 @@ def construct_ll_bts(
     plant: DFA,
     current_state: State,
     horizon: int,
-    store_edges: bool = True,
-    expansion_progress: Callable[[int, int, int], None] | None = None,
-    *, pattern_mode: str = "explicit",
+    store_edges: bool=True,
+    expansion_progress: Callable[[int, int, int], None] | None=None,
+    *, pattern_mode: str="explicit",
 ) -> LLBTSResult:
     """Construct Algorithm 1's current-window LL-BTS.
 
@@ -123,13 +131,18 @@ def construct_ll_bts(
     point. Locally decidable inconsistent families are pruned before expansion.
     Raw family upper bounds are not synthesized executable controls.
     """
+
     if pattern_mode not in {"explicit", "reduced", "factored"}:
         raise ValueError("pattern_mode must be explicit, reduced or factored")
+
     if horizon < 0:
         raise ValueError("horizon must be nonnegative")
+
     lookahead_states = post_leq(plant, frozenset({current_state}), horizon)
+
     if pattern_mode == "factored" and not store_edges:
         from des_core.compact_ll_bts import construct_compact
+
         return construct_compact(plant, current_state, lookahead_states, expansion_progress)
 
     # Per-construction interning. x_L and plant are fixed for this call.
@@ -164,6 +177,7 @@ def construct_ll_bts(
     def estimate_tag(estimate: Estimate) -> str:
         if not estimate.isdisjoint(deadlocks):
             return "N"
+
         return "Y" if estimate and estimate <= interior else "U"
 
     # UR only depends on controllable-unobservable choices. Uncontrollable
@@ -176,12 +190,15 @@ def construct_ll_bts(
         enabled_hidden = hidden_choice | uncontrollable_unobservable
         reached = set(estimate)
         queue = deque(estimate)
+
         while queue:
             source = queue.popleft()
+
             for event, target in unobservable_adjacency[source]:
                 if event in enabled_hidden and target not in reached:
                     reached.add(target)
                     queue.append(target)
+
         return intern(frozenset(reached))
 
     @cache
@@ -189,10 +206,12 @@ def construct_ll_bts(
         # Compute all NX_sigma(x) intersect x_L in one traversal. The selected
         # gamma later filters which observable sigma are enabled.
         targets_by_event: dict[Event, set[State]] = {}
+
         for state in estimate:
             for event, target in adjacency[state]:
                 if event in observable and target in lookahead_states:
                     targets_by_event.setdefault(event, set()).add(target)
+
         return {
             event: intern(frozenset(targets))
             for event, targets in targets_by_event.items()
@@ -231,8 +250,10 @@ def construct_ll_bts(
             expansion_progress(len(decision_states), len(observation_states), len(frontier))
 
         decision = frontier.popleft()
+
         if decision in expanded or estimate_tag(decision[1]) == "N":
             continue
+
         expanded.add(decision)
         _root, decision_estimate = decision
         decision_label = (
@@ -245,8 +266,10 @@ def construct_ll_bts(
         # has exactly the same O choices and O->D successors for this D-state.
         # Reuse them; still retain/count this D-state's own D->O transitions.
         reused_choices = control_choices_work.get(decision_estimate)
+
         if reused_choices is not None:
             edge_count += len(reused_choices)
+
             if store_edges:
                 for observation in reused_choices:
                     edges.add(
@@ -257,6 +280,7 @@ def construct_ll_bts(
                             "control",
                         )
                     )
+
             continue
 
         choices_for_estimate: list[ObservationState] = []
@@ -271,6 +295,7 @@ def construct_ll_bts(
                 (unobservable_reach_by_hidden_choice(decision_estimate, hidden_choice), pattern)
                 for pattern, hidden_choice, _enabled_observable in pattern_data
             )
+
         for observation_estimate, pattern in local_choices:
             observation_estimate = intern(observation_estimate)
             enabled_observable = (pattern | uncontrollable) & observable
@@ -286,6 +311,7 @@ def construct_ll_bts(
                 if store_edges
                 else ""
             )
+
             if store_edges:
                 edges.add(
                     (decision_label, observation_label, _pattern_label(_enabled_events(plant, pattern)), "control")
@@ -293,6 +319,7 @@ def construct_ll_bts(
 
             if decision == initial and estimate_tag(observation_estimate) == "Y":
                 initial_good_patterns.add(pattern)
+
             if estimate_tag(observation_estimate) == "N":
                 continue
 
@@ -302,15 +329,19 @@ def construct_ll_bts(
                 continue
 
             successors_by_event = observable_successors(observation_estimate)
+
             for event in sorted(enabled_observable):
                 successor_estimate = successors_by_event.get(event)
+
                 if not successor_estimate:
                     continue
+
                 for successor_root in sorted(successor_estimate):
                     successor: DecisionState = (successor_root, successor_estimate)
                     is_new = successor not in decision_states
                     decision_states.add(successor)
                     edge_count += 1
+
                     if store_edges:
                         successor_label = decision_state_label(
                             plant, successor, lookahead_states
@@ -318,6 +349,7 @@ def construct_ll_bts(
                         edges.add(
                             (observation_label, successor_label, event, "observable")
                         )
+
                     if is_new and estimate_tag(successor_estimate) != "N":
                         frontier.append(successor)
 
@@ -391,8 +423,10 @@ def make_ll_bts_synthesis_snapshots(
         stage_edges: set[tuple[str, str, str, str]],
     ) -> None:
         decision_labels = set()
+
         if current is not None:
             decision_labels.add(decision_state_label(plant, current, lookahead_states))
+
         observation_labels = {
             observation_state_label(plant, state, lookahead_states)
             for state in stage_observations
@@ -463,13 +497,17 @@ def make_ll_bts_synthesis_snapshots(
     )
 
     stage = 0
+
     while frontier:
         decision = frontier.popleft()
+
         if decision in expanded:
             continue
+
         if _decision_tag(plant, decision, lookahead_states) == "N":
             stage += 1
             capture(f"stage {stage}: cut off bad decision state", decision, set(), set())
+
             continue
 
         expanded.add(decision)
@@ -495,29 +533,39 @@ def make_ll_bts_synthesis_snapshots(
             all_edges.add((decision_label, observation_label, _pattern_label(_enabled_events(plant, pattern)), "control"))
 
             observation_tag = _observation_tag(plant, observation, lookahead_states)
+
             if decision == initial and observation_tag == "Y":
                 initial_good_patterns.add(pattern)
+
             if observation_tag == "N":
                 bad_observations += 1
+
             if _is_inconsistent_observation(plant, observation):
                 inconsistent_observations += 1
 
             for event in sorted(enabled_observable_by_pattern[pattern]):
                 successor_estimate = snapshot_nx(observation_estimate, event)
+
                 if not successor_estimate:
                     continue
+
                 searched_states.update(successor_estimate)
+
                 for successor_root in sorted(successor_estimate):
                     successor: DecisionState = (successor_root, successor_estimate)
+
                     if successor not in decision_states:
                         added_successors += 1
+
                     decision_states.add(successor)
                     successor_label = decision_state_label(plant, successor, lookahead_states)
                     stage_edges.add((observation_label, successor_label, event, "observable"))
                     all_edges.add((observation_label, successor_label, event, "observable"))
                     successor_tag = _decision_tag(plant, successor, lookahead_states)
+
                     if successor_tag == "N":
                         bad_successors += 1
+
                     if successor not in expanded and successor_tag != "N":
                         frontier.append(successor)
 
@@ -542,13 +590,14 @@ def make_ll_bts_synthesis_snapshots(
         all_observations,
         all_edges,
     )
+
     return snapshots
 
 
 def make_ll_bts_chain_snapshots(
     plant: DFA,
     horizon: int,
-    successor_limit: int = 4,
+    successor_limit: int=4,
 ) -> list[BeliefStateSynthesisSnapshot]:
     lookahead_states = post_leq(plant, frozenset({plant.initial}), horizon)
     pattern = frozenset(plant.events)
@@ -560,8 +609,10 @@ def make_ll_bts_chain_snapshots(
 
     while frontier:
         decision = frontier.popleft()
+
         if decision in expanded or _decision_tag(plant, decision, lookahead_states) == "N":
             continue
+
         expanded.add(decision)
 
         decision_label = decision_state_label(plant, decision, lookahead_states)
@@ -579,20 +630,24 @@ def make_ll_bts_chain_snapshots(
                 successor_estimate = observable_next(
                     plant, observation[0], event, lookahead_states
                 )
+
                 if not successor_estimate:
                     continue
+
                 for successor_root in sorted(successor_estimate):
                     successor = (successor_root, successor_estimate)
                     successor_decisions.append(successor)
                     successor_label = decision_state_label(plant, successor, lookahead_states)
                     nodes.add(successor_label)
                     edges.add((observation_label, successor_label, event, "observable"))
+
                     if successor not in expanded and _decision_tag(plant, successor, lookahead_states) != "N":
                         frontier.append(successor)
 
         for successor in successor_decisions[:successor_limit]:
             if _decision_tag(plant, successor, lookahead_states) == "N":
                 continue
+
             successor_label = decision_state_label(plant, successor, lookahead_states)
             next_observation = (
                 controlled_unobservable_reach(plant, successor[1], pattern, lookahead_states),
@@ -650,16 +705,18 @@ def make_ll_bts_chain_snapshots(
                 label_style="compact",
             )
         )
+
     return snapshots
 
 
 def make_ll_bts_transition_report(
     plant: DFA,
     horizon: int,
-    selected_stages: tuple[int, ...] | None = None,
+    selected_stages: tuple[int, ...] | None=None,
 ) -> str:
     snapshots = make_ll_bts_synthesis_snapshots(plant, horizon)
     chain_snapshots = make_ll_bts_chain_snapshots(plant, horizon)
+
     if selected_stages is None:
         selected_stages = _default_report_stages(snapshots)
 
@@ -672,16 +729,20 @@ def make_ll_bts_transition_report(
         "",
         "Selected synthesis stages",
     ]
+
     for stage in selected_stages:
         if stage < 0 or stage >= len(snapshots):
             continue
+
         lines.extend(_snapshot_report_lines(stage, snapshots[stage]))
 
     lines.append("")
     lines.append("Selected chain-view stages")
+
     for stage in selected_stages:
         if stage < 0 or stage >= len(chain_snapshots):
             continue
+
         lines.extend(_snapshot_report_lines(stage, chain_snapshots[stage]))
 
     return "\n".join(lines) + "\n"
@@ -689,10 +750,13 @@ def make_ll_bts_transition_report(
 
 def _default_report_stages(snapshots: list[BeliefStateSynthesisSnapshot]) -> tuple[int, ...]:
     candidates = {0, 1, 2, 3, 5, 8, len(snapshots) - 2, len(snapshots) - 1}
+
     for index, snapshot in enumerate(snapshots):
         text = " ".join(sorted(snapshot.known_nodes)) + " " + snapshot.title
+
         if any(token in text for token in ("q_4", "q_5", "q_15", "q_16", "q_17")):
             candidates.add(index)
+
     return tuple(sorted(stage for stage in candidates if 0 <= stage < len(snapshots)))
 
 
@@ -713,6 +777,7 @@ def _tagged_ll_bts_labels(
         for observation in observation_states
         if _observation_tag(plant, observation, lookahead_states) == tag
     )
+
     return labels
 
 
@@ -748,17 +813,22 @@ def _snapshot_report_lines(index: int, snapshot: BeliefStateSynthesisSnapshot) -
         f"  {source} --{event}--> {target}"
         for source, target, event, _kind in control_edges[:12]
     )
+
     if len(control_edges) > 12:
         lines.append(f"  ... {len(control_edges) - 12} more")
+
     lines.append(f"observable edges O->D ({len(observable_edges)}):")
     lines.extend(
         f"  {source} --{event}--> {target}"
         for source, target, event, _kind in observable_edges[:16]
     )
+
     if len(observable_edges) > 16:
         lines.append(f"  ... {len(observable_edges) - 16} more")
+
     frontier = ", ".join(sorted(snapshot.frontier)) if snapshot.frontier else "<empty>"
     lines.append(f"frontier: {frontier}")
+
     return lines
 
 
@@ -768,6 +838,7 @@ def decision_state_label(
     lookahead_states: frozenset[State],
 ) -> str:
     root, estimate = decision
+
     return f"D({_state_label(root)},{_estimate_label(estimate)})"
 
 
@@ -777,6 +848,7 @@ def observation_state_label(
     lookahead_states: frozenset[State],
 ) -> str:
     estimate, pattern = observation
+
     return f"O({_estimate_label(estimate)},{_pattern_label(_enabled_events(plant, pattern))})"
 
 
@@ -786,6 +858,7 @@ def _decision_tag(
     lookahead_states: frozenset[State],
 ) -> str:
     _root, estimate = decision
+
     return _estimate_tag(plant, estimate, lookahead_states)
 
 
@@ -795,6 +868,7 @@ def _observation_tag(
     lookahead_states: frozenset[State],
 ) -> str:
     estimate, _pattern = observation
+
     return _estimate_tag(plant, estimate, lookahead_states)
 
 
@@ -813,6 +887,7 @@ def _is_inconsistent_observation(
     pruning the bipartite graph.  In particular, disabling every local event
     at a state does not by itself make an O-state inconsistent.
     """
+
     return False
 
 
@@ -823,24 +898,30 @@ def _estimate_tag(
 ) -> str:
     if any(is_concrete_deadlock(plant, state) for state in estimate):
         return "N"
+
     if estimate and all(
         any(target in lookahead_states for _event, target in plant.enabled(state))
         for state in estimate
     ):
         return "Y"
+
     return "U"
 
 
 def _maximal_patterns(patterns) -> tuple[ControlPattern, ...]:
     """Return inclusion-maximal patterns without the quadratic full scan."""
+
     ordered = sorted(set(patterns), key=lambda item: (-len(item), tuple(sorted(item))))
     maximal: list[ControlPattern] = []
+
     for pattern in ordered:
         # Longer patterns are visited first.  If one already retained pattern
         # contains this pattern, it cannot be maximal.
         if any(pattern < other for other in maximal):
             continue
+
         maximal.append(pattern)
+
     return tuple(sorted(maximal, key=lambda item: (len(item), sorted(item))))
 
 
@@ -855,6 +936,7 @@ def _estimate_label(estimate: Estimate) -> str:
 def _state_label(state: State) -> str:
     if isinstance(state, tuple):
         return "(" + ",".join(str(item) for item in state) + ")"
+
     return str(state)
 
 

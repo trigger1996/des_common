@@ -7,6 +7,7 @@ from pathlib import Path
 from time import perf_counter
 
 import matplotlib
+
 matplotlib.use("Agg")  # This command writes figures and needs no GUI/Tk runtime.
 # Embed TrueType fonts in PDF/PS output; IEEE/PaperCept preflight rejects Type 3 fonts.
 matplotlib.rcParams["pdf.fonttype"] = 42
@@ -42,6 +43,7 @@ def main() -> None:
     parser.add_argument("--cache-size", type=int, default=0, help="Optional identical-root result cache; disabled for timing by default.")
     parser.add_argument("--no-cache", action="store_true", help="Recompute every online iteration.")
     args = parser.parse_args()
+
     if args.copies < 1 or args.iterations < 1 or args.horizon < 0 or args.cache_size < 0:
         parser.error("copies/iterations must be positive and horizon nonnegative")
 
@@ -50,8 +52,10 @@ def main() -> None:
     horizon = args.horizon
     stem = f"case1_product_{copies}copy_u{horizon}_{iterations}iter_{args.pattern_mode}"
     stem += "_round-robin"
+
     if args.no_cache or args.cache_size == 0:
         stem += "_uncached"
+
     output_dir = Path("outputs") / stem
     output_dir.mkdir(parents=True, exist_ok=True)
     iteration_log = output_dir / "iterations.jsonl"
@@ -61,6 +65,7 @@ def main() -> None:
         # Preserve completed steps even if a long run is interrupted later.
         with iteration_log.open("a", encoding="utf-8") as stream:
             stream.write(json.dumps(asdict(item)) + "\n")
+
     output = output_dir / "benchmark.txt"
     original_system_output = output_dir / "original_system.png"
     plot_output = output_dir / "visited_states.png"
@@ -71,6 +76,7 @@ def main() -> None:
     system_lines = _component_system_lines(example.dfa, copies)
     global_state_count = len(example.dfa.states) ** copies
     console = Console()
+
     if not args.quiet:
         console.print("\n".join(system_lines))
         console.print(
@@ -123,8 +129,10 @@ def main() -> None:
             def update_expansion(decisions: int, observations: int, frontier: int) -> None:
                 nonlocal last_expansion_update
                 now = perf_counter()
+
                 if frontier and now - last_expansion_update < 0.5:
                     return
+
                 last_expansion_update = now
                 progress_bar.update(
                     task, expansion=f"D={decisions:,} O={observations:,} frontier={frontier:,}"
@@ -179,9 +187,11 @@ def main() -> None:
         "Selected iterations",
     ]
     selected = {0, 1, 2, 3, 4, 9, 24, 49, 74, result.iterations - 1}
+
     for item in result.stats:
         if item.iteration not in selected:
             continue
+
         lines.extend(
             [
                 "",
@@ -211,16 +221,20 @@ def main() -> None:
         original_system_output,
         title="case1 component original system",
     )
+
     if args.extra_plots:
         _save_visited_state_plot(result, plot_with_new_output, include_new=True, paper_style=True)
         _save_visited_state_plot(result, plot_output, include_new=False, paper_style=True)
+
     _save_visited_state_plot(result, plot_paper_output, include_new=False, paper_style=True)
     print("\n".join(lines))
     print(f"\noriginal component system PNG written to: {original_system_output.resolve()}")
     print(f"\nreport written to: {output.resolve()}")
+
     if args.extra_plots:
         print(f"plot written to: {plot_output.resolve()}")
         print(f"plot with new states written to: {plot_with_new_output.resolve()}")
+
     print(f"paper PDF plot written to: {plot_paper_output.resolve()}")
 
 
@@ -280,6 +294,7 @@ def _product_events(events, copies: int) -> list[str]:
 
 def _event_list(events) -> str:
     ordered = sorted(events)
+
     return ", ".join(ordered) if ordered else "<none>"
 
 
@@ -318,6 +333,7 @@ def _save_visited_state_plot(result, output: Path, include_new: bool, paper_styl
     title_size = 17 if paper_style else 12
     legend_size = 13 if paper_style else 11
     line_width = 2.4 if paper_style else 2.0
+
     if paper_style and include_new:
         figsize = (7.16, 5.45)
     elif paper_style:
@@ -352,6 +368,7 @@ def _save_visited_state_plot(result, output: Path, include_new: bool, paper_styl
             linewidth=line_width,
             label=r"$\left|\cup_{\imath\in\mathbb{I}}x\right|$",
         )
+
         if include_new:
             ax.plot(
                 iterations,
@@ -386,6 +403,7 @@ def _save_visited_state_plot(result, output: Path, include_new: bool, paper_styl
                 linewidth=line_width,
                 label=r"cumulative concrete states",
             )
+
         ax.axhline(
             result.global_state_count,
             color="#d62728",
@@ -400,6 +418,7 @@ def _save_visited_state_plot(result, output: Path, include_new: bool, paper_styl
         ax.yaxis.set_minor_locator(
             mticker.LogLocator(base=10, subs=(2, 3, 5), numticks=18)
         )
+
         if include_new:
             positive_counts = [
                 count
@@ -418,6 +437,7 @@ def _save_visited_state_plot(result, output: Path, include_new: bool, paper_styl
             lower = max(1, min(local_counts) * 0.55)
             upper = result.global_state_count * 1.18
             ax.set_ylim(lower, upper)
+
         ax.grid(True, which="both", linestyle=":", linewidth=0.7, alpha=0.55)
         ax.legend(
             loc="lower center",
@@ -426,6 +446,7 @@ def _save_visited_state_plot(result, output: Path, include_new: bool, paper_styl
             framealpha=0.92,
             borderaxespad=0.0,
         )
+
         if not paper_style:
             ax.set_title(
                 rf"Case 1 product benchmark ($u={result.horizon}$, {result.copies} agents)",
@@ -433,6 +454,7 @@ def _save_visited_state_plot(result, output: Path, include_new: bool, paper_styl
                 fontsize=title_size,
                 fontweight="bold",
             )
+
         fig.subplots_adjust(left=0.12, right=0.985, bottom=0.115, top=0.84)
         fig.savefig(output, dpi=180, bbox_inches="tight", pad_inches=0.02)
         plt.close(fig)

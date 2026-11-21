@@ -41,12 +41,14 @@ def classify_belief_deadlock(
 ) -> BeliefDeadlockStatus:
     deadlocked = frozenset(state for state in closed_belief if is_concrete_deadlock(plant, state))
     nondeadlocked = frozenset(state for state in closed_belief if state not in deadlocked)
+
     if deadlocked and not nondeadlocked:
         kind = BeliefDeadlockKind.CERTAIN_DEADLOCK
     elif deadlocked:
         kind = BeliefDeadlockKind.POSSIBLE_DEADLOCK
     else:
         kind = BeliefDeadlockKind.ROBUST_NONDEADLOCK
+
     return BeliefDeadlockStatus(
         kind=kind,
         deadlocked_states=deadlocked,

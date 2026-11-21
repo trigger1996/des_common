@@ -67,14 +67,15 @@ def benchmark_case1_product(
     copies: int,
     iterations: int,
     horizon: int,
-    progress: Callable[[ProductIterationStats, int, float], None] | None = None,
-    require_full_iterations: bool = True,
-    expansion_progress: Callable[[int, int, int], None] | None = None,
-    *, pattern_mode: str = "factored", cache_size: int = 0,
-    use_certificate: bool = True,
+    progress: Callable[[ProductIterationStats, int, float], None] | None=None,
+    require_full_iterations: bool=True,
+    expansion_progress: Callable[[int, int, int], None] | None=None,
+    *, pattern_mode: str="factored", cache_size: int=0,
+    use_certificate: bool=True,
 ) -> ProductBenchmarkResult:
     if iterations < 1 or horizon < 0 or cache_size < 0:
         raise ValueError("iterations must be positive; horizon/cache_size nonnegative")
+
     product = ImplicitProductDFA(component=component, copies=copies)
     current = product.initial
     cumulative_states: set[ProductState] = set()
@@ -95,6 +96,7 @@ def benchmark_case1_product(
         # and statistics, never the potentially large D/O graph.
         cached = cache.get(current)
         cache_hit = cached is not None
+
         if cache_hit:
             cache_hits += 1
             cache.move_to_end(current)
@@ -114,14 +116,18 @@ def benchmark_case1_product(
             strategy = ll_bts.construction_strategy
             synthesis_passes = ll_bts.synthesis_passes
             del ll_bts
+
             if cache_size:
                 cache[current] = local_states, counts, control, strategy
+
                 if len(cache) > cache_size:
                     cache.popitem(last=False)
+
         previous_cumulative = len(cumulative_states)
         cumulative_states.update(local_states)
         new_state_count = len(cumulative_states) - previous_cumulative
         selected_event, next_state = None, None
+
         if control.empty:
             # Algorithm 2: if the pruned rooted S is empty, Return.
             stop_reason = "empty_synthesis"
@@ -131,6 +137,7 @@ def benchmark_case1_product(
             # Advance only through a retained NX(UR(...)) observable outcome.
             candidates = control.forward_successors
             _pattern, selected_event, next_state = candidates[iteration % len(candidates)]
+
         stats.append(
             ProductIterationStats(
                 iteration=iteration,
@@ -151,13 +158,17 @@ def benchmark_case1_product(
                 synthesis_passes=synthesis_passes,
             )
         )
+
         if progress is not None:
             progress(stats[-1], iterations, perf_counter() - start)
+
         if next_state is None:
             break
+
         current = next_state
 
     elapsed = perf_counter() - start
+
     return ProductBenchmarkResult(
         copies=copies,
         global_state_count=product.state_count,
@@ -180,8 +191,10 @@ def verify_case1_product_cycle(product: ImplicitProductDFA) -> ProductCycleCheck
     current = product.initial
     required_events = ("o2", "b", "a")
     path: list[tuple[ProductState, Event, ProductState]] = []
+
     for component_event in required_events:
         target = product.component.transitions.get((current[0], component_event))
+
         if target is None:
             return ProductCycleCheck(
                 ok=False,
@@ -191,6 +204,7 @@ def verify_case1_product_cycle(product: ImplicitProductDFA) -> ProductCycleCheck
                     "--a--> q_0 cycle into the product"
                 ),
             )
+
         next_state = list(current)
         next_state[0] = target
         event = _product_event(0, component_event)
@@ -225,32 +239,45 @@ def _case1_single_branch_successor(
 ) -> tuple[Event | None, ProductState | None]:
     if not state:
         return None, None
+
     component_order = list(range(product.copies))
     shift = iteration % product.copies
     component_order = component_order[shift:] + component_order[:shift]
+
     for index in component_order:
         component_event = _preferred_component_event(state[index], iteration // max(product.copies, 1))
+
         if component_event is None:
             continue
+
         target = product.component.transitions.get((state[index], component_event))
+
         if target is None:
             continue
+
         next_state = list(state)
         next_state[index] = target
+
         return _product_event(index, component_event), tuple(next_state)
+
     enabled = product.enabled(state)
+
     return enabled[iteration % len(enabled)] if enabled else (None, None)
 
 
 def _preferred_component_event(state: State, cycle_index: int) -> Event | None:
     if state == "q_0":
         return "o2"
+
     if state == "q_1":
         return "o1" if cycle_index % 3 == 2 else "b"
+
     if state == "q_2":
         return "a"
+
     if state == "q_3":
         return "b"
+
     return None
 
 
@@ -262,16 +289,22 @@ def post_leq_product(
     reached: set[ProductState] = set(seeds)
     edges: set[tuple[ProductState, Event, ProductState]] = set()
     queue: deque[tuple[ProductState, int]] = deque((state, 0) for state in seeds)
+
     while queue:
         state, depth = queue.popleft()
+
         if depth >= horizon:
             continue
+
         for event, target in product.enabled(state):
             edges.add((state, event, target))
+
             if target in reached:
                 continue
+
             reached.add(target)
             queue.append((target, depth + 1))
+
     return frozenset(reached), frozenset(edges)
 
 

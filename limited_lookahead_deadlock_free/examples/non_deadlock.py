@@ -51,6 +51,7 @@ def build_small_cycle_example() -> DESExample:
         "q_4": (4.4, -2.0),
         "q_5": (6.6, -1.0),
     }
+
     return DESExample(
         name="example1_symbolic_cycles_full",
         dfa=dfa,
@@ -122,6 +123,7 @@ def build_nested_cycle_deadlock_example() -> DESExample:
         "q_13": (12.0, -3.6),
         "q_14": (8.0, -5.4),
     }
+
     return DESExample(
         name="example2_nested_cycles_deadlock_full",
         dfa=dfa,
@@ -232,6 +234,7 @@ def build_possible_deadlock_partial_observation_example() -> DESExample:
         "q_16": (8.0, -6.0),
         "q_17": (10.0, -6.0),
     }
+
     return DESExample(
         name="example3_possible_deadlock_full",
         dfa=dfa,
@@ -266,4 +269,5 @@ def all_examples() -> list[DESExample]:
         example3,
         observable=frozenset({"a", "b", "c"}),
     )
+
     return [example1, example1_partial, example2_partial, example3, example3_partial]

@@ -27,6 +27,7 @@ def print_report(report: ExampleLookaheadReport, horizon: int) -> None:
         f"max local pairs per estimate = {report.max_local_pairs}, "
         f"total evaluated local pairs = {report.total_local_pairs}"
     )
+
     for local in sorted(
         report.local_reports,
         key=lambda item: (-len(item.lookahead_states), _format_belief(item.belief)),
@@ -48,8 +49,10 @@ def main() -> None:
     }
     horizons = (1, 2, 3)
     examples = [example for example in all_examples() if example.name in selected_names]
+
     for example in examples:
         plant = example.original_dfa or example.dfa
+
         for horizon in horizons:
             print_report(analyze_local_lookahead(example.name, plant, horizon), horizon)
 

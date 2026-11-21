@@ -2,6 +2,98 @@
 
 This file is project-local shared context for Codex sessions.
 
+## Latest clarification: u5 safety versus initial fixed-window root matching
+
+- User requested consolidating the two explanations into earlier annotations.
+  Shared paper_example_models.u5_u6_annotation() now feeds运行结果.md and
+  PAPER_EXAMPLES_RERUN.md; active main.tex has equivalent English explanation.
+- u5 already guarantees deadlock-free operation for the certified policy that
+  initially disablesb (root{a,o2},full6-state/7-edge reachable closed loop).
+  u6 restores offline initial root{a,b,o2} within ONE solve call centered atq0.
+- solve_limited_lookahead builds one window per call; queued future decision estimates
+  share it. Limited_Lookahead_Controller after observation calls again around the updated
+  complete belief, retaining certified continuation. Do NOT claim receding
+  replanning intrinsically requiresu6.
+- Counterfactual initialb: firsto1 has NX={q6,q8,q11},not knownq8. Next mode{a}
+  disablesb/o2; UR={q6,q7,q8,q9,q10,q11}. A NEW solve from that estimate atu5
+  includesq10 and iswinning. Regression test verifies fixed-vs-recentered windows.
+- A later winning solve alone is not a whole cross-step safety proof; parameter
+  u5 alone does not license arbitrary control choices. Current u5 safety is tied
+  to the certified strategy, whose actual initialb isdisabled.
+- Code comments, README/guide, manuscript/PDF and75-file review snapshot updated.
+  75 tests pass. Recompiled7-page PDF: no undefined references/controls/overfulls.
+
+## Latest: separate UR and single-event NX in the offline baseline
+
+- User requested clearer UR/NX separation. des_core/offline_bts.py now exposes
+  traditional_ur(plant,estimate,pattern): zero or more enabled hidden steps,
+  and traditional_nx(plant,states,observable_event): exactly one specified
+  observable event, without a further UR or any second observable transition.
+- traditional_ur_nx stays compatible: full UR then private _traditional_nx_all
+  batches independent NX_event results in one edge scan. This avoids making
+  the offline baseline rescan all transitions for every observable symbol.
+- NX may union targets from several possible sources; the map of NX sets is
+  alternatives, not a multi-observable execution. Next UR belongs to the next
+  decision and its newly chosen control pattern. Standalone NX does not impose
+  a control pattern; the caller filters enabled observable events.
+-74 tests pass. Reconstructed all61 offline systems and checked exact statuses,
+  D/O/edge counts and root maximal patterns against saved BTS exports: unchanged.
+  Updated README, code-review guide and source snapshot; historical timing data
+  was not rerun or relabelled as new measurements after this refactor.
+
+## Latest: bilingual report, paper reruns, manuscript sync and code-review output
+
+- Four requested运行结果.md headings now have English counterparts. Main table
+  uses Chinese header, Markdown delimiter, then bold English counterpart row;
+  this preserves valid GFM. Negative-savings paragraph includes14/0/0 main cases
+  and170 negative-memory random cases. Generators preserve the additions.
+- User explicitly requested rerunning active article examples and reviewing code.
+  paper_example_models.py keeps figure variants separate from current models.
+  Paper small figure q10-o2->q6 differs from code q10-o1->q6. For the figure model,
+  u5 winning with root{a,o2},u6 restores offline root{a,b,o2}; min decisive5/matching6.
+  u5 closure graph has6 states7 edges;u6 has14 states19 edges. The six-step path
+  q0-a-q1-a-q2-b-q4-o1-q8-u-q9-a-q10 explains the conservative boundary.
+- Old component figure hasq2-o1->q0 and is offline losing; current user-corrected
+  component q2-a->q0 is winning. Do not revert project examples to stale figures.
+- rerun_paper_examples.py reruns both labels, small u5/u6, components, eight-copy
+  legacy queries and certified attempts. Legacy50-query runs reset a physical
+  state root; they are NOT partial-observation supervisor certificates. Certified
+  u3/u7 and offline explicit enumeration hit5000-choice budgets; not infeasibility.
+- Eight-copy corrected product has a fully enumerated feasible constant policy:
+  disable all o1_i;6561 physical states52488 edges. Further composition of the
+  certified component supervisor gives65536 reachable physical states,
+ 16777216 state/memory pairs,150994944 transitions,6561 memory configurations.
+  Exact factored certificate+small1/2/3-copy exhaustive checks+100000 actual
+  exported-controller steps; no global explicit BTS or global maximality claim.
+- sync_paper_example_results.py updates ONLY active [paper].../main.tex case
+  studies and *_rerun.pdf figure references. Old main/figures/PDF backed up under
+  tmp/paper_examples_before_sync;main_original.tex and__paper archive untouched.
+  Full Chinese u5/u6 explanation is in rerun report and运行结果.md; English is
+  in active main.tex. pdflatex+BibTeX compile succeeded,7 pages, no undefined
+  refs/controls/overfull boxes; latest figures visually checked. PDF at
+  outputs/paper_examples_rerun/paper_examples_updated.pdf and active main.pdf.
+- README now has module table/call responsibilities. CODE_REVIEW_GUIDE.md gives
+  reading order, invariants, experiment scopes and legacy/current distinctions.
+  Review bundle under outputs/code_review includes source/tests/manifests only,
+  excluding environments/output datasets/paper PDFs.72 tests pass.
+
+## Latest:61-case means, explicit decision agreement and negative savings
+
+- Main table in运行结果.md now22 columns; added结果一致性（Online/Offline）,
+  read directly from each saved online LL-BTS/offline BTS status.61/61 agree;
+  all25 offline losing cases are also online losing. Inconclusive/budget failures
+  are NOT treated as proven infeasibility; comparison_averages.py encodes this.
+- Added averages immediately below node-count totals. Mean of61 per-model
+  median total times:online0.138729508ms/offline0.279724590ms;50.404965% saving.
+  Arithmetic mean of all671 raw repetitions:0.148592101/0.299061550ms;50.313873%.
+  Mean separate Python peaks:21.411629/69.704150KiB;69.282131% saving.
+- Main61-case table has14 negative time savings,0 negative memory/node savings.
+  Random1000 details have291 negative time and170 negative peak-memory savings,
+  0 negative node savings. Costs/complexity functions are not negative; the
+  difference or savings fraction can be negative. All cases retained.
+- Updated JSON/CSV/HTML and generators without rerunning any timing or changing
+  model data.69 tests pass; averages_and_agreement_validation.json records audit.
+
 ## Latest: random experiment provenance and GitHub inspection
 
 - Random-results heading now explicitly gives seed20261121,1000 inputs,5 runs,

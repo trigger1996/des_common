@@ -20,13 +20,17 @@ def unobservable_closure(
 ) -> frozenset[State]:
     closure = set(seeds)
     queue: deque[State] = deque(seeds)
+
     while queue:
         state = queue.popleft()
+
         for event, target in plant.enabled(state):
             if event in observable or target in closure:
                 continue
+
             closure.add(target)
             queue.append(target)
+
     return frozenset(closure)
 
 
@@ -44,6 +48,7 @@ def observable_successors(
             if event in observable
         }
     )
+
     for event in observable_events:
         raw_targets = frozenset(
             target
@@ -58,4 +63,5 @@ def observable_successors(
                 closed_belief=unobservable_closure(plant, raw_targets, observable),
             )
         )
+
     return successors

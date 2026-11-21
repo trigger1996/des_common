@@ -64,6 +64,7 @@ def compute_deadlock_status(
     outgoing_sources = {source for source, _target, _event in known_edges}
     nondeadlock = known_nodes & outgoing_sources
     deadlock = known_nodes - nondeadlock
+
     return nondeadlock, deadlock
 
 
@@ -101,18 +102,23 @@ def make_partial_observation_snapshots(
     def close_unobservable(seeds: set[State], belief: frozenset[State], trace: tuple[str, ...]) -> frozenset[State]:
         closure = set(seeds)
         queue: deque[State] = deque(seeds)
+
         while queue:
             source = queue.popleft()
             known_nodes.add(source)
+
             for event, target in plant.enabled(source):
                 if event in observable:
                     continue
+
                 known_nodes.add(target)
                 known_edges.add((source, target, event))
+
                 if target not in closure:
                     closure.add(target)
                     queue.append(target)
                     capture(f"unobservable closure adds {source} --{event}--> {target}", frozenset(closure), trace)
+
         return frozenset(closure)
 
     initial_belief = close_unobservable({plant.initial}, frozenset({plant.initial}), ())
@@ -121,21 +127,27 @@ def make_partial_observation_snapshots(
 
     while frontier:
         belief, trace = frontier.popleft()
+
         if belief in visited:
             continue
+
         visited.add(belief)
 
         successors = observable_successors(plant, belief, observable)
+
         if not successors:
             capture(f"no observable successor from belief {_belief_label(belief)}", belief, trace)
+
             continue
 
         for successor in successors:
             targets: set[State] = set()
+
             for state in sorted(belief):
                 for enabled_event, target in plant.enabled(state):
                     if enabled_event != successor.event:
                         continue
+
                     known_nodes.add(state)
                     known_nodes.add(target)
                     known_edges.add((state, target, successor.event))
@@ -145,6 +157,7 @@ def make_partial_observation_snapshots(
             next_trace = (*trace, successor.event)
             next_belief = close_unobservable(targets, belief, next_trace)
             capture(f"after observing {successor.event}: belief {_belief_label(next_belief)}", next_belief, next_trace)
+
             if next_belief not in visited and next_belief not in [item[0] for item in frontier]:
                 frontier.append((next_belief, next_trace))
 
@@ -183,9 +196,10 @@ def make_belief_state_synthesis_snapshots(
     def semantic_tag(belief: frozenset[State]) -> ObservationTag:
         if classify_pruning_tag(plant, belief) == "N":
             return ObservationTag.NO
+
         return ObservationTag.YES
 
-    def remember(belief: frozenset[State], raw: bool, tag: ObservationTag | None = None) -> State:
+    def remember(belief: frozenset[State], raw: bool, tag: ObservationTag | None=None) -> State:
         if belief in deleted_beliefs:
             return _tagged_belief_label(belief, ObservationTag.NO)
 
@@ -197,23 +211,29 @@ def make_belief_state_synthesis_snapshots(
         label = _tagged_belief_label(belief, tag_for(belief))
         known_nodes.add(label)
         label_to_belief[label] = belief
+
         if raw:
             raw_beliefs.add(label)
         else:
             closed_beliefs.add(label)
             ibts_beliefs.add(belief)
+
         return label
 
     def close_unobservable(seeds: frozenset[State]) -> frozenset[State]:
         closure = set(seeds)
         queue: deque[State] = deque(seeds)
+
         while queue:
             source = queue.popleft()
+
             for event, target in plant.enabled(source):
                 if event in observable or target in closure:
                     continue
+
                 closure.add(target)
                 queue.append(target)
+
         return frozenset(closure)
 
     def certain_deadlocks() -> set[State]:
@@ -238,23 +258,29 @@ def make_belief_state_synthesis_snapshots(
 
         old_label = _tagged_belief_label(belief, tag_for(belief))
         new_label = _tagged_belief_label(belief, tag)
+
         if old_label == new_label:
             return new_label
 
         belief_tags[belief] = tag
+
         if old_label in known_nodes:
             known_nodes.remove(old_label)
             known_nodes.add(new_label)
+
         if old_label in raw_beliefs:
             raw_beliefs.remove(old_label)
             raw_beliefs.add(new_label)
+
         if old_label in closed_beliefs:
             closed_beliefs.remove(old_label)
             closed_beliefs.add(new_label)
+
         label_to_belief.pop(old_label, None)
         label_to_belief[new_label] = belief
 
         updated_edges = set()
+
         for source, target, event, kind in known_edges:
             updated_edges.add(
                 (
@@ -264,14 +290,17 @@ def make_belief_state_synthesis_snapshots(
                     kind,
                 )
             )
+
         known_edges.clear()
         known_edges.update(updated_edges)
         layout_aliases.append((old_label, new_label))
+
         return new_label
 
     def add_ibts_transition(source: Belief, event: str, target: Belief) -> None:
         if source in deleted_beliefs or target in deleted_beliefs:
             return
+
         ibts_transitions.add((source, event, target))
 
     def apply_pruning() -> set[Belief]:
@@ -284,6 +313,7 @@ def make_belief_state_synthesis_snapshots(
             transitions=ibts_transitions,
             deleted_beliefs=deleted_beliefs,
         )
+
         if not result.newly_deleted:
             return set()
 
@@ -298,14 +328,17 @@ def make_belief_state_synthesis_snapshots(
         known_nodes.difference_update(deleted_labels)
         raw_beliefs.difference_update(deleted_labels)
         closed_beliefs.difference_update(deleted_labels)
+
         for label in deleted_labels:
             label_to_belief.pop(label, None)
+
         removed_edges = {
             edge for edge in known_edges if edge[0] in deleted_labels or edge[1] in deleted_labels
         }
         known_edges.difference_update(removed_edges)
         frontier = deque(item for item in frontier if item[0] not in deleted_beliefs)
         remove_unreachable_retained_beliefs()
+
         return set(result.newly_deleted)
 
     def remove_unreachable_retained_beliefs() -> None:
@@ -316,15 +349,19 @@ def make_belief_state_synthesis_snapshots(
         else:
             reachable = {initial_belief}
             changed = True
+
             while changed:
                 changed = False
+
                 for source, _event, target in ibts_transitions:
                     if source not in reachable or target in reachable:
                         continue
+
                     reachable.add(target)
                     changed = True
 
         unreachable = set(ibts_beliefs) - reachable
+
         if not unreachable:
             return
 
@@ -343,10 +380,13 @@ def make_belief_state_synthesis_snapshots(
         known_nodes.difference_update(unreachable_labels)
         raw_beliefs.difference_update(unreachable_labels)
         closed_beliefs.difference_update(unreachable_labels)
+
         for label in unreachable_labels:
             label_to_belief.pop(label, None)
+
         for belief in unreachable:
             belief_tags.pop(belief, None)
+
         removed_unreachable_edges = {
             edge for edge in known_edges if edge[0] in unreachable_labels or edge[1] in unreachable_labels
         }
@@ -361,10 +401,12 @@ def make_belief_state_synthesis_snapshots(
             transitions=ibts_transitions,
             deleted_beliefs=deleted_beliefs,
         )
+
         return set(result.newly_deleted)
 
     def describe_deleted(deleted_now: set[Belief]) -> str:
         deleted_names = ", ".join(_belief_label(belief) for belief in sorted(deleted_now, key=lambda item: tuple(sorted(item))))
+
         return f"prune next: {deleted_names}"
 
     def capture(title: str, current: State | None) -> None:
@@ -390,6 +432,7 @@ def make_belief_state_synthesis_snapshots(
 
     initial_belief = close_unobservable(initial_raw)
     initial_label = remember(initial_belief, raw=False, tag=ObservationTag.UNKNOWN)
+
     if initial_belief != initial_raw:
         known_nodes.discard(initial_raw_label)
         raw_beliefs.discard(initial_raw_label)
@@ -399,12 +442,16 @@ def make_belief_state_synthesis_snapshots(
     capture(f"initial frontier starts with {initial_label}", initial_label)
 
     loop_index = 0
+
     while frontier:
         belief, trace = frontier.popleft()
+
         if belief in deleted_beliefs:
             continue
+
         if belief in visited:
             continue
+
         visited.add(belief)
         loop_index += 1
         loop_notes: list[str] = []
@@ -413,20 +460,26 @@ def make_belief_state_synthesis_snapshots(
         source_label = relabel_belief(belief, semantic_tag(belief))
         loop_notes.append(f"classified as {source_label.rsplit(':', 1)[-1]}")
         pruning_preview = preview_pruning()
+
         if pruning_preview:
             loop_notes.append(describe_deleted(pruning_preview))
             capture(f"loop {loop_index}: expand {source_label}; " + "; ".join(loop_notes), source_label)
             apply_pruning()
+
             continue
 
         successors = observable_successors(plant, belief, observable)
+
         if not successors:
             loop_notes.append("no observable successor")
             pruning_preview = preview_pruning()
+
             if pruning_preview:
                 loop_notes.append(describe_deleted(pruning_preview))
+
             capture(f"loop {loop_index}: expand {source_label}; " + "; ".join(loop_notes), source_label)
             apply_pruning()
+
             continue
 
         for successor in successors:
@@ -436,23 +489,28 @@ def make_belief_state_synthesis_snapshots(
             targets = successor.raw_targets
             next_trace = (*trace, successor.event)
             next_belief = successor.closed_belief
+
             if next_belief in deleted_beliefs:
                 loop_notes.append(f"{successor.event}->pruned {_belief_label(next_belief)}")
+
                 continue
 
             next_label = _tagged_belief_label(next_belief, tag_for(next_belief))
             target_already_known = next_belief in ibts_beliefs
+
             if target_already_known:
                 retained_target_label = _tagged_belief_label(next_belief, tag_for(next_belief))
                 add_ibts_transition(belief, successor.event, next_belief)
                 known_edges.add((source_label, retained_target_label, successor.event, "observable"))
                 loop_notes.append(f"{successor.event}->existing {retained_target_label}")
+
                 continue
 
             raw_label = remember(targets, raw=True, tag=ObservationTag.UNKNOWN)
             known_edges.add((source_label, raw_label, successor.event, "observable"))
 
             next_label = remember(next_belief, raw=False, tag=ObservationTag.UNKNOWN)
+
             if next_belief != targets:
                 known_edges.discard((source_label, raw_label, successor.event, "observable"))
                 known_edges.add((source_label, next_label, successor.event, "observable"))
@@ -464,20 +522,25 @@ def make_belief_state_synthesis_snapshots(
             loop_notes.append(f"{successor.event}->{next_label}")
 
             queued_beliefs = {item[0] for item in frontier}
+
             if next_belief not in visited and next_belief not in queued_beliefs:
                 frontier.append((next_belief, next_trace))
                 loop_notes.append(f"queued {next_label}")
 
         title = f"loop {loop_index}: expand {source_label}"
         pruning_preview = preview_pruning()
+
         if pruning_preview:
             loop_notes.append(describe_deleted(pruning_preview))
+
         if loop_notes:
             title += "; " + "; ".join(loop_notes)
+
         capture(title, source_label)
         apply_pruning()
 
     capture("fixed point: no belief frontier remains", None)
+
     return snapshots
 
 
@@ -507,23 +570,30 @@ def make_on_the_fly_snapshots(dfa: DFA) -> list[DeadlockSnapshot]:
         previous_nondeadlock = set(nondeadlock)
 
     capture("start from the initial state")
+
     while frontier:
         source = frontier.popleft()
+
         if source in expanded:
             continue
+
         expanded.add(source)
 
         for event, target in dfa.enabled(source):
             known_nodes.add(target)
             known_edges.add((source, target, event))
+
             if target not in expanded and target not in frontier:
                 frontier.append(target)
+
             capture(f"discover {source} --{event}--> {target}")
 
     nondeadlock, deadlock = compute_deadlock_status(known_nodes, known_edges)
     title = "fixed point: no deadlock states remain"
+
     if deadlock:
         title = "fixed point: deadlock states remain"
+
     snapshots.append(
         DeadlockSnapshot(
             title=title,
@@ -534,6 +604,7 @@ def make_on_the_fly_snapshots(dfa: DFA) -> list[DeadlockSnapshot]:
             deadlock=frozenset(deadlock),
         )
     )
+
     return snapshots
 
 

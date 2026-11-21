@@ -53,6 +53,7 @@ def save_original_system_png(
 def save_animation(example: DESExample, output: Path) -> None:
     if example.original_dfa is not None:
         save_partial_observation_animation(example, output)
+
         return
 
     save_observer_synthesis_animation(example, output)
@@ -63,6 +64,7 @@ def save_observer_synthesis_animation(example: DESExample, output: Path) -> None
 
     if example.original_dfa is not None:
         save_belief_state_synthesis_animation(example, output)
+
         return
 
     snapshots = make_on_the_fly_snapshots(example.dfa)
@@ -78,6 +80,7 @@ def save_observer_synthesis_animation(example: DESExample, output: Path) -> None
 
 def save_belief_state_synthesis_animation(example: DESExample, output: Path) -> None:
     plant = example.original_dfa
+
     if plant is None:
         raise ValueError("belief-state synthesis animation requires original_dfa")
 
@@ -99,6 +102,7 @@ def save_ll_bts_synthesis_animation(example: DESExample, output: Path) -> None:
 
 def save_ll_bts_chain_animation(example: DESExample, output: Path) -> None:
     plant = example.original_dfa
+
     if plant is None:
         raise ValueError("LL-BTS chain animation requires original_dfa")
 
@@ -116,6 +120,7 @@ def save_ll_bts_chain_animation(example: DESExample, output: Path) -> None:
 
 def save_belief_state_synthesis_final_png(example: DESExample, output: Path) -> None:
     plant = example.original_dfa
+
     if plant is None:
         raise ValueError("belief-state synthesis final PNG requires original_dfa")
 
@@ -134,6 +139,7 @@ def save_ll_bts_final_png(example: DESExample, output: Path) -> None:
 
 def save_ll_bts_chain_final_png(example: DESExample, output: Path) -> None:
     plant = example.original_dfa
+
     if plant is None:
         raise ValueError("LL-BTS chain final PNG requires original_dfa")
 
@@ -149,6 +155,7 @@ def save_ll_bts_chain_final_png(example: DESExample, output: Path) -> None:
 def save_partial_observation_animation(example: DESExample, output: Path) -> None:
     plant = example.original_dfa
     pos = example.original_layout
+
     if plant is None or pos is None:
         raise ValueError("partial-observation animation requires original_dfa and original_layout")
 
@@ -187,6 +194,7 @@ def draw_snapshot(
     graph = dfa.to_networkx()
     node_colors = []
     node_edge_colors = []
+
     for node in graph.nodes:
         if node not in snapshot.known_nodes:
             node_colors.append(styles.UNKNOWN_NODE)
@@ -223,6 +231,7 @@ def draw_partial_observation_snapshot(
     title_prefix: str,
 ) -> None:
     ax.clear()
+
     if snapshot.certain_deadlock:
         status = "certain deadlock"
     elif snapshot.possible_deadlock:
@@ -231,6 +240,7 @@ def draw_partial_observation_snapshot(
         status = "robust non-deadlock"
     else:
         status = "plant on-the-fly"
+
     ax.set_title(
         f"{_short_title_prefix(title_prefix)}\n{snapshot.title} ({status})",
         loc="left",
@@ -242,6 +252,7 @@ def draw_partial_observation_snapshot(
     graph = plant.to_networkx()
     node_colors = []
     node_edge_colors = []
+
     for node in graph.nodes:
         if node in snapshot.possible_deadlock_states:
             node_colors.append(styles.POSSIBLE_DEADLOCK_NODE)
@@ -292,6 +303,7 @@ def draw_belief_state_synthesis_snapshot(
     ax.axis("off")
 
     is_ll_bts = any(node.startswith(("D(", "O(")) for node in snapshot.known_nodes | snapshot.faded_nodes)
+
     if is_ll_bts:
         if snapshot.layout_style == "tree":
             pos = _ll_bts_tree_layout_for_snapshot(snapshot)
@@ -301,13 +313,16 @@ def draw_belief_state_synthesis_snapshot(
             pos = _ll_bts_layout_for_nodes(snapshot.known_nodes | snapshot.faded_nodes)
 
     graph = nx.DiGraph()
+
     for node in sorted(snapshot.known_nodes | snapshot.faded_nodes):
         graph.add_node(node)
+
     for source, target, event, kind in sorted(snapshot.known_edges | snapshot.faded_edges):
         graph.add_edge(source, target, event=event, kind=kind)
 
     node_colors = []
     node_edge_colors = []
+
     for node in graph.nodes:
         if is_ll_bts and str(node).startswith("D("):
             node_colors.append(styles.BELIEF_NODE)
@@ -337,11 +352,14 @@ def draw_belief_state_synthesis_snapshot(
     faded_graph = graph.edge_subgraph(
         [(source, target) for source, target, _event, _kind in snapshot.faded_edges]
     ).copy()
+
     for node in snapshot.faded_nodes:
         faded_graph.add_node(node)
+
     current_graph = graph.edge_subgraph(
         [(source, target) for source, target, _event, _kind in snapshot.known_edges]
     ).copy()
+
     for node in snapshot.known_nodes:
         current_graph.add_node(node)
 
@@ -390,22 +408,27 @@ def draw_belief_state_synthesis_snapshot(
             "node text is information state, tag in {Y,N,U}\n"
             "border: green=Y locally verified, red=N bad, purple=U inconsistent/pending"
         )
+
     ax.text(0.01, 0.02, legend, transform=ax.transAxes, fontsize=9, va="bottom")
 
 
 def _tag_border(snapshot: BeliefStateSynthesisSnapshot, node: State, fallback: str) -> str:
     if node in snapshot.yes:
         return styles.TAG_Y_BORDER
+
     if node in snapshot.no:
         return styles.TAG_N_BORDER
+
     if node in snapshot.unknown:
         return styles.TAG_U_BORDER
+
     return fallback
 
 
 def _set_graph_bounds(ax: plt.Axes, pos: dict[State, tuple[float, float]]) -> None:
     if not pos:
         return
+
     xs = [point[0] for point in pos.values()]
     ys = [point[1] for point in pos.values()]
     x_span = max(xs) - min(xs) or 1.0
@@ -443,17 +466,19 @@ def _draw_belief_state_nodes(
     pos: dict[State, tuple[float, float]],
     node_colors: list[str],
     node_edge_colors: list[str],
-    alpha: float = 1.0,
-    label_style: str = "full",
+    alpha: float=1.0,
+    label_style: str="full",
 ) -> None:
     is_ll_bts = any(str(node).startswith(("D(", "O(")) for node in graph.nodes)
     node_count = max(1, graph.number_of_nodes())
+
     if is_ll_bts and label_style == "compact":
         node_size = 760 if node_count > 40 else 980
         font_size = 4.2 if node_count > 40 else 5
     else:
         node_size = 1300 if is_ll_bts else styles.NODE_SIZE
         font_size = 5 if is_ll_bts and node_count > 30 else 6 if is_ll_bts else 7
+
     nx.draw_networkx_nodes(
         graph,
         pos,
@@ -484,6 +509,7 @@ def _draw_edges(
     snapshot: DeadlockSnapshot | PartialObservationSnapshot | None,
 ) -> None:
     visible_edges = None
+
     if snapshot is not None:
         visible_edges = {(source, target, event) for source, target, event in snapshot.known_edges}
 
@@ -547,6 +573,7 @@ def _draw_edges(
         rotate=False,
         bbox=styles.EDGE_LABEL_BOX,
     )
+
     for (source, target), label in edge_labels.items():
         if source == target:
             x, y = pos[source]
@@ -595,25 +622,31 @@ def _draw_belief_state_edges(
     ax: plt.Axes,
     graph: nx.DiGraph,
     pos: dict[State, tuple[float, float]],
-    alpha: float = 1.0,
-    draw_labels: bool = True,
-    no_nodes: frozenset[State] = frozenset(),
-    unknown_nodes: frozenset[State] = frozenset(),
+    alpha: float=1.0,
+    draw_labels: bool=True,
+    no_nodes: frozenset[State]=frozenset(),
+    unknown_nodes: frozenset[State]=frozenset(),
 ) -> None:
     is_ll_bts = any(str(node).startswith(("D(", "O(")) for node in graph.nodes)
+
     for source, target, data in graph.edges(data=True):
         is_closure = data["kind"] == "closure"
+
         if source in no_nodes or target in no_nodes:
             color = styles.TAG_N_BORDER
         elif source in unknown_nodes or target in unknown_nodes:
             color = styles.TAG_U_BORDER
         else:
             color = styles.UNOBSERVABLE_EDGE if is_closure else styles.CONTROLLABLE_EDGE
+
         style = "dashed" if is_closure else "solid"
         width = 2.6 if color in {styles.TAG_N_BORDER, styles.TAG_U_BORDER} else 2.2 if is_closure else 1.8
+
         if source == target:
             _draw_self_loop(ax, pos[source], color, width, style, 1.0)
+
             continue
+
         nx.draw_networkx_edges(
             graph,
             pos,
@@ -639,6 +672,7 @@ def _draw_belief_state_edges(
         for source, target, data in graph.edges(data=True)
         if source != target
     }
+
     if edge_labels:
         nx.draw_networkx_edge_labels(
             graph,
@@ -649,9 +683,11 @@ def _draw_belief_state_edges(
             rotate=False,
             bbox=styles.EDGE_LABEL_BOX,
         )
+
     for source, target, data in graph.edges(data=True):
         if source != target:
             continue
+
         x, y = pos[source]
         ax.text(
             x,
@@ -674,31 +710,38 @@ def _belief_state_layout(
 
     def find(node: State) -> State:
         parent.setdefault(node, node)
+
         if parent[node] != node:
             parent[node] = find(parent[node])
+
         return parent[node]
 
     def union(source: State, target: State) -> None:
         source_root = find(source)
         target_root = find(target)
+
         if source_root != target_root:
             parent[source_root] = target_root
 
     for snapshot in snapshots:
         for node in snapshot.known_nodes:
             find(node)
+
         for source, target in snapshot.layout_aliases:
             union(source, target)
 
     order: list[State] = []
     seen_roots: set[State] = set()
     known_nodes: set[State] = set()
+
     for snapshot in snapshots:
         for node in sorted(snapshot.known_nodes):
             known_nodes.add(node)
             root = find(node)
+
             if root in seen_roots:
                 continue
+
             seen_roots.add(root)
             order.append(root)
 
@@ -709,16 +752,20 @@ def _belief_state_layout(
         node: ((index % columns) * spacing_x, -(index // columns) * spacing_y)
         for index, node in enumerate(order)
     }
+
     return {node: root_positions[find(node)] for node in known_nodes}
 
 
-def _wrap_belief_label(label: State, label_style: str = "full") -> str:
+def _wrap_belief_label(label: State, label_style: str="full") -> str:
     if label.startswith(("D(", "O(")):
         if label_style == "compact":
             return _compact_ll_bts_label(label)
+
         return _wrap_ll_bts_label(label)
+
     if len(label) <= 16 or "," not in label:
         return label
+
     return label.replace(",", ",\n")
 
 
@@ -728,11 +775,14 @@ def _ll_bts_layout(
     decision_nodes: list[State] = []
     observation_nodes: list[State] = []
     seen: set[State] = set()
+
     for snapshot in snapshots:
         for node in sorted(snapshot.known_nodes):
             if node in seen:
                 continue
+
             seen.add(node)
+
             if node.startswith("D("):
                 decision_nodes.append(node)
             elif node.startswith("O("):
@@ -741,10 +791,13 @@ def _ll_bts_layout(
                 decision_nodes.append(node)
 
     pos: dict[State, tuple[float, float]] = {}
+
     for index, node in enumerate(decision_nodes):
         pos[node] = (0.0, -index * 1.45)
+
     for index, node in enumerate(observation_nodes):
         pos[node] = (5.2, -index * 0.95)
+
     return pos
 
 
@@ -756,7 +809,9 @@ def _ll_bts_layout_for_nodes(nodes: frozenset[State]) -> dict[State, tuple[float
     def column_positions(column_nodes: list[State], x: float, spacing: float) -> dict[State, tuple[float, float]]:
         if not column_nodes:
             return {}
+
         offset = (len(column_nodes) - 1) * spacing / 2.0
+
         return {
             node: (x, offset - index * spacing)
             for index, node in enumerate(column_nodes)
@@ -765,6 +820,7 @@ def _ll_bts_layout_for_nodes(nodes: frozenset[State]) -> dict[State, tuple[float
     pos: dict[State, tuple[float, float]] = {}
     pos.update(column_positions(decision_nodes + other_nodes, 0.0, 1.25))
     pos.update(column_positions(observation_nodes, 5.8, 0.85))
+
     return pos
 
 
@@ -788,8 +844,10 @@ def _ll_bts_chain_layout_for_snapshot(
         if kind == "control" and source in successor_decisions
     )
     assigned = set(direct_observations) | set(successor_decisions) | set(preview_observations)
+
     if current is not None:
         assigned.add(current)
+
     remaining = sorted(node for node in snapshot.known_nodes | snapshot.faded_nodes if node not in assigned)
 
     pos: dict[State, tuple[float, float]] = {}
@@ -797,15 +855,19 @@ def _ll_bts_chain_layout_for_snapshot(
     def put_column(nodes: list[State], x: float, spacing: float) -> None:
         if not nodes:
             return
+
         offset = (len(nodes) - 1) * spacing / 2.0
+
         for index, node in enumerate(nodes):
             pos[node] = (x, offset - index * spacing)
 
     def put_grid(nodes: list[State], x: float, spacing_x: float, spacing_y: float, rows: int) -> None:
         if not nodes:
             return
+
         row_count = min(rows, len(nodes))
         offset = (row_count - 1) * spacing_y / 2.0
+
         for index, node in enumerate(nodes):
             column = index // rows
             row = index % rows
@@ -813,10 +875,12 @@ def _ll_bts_chain_layout_for_snapshot(
 
     if current is not None:
         pos[current] = (0.0, 0.0)
+
     put_column(direct_observations, 5.0, 2.05)
     put_column(successor_decisions, 10.0, 1.85)
     put_column(preview_observations, 15.0, 1.85)
     put_grid(remaining, 20.0, 3.8, 1.65, 10)
+
     return pos
 
 
@@ -825,6 +889,7 @@ def _ll_bts_tree_layout_for_snapshot(
 ) -> dict[State, tuple[float, float]]:
     nodes = sorted(snapshot.known_nodes | snapshot.faded_nodes)
     edges = sorted(snapshot.known_edges | snapshot.faded_edges)
+
     if not nodes:
         return {}
 
@@ -833,60 +898,77 @@ def _ll_bts_tree_layout_for_snapshot(
     graph.add_edges_from((source, target) for source, target, _event, _kind in edges)
 
     roots = sorted(node for node in nodes if graph.in_degree(node) == 0)
+
     if snapshot.current in graph:
         roots = [node for node in roots if node != snapshot.current]
         roots.insert(0, snapshot.current)
+
     if not roots:
         roots = [nodes[0]]
 
     level: dict[State, int] = {node: 0 for node in roots}
+
     for _ in range(max(1, len(nodes))):
         changed = False
+
         for source, target in graph.edges:
             if source not in level:
                 continue
+
             next_level = level[source] + 1
+
             if next_level > level.get(target, -1):
                 level[target] = next_level
                 changed = True
+
         if not changed:
             break
 
     fallback_level = max(level.values(), default=0) + 1
+
     for node in nodes:
         level.setdefault(node, fallback_level)
 
     groups: dict[int, list[State]] = {}
+
     for node, node_level in level.items():
         groups.setdefault(node_level, []).append(node)
 
     pos: dict[State, tuple[float, float]] = {}
     x_spacing = 5.8
     y_spacing = 2.2
+
     for node_level in sorted(groups):
         column = sorted(groups[node_level], key=_ll_bts_layout_sort_key)
         offset = (len(column) - 1) * y_spacing / 2.0
+
         for index, node in enumerate(column):
             pos[node] = (node_level * x_spacing, offset - index * y_spacing)
+
     return pos
 
 
 def _ll_bts_layout_sort_key(node: State) -> tuple[int, str]:
     if node.startswith("D("):
         return (0, node)
+
     if node.startswith("O("):
         return (1, node)
+
     return (2, node)
 
 
 def _wrap_ll_bts_label(label: State) -> str:
     tag = ""
     body = label
+
     if ":" in label:
         body, tag = label.rsplit(":", 1)
         tag = f":{tag}"
+
     body = body.replace("|", "|\n")
     body = body.replace(",", ",\n")
+
     return f"{body}{tag}"
 
 
@@ -894,31 +976,41 @@ def _compact_ll_bts_label(label: State) -> str:
     if label.startswith("D(") and label.endswith(")"):
         body = label[2:-1]
         root, belief = body.split(",", 1)
+
         return f"D {root}\n{_compact_set_text(belief)}"
+
     if label.startswith("O(") and label.endswith(")"):
         body = label[2:-1]
+
         if "},{" in body:
             belief_body, pattern_body = body.split("},{", 1)
             belief = f"{belief_body}}}"
             pattern = f"{{{pattern_body}"
         else:
             belief, pattern = body, "{}"
+
         return f"O\n{_compact_set_text(belief)}\ng={_compact_set_text(pattern)}"
+
     return label
 
 
 def _compact_set_text(text: str) -> str:
     if text == "{}":
         return "{}"
+
     if not (text.startswith("{") and text.endswith("}")):
         return text
+
     items = [item for item in text[1:-1].split(",") if item]
+
     if len(items) <= 3:
         return "{" + ",".join(items) + "}"
+
     return "{" + ",".join(items[:3]) + f",+{len(items) - 3}" + "}"
 
 
 def _edge_label(dfa: DFA, event: str) -> str:
     control = "u" if event in dfa.uncontrollable else "c"
     observation = "o" if event in dfa.observable else "uo"
+
     return f"{event} ({control},{observation})"

@@ -1,5 +1,37 @@
 # DES limited-lookahead control
 
+## 代码模块与审阅入口
+
+先阅读 [CODE_REVIEW_GUIDE.md](CODE_REVIEW_GUIDE.md)，再按“模型→预处理→LL-BTS→传统BTS对照→闭环→实验统计”的顺序检查。
+[代码审阅快照](outputs/code_review/code_review_bundle.zip) 包含当前源码、测试、依赖清单和文件哈希；不包含虚拟环境、论文PDF及运行输出数据。
+
+| 模块 | 职责与关键入口 |
+| --- | --- |
+| [des_core/automata.py](des_core/automata.py) | 部分定义DFA和DESExample数据结构；转移映射不可变 |
+| [examples/non_deadlock.py](examples/non_deadlock.py) | 项目原有例子及论文分量的当前代码版本 |
+| [examples/yin_literature.py](examples/yin_literature.py)、[review_amendments.py](examples/review_amendments.py) | 论文原始转录、逐例修改和去重；amended=False读取修改前设计 |
+| [des_core/certified_lookahead.py](des_core/certified_lookahead.py) | preprocess计算Qd/Qf/Qe及深度；limited_ur/limited_nx按论文公式截断；limited_choice构建局部分支；complete_choice独立检查完整物理行为；solve_limited_lookahead构建、剪枝认证LL-BTS；Limited_Lookahead_Controller保留完整观测估计 |
+| [des_core/offline_bts.py](des_core/offline_bts.py) | 独立传统BTS；traditional_ur走零步或多步不可观事件，traditional_nx针对一个可观事件走一步；traditional_ur_nx保留批量单事件NX的组合接口 |
+| [des_core/closed_loop.py](des_core/closed_loop.py) | 恢复保留策略，提取观测反馈supervisor，构建实际状态×控制器记忆的可达闭环 |
+| [des_core/asynchronous_product.py](des_core/asynchronous_product.py) | 隐式异步乘积；事件带副本下标，继承各分量的控制/观测属性 |
+| [expanded_yin_benchmark.py](expanded_yin_benchmark.py)、[structural_benchmark.py](structural_benchmark.py) | 构建当前61例，扫描u并导出LL-BTS/BTS及模型数据 |
+| [compare_online_offline.py](compare_online_offline.py) | 11次交替新鲜测量、独立内存峰值、根模式与可解性对照；--refresh-report只刷新已有数据 |
+| [randomized_online_offline.py](randomized_online_offline.py) | 固定种子的随机实验；online只依自身判定加深，不用offline结果选择u |
+| [graph_size_metrics.py](graph_size_metrics.py)、[comparison_averages.py](comparison_averages.py) | 构建/保留节点计数、均值、负节约及结果一致性 |
+| [complexity_memory_report.py](complexity_memory_report.py) | 理论时空公式、参数代入、抽象成本代理与实际Python峰值的区分 |
+| [draw_closed_loops.py](draw_closed_loops.py)、[des_core/plot_automaton.py](des_core/plot_automaton.py) | 策略与完整闭环图、避免经过无关节点的plant连线 |
+| [write_benchmark_review.py](write_benchmark_review.py)、[benchmark_review_results.py](benchmark_review_results.py) | 事件审阅文档、双语总表、均值与逐例分析；保留修改意见 |
+| [revised_large_products.py](revised_large_products.py) | 认证分量supervisor的精确组合证明；不把分量节点数冒充全局BTS节点数 |
+| [rerun_paper_examples.py](rerun_paper_examples.py)、[paper_example_models.py](paper_example_models.py) | 论文图与当前代码版本分开重跑、标签差异检查、完整可行闭环及组合式supervisor验证 |
+| [sync_paper_example_results.py](sync_paper_example_results.py) | 备份后同步活动论文的case study和新图，保留原始tex与归档 |
+| [tests/](tests/) | 认证正确性、独立offline、闭环、指标口径与模型修改的回归检查 |
+
+历史实现 `des_core/ll_bts.py`、`ll_bts_synthesis.py`、`factored_synthesis.py`、`implicit_product.py` 以及 `case1_product_benchmark.py` 用于复现旧图和物理根查询。其轨迹完成次数不能直接作为当前部分观测认证supervisor的证明。
+
+当前局部算子为 `x = UR_gamma(x_hat) ∩ x_L`、`x_hat_next = NX_sigma(x) ∩ x_L`；局部结果与完整物理后继不一致时，作为未认证边界处理。这里的交集限制终点，不限制路径中间状态，因此精确UR仍可能访问窗口外状态，不能声称UR计算成本完全局限在窗口内。[本次正确性验证](outputs/limited_lookahead_correctness/validation.json) 覆盖61例与固定种子20261121的1,000个已保存随机系统。旧性能表尚未按这一版本重测；其中4例恢复offline根极大模式所需的u需增大，具体差异见验证记录。
+
+论文例子重跑报告：[PAPER_EXAMPLES_RERUN.md](outputs/paper_examples_rerun/PAPER_EXAMPLES_RERUN.md)。论文图的小例子在从q0开始的一次固定窗口求解中，u=5的认证策略已无死锁，u=6进一步恢复offline初始极大模式；这不表示观测后重新定中心的滚动窗口也必须u=6。八副本显式模式枚举预算截断与组合式可行supervisor分别报告。后者得到65,536个可达物理状态、16,777,216个含记忆闭环状态对的精确因子化闭环，没有显式构建完整全局BTS，也不声称全局最大宽松。
+
 2026-11-21 用户审阅修订：活动基准为 **58个论文改编模型＋3个结构测试，共61例，36例winning、25例losing**。
 原始设计快照保存在各例 `plant_original.json/png`；按表修改与去重记录见 `review_modifications.json`。
 `16WODESmax_fig_3a_Gprime` 已给6、6′添加c2自环；`20CDC2_fig_2b` 已按最新意见给2添加b自环、给6添加c自环，当前没有暂缓冲突。
@@ -14,7 +46,7 @@
 当前 draft 的实现入口是 `python certified_benchmark.py --samples 600 --seed 20261120`，
 或直接 `python des_dfa_on_the_fly.py`。它先完整扫描显式 DFA，计算 `Qd/Qf/Qe/u`，
 然后按完整状态估计构建、剪枝 LL-BTS；只有完整 `UR/NX` 和无控制死锁检查通过才返回
-`winning`，窗口不足返回 `inconclusive`。`CertifiedController` 保留已经证明的后续控制，
+`winning`，窗口不足返回 `inconclusive`。`Limited_Lookahead_Controller` 保留已经证明的后续控制，
 防止重规划窗口变化丢掉原有安全证据。不会依据一个实际物理后继重置部分观测估计。
 
 34 个论文自动机、2 个项目例子、逐例选取的 `u`、LL-BTS 图与 JSON、600 个随机样本的

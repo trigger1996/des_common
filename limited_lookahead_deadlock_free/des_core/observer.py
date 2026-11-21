@@ -32,6 +32,7 @@ def build_partial_observation_example(
 ) -> DESExample:
     observer = build_observer_dfa(base.dfa, observable)
     observed_plant = replace(base.dfa, observable=observable)
+
     return DESExample(
         name=f"{base.name}_partial_observation",
         dfa=observer,
@@ -60,8 +61,10 @@ def build_observer_dfa(plant: DFA, observable: frozenset[str]) -> DFA:
 
     while queue:
         belief = queue.popleft()
+
         if belief in visited:
             continue
+
         visited.add(belief)
         source_name = _belief_name(belief)
 
@@ -69,6 +72,7 @@ def build_observer_dfa(plant: DFA, observable: frozenset[str]) -> DFA:
             target_name = _belief_name(successor.closed_belief)
             states.add(target_name)
             transitions[(source_name, successor.event)] = target_name
+
             if successor.closed_belief not in visited and successor.closed_belief not in queue:
                 queue.append(successor.closed_belief)
 
@@ -92,12 +96,14 @@ def tagged_belief_name(belief: frozenset[State], tag: ObservationTag) -> State:
 
 def _observer_layout(observer: DFA) -> dict[State, tuple[float, float]]:
     states = sorted(observer.states)
+
     if not states:
         return {}
 
     columns = 3
     spacing_x = 3.4
     spacing_y = 2.0
+
     return {
         state: ((index % columns) * spacing_x, -(index // columns) * spacing_y)
         for index, state in enumerate(states)

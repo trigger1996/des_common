@@ -20,11 +20,13 @@ class LLBTSVisualTagsTests(unittest.TestCase):
 
     def test_deadlock_takes_precedence_over_control_inconsistency(self):
         window = post_leq(self.plant, frozenset({self.plant.initial}), 6)
+
         for label in ("D(q_6,{q_12,q_6,q_7})",
                       "O({q_12,q_6,q_7},{a,b,o})",
                       "O({q_12,q_6,q_7},{a,b})"):
             with self.subTest(label=label):
                 self.assertEqual(_ll_bts_node_tag(self.plant, label, window), "N")
+
         self.assertEqual(_ll_bts_node_tag(self.plant, "O({q_6},{})", window), "Y")
         self.assertEqual(_ll_bts_node_tag(self.plant, "O({q_6,q_7},{a,o})", window), "Y")
 
@@ -34,6 +36,7 @@ class LLBTSVisualTagsTests(unittest.TestCase):
             forced_choices={"D(q_0,{q_0})": 3},
         )
         found = set()
+
         for snapshot in snapshots:
             deadlocked = {node for node in snapshot.known_nodes if "q_12" in node}
             found.update(deadlocked)

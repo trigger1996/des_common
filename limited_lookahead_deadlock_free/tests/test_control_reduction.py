@@ -1,4 +1,5 @@
 """Differential checks against the full explicit control-pattern family."""
+
 import random
 import unittest
 
@@ -14,8 +15,10 @@ class ControlReductionTests(unittest.TestCase):
     def compare(self, plant, root, horizon):
         explicit = construct_ll_bts(plant, root, horizon, False)
         expected = synthesize_ll_bts_controls(plant, root, explicit)
+
         for mode in ('reduced', 'factored'):
             actual = construct_ll_bts(plant, root, horizon, False, pattern_mode=mode)
+
             if mode == 'reduced':
                 self.assertEqual(actual.decision_states, explicit.decision_states)
                 self.assertEqual(actual.searched_states, explicit.searched_states)
@@ -25,28 +28,34 @@ class ControlReductionTests(unittest.TestCase):
                 # early, so its search is a subset of the unpruned structure.
                 self.assertLessEqual(actual.decision_states, explicit.decision_states)
                 self.assertLessEqual(actual.searched_states, explicit.searched_states)
+
             self.assertEqual(synthesize_ll_bts_controls(plant, root, actual), expected)
 
     def test_random_plants_and_horizon_boundaries(self):
         rng = random.Random(20260911)
         states = tuple(str(i) for i in range(5))
         events = tuple('abcde')
+
         for case in range(300):
             plant = DFA(frozenset(states), '0', frozenset(events),
                         frozenset(e for e in events if rng.random() < .7),
                         frozenset(e for e in events if rng.random() < .5),
                         {(q, e): rng.choice(states) for q in states for e in events
                          if rng.random() < .5})
+
             for horizon in range(4):
                 with self.subTest(case=case, horizon=horizon):
                     self.compare(plant, plant.initial, horizon)
 
     def test_product_roots(self):
         component = build_small_cycle_example().dfa
+
         for copies in (1, 2, 3):
             product = ImplicitProductDFA(component, copies)
+
             for local in sorted(component.states):
                 root = (local,) + product.initial[1:]
+
                 for horizon in range(4):
                     with self.subTest(copies=copies, root=root, horizon=horizon):
                         self.compare(product, root, horizon)
@@ -73,6 +82,7 @@ class ControlReductionTests(unittest.TestCase):
 
     def test_unique_represented_edges(self):
         plant = build_small_cycle_example().dfa
+
         for mode in ('explicit', 'reduced', 'factored'):
             result = construct_ll_bts(plant, plant.initial, 3, True, pattern_mode=mode)
             self.assertEqual(result.edge_count, len(result.edges))
@@ -84,6 +94,7 @@ class ControlReductionTests(unittest.TestCase):
         self.assertEqual(plant.enabled('0'), (('a', '0'),))
         transitions.clear()
         self.assertEqual(plant.enabled('0'), (('a', '0'),))
+
         with self.assertRaises(TypeError):
             plant.transitions[('0', 'a')] = '1'
 

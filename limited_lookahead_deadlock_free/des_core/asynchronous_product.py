@@ -1,4 +1,5 @@
 """Implicit asynchronous (interleaving) product of arbitrary DFA components."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -14,14 +15,19 @@ ProductState = tuple[State, ...]
 
 class ProductStateSpace(Set):
     """Known Cartesian state space with lazy iteration and constant-space membership."""
-    def __init__(self,components):self.components=components
+
+    def __init__(self, components):self.components = components
+
     def __len__(self):return prod(len(c.states) for c in self.components)
+
     def __iter__(self):return cartesian_product(*(sorted(c.states) for c in self.components))
-    def __contains__(self,state):
-        return (isinstance(state,tuple) and len(state)==len(self.components)
-                and all(q in c.states for q,c in zip(state,self.components)))
+
+    def __contains__(self, state):
+        return (isinstance(state, tuple) and len(state) == len(self.components)
+                and all(q in c.states for q, c in zip(state, self.components)))
+
     @classmethod
-    def _from_iterable(cls,values):
+    def _from_iterable(cls, values):
         # Set algebra materializes its result; it must not reinterpret states as
         # component DFA objects through this view's constructor.
         return frozenset(values)
@@ -45,6 +51,7 @@ class AsynchronousProductDFA:
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "components", tuple(self.components))
+
         if not self.components:
             raise ValueError("an asynchronous product needs at least one component")
 
@@ -94,15 +101,18 @@ class AsynchronousProductDFA:
     def enabled(self, state: ProductState) -> tuple[tuple[Event, ProductState], ...]:
         if len(state) != len(self.components):
             raise ValueError("product state must have one coordinate per component")
+
         return self._cached_enabled(state)
 
     def _compute_enabled(self, state: ProductState) -> tuple[tuple[Event, ProductState], ...]:
         successors = []
+
         for index, component in enumerate(self.components):
             for event, target in component.enabled(state[index]):
                 next_state = list(state)
                 next_state[index] = target
                 successors.append((product_event(index, event), tuple(next_state)))
+
         return tuple(successors)
 
     def enabled_targets(self, state: ProductState) -> list[tuple[Event, ProductState]]:
@@ -115,6 +125,7 @@ class ImplicitProductDFA(AsynchronousProductDFA):
     def __init__(self, component: DFA, copies: int):
         if copies < 1:
             raise ValueError("copies must be positive")
+
         super().__init__((component,) * copies)
 
     @property

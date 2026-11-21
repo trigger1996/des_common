@@ -38,9 +38,12 @@ class DFA:
     @cached_property
     def _enabled_by_state(self) -> dict[State, tuple[tuple[Event, State], ...]]:
         """Index outgoing transitions once; DFA is immutable during synthesis."""
+
         outgoing: dict[State, list[tuple[Event, State]]] = {state: [] for state in self.states}
+
         for (source, event), target in self.transitions.items():
             outgoing.setdefault(source, []).append((event, target))
+
         return {
             state: tuple(sorted(items, key=lambda item: item[0]))
             for state, items in outgoing.items()
@@ -54,8 +57,10 @@ class DFA:
 
     def to_networkx(self) -> nx.DiGraph:
         graph = nx.DiGraph()
+
         for state in sorted(self.states):
             graph.add_node(state)
+
         for (source, event), target in self.transitions.items():
             graph.add_edge(
                 source,
@@ -64,6 +69,7 @@ class DFA:
                 controllable=event in self.controllable,
                 observable=event in self.observable,
             )
+
         return graph
 
 

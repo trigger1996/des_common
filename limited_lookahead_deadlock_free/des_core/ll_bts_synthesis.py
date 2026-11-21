@@ -1,4 +1,5 @@
 """Algorithm 2: prune the constructed LL-BTS before advancing the online run."""
+
 from __future__ import annotations
 
 from collections import defaultdict, deque
@@ -29,26 +30,36 @@ def solve_ll_bts(plant, current, horizon, *, pattern_mode="factored",
     The certificate's node/edge counts describe its substructure, not the full
     LL-BTS; construct_ll_bts remains the full-construction API.
     """
+
     from des_core.ll_bts import construct_ll_bts
+
     if horizon < 0:
         raise ValueError("horizon must be nonnegative")
+
     attempted = use_certificate and pattern_mode == "factored"
+
     if attempted:
         from des_core.compact_ll_bts import construct_compact
         from des_core.limited_lookahead import post_leq
+
         window = post_leq(plant, frozenset({current}), horizon)
         result = construct_compact(plant, current, window, expansion_progress,
                                    maximal_hidden_only=True)
         control = synthesize_ll_bts_controls(plant, current, result)
+
         if not control.empty and plant.controllable in control.maximal_patterns:
             return replace(result, construction_strategy="maximal_pattern_certificate"), control
+
         # Release the failed trial before the potentially larger complete solve.
         del result, control
+
     result = construct_ll_bts(plant, current, horizon, False,
                               expansion_progress, pattern_mode=pattern_mode)
     control = synthesize_ll_bts_controls(plant, current, result)
+
     if attempted:
         result = replace(result, construction_strategy="full_after_certificate", synthesis_passes=2)
+
     return result, control
 
 
@@ -63,9 +74,12 @@ def synthesize_ll_bts_controls(
     the paper-defined result is independent of gamma; this does not alter the
     retained LL-BTS or the maximally permissive patterns.
     """
+
     if result.pattern_mode == "factored":
         from des_core.factored_synthesis import synthesize_factored_controls
+
         return synthesize_factored_controls(plant, current, result)
+
     window = result.lookahead_states
     adjacency = {q: tuple(plant.enabled(q)) for q in window}
     observable = plant.observable
@@ -99,12 +113,16 @@ def synthesize_ll_bts_controls(
     # Number of currently surviving O choices per D-estimate. Keeping counts
     # avoids copying every large frozenset of choices into another mutable set.
     remaining_choices: dict[Estimate, int] = {}
+
     for estimate in estimates:
         if estimate in bad_decisions:
             remaining_choices[estimate] = 0
+
             continue
+
         options = result.control_choices.get(estimate, ())
         remaining_choices[estimate] = len(options)
+
         for observation in options:
             incoming_controls[observation].append(estimate)
 
@@ -122,6 +140,7 @@ def synthesize_ll_bts_controls(
 
     def analyze_estimate(estimate: Estimate):
         cached = estimate_analysis.get(estimate)
+
         if cached is not None:
             return cached
 
@@ -131,10 +150,13 @@ def synthesize_ll_bts_controls(
 
         for state in estimate:
             outgoing = adjacency[state]
+
             for event, target in outgoing:
                 if event not in observable:
                     continue
+
                 observable_occurs.add(event)
+
                 if target in window:
                     targets[event].add(target)
 
@@ -142,6 +164,7 @@ def synthesize_ll_bts_controls(
             event: canonical.get(frozenset(states), frozenset(states))
             for event, states in targets.items()
         }
+
         # If A is a subset of B, requiring gamma to hit A already implies
         # that it hits B. Keep only inclusion-minimal requirement masks.
         if 0 in raw_requirements:
@@ -149,10 +172,13 @@ def synthesize_ll_bts_controls(
         else:
             ordered_requirements = sorted(raw_requirements, key=int.bit_count)
             minimal_requirements: list[int] = []
+
             for requirement in ordered_requirements:
                 if any((existing & requirement) == existing for existing in minimal_requirements):
                     continue
+
                 minimal_requirements.append(requirement)
+
             requirements = tuple(minimal_requirements)
 
         cached = (
@@ -161,15 +187,18 @@ def synthesize_ll_bts_controls(
             requirements,
         )
         estimate_analysis[estimate] = cached
+
         return cached
 
     enabled_observable_cache: dict[ControlPattern, frozenset[Event]] = {}
 
     def enabled_observable(pattern: ControlPattern) -> frozenset[Event]:
         cached = enabled_observable_cache.get(pattern)
+
         if cached is None:
             cached = frozenset((pattern & observable) | uncontrollable_observable)
             enabled_observable_cache[pattern] = cached
+
         return cached
 
     for observation in observations:
@@ -183,22 +212,30 @@ def synthesize_ll_bts_controls(
             not estimate
             or not estimate.isdisjoint(deadlocks)
         )
+
         if invalid:
             bad_observations.add(observation)
+
             continue
 
         # Build O -> successor-D reverse edges only for observations that are not
         # already known bad. Multiple observable events may yield the same
         # successor estimate; Algorithm 2 needs that predecessor only once.
         seen_successors: set[Estimate] = set()
+
         for event in local_enabled_events:
             successor = local_targets[event]
+
             if successor in seen_successors:
                 continue
+
             seen_successors.add(successor)
+
             if successor not in estimates:
                 bad_observations.add(observation)
+
                 break
+
             incoming_observations[successor].append(observation)
 
     # Any D with no available control choice is bad before the recursive pass.
@@ -215,22 +252,27 @@ def synthesize_ll_bts_controls(
     # every predecessor O because the environment can force that O->D outcome.
     while queue:
         kind, node = queue.popleft()
+
         if kind == "D":
             for observation in incoming_observations.get(node, ()):
                 if observation not in bad_observations:
                     bad_observations.add(observation)
                     queue.append(("O", observation))
+
             continue
 
         for estimate in incoming_controls.get(node, ()):
             if estimate in bad_decisions:
                 continue
+
             remaining_choices[estimate] -= 1
+
             if remaining_choices[estimate] == 0:
                 bad_decisions.add(estimate)
                 queue.append(("D", estimate))
 
     initial = frozenset({current})
+
     if initial not in estimates or initial in bad_decisions:
         return LLBTSControlResult(True, (), ())
 
@@ -243,13 +285,18 @@ def synthesize_ll_bts_controls(
     maximal_set = frozenset(patterns)
 
     forward = set()
+
     for observation in surviving_initial:
         estimate, pattern = observation
+
         if pattern not in maximal_set:
             continue
+
         local_targets, _observable_occurs, _requirements = analyze_estimate(estimate)
+
         for event in local_targets.keys() & enabled_observable(pattern):
             successor = local_targets[event]
+
             for root in successor:
                 forward.add((pattern, event, root))
 

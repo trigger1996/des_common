@@ -5,6 +5,7 @@ Fig. 1(a-c), p. 2143; Fig. 3(a-c), p. 2151. Fig. 2(a-b) and
 Fig. 3(d) are BTS/AES controllers, not partially-observed plant DFAs.
 Dashed disabled edges in Fig. 1(b,c) are NOT plant transitions.
 """
+
 from collections import deque
 from des_core.automata import DESExample, DFA
 
@@ -12,6 +13,7 @@ from des_core.automata import DESExample, DFA
 def _dfa(states, initial, events, controllable, observable, edges):
     transitions = {(q, e): t for q, e, t in edges}
     assert len(transitions) == len(edges), 'nondeterministic transcription'
+
     return DFA(frozenset(states), initial, frozenset(events), frozenset(controllable),
                frozenset(observable), transitions)
 
@@ -35,15 +37,19 @@ def build_yin2016_examples() -> tuple[DESExample, ...]:
     # Eq. (22), K=2: increment on EVERY event after failure; -1 before failure.
     start, seen, queue, edges = ('0', -1), {('0', -1)}, deque([('0', -1)]), []
     label = lambda pair: '%s^%d' % pair
+
     while queue:
         q, n = queue.popleft()
+
         for event, target in g3a.enabled(q):
             k = (-1 if event != 'f' else 0) if n == -1 else min(n + 1, 2)
             pair = (target, k)
             edges.append((label((q, n)), event, label(pair)))
+
             if pair not in seen:
                 seen.add(pair)
                 queue.append(pair)
+
     g3b = _dfa(map(label, seen), label(start), events3, controls3, observed3, edges)
     g3c = _dfa({'0', '1', '2', "2'", '3', '4', "4'", '5'}, '0',
                events3, controls3, observed3,
@@ -57,6 +63,7 @@ def build_yin2016_examples() -> tuple[DESExample, ...]:
              ('3a', g3a, 'System G; diagnosis example'),
              ('3b', g3b, 'Unfolded GD, K=2, Eq. (22)'),
              ('3c', g3c, 'Controlled language L(S*/G); primed states retained')]
+
     return tuple(DESExample('yin2016_fig_' + name, dfa, {}, description,
                             source_name='Yin & Lafortune (2016), Fig. ' + name)
                  for name, dfa, description in items)
