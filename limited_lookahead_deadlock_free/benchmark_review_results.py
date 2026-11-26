@@ -144,7 +144,7 @@ def model_analysis(root, row, plant, bts, closed):
         if name == '16SEI_fig_4b':
             lines += ['**初始状态1与Qf：** 1沿a可到4、沿b可到2、沿o可到5；所有分支最终只能到无出边终点。'
                 '因此1属于完整综合的必败状态集合。当前预处理Qf只收录单一后继链通往死锁的充分判据，'
-                '1有多个不同后继，故不在当前定义的Qf中；不能把完整必败集合与局部Qf混同。u=0也可通过根UR/NX及后继证书证明losing。']
+                '1有多个不同后继，故不在当前定义的Qf中；不能把完整必败集合与局部Qf混同。当前通过正整数前视、完整UR/NX及后继检查证明losing。']
 
         lines += ['空图或“不可解”提示图仅说明判定，不作为可行闭环；模型新增边只来自明确的修改指令。']
 
@@ -317,6 +317,9 @@ def overview(root, models):
 
 
 def large_analyses(root, existing):
+    revision_note = ('> 以下大乘积条目保留历史组合式/预算实验，不计入本轮重新建窗版本的性能平均。'
+        '当前全局乘积、百万状态模型及资源检查见'
+        '[本轮重跑报告](../revision_materials/recentered_deadlock_targets_20261123/RERUN_REPORT.md)。\n\n')
     path = root/'large_literature_supervisors.json'
 
     if not path.exists():return ''
@@ -326,9 +329,9 @@ def large_analyses(root, existing):
     if rows and rows[0].get('method') == 'compositional_supervisors':
         from review_large_analyses import format_large_analyses
 
-        return format_large_analyses(root, rows, existing)
+        return revision_note + format_large_analyses(root, rows, existing)
 
-    lines = ['## 千万状态论文乘积：实际运行结果与分析', '',
+    lines = [revision_note, '## 千万状态论文乘积：历史运行结果与分析', '',
         '本节是额外的两个大乘积，不混入上面64个显式原始模型的计时汇总。'
         '它们保留源模型的部分观测/控制属性，使用精确组合式Qe证书；'
         '没有逐一展开千万状态，也没有完成传统offline BTS。', '',

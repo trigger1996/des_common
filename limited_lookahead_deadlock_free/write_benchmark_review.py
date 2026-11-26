@@ -39,9 +39,9 @@ def main():
 
         if name == '16SEI_fig_4b':return '保留原结构；初始1为综合失败状态，但不属于当前局部Qf充分判据'
 
-        if name == '21AutomaticaOptimal_fig_2':return '保留原结构；扫描u=0…14，最小判定/匹配u=0，草稿阈值及采用u=2'
+        if name == '21AutomaticaOptimal_fig_2':return '保留原结构；本轮使用正整数前视，判定/匹配及采用值见运行结果'
 
-        if name in ('yin2016_fig_1a', 'yin2016_fig_1c', 'yin2016_fig_3a', '18TACrange_fig_3b', '24AutoOpt_fig_1'):
+        if name in ('16TACuniform_fig_1a', '16TACuniform_fig_1c', '16TACuniform_fig_3a', '18TACrange_fig_3b', '24AutoOpt_fig_1'):
             return '未发现相同的带事件属性结构，保留并重新计算'
 
         return '未要求拓扑变更，保留结构并重新计算'

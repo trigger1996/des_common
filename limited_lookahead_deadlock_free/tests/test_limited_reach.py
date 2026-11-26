@@ -42,19 +42,22 @@ class LimitedReachTests(unittest.TestCase):
             ll.limited_nx(plant, frozenset('0'), 'h', plant.states)
 
     def test_solver_calls_local_operators_and_does_not_certify_a_clipped_boundary(self):
-        plant = DFA(frozenset('012'), '0', frozenset(('o', 'b')), frozenset(('b',)),
-                    frozenset(('o', 'b')), {('0', 'o'):'1', ('1', 'o'):'1', ('1', 'b'):'2'})
+        plant = DFA(frozenset('0123'), '0', frozenset(('o', 'b')), frozenset(('b',)),
+                    frozenset(('o', 'b')), {('0', 'o'):'1', ('1', 'o'):'2',
+                                          ('2', 'o'):'2', ('2', 'b'):'3'})
         pre = ll.preprocess(plant)
 
         with patch.object(ll, 'limited_ur', wraps=ll.limited_ur) as ur:
             with patch.object(ll, 'limited_nx', wraps=ll.limited_nx) as nx:
-                result = ll.solve_limited_lookahead(pre, horizon=0)
+                result = ll.solve_limited_lookahead(pre, horizon=1)
 
         self.assertGreater(ur.call_count, 0)
         self.assertGreater(nx.call_count, 0)
-        self.assertEqual(result.status, 'inconclusive')
-        self.assertGreater(result.boundary_choices, 0)
-        complete = ll.solve_limited_lookahead(pre, horizon=1)
+        self.assertEqual(result.status, 'winning')
+        self.assertEqual(result.boundary_choices, 0)
+        self.assertEqual(result.window, frozenset('01'))
+        ll.validate_policy(pre, result)
+        complete = ll.solve_limited_lookahead(pre, horizon=2)
         self.assertEqual(complete.status, 'winning')
         ll.validate_policy(pre, complete)
 

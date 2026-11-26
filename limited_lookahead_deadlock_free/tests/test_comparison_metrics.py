@@ -38,11 +38,12 @@ class ComparisonMetricsTests(unittest.TestCase):
         verify_composition_small(component)
         product = ImplicitProductDFA(component, 6)
         pre = compositional_context(component, product)
-        result = solve_limited_lookahead(pre, horizon=pre.horizon, max_window_states=1)
+        result = solve_limited_lookahead(pre, horizon=max(1, pre.horizon), max_window_states=1)
         self.assertEqual(product.state_count, 15**6)
         self.assertEqual(len(product.controllable), 30)
         self.assertEqual(len(product.observable), 24)
-        self.assertEqual(pre.horizon, 12)
+        self.assertEqual(pre.horizon, 0)
+        self.assertEqual(pre.u, 12)
         self.assertEqual(result.maximal_patterns, (product.controllable,))
 
     def test_product_certificate_export_roundtrip(self):
@@ -57,7 +58,7 @@ class ComparisonMetricsTests(unittest.TestCase):
 
         component = next(e.dfa for e in build_yin_extended_examples() if e.name == '21AutomaticaOptimal_fig_2')
         product = ImplicitProductDFA(component, 2);pre = compositional_context(component, product)
-        result = solve_limited_lookahead(pre, horizon=pre.horizon)
+        result = solve_limited_lookahead(pre, horizon=max(1, pre.horizon))
 
         with TemporaryDirectory() as tmp:
             export_bts(pre, result, Path(tmp), draw=False)

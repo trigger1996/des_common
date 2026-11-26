@@ -18,7 +18,7 @@ def _dfa(states, initial, events, controllable, observable, edges):
                frozenset(observable), transitions)
 
 
-def build_yin2016_examples() -> tuple[DESExample, ...]:
+def build_tac2016_uniform_examples() -> tuple[DESExample, ...]:
     events1, controls1, observed1 = ('a', 'b', 'c', 'e', 'o1', 'o2'), ('a', 'b', 'c'), ('o1', 'o2')
     edges1 = [('0', 'b', '1'), ('0', 'c', '3'), ('1', 'e', '1'), ('1', 'a', '2'),
               ('2', 'o1', '2'), ('2', 'o2', '5'), ('3', 'a', '4'), ('3', 'o1', '5'),
@@ -64,6 +64,6 @@ def build_yin2016_examples() -> tuple[DESExample, ...]:
              ('3b', g3b, 'Unfolded GD, K=2, Eq. (22)'),
              ('3c', g3c, 'Controlled language L(S*/G); primed states retained')]
 
-    return tuple(DESExample('yin2016_fig_' + name, dfa, {}, description,
+    return tuple(DESExample('16TACuniform_fig_' + name, dfa, {}, description,
                             source_name='Yin & Lafortune (2016), Fig. ' + name)
                  for name, dfa, description in items)

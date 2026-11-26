@@ -16,7 +16,7 @@ def main(name):
     export_plant(example, folder);pre = preprocess(example.dfa, max_path_visits=2_000_000)
     offline = solve_offline(example.dfa);sweep = [];started = perf_counter()
 
-    for u in range(len(example.dfa.states)):
+    for u in range(1, max(2, len(example.dfa.states))):
         r = solve_limited_lookahead(pre, horizon=u);validate_policy(pre, r)
         same = (r.status, set(r.maximal_patterns)) == (offline.status, set(offline.maximal_patterns))
         sweep.append(dict(u=u, status=r.status, D=r.decision_count, O=r.observation_count, edges=r.edge_count,

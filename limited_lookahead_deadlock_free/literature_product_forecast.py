@@ -88,7 +88,7 @@ def verify_composition_small(component):
         symbolic = compositional_context(component, product)
         assert not pre.deadlocks and not pre.failure and pre.safe == states
         assert pre.horizon <= symbolic.horizon
-        result = solve_limited_lookahead(symbolic, horizon=symbolic.horizon, max_window_states=1)
+        result = solve_limited_lookahead(symbolic, horizon=max(1, symbolic.horizon), max_window_states=1)
         assert result.status == 'winning' and result.observation_count == 0
 
     # Also certify the actual source controller rather than merely its name.
@@ -100,7 +100,7 @@ def verify_composition_small(component):
 def solve_online(component, product):
     start = perf_counter();pre = compositional_context(component, product)
     pre_seconds = perf_counter()-start
-    start = perf_counter();result = solve_limited_lookahead(pre, horizon=pre.horizon, max_window_states=1)
+    start = perf_counter();result = solve_limited_lookahead(pre, horizon=max(1, pre.horizon), max_window_states=1)
     patterns = result.maximal_patterns;solve_seconds = perf_counter()-start
     assert result.status == 'winning' and patterns == (product.controllable,)
     assert result.decision_count == 1 and result.observation_count == 0

@@ -7,14 +7,14 @@ from des_core.automata import DFA
 # De-duplicate the original designs, allowing state/event renaming and ignoring
 # alphabet symbols which occur on no edge. Other requested duplicate checks failed.
 REMOVED = {
-    'yin2016_fig_1b': '15ACCopac_fig_2a',
+    '16TACuniform_fig_1b': '15ACCopac_fig_2a',
     '17TAC-Range_fig_2c': '16WODESmax_fig_2a',
     '24TACopa_fig_1b': '15ACCopac_fig_2b',
 }
 
 CHANGES = {
-    'yin2016_fig_3b': [('remove_loops', s) for s in ('5^-1', '3^2', '5^2')],
-    'yin2016_fig_3c': [('remove_loops', '5')],
+    '16TACuniform_fig_3b': [('remove_loops', s) for s in ('5^-1', '3^2', '5^2')],
+    '16TACuniform_fig_3c': [('remove_loops', '5')],
     '15ACCopac_fig_1': [('remove', '6', 'o1', '6')],
     '15ACCopac_fig_2a': [('remove', '6', 'o1', '6')],
     '16CDC_fig_2a_K': [('relabel', '3', 'o', '5', 'c2'), ('relabel', '1', 'o', '2', 'c1')],

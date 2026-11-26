@@ -9,6 +9,7 @@ from itertools import combinations
 from time import perf_counter
 
 from des_core.certified_lookahead import Choice, Bipartitle_System
+from des_core.bipartite_graph import attach_pair_graph
 
 
 class BTSBudgetExceeded(RuntimeError):
@@ -85,7 +86,8 @@ def traditional_ur_nx(plant, estimate, pattern):
 
 
 def construct_offline_bts(plant, estimate=None, *, max_choices=None,
-                          max_decisions=None, timeout_seconds=None):
+                          max_decisions=None, timeout_seconds=None,
+                          analysis_state=None, record_steps=False):
     started = perf_counter()
     initial = frozenset((plant.initial,)) if estimate is None else frozenset(estimate)
     events = tuple(sorted(plant.controllable))
@@ -145,10 +147,11 @@ def construct_offline_bts(plant, estimate=None, *, max_choices=None,
 
     policy = {x:tuple(c for i, c in enumerate(options) if (x, i) not in removed)
             for x, options in choices.items() if x not in lost}
-    observations = {(c.closure, c.pattern) for options in choices.values() for c in options}
-    d_edges = {(x, c.closure, c.pattern) for x, options in choices.items() for c in options}
-    o_edges = {(c.closure, c.pattern, e, y) for options in choices.values() for c in options for e, y in c.successors}
+    result = Bipartitle_System('winning' if initial in policy else 'losing', initial, None,
+        frozenset(plant.states), policy, frozenset(), 0, 0,
+        0, 0, perf_counter()-started, plant.controllable, choices)
+    result.patterns_tested = tested
+    attach_pair_graph(result, analysis_state=analysis_state, record_steps=record_steps)
+    result.seconds = perf_counter()-started
 
-    return Bipartitle_System('winning' if initial in policy else 'losing', initial, None,
-        frozenset(plant.states), policy, frozenset(), len(choices), len(observations),
-        len(d_edges)+len(o_edges), 0, perf_counter()-started, plant.controllable, choices)
+    return result

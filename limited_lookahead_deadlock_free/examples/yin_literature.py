@@ -6,11 +6,11 @@ or a change to the deadlock-free objective. See the generated source manifest.
 """
 
 from des_core.automata import DESExample
-from examples.yin2016 import _dfa, build_yin2016_examples
+from examples.tac2016_uniform import _dfa, build_tac2016_uniform_examples
 
 
 def build_yin_literature_examples(*, amended=True):
-    examples = list(build_yin2016_examples())
+    examples = list(build_tac2016_uniform_examples())
 
     def add(paper, fig, states, initial, events, controls, observed, edges, note=''):
         dfa = _dfa(states, initial, events, controls, observed, edges)

@@ -7,7 +7,7 @@ measured physical state. No cross-query synthesis cache is used.
 
 Paper notation used below:
     Q_d / Q_f / Q_e: plant deadlocks / failure-chain states / all-future-safe states.
-    Q_o_tilde: observable-entry set with targets extended to Q_f union Q_e.
+    Q_o_tilde: observable entries reaching Q_f union Q_d union Q_e.
     u: lookahead_lower_bound computed by preprocessing; x_L: lookahead window.
     x_hat: decision estimate; x: UR closure at an observation node.
     gamma_c: selected controllable events; gamma = gamma_c union Sigma_uc.
@@ -17,11 +17,12 @@ Public estimate/pattern/horizon arguments retain their existing API names.
 from __future__ import annotations
 
 from collections import defaultdict, deque
-from dataclasses import dataclass, replace
+from dataclasses import dataclass, field, replace
 from itertools import combinations
 from time import perf_counter
 
 from des_core.automata import DFA
+from des_core.bipartite_graph import attach_pair_graph
 
 Estimate = frozenset[str]
 Pattern = frozenset[str]
@@ -34,8 +35,8 @@ class Preprocessing:
     Q_f: Estimate
     Q_e: Estimate
     Q_o_tilde: Estimate
-    u: int  # lookahead_lower_bound for targets Q_f union Q_e; reported as draft_u.
-    u_f: int  # Diagnostic bound restricted to targets in Q_f.
+    u: int  # Extended Q_f union Q_d union Q_e threshold; legacy draft_u.
+    u_f: int  # Legacy field name for bar_u, now targeting Q_f union Q_d.
     path_visits: int
     seconds: float
 
@@ -58,19 +59,25 @@ class Preprocessing:
 
     @property
     def horizon(self) -> int:
-        return self.u
+        return self.u_f
 
     @property
     def risk_horizon(self) -> int:
         return self.u_f
 
+    @property
+    def lookahead_lower_bound(self) -> int:
+        return self.u_f
+
 
 def preprocess(plant: DFA, *, max_path_visits: int | None=None) -> Preprocessing:
-    """Algorithm 1, final version: targets Q_f union Q_e; initial entry included.
+    """Compute Algorithm 1's state sets and the two path-length thresholds.
 
     Entry point for computing lookahead_lower_bound: compute Q_d/Q_f/Q_e and
-    the draft lookahead threshold u, returned as pre.u (also accessible through
-    the compatibility name pre.horizon, reported as draft_u).
+    the paper's Q_f union Q_d threshold bar_u, exposed as
+    pre.lookahead_lower_bound (legacy field pre.u_f and property pre.horizon).
+    The extended Q_f union Q_d union Q_e threshold remains in pre.u for
+    explicit comparisons; it does not determine the default synthesis horizon.
     This function does not search for the minimum decisive u or
     the minimum u that recovers the offline maximal root control patterns;
     benchmark scripts find those values by repeatedly calling solve_limited_lookahead.
@@ -129,7 +136,8 @@ def preprocess(plant: DFA, *, max_path_visits: int | None=None) -> Preprocessing
             if q in Q_reach_d:
                 continue
 
-            if Post[q] == {q_v} and q_v in Q_d | Q_f:
+            # Avoid rebuilding the growing union for every predecessor state.
+            if Post[q] == {q_v} and (q_v in Q_d or q_v in Q_f):
                 Q_f.add(q)
 
             Q_reach_d.add(q)
@@ -143,11 +151,10 @@ def preprocess(plant: DFA, *, max_path_visits: int | None=None) -> Preprocessing
 
     # ### 4. 计算 lookahead_lower_bound，也就是 u
     # Enumerate backward unobservable SIMPLE
-    # paths from each q_v in Q_f union Q_e. P is the current-path state set;
+    # paths from each q_v in Q_f union Q_d union Q_e. P is the current-path state set;
     # ell counts transitions. Reaching Q_entry updates Q_o_tilde and u.
-    # This implements the draft's extended target set, not only Q_f.
-    # u_f separately records the bound with Q_f targets only.
-    for q_v in sorted(Q_f | Q_e):
+    # u_f is the compatibility field for the Q_f union Q_d detection bound.
+    for q_v in sorted(Q_f | Q_d | Q_e):
         P = {q_v}
         dfs_stack = [(q_v, iter(Pre_uo[q_v]))]
 
@@ -186,7 +193,7 @@ def preprocess(plant: DFA, *, max_path_visits: int | None=None) -> Preprocessing
                 # u = max length among the eligible entry-to-target paths.
                 u = max(u, ell)
 
-                if q_v in Q_f:
+                if q_v in Q_f or q_v in Q_d:
                     u_f = max(u_f, ell)
 
             dfs_stack.append((q_s, iter(Pre_uo[q_s])))
@@ -225,7 +232,7 @@ class Bipartitle_System:
     status: str  # winning, losing (proved), or inconclusive (window insufficient)
     initial: Estimate  # Initial decision estimate x_hat_0.
     horizon: int | None  # Chosen u; None for a full offline construction.
-    window: Estimate  # x_L = Post_{<=u}(x_hat_0), subject to certificate shortcut.
+    window: Estimate  # Initial estimate's window; later decisions recenter independently.
     policy: dict[Estimate, tuple[Choice, ...]]
     safe_terminals: frozenset[Estimate]
     decision_count: int
@@ -235,6 +242,14 @@ class Bipartitle_System:
     seconds: float
     all_controllable: Pattern
     constructed_choices: dict[Estimate, tuple[Choice, ...]]
+    initial_decision: tuple | None = None
+    decision_states: dict = field(default_factory=dict)
+    observation_states: dict = field(default_factory=dict)
+    decision_policy: dict = field(default_factory=dict)
+    construction_steps: list = field(default_factory=list)
+    representation: str = '(q_hat, x_hat)'
+    patterns_tested: int = 0
+    horizon_trials: list = field(default_factory=list)
 
     @property
     def maximal_patterns(self) -> tuple[Pattern, ...]:
@@ -337,12 +352,16 @@ def solve_limited_lookahead(pre: Preprocessing, estimate: Estimate | None=None,
                     horizon: int | None=None, *, full: bool=False,
                     certificates: bool=True, max_choices: int | None=None,
                     max_window_states: int | None=None,
-                    timeout_seconds: float | None=None) -> Bipartitle_System:
-    """Construct merged-estimate BTS and count-prune its greatest fixed point.
+                    timeout_seconds: float | None=None,
+                    analysis_state=None, record_steps: bool=False) -> Bipartitle_System:
+    """Discover UR/NX fragments, build pair-valued states and reverse-prune.
 
     Local fragments use limited_ur and limited_nx with the paper's explicit
     intersections with x_L. Full UR/NX are checked separately for certification:
     a truncated fragment alone must not certify an incomplete physical belief.
+    Every decision estimate recenters its own Post_<=u window. Future
+    observable outcomes are explored and reverse-pruned before execution,
+    so rewindowing never substitutes an unchecked boundary for a continuation.
     Uncertified boundary choices are recorded for an optimistic second pass.
     Only if that second pass also loses do we report proved losing. Otherwise
     failure to find a sound controller is inconclusive, never 'no supervisor'.
@@ -370,56 +389,70 @@ def solve_limited_lookahead(pre: Preprocessing, estimate: Estimate | None=None,
     if not x_hat_0 or not x_hat_0 <= plant.states:
         raise ValueError("estimate must be a nonempty subset of Q")
 
-    u = pre.u if horizon is None else horizon
+    u = max(1, pre.lookahead_lower_bound) if horizon is None else horizon
 
-    if u < 0:
-        raise ValueError("horizon must be nonnegative")
+    if not isinstance(u, int) or u < (0 if full else 1):
+        raise ValueError("lookahead horizon must be a positive integer")
 
     # A proved forward-invariant all-live Qe needs no local window expansion.
     # Check BEFORE constructing Post_<=u: on a large known product that scan can
     # otherwise dominate work despite the already-complete safety certificate.
     if certificates and not full and x_hat_0 <= pre.Q_e:
-        return Bipartitle_System('winning', x_hat_0, u, x_hat_0, {x_hat_0:()},
+        result = Bipartitle_System('winning', x_hat_0, u, x_hat_0, {x_hat_0:()},
             frozenset((x_hat_0,)), 1, 0, 0, 0, perf_counter()-started,
             plant.controllable, {x_hat_0:()})
 
-    # This window belongs to THIS solve call. Later estimates queued below do
-    # not recenter it. A new call after an observation (e.g. through
-    # Limited_Lookahead_Controller.solve) builds a new window around the updated belief.
-    # Thus matching offline root patterns in one fixed window can need a
-    # larger u than certifying a later, recentered observation estimate.
-    x_L = set(plant.states) if full else set(x_hat_0)
-    frontier = set(x_hat_0)
+        return attach_pair_graph(result, analysis_state=analysis_state, record_steps=record_steps)
 
-    if not full:
+    def decision_window(x_hat):
+        if full:
+            return frozenset(plant.states)
+
+        x_L, frontier = set(x_hat), set(x_hat)
+        check_budget(len(x_L))
+
         for _ in range(u):
-            targets = {t for q in frontier for _, t in plant.enabled(q)} - x_L
-            x_L.update(targets)
+            frontier = {t for q in frontier for _, t in plant.enabled(q)} - x_L
+            x_L.update(frontier)
             check_budget(len(x_L))
-            frontier = targets
 
             if not frontier:
                 break
 
-    x_L = frozenset(x_L)
+        return frozenset(x_L)
+
+    initial_window = frozenset(plant.states) if full else x_hat_0
     Q_bad = pre.Q_d | (pre.Q_f if certificates else frozenset())
     Q_e = pre.Q_e if certificates else frozenset()
-    # Decision nodes carry x_hat; observation nodes carry (x, gamma_c).
+    # This workspace shares UR/NX calculations by estimate. attach_pair_graph
+    # stores every actual (q_hat, x_hat) decision state separately afterwards.
     # D_e are decision estimates contained in Q_e, with implicit enable-all.
-    choices, D_e, boundaries = {}, set(), defaultdict(int)
+    choices, valid, D_e, boundaries = {}, {}, set(), defaultdict(int)
     W_D, D_seen = deque([x_hat_0]), {x_hat_0}
 
+    # Each future observation has its own complete decision estimate and window.
+    # BFS checks those continuations now; Controller.observe later selects the
+    # actual stored NX estimate and Controller.solve may rebuild from it.
     while W_D:
         x_hat = W_D.popleft()
         choices[x_hat] = []
+        valid[x_hat] = []
 
         if x_hat & Q_bad:
+            if x_hat == x_hat_0:
+                initial_window = x_hat_0
+
             continue
 
         if x_hat <= Q_e:
             D_e.add(x_hat)
 
             continue  # implicit gamma=Sigma, no UR/NX or O node expansion
+
+        x_L = decision_window(x_hat)
+
+        if x_hat == x_hat_0:
+            initial_window = x_L
 
         for gamma_c in _patterns(plant):
             check_budget(len(x_L))
@@ -428,81 +461,130 @@ def solve_limited_lookahead(pre: Preprocessing, estimate: Estimate | None=None,
             choice = limited_choice(plant, x_hat, gamma_c, x_L)
             tested += 1
             gamma = gamma_c | plant.uncontrollable
-
-            if choice.closure & Q_bad or any(
+            locally_bad = bool(choice.closure & Q_bad) or any(
                 not any(e in gamma for e, _ in plant.enabled(q)) for q in choice.closure
-            ):
-                continue
+            )
 
             # Certification is separate from local graph construction. Check
             # the real physical outcomes before promoting a local fragment to
             # an executable policy; clipping alone does not prove safety.
             actual = complete_choice(plant, x_hat, gamma_c)
-
-            if actual.closure & Q_bad or any(
+            actually_bad = bool(actual.closure & Q_bad) or any(
                 not any(e in gamma for e, _ in plant.enabled(q)) for q in actual.closure
-            ):
-                continue
+            )
 
-            if choice != actual:
+            if not locally_bad and not actually_bad and choice != actual:
                 boundaries[x_hat] += 1
 
-                continue
-
             choices[x_hat].append(choice)
+            valid[x_hat].append(not locally_bad and not actually_bad and choice == actual)
 
             for _, x_hat_next in choice.successors:
                 if x_hat_next not in D_seen:
                     D_seen.add(x_hat_next)
                     W_D.append(x_hat_next)
 
-    def prune(optimistic=False):
-        remaining = {x_hat: len(v) + (boundaries[x_hat] if optimistic else 0)
+    def prune_reverse(optimistic=False):
+        """Remove failed continuations backwards through predecessor patterns."""
+
+        pattern_count = {x_hat: sum(valid[x_hat]) + (boundaries[x_hat] if optimistic else 0)
                      for x_hat, v in choices.items()}
-        incoming = defaultdict(list)
+        predecessor_patterns = defaultdict(list)
 
         for x_hat, options in choices.items():
             for i, choice in enumerate(options):
-                for x_hat_next in {x_hat_next for _, x_hat_next in choice.successors}:
-                    incoming[x_hat_next].append((x_hat, i))
-
-        lost = {x_hat for x_hat, count in remaining.items() if not count and x_hat not in D_e}
-        work, removed = deque(sorted(lost, key=lambda x_hat: sorted(x_hat))), set()
-
-        while work:
-            x_hat_next = work.popleft()
-
-            for x_hat, i in incoming[x_hat_next]:
-                if (x_hat, i) in removed:
+                if not valid[x_hat][i]:
                     continue
 
-                removed.add((x_hat, i))
-                remaining[x_hat] -= 1
+                for x_hat_next in {x_hat_next for _, x_hat_next in choice.successors}:
+                    predecessor_patterns[x_hat_next].append((x_hat, i))
 
-                if not remaining[x_hat] and x_hat not in lost and x_hat not in D_e:
-                    lost.add(x_hat)
-                    work.append(x_hat)
+        I_hat_removed = {x_hat for x_hat, count in pattern_count.items() if not count and x_hat not in D_e}
+        W_reverse = deque(sorted(I_hat_removed, key=lambda x_hat: sorted(x_hat)))
+        removed_patterns = {(x_hat, i) for x_hat, flags in valid.items()
+                            for i, flag in enumerate(flags) if not flag}
 
-        return lost, removed
+        while W_reverse:
+            x_hat_next = W_reverse.popleft()
 
-    lost, removed = prune()
+            # Follow stored predecessor patterns backwards. A pattern losing
+            # any required observable successor is deleted once; its source
+            # decision estimate is queued only when no pattern remains.
+            for x_hat, i in predecessor_patterns[x_hat_next]:
+                if (x_hat, i) in removed_patterns:
+                    continue
+
+                removed_patterns.add((x_hat, i))
+                pattern_count[x_hat] -= 1
+
+                if not pattern_count[x_hat] and x_hat not in I_hat_removed and x_hat not in D_e:
+                    I_hat_removed.add(x_hat)
+                    W_reverse.append(x_hat)
+
+        return I_hat_removed, removed_patterns
+
+    lost, removed = prune_reverse()
     policy = {x_hat: tuple(c for i, c in enumerate(v) if (x_hat, i) not in removed)
               for x_hat, v in choices.items() if x_hat not in lost}
     # Safe terminals have a compact implicit all-events policy. The helper below
     # computes complete observable updates only when execution needs them.
     status = 'winning' if x_hat_0 not in lost else (
-        'inconclusive' if x_hat_0 not in prune(True)[0] else 'losing')
-    observation_nodes = {(c.closure, c.pattern) for v in choices.values() for c in v}
-    edges = {(x_hat, c.closure, c.pattern) for x_hat, v in choices.items() for c in v}
-    obs_edges = {(c.closure, c.pattern, e, x_hat_next)
-                 for v in choices.values() for c in v for e, x_hat_next in c.successors}
-    result = Bipartitle_System(status, x_hat_0, None if full else u, x_L, policy,
-                             frozenset(D_e), len(choices), len(observation_nodes),
-                             len(edges) + len(obs_edges), sum(boundaries.values()),
+        'inconclusive' if x_hat_0 not in prune_reverse(True)[0] else 'losing')
+    result = Bipartitle_System(status, x_hat_0, None if full else u, initial_window, policy,
+                             frozenset(D_e), 0, 0,
+                             0, sum(boundaries.values()),
                              perf_counter() - started, plant.controllable,
                              {x_hat: tuple(v) for x_hat, v in choices.items()})
+    result.patterns_tested = tested
+    attach_pair_graph(result, analysis_state=analysis_state, record_steps=record_steps)
+    result.seconds = perf_counter() - started
 
     return result
+
+
+def solve_minimum_lookahead(pre: Preprocessing, estimate: Estimate | None=None,
+                            *, lower_bound: int | None=None,
+                            max_horizon: int | None=None,
+                            timeout_seconds: float | None=None) -> Bipartitle_System:
+    """Find the first decisive u >= the requested lookahead lower bound.
+
+    Algorithm 1 is called once by the caller to obtain pre. By default the
+    scan starts at max(1, pre.lookahead_lower_bound), the Q_f union Q_d
+    threshold bar_u. Passing lower_bound=1 searches all positive horizons.
+    Each attempt recenters windows at decision estimates and reverse-prunes;
+    a losing result proves no supervisor exists, while winning supplies one.
+    This does not search for the minimum u matching offline maximal patterns.
+    The returned seconds includes all attempts, with graph counts describing
+    only the final attempt. The timeout applies to the entire scan.
+    """
+
+    started = perf_counter()
+    u_lower = max(1, pre.lookahead_lower_bound) if lower_bound is None else lower_bound
+    u_upper = max(u_lower, len(pre.plant.states) - 1) if max_horizon is None else max_horizon
+
+    if not isinstance(u_lower, int) or not isinstance(u_upper, int) or u_lower < 1 or u_upper < u_lower:
+        raise ValueError('require positive integer bounds with 1 <= lower_bound <= max_horizon')
+
+    trials = []
+
+    for u in range(u_lower, u_upper + 1):
+        remaining_seconds = None if timeout_seconds is None else timeout_seconds - (perf_counter() - started)
+
+        if remaining_seconds is not None and remaining_seconds <= 0:
+            from des_core.offline_bts import BTSBudgetExceeded
+
+            raise BTSBudgetExceeded('time budget exceeded', seconds=perf_counter() - started,
+                                    patterns_tested=0, window_states=0, complete=False)
+
+        result = solve_limited_lookahead(pre, estimate, u, timeout_seconds=remaining_seconds)
+        trials.append(dict(u=u, status=result.status, seconds=result.seconds,
+                           D=result.decision_count, O=result.observation_count,
+                           patterns_tested=result.patterns_tested))
+
+        if result.status != 'inconclusive':
+            break
+
+    return replace(result, seconds=perf_counter() - started, horizon_trials=trials)
 
 
 def executable_choices(pre: Preprocessing, result: Bipartitle_System,
@@ -530,25 +612,57 @@ def solve_offline(plant: DFA, estimate: Estimate | None=None) -> Bipartitle_Syst
 class Limited_Lookahead_Controller:
     """Re-solve with complete beliefs; retain a proved continuation as fallback.
 
-    Receding fixed windows need not retain the previous proof's whole graph.
-    A fresh inconclusive solve must not discard an already certified policy.
+    Every planned observable successor already has a checked continuation
+    under its own recentered window. A fresh incomplete solve must not discard
+    an already checked policy covering the complete updated estimate.
     The stored proof is query-local controller memory, not a synthesis cache.
+    Set minimum_horizon=True to choose the first decisive initial u >= max(1, pre.u_f)
+    before continuing the usual fixed-u observation loop. Explicit horizon
+    values become the lower bound of that optional initial scan; otherwise
+    the existing default and fixed-horizon execution are unchanged.
     """
 
-    def __init__(self, pre: Preprocessing, horizon: int | None=None):
+    def __init__(self, pre: Preprocessing, horizon: int | None=None,
+                 *, minimum_horizon: bool=False):
         self.pre = pre
-        self.horizon = pre.u if horizon is None else horizon
+        self.horizon = max(1, pre.lookahead_lower_bound) if horizon is None else horizon
+
+        if not isinstance(self.horizon, int) or self.horizon < 1:
+            raise ValueError('lookahead horizon must be a positive integer')
+
         self.estimate = frozenset({pre.plant.initial})
         self.proof = None
+        self._minimum_horizon = minimum_horizon
+        self._u_lower = max(1, pre.lookahead_lower_bound) if horizon is None else horizon
 
     def solve(self):
-        fresh = solve_limited_lookahead(self.pre, self.estimate, self.horizon)
+        """One outer-loop iteration; reuse preprocessing across observations."""
+
+        if self._minimum_horizon:
+            fresh = solve_minimum_lookahead(self.pre, self.estimate, lower_bound=self._u_lower)
+            self.horizon = fresh.horizon
+            self._minimum_horizon = False
+        else:
+            fresh = solve_limited_lookahead(self.pre, self.estimate, self.horizon)
+
         fallback = False
 
         if fresh.status == 'winning':
             self.proof = fresh
         elif self.proof is not None and executable_choices(self.pre, self.proof, self.estimate):
             self.proof = replace(self.proof, initial=self.estimate)
+            window = set(self.estimate)
+            frontier = set(self.estimate)
+
+            for _ in range(self.proof.horizon):
+                frontier = {target for q in frontier for _, target in self.pre.plant.enabled(q)} - window
+                window.update(frontier)
+
+                if not frontier:
+                    break
+
+            self.proof.window = frozenset(window)
+            attach_pair_graph(self.proof)
             fallback = True
         else:
             return fresh, fresh, False
@@ -556,6 +670,13 @@ class Limited_Lookahead_Controller:
         return self.proof, fresh, fallback
 
     def observe(self, pattern: Pattern, event: str):
+        """Select the stored complete NX successor for the actual observation.
+
+        BFS already computed every possible observable outcome in choice.
+        Execution selects one of those estimates without repeating UR/NX;
+        only the next solve recenters x_L around that complete estimate.
+        """
+
         if self.proof is None:
             raise ValueError('solve before executing a control')
 

@@ -23,6 +23,7 @@ from des_core.closed_loop import build_closed_loop, restore_certified_result
 from draw_closed_loops import export_graph
 from graph_size_metrics import graph_size_metrics, aggregate_graph_sizes
 from comparison_averages import comparison_averages, decision_metrics
+from des_core.resource_monitor import process_snapshot, interval_usage
 
 ROOT = Path('outputs/expanded_yin_benchmark')
 
@@ -40,19 +41,28 @@ def offline_context(plant):
         frozenset(), frozenset(), frozenset(), 0, 0, 0, 0.)
 
 
-def execute_online(plant, u):
+def execute_online(plant, u, *, resources=True):
+    before = process_snapshot() if resources else None
     start = perf_counter();pre = preprocess(plant, max_path_visits=2_000_000)
     pre_seconds = perf_counter()-start
     start = perf_counter();result = solve_limited_lookahead(pre, horizon=u);patterns = result.maximal_patterns
     online_seconds = perf_counter()-start
 
+    if resources:
+        result.resource_statistics = interval_usage(before, process_snapshot())
+
     return pre, result, patterns, pre_seconds, online_seconds
 
 
-def execute_offline(plant):
+def execute_offline(plant, *, resources=True):
+    before = process_snapshot() if resources else None
     start = perf_counter();result = solve_offline(plant);patterns = result.maximal_patterns
+    elapsed = perf_counter()-start
 
-    return result, patterns, perf_counter()-start
+    if resources:
+        result.resource_statistics = interval_usage(before, process_snapshot())
+
+    return result, patterns, elapsed
 
 
 def allocation_peak(call):
@@ -75,7 +85,7 @@ def storage(result):
                                       for cs in result.constructed_choices.values() for c in cs),
         estimate_memberships=sum(map(len, result.constructed_choices))+sum(len(x) for x, p in observations),
         pattern_memberships=sum(len(p) for x, p in observations),
-        retained_D=len(result.policy),
+        retained_D=len(result.decision_policy),
         retained_O=len({(c.closure, c.pattern) for cs in result.policy.values() for c in cs}))
 
 
@@ -126,26 +136,31 @@ def main():
         # Neither solver has a result cache. Rendering/export/validation excluded.
         for q in plant.states:plant.enabled(q)
 
-        u = json.loads((folder/'preprocessing.json').read_text(encoding='utf-8'))['selected_u']
+        u = max(1, json.loads((folder/'preprocessing.json').read_text(encoding='utf-8'))['selected_u'])
         pre, online, patterns, _, _ = execute_online(plant, u)
         offline, off_patterns, _ = execute_offline(plant)
         assert (online.status, set(patterns)) == (offline.status, set(off_patterns)), name
         validate_policy(pre, online)
         off_pre = offline_context(plant);validate_policy(off_pre, offline)
         on_samples = [];pre_samples = [];off_samples = []
+        resource_samples = {'online': [], 'offline': []}
 
         for repeat in range(args.repetitions):
             if repeat%2:
-                _, _, _, pt, ot = execute_online(plant, u)
-                off_samples.append(execute_offline(plant)[2])
+                _, timed_on, _, pt, ot = execute_online(plant, u)
+                timed_off, _, elapsed = execute_offline(plant)
+                off_samples.append(elapsed)
             else:
-                off_samples.append(execute_offline(plant)[2])
-                _, _, _, pt, ot = execute_online(plant, u)
+                timed_off, _, elapsed = execute_offline(plant)
+                off_samples.append(elapsed)
+                _, timed_on, _, pt, ot = execute_online(plant, u)
 
             on_samples.append(ot);pre_samples.append(pt)
+            resource_samples['online'].append(timed_on.resource_statistics)
+            resource_samples['offline'].append(timed_off.resource_statistics)
 
-        _, on_peak = allocation_peak(lambda:execute_online(plant, u))
-        _, off_peak = allocation_peak(lambda:execute_offline(plant))
+        _, on_peak = allocation_peak(lambda:execute_online(plant, u, resources=False))
+        _, off_peak = allocation_peak(lambda:execute_offline(plant, resources=False))
         totals = [a+b for a, b in zip(pre_samples, on_samples)]
         on_stats = storage(online);off_stats = storage(offline)
         row = dict(name=name, status=online.status, u=u, states=len(plant.states),
@@ -168,6 +183,7 @@ def main():
         else:rows.append(row)
 
         details = dict(**row, repetitions=args.repetitions, online_storage=on_stats, offline_storage=off_stats,
+            resource_samples=resource_samples,
             samples=dict(pre_seconds=pre_samples, online_seconds=on_samples, offline_seconds=off_samples),
             timing_scope='Fresh solve plus root maximal-pattern filtering. Online total includes preprocessing. '
                          'Same warmed immutable input index; no synthesis cache; alternating order; no rendering/validation.',
@@ -177,8 +193,7 @@ def main():
                      'including unsafe branches, then count-prune. No horizon/Qf/Qe certificates.')
         dump(folder/'online_offline_comparison.json', details)
         baseline = folder/'offline';baseline.mkdir(exist_ok=True)
-        export_bts(off_pre, offline, baseline, structure='BTS',
-                   draw=offline.decision_count+offline.observation_count <= 65)
+        export_bts(off_pre, offline, baseline, structure='BTS', draw=True)
         saved = json.loads((baseline/'bts.json').read_text(encoding='utf-8'))
         restored = restore_certified_result(off_pre, saved)
         graph = build_closed_loop(off_pre, restored)

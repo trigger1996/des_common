@@ -7,7 +7,7 @@ of a control experiment in the source paper.
 """
 
 from des_core.automata import DESExample
-from examples.yin2016 import _dfa
+from examples.tac2016_uniform import _dfa
 
 
 def build_yin_extended_examples():

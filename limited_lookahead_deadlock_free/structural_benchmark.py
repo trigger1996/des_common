@@ -32,7 +32,7 @@ def main():
         offline = solve_offline(example.dfa);validate_policy(pre, offline)
         sweep = [];started = perf_counter()
 
-        for u in range(len(example.dfa.states)):
+        for u in range(1, max(2, len(example.dfa.states))):
             result = solve_limited_lookahead(pre, horizon=u);validate_policy(pre, result)
 
             if result.status != 'inconclusive':assert result.status == offline.status

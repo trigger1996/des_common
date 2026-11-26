@@ -41,7 +41,7 @@ def main():
         sweep, decisive, matching = [], None, None
         started = perf_counter()
 
-        for u in range(len(plant.states)):
+        for u in range(1, max(2, len(plant.states))):
             result = solve_limited_lookahead(pre, horizon=u)
             validate_policy(pre, result)
 
@@ -88,7 +88,7 @@ def main():
                    draw=not args.no_plots and offline.decision_count+offline.observation_count <= 65,
                    structure='BTS')
         traces[example.name] = trajectory(pre, selected, steps=20)
-        pdfname = ('16TACuniform.pdf' if example.name.startswith('yin2016_') else
+        pdfname = ('16TACuniform.pdf' if example.name.startswith('16TACuniform_') else
                    example.source_name.split('.pdf')[0]+'.pdf')
         pdf = Path('__ref/yin2016')/pdfname
         assert pdf.exists(), pdf

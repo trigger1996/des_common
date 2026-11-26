@@ -20,6 +20,7 @@ from compare_online_offline import storage
 from des_core.certified_lookahead import preprocess, solve_limited_lookahead, validate_policy
 from des_core.offline_bts import construct_offline_bts, BTSBudgetExceeded
 from graph_size_metrics import graph_size_metrics, aggregate_graph_sizes
+from des_core.resource_monitor import process_snapshot, interval_usage
 
 ROOT = Path('outputs/expanded_yin_benchmark/randomized_comparison')
 
@@ -29,7 +30,7 @@ def online(plant, *, seconds=1.):
     attempts = []
 
     # This rule consults only the online status, never the offline result.
-    for u in range(pre.horizon, len(plant.states)):
+    for u in range(max(1, pre.horizon), max(2, pre.horizon + 1, len(plant.states))):
         remaining = seconds-(perf_counter()-start)
 
         if remaining <= 0:raise RuntimeError('online total time budget exceeded')
@@ -225,18 +226,21 @@ def main():
 
         row = dict(index=index, stratum=index%3, states=len(p.states), transitions=len(p.transitions), complete=False)
         samples = {'online':[], 'offline':[]};error = None;results = {}
+        resource_samples = {'online': [], 'offline': []}
 
         for repeat in range(args.repetitions):
             for mode in (('online', 'offline') if (index+repeat)%2 else ('offline', 'online')):
                 try:
+                    before = process_snapshot()
                     value = online(p) if mode == 'online' else offline(p)
+                    resource_samples[mode].append(interval_usage(before, process_snapshot()))
                     results[mode] = value;samples[mode].append(value[2])
                 except (RuntimeError, BTSBudgetExceeded) as exc:
                     error = dict(mode=mode, repeat=repeat, reason=str(exc));break
 
             if error:break
 
-        row.update(samples_seconds=samples, error=error)
+        row.update(samples_seconds=samples, error=error, resource_samples=resource_samples)
 
         if not error:
             on, off = results['online'], results['offline']

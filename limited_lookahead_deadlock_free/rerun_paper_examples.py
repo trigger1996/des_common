@@ -59,7 +59,7 @@ def small_case(example, u):
     same_patterns = set(r.maximal_patterns) == set(off.maximal_patterns)
     sweep = []
 
-    for depth in range(len(example.dfa.states)):
+    for depth in range(1, max(2, len(example.dfa.states))):
         checked = solve_limited_lookahead(pre, horizon=depth);validate_policy(pre, checked)
         sweep.append(dict(u=depth, status=checked.status, same_offline_root_patterns=
             (checked.status, set(checked.maximal_patterns)) == (off.status, set(off.maximal_patterns))))

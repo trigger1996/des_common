@@ -156,7 +156,7 @@ This file is project-local shared context for Codex sessions.
   `build_yin_literature_examples(amended=False)` retains all 61 original transcriptions.
 - Original per-model data/images saved as plant_original.json/png; user requests,
   removals and deferred conflict in outputs/expanded_yin_benchmark/review_modifications.json.
-- Removed original duplicates: yin2016_fig_1b, 17TAC-Range_fig_2c, 24TACopa_fig_1b;
+- Removed original duplicates: 16TACuniform_fig_1b, 17TAC-Range_fig_2c, 24TACopa_fig_1b;
   archived under tmp/user_review_revision_20261121/removed_examples.
 - Gprime correction: user explicitly changed requested loops at 6,6' from c1 to c2;
   applied and recalculated (winning,u=3). Only deferred conflict: 20CDC2_fig_2b

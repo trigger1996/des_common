@@ -4,6 +4,7 @@ import unittest
 
 from des_core.automata import DFA
 from des_core.certified_lookahead import preprocess, solve_limited_lookahead, validate_policy, Limited_Lookahead_Controller
+from des_core.certified_lookahead import solve_minimum_lookahead
 from examples.yin_literature import build_yin_literature_examples
 
 
@@ -84,7 +85,7 @@ class CertifiedTests(unittest.TestCase):
         p = dfa({('0', 'a'):'1', ('0', 'b'):'2', ('2', 'b'):'1', ('1', 'a'):'3',
                  ('3', 'a'):'4', ('1', 'b'):'0'}, states=set('01234'))
         pre = preprocess(p)
-        self.assertEqual(pre.risk_horizon, 3)  # 0 -> 2 -> 1 -> 3, Q_f={3}
+        self.assertEqual(pre.risk_horizon, 4)  # 0 -> 2 -> 1 -> 3 -> 4 in Q_d.
 
         with self.assertRaises(RuntimeError):
             preprocess(p, max_path_visits=0)
@@ -96,14 +97,88 @@ class CertifiedTests(unittest.TestCase):
         r = solve_limited_lookahead(pre, full=True, certificates=False)
         self.assertNotIn(frozenset(), [c.pattern for c in r.policy[r.initial]])
 
-    def test_u_is_not_a_solvability_guarantee(self):
-        p = dfa({('0', 'o'):'1', ('1', 'a'):'1', ('1', 'b'):'2'}, ('b',), ('o', 'a', 'b'))
+    def test_observable_chain_recenters_before_expanding_each_successor(self):
+        p = dfa({('0', 'o'):'1', ('1', 'o'):'2', ('2', 'a'):'2', ('2', 'b'):'3'},
+                ('b',), ('o', 'a', 'b'))
         pre = preprocess(p)
+        self.assertEqual(pre.Q_f, frozenset())
+        self.assertEqual(pre.Q_d, {'3'})
         self.assertEqual(pre.horizon, 0)
-        self.assertEqual(solve_limited_lookahead(pre).status, 'inconclusive')
-        r = solve_limited_lookahead(pre, horizon=1)
+        self.assertEqual(solve_limited_lookahead(pre).status, 'winning')
+        r = solve_limited_lookahead(pre, horizon=2)
         self.assertEqual(r.status, 'winning')
         validate_policy(pre, r)
+
+    def test_online_horizon_must_be_positive_even_for_safe_initial_states(self):
+        pre = preprocess(dfa({('0', 'a'):'0'}, ('a',)))
+        self.assertEqual(solve_limited_lookahead(pre).horizon, 1)
+
+        for u in (0, -1, 0.5):
+            with self.assertRaises(ValueError):
+                solve_limited_lookahead(pre, horizon=u)
+
+            with self.assertRaises(ValueError):
+                Limited_Lookahead_Controller(pre, horizon=u)
+
+        with self.assertRaises(ValueError):
+            solve_minimum_lookahead(pre, lower_bound=0)
+
+    def test_deadlock_detection_bound_does_not_replace_complete_hidden_reach_check(self):
+        p = dfa({('0', 'h'):'1', ('1', 'h'):'2', ('2', 'h'):'0',
+                 ('0', 'b'):'3'}, ('b',), ('b',))
+        pre = preprocess(p)
+        self.assertFalse(pre.Q_f)
+        self.assertEqual(pre.lookahead_lower_bound, 0)
+        self.assertEqual(solve_limited_lookahead(pre, horizon=1).status, 'inconclusive')
+        result = solve_minimum_lookahead(pre)
+        self.assertEqual((result.status, result.horizon), ('winning', 2))
+        validate_policy(pre, result)
+
+    def test_empty_failure_set_still_rejects_direct_deadlock(self):
+        p = dfa({('0', 'a'):'0', ('0', 'o'):'1'}, observed=('a', 'o'))
+        pre = preprocess(p)
+        self.assertEqual(pre.Q_f, frozenset())
+        self.assertEqual(pre.Q_d, {'1'})
+        self.assertEqual(pre.u_f, 0)
+        result = solve_limited_lookahead(pre, horizon=1)
+        self.assertEqual(result.status, 'losing')
+        self.assertNotIn(result.initial, result.policy)
+
+    def test_minimum_lookahead_checks_complete_continuation(self):
+        p = dfa({('0', 'o'):'1', ('1', 'o'):'2', ('2', 'a'):'2', ('2', 'b'):'3'},
+                ('b',), ('o', 'a', 'b'))
+        pre = preprocess(p)
+        self.assertEqual(pre.u_f, 0)
+        result = solve_minimum_lookahead(pre)
+        self.assertEqual((result.status, result.horizon), ('winning', 1))
+        validate_policy(pre, result)
+        limited = solve_minimum_lookahead(pre, max_horizon=1)
+        self.assertEqual(limited.status, 'winning')
+
+        with self.assertRaises(ValueError):
+            solve_minimum_lookahead(pre, lower_bound=2, max_horizon=1)
+
+    def test_minimum_lookahead_proved_losing_and_threshold(self):
+        p = dfa({('0', 'a'):'1', ('1', 'a'):'2', ('2', 'a'):'3'})
+        pre = preprocess(p)
+        self.assertEqual(pre.lookahead_lower_bound, 3)
+        bounded = solve_minimum_lookahead(pre)
+        unrestricted = solve_minimum_lookahead(pre, lower_bound=1)
+        self.assertEqual((bounded.status, bounded.horizon), ('losing', 3))
+        self.assertEqual((unrestricted.status, unrestricted.horizon), ('losing', 1))
+
+    def test_controller_minimum_horizon_rebuilds_after_observation(self):
+        p = dfa({('0', 'o'):'1', ('1', 'a'):'1', ('1', 'b'):'2'}, ('b',), ('o', 'a', 'b'))
+        controller = Limited_Lookahead_Controller(preprocess(p), minimum_horizon=True)
+        proof, fresh, fallback = controller.solve()
+        self.assertEqual((proof.status, controller.horizon, fallback), ('winning', 1, False))
+        pattern = proof.maximal_patterns[-1]
+        controller.observe(pattern, 'o')
+        self.assertEqual(controller.estimate, {'1'})
+        proof, fresh, fallback = controller.solve()
+        self.assertEqual(proof.initial, {'1'})
+        self.assertEqual(proof.window, {'1', '2'})
+        validate_policy(controller.pre, proof)
 
     def test_complete_belief_not_selected_actual_successor(self):
         p = dfa({('0', 'h'):'1', ('0', 'o'):'2', ('1', 'o'):'3',
@@ -131,7 +206,7 @@ class CertifiedTests(unittest.TestCase):
             event, _ = choice.successors[k%len(choice.successors)]
             controller.observe(pattern, event)
 
-        self.assertGreater(fallbacks, 0)
+        self.assertEqual(fallbacks, 0)
 
     def test_paper_models_and_transcription(self):
         es = build_yin_literature_examples(amended=False)
@@ -166,14 +241,22 @@ class CertifiedTests(unittest.TestCase):
                 self.assertEqual(set(r.maximal_patterns), maximal, (i, certs))
                 validate_policy(pre, r)
 
-            for u in range(len(states)):
+            sweep = []
+
+            for u in range(1, max(2, len(states))):
                 r = solve_limited_lookahead(pre, horizon=u)
+                sweep.append(r)
 
                 if r.status == 'winning':
                     self.assertTrue(expected, i)
                     validate_policy(pre, r)
                 elif r.status == 'losing':
                     self.assertFalse(expected, i)
+
+            minimum = solve_minimum_lookahead(pre, lower_bound=1)
+            first = next(r for r in sweep if r.status != 'inconclusive')
+            self.assertEqual((minimum.horizon, minimum.status, minimum.maximal_patterns),
+                             (first.horizon, first.status, first.maximal_patterns), i)
 
 
 if __name__ == '__main__':

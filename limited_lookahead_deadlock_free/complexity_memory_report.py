@@ -14,7 +14,7 @@ def cost_model(n, m, c, s, D, O, E, A, H, B, R, path_visits=0, hidden_indegree=0
     # All coefficients equal one in this ABSTRACT operation/reference-slot
     # model. These values are not runtime predictions or CPython byte bounds.
     pre = n+m+s+(path_visits+1)*(hidden_indegree+1) if online else 0
-    window = n+m+s if online else 0
+    window = D*(n+m+s) if online else 0
     urnx = B*(n+m+s)
     pruning = prune_passes*(D+A+H)
     root_filter = R*R*(c+1)
@@ -78,7 +78,7 @@ def methodology(root):
         'V最坏可呈阶乘级；不能由窗口较小就推导online总时间在所有系统上更低。',
         '**理论值如何代入：** 报告给每例实际n,m,c,s,D,O,E,A,H,B,R,V，代入上述各项。'
         '在系数统一取1、忽略排序及集合表示开销的抽象模型中，定义W=B(n+m+s)+k(D+A+H)+R²(c+1)+C_pre_proxy+C_window；'
-        '其中online的C_pre_proxy=n+m+s+(V+1)(d_h+1)，C_window=n+m+s；offline两项为0，k为剪枝轮数。'
+        '其中online的C_pre_proxy=n+m+s+(V+1)(d_h+1)，C_window=D(n+m+s)，逐决策估计重新建窗；offline两项为0，k为剪枝轮数。'
         'W是工作量代理，不是操作指令数、毫秒或完整Big-O的精确值，也不用于替代实测节约率。',
         f'例如15ACCopac_fig_1：n={on["n"]},m={on["m"]},c={on["c"]},s={on["s"]},P={on["P"]}；'
         f'BTS D/O={off["D"]}/{off["O"]}、N={off["D"]+off["O"]}，LL-BTS D/O={on["D"]}/{on["O"]}、N={on["D"]+on["O"]}；'

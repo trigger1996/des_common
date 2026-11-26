@@ -4,6 +4,7 @@ from collections import deque
 
 from des_core.certified_lookahead import (Choice, Bipartitle_System, complete_choice,
                                          executable_choices, validate_policy)
+from des_core.bipartite_graph import attach_pair_graph
 
 
 def restore_certified_result(pre, bts):
@@ -13,6 +14,14 @@ def restore_certified_result(pre, bts):
         return frozenset(tuple(value) if isinstance(value, list) else value for value in values)
 
     estimates = {n['id']:decode_estimate(n['estimate']) for n in bts['D']}
+    pair_ids = {}
+
+    if bts.get('schema_version', 1) >= 2:
+        assert all('q_hat' in n for n in bts['D'])
+        pair_ids = {(tuple(n['q_hat']) if isinstance(n['q_hat'], list) else n['q_hat'],
+                     estimates[n['id']]): n['id'] for n in bts['D']}
+        assert len(pair_ids) == len(bts['D'])
+
     observation = {n['id']:n for n in bts['O']}
     edges = {tuple(e) for e in bts['edges']}
     retained = {tuple(e) for e in bts['policy_edges']}
@@ -33,16 +42,28 @@ def restore_certified_result(pre, bts):
             obs = observation[target]
             pattern = frozenset(obs['pattern_controllable'])
             assert frozenset(obs['pattern_full']) == pattern|pre.plant.uncontrollable
-            successors = tuple(sorted((event, estimates[dest]) for src, dest, event in edges if src == target))
+            source_edges = retained if (source, target, label) in retained else edges
+            successors = tuple(sorted({(event, estimates[dest]) for src, dest, event in source_edges if src == target}))
             choice = Choice(pattern, decode_estimate(obs['estimate']), successors)
-            assert choice == complete_choice(pre.plant, estimate, pattern)
             options.append(choice)
 
-            if (source, target, label) in retained:kept.append(choice)
+            if (source, target, label) in retained:
+                assert choice == complete_choice(pre.plant, estimate, pattern)
+
+                if pair_ids:
+                    for event, successor in choice.successors:
+                        expected = {pair_ids[q, successor] for q in successor}
+                        actual = {dest for src, dest, observed in retained if src == target and observed == event}
+                        assert actual == expected, ('missing concrete decision successor', event)
+
+                kept.append(choice)
 
         constructed[estimate] = tuple(options)
 
         if node['retained']:
+            if estimate in policy:
+                assert policy[estimate] == tuple(kept), 'same estimate must use the same retained modes'
+
             policy[estimate] = tuple(kept)
 
     result = Bipartitle_System(status=bts['status'], initial=estimates[bts['initial']],
@@ -52,6 +73,8 @@ def restore_certified_result(pre, bts):
         boundary_choices=bts['boundary_choices'], seconds=0.,
         all_controllable=pre.plant.controllable, constructed_choices=constructed)
     assert {frozenset(p) for p in bts['maximal_root_patterns']} == set(result.maximal_patterns)
+    q_hat = bts['D'][next(i for i, n in enumerate(bts['D']) if n['id'] == bts['initial'])].get('q_hat')
+    attach_pair_graph(result, analysis_state=tuple(q_hat) if isinstance(q_hat, list) else q_hat)
     validate_policy(pre, result)
 
     return result

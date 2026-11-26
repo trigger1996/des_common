@@ -1,7 +1,7 @@
 """User-requested synthetic topologies, kept separate from literature models."""
 
 from des_core.automata import DESExample
-from examples.yin2016 import _dfa
+from examples.tac2016_uniform import _dfa
 
 
 def build_structural_examples():

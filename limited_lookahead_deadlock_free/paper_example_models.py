@@ -13,9 +13,65 @@ def relabel(example, source, old_event, new_event, target, name):
     return replace(example, name=name, dfa=DFA(p.states, p.initial, p.events, p.controllable, p.observable, edges))
 
 
-def paper_small_figure():
+def paper_small_figure_original():
     # Read directly from Figs/dfa_example_2.pdf: q10 --o2--> q6.
     return relabel(build_nested_cycle_deadlock_example(), 'q_10', 'o1', 'o2', 'q_6', 'paper_small_figure')
+
+
+def paper_small_figure_r1():
+    """Page 9 of on-the-fly_nb_case.R1.pdf: only add q14-a-q15-b-q16."""
+
+    example = paper_small_figure_original()
+    plant = example.dfa
+    transitions = dict(plant.transitions)
+    transitions['q_14', 'a'] = 'q_15'
+    transitions['q_15', 'b'] = 'q_16'
+    states = plant.states | frozenset({'q_15', 'q_16'})
+    layout = {f'q_{i}': position for i, position in {
+        0: (0., 2.), 1: (2., 2.), 2: (4., 2.), 3: (6., 2.),
+        4: (2., 0.), 5: (4., 0.), 11: (6., 0.), 6: (8., 0.),
+        7: (10., 0.), 12: (12., 0.), 16: (0., 0.),
+        15: (0., -2.), 14: (2., -2.), 8: (4., -2.),
+        9: (6., -2.), 10: (8., -2.), 13: (10., -2.)}.items()}
+
+    return replace(example, name='paper_fig1_r1',
+        dfa=DFA(states, plant.initial, plant.events, plant.controllable, plant.observable, transitions),
+        layout=layout,
+        description='Original paper DFA with q14--a-->q15--b-->q16; all other transitions unchanged.')
+
+
+def paper_small_figure_hidden_chain_archive():
+    """Extend q7--b-->q12 by four hidden failure-chain states.
+
+    The original cycles and event partitions are preserved. The observable
+    entry q6 reaches the last failure state q18 in five hidden transitions,
+    making Qf nonempty. Covering Qf union Qd includes q12 one step later,
+    so the structural threshold is six under the revised definition.
+    """
+
+    example = paper_small_figure_original()
+    plant = example.dfa
+    transitions = dict(plant.transitions)
+    transitions['q_7', 'b'] = 'q_15'
+
+    for index in range(15, 18):
+        transitions[f'q_{index}', 'u'] = f'q_{index + 1}'
+
+    transitions['q_18', 'u'] = 'q_12'
+    states = plant.states | frozenset(f'q_{index}' for index in range(15, 19))
+    layout = dict(example.layout)
+    layout.update({f'q_{index}': (10. + 2. * (index - 15), 1.8) for index in range(15, 19)})
+    layout['q_12'] = (16., -.8)
+
+    return replace(example, dfa=DFA(states, plant.initial, plant.events,
+        plant.controllable, plant.observable, transitions), layout=layout,
+        description=example.description + ' Four hidden failure-chain states subdivide q7--b-->q12.')
+
+
+def paper_small_figure():
+    """Current Fig.1, matching reference page 9 and its q14-a-q15-b-q16 addition."""
+
+    return paper_small_figure_r1()
 
 
 def archived_component_figure():
@@ -24,16 +80,25 @@ def archived_component_figure():
 
 
 def u5_u6_annotation():
-    """Shared clarification for the result document and paper-rerun report."""
+    """Compatibility entry point for the revised window/threshold explanation."""
 
     return '\n'.join([
-        '### u=5的安全性、固定窗口与滚动重规划', '',
-        '**u=5已经能保证该例子在已认证supervisor下deadlock-free。** 当前策略初始允许{a,o2}、禁用b，完整可达闭环有6个状态、7条边，逐个状态均有允许出边。保证来自这个模型和这套认证策略，不能只凭u=5就认为任意控制选择都安全。', '',
-        '**u=6进一步恢复offline初始极大模式。** 在从q0开始的一次固定窗口求解中，u=5保守地排除初始允许b的模式；u=6恢复{a,b,o2}。这是宽松程度的差异，并不是u=5闭环有死锁。', '',
-        '若假设初始允许b，可能出现路径：', '',
-        '`q0 ─a→ q1 ─a→ q2 ─b→ q4 ─o1→ q8 ─u→ q9 ─a→ q10`', '',
-        'q10距最初q0是6步，超出以q0构建的u=5窗口。这解释了当前单次固定窗口认证为何保守排除b。该路径不属于初始已经禁用b的u=5认证策略。', '',
-        '**观察后要更新完整估计并重新求UR。** 在上述假设允许b的分支中，第一次观察到o1可能来自q3→q6、q4→q8或q5→q11，因此NX后的估计是{q6,q8,q11}，不能只凭o1确定实际为q8。',
-        '随后选择新的控制模式：允许a、禁用b和o2，再求UR，得到{q6,q7,q8,q9,q10,q11}。若以这个新估计重新建立u=5窗口，q10已经位于窗口内；实际重新调用求解器得到winning。', '',
-        '**两种调用必须区分：** solve_limited_lookahead的一次调用仅从传入的初始估计建一次窗口，同次调用中排队的后续决策估计共享该窗口。观察后再次调用求解器，才会以更新的完整估计重新建窗；Limited_Lookahead_Controller执行时采用后一种更新方式并保留认证延续。',
-        '因此，“u=6才恢复offline初始极大模式”只描述当前从q0开始的单次固定窗口求解结果，不能推断滚动重规划也必须使用u=6。后续一次winning也不能单独替代跨步策略的完整安全认证。', ''])
+        '### 前视阈值、观察后重新建窗与无死锁保证', '',
+        '当前实现从Q_f并Q_d执行反向DFS求检测阈值，并在每个完整决策估计处重新建窗。'
+        'Q_f仍只包含非死锁的单后继链状态，不将Q_d混入Q_f。', '',
+        '原始15状态系统的Q_f为空，但Q_d非空，新阈值bar_u=4；u=4返回winning。'
+        '初始选择允许{a,o2}、禁用b，UR={q0,q1,q2,q3}，观察o1后NX={q6}，'
+        '随后从{q6}重新建窗，保留q6-a-q7-u-q6的安全循环。', '',
+        '当前Fig.1按参考PDF第9页只增加q14-a-q15-b-q16，共17状态，Q_f={q14,q15}，'
+        'bar_u=4；u=4得到六状态七转移的无死锁闭环，u=5恢复Full根极大模式。', '',
+        '历史四状态长链的19状态版本得到bar_u=6：'
+        'q6-a-q7-b-q15-u-q16-u-q17-u-q18-u-q12共六步。'
+        '该版本u=4已可得到安全但较保守的初始模式{a,o2}，'
+        'u=5恢复offline初始极大模式{a,b,o2}；该历史版本默认从bar_u开始时采用u=6。', '',
+        '旧实现所有内部后继共用初始窗口，因此曾记录u=5/6的差异；'
+        '这些旧数值不能继续描述重新建窗后的实现。'
+        '当前每个保留模式都通过完整UR/NX、逐状态活性及后继一致性检查，'
+        '不是先执行模式、再假定下一次重新求解必然成功。', '',
+        'bar_u是危险状态检测的充分阈值，不单独等于最小成功前视，也不单独证明综合可解。'
+        '即使覆盖Q_f并Q_d，安全不可观测环的完整UR仍可能需要更大的窗口；'
+        '程序在尚不能建立完整延续时返回inconclusive并增大实际u。', ''])

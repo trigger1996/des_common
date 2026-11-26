@@ -1,5 +1,29 @@
 # 每一个例子如何运行
 
+仓储 2018 独立复现：`python -X utf8 warehouse_2018_case_study.py --part all`。
+PyCharm：`Warehouse_2018_Case_Study`；输入及假设见 `examples/warehouse_2018/README.md`。
+核查公开控制动作、68 状态数、101/108 差异、全观测对照与后续重规划失败，不能只比根耗时。
+
+全部成对状态实验：`python -X utf8 rerun_all_pair_states.py`。独立复现请传 `--output` 新目录，默认跳过已有成功阶段。
+核心新增模块：`des_core/bipartite_graph.py`（实际成对状态）、`des_core/bipartite_export.py`（逐步作图）、`des_core/resource_monitor.py`（CPU/RAM）。
+
+当前正文大规模例子与补充材料零阈值对照：
+`python -X utf8 nonzero_lookahead_cases.py --run`。
+基底修改集中在 `base_model`，全局结构分析与综合位于 `worker`；不修改核心求解器。
+正式输入由 `global_model` 直接读取 `examples/large_scale/`；`base_model` 用于验证来源。
+当前表格见 `outputs/revision_materials/pair_states_final_20261123/large/combined.json`，
+默认新测量写入独立时间戳目录。当前内存保护默认20GiB。
+此前 `rerun_large_recentered.py` 和相关资源预测对应修改前的零阈值模型，保留作历史复现。
+
+当前 Fig.1：`python -X utf8 rebuild_fig1_r1.py`，输入为
+`examples/paper_fig1_r1/plant.json`；与参考PDF第10页的逐项对照见输出目录的 `对照说明.md`。
+
+当前修订入口：`refresh_recentered_benchmarks.py`（61例图与阈值）、`manuscript_case_studies.py --part corpus`（论文1061例测量）、`compare_deadlock_target_bound.py`（新旧终点与长链长度对照）。新数据统一保存在 `outputs/revision_materials/pair_states_final_20261123/`。
+
+当前 E/H 已改为真正自乘积：`python -X utf8 run_E_self_products.py` 运行 E 的七重与八重乘积，`python -X utf8 run_H_self_product.py` 运行 H 的四重乘积。基底定义、全局分析和实际 LL-BTS 构建均在 `early_stop_products.py`。PyCharm 配置及命令对应关系见 README 最上方。
+
+无固定时间预算的大规模总体入口是 `large_scale_overall.py`，完整参数和估算口径见 [README.md](README.md)。先运行 `python -X utf8 large_scale_overall.py --estimate-only`；实际执行 P6 的 LL 使用 `python -X utf8 large_scale_overall.py --run --cases products --copies 6 --methods ll --max-memory-gib 10`。该命令扫描前视并验证策略，不设置 15 秒上限。
+
 以下命令均在项目目录 `D:\__Workspace\Pycharm\des_common\limited_lookahead_deadlock_free` 中执行。使用同一个 Python 环境安装依赖和运行脚本：
 
 ```powershell
@@ -119,9 +143,9 @@ preprocess的Qd是没有后继的状态。Qf是沿单一后继状态链通往Qd�
 | maximal_patterns | 返回当前初始估计的包含极大控制模式，不宣称完整全局语言的最大宽松supervisor |
 | Limited_Lookahead_Controller | 观察更新使用NX对应的完整估计，保留已认证延续；不以真实物理状态重置部分观测估计 |
 
-应特别检查：一个u能够认证winning，不表示它已经恢复offline的全部初始极大模式。论文图的小例子中，u=5只认证初始模式{a,o2}，u=6才恢复{a,b,o2}。其原因和六步路径在重跑报告及活动LaTeX中均有说明。
+应特别检查：一个u能够认证winning，不表示它已经恢复offline的全部初始极大模式。新实现的论文图在u=4得到初始模式{a,o2}，u=5恢复{a,b,o2}；Q_f并Q_d的检测阈值为6，默认采用6。
 
-本次实现以 `limited_choice` 构建局部分支，另以完整后继验证其可执行性。精确公式 `UR_gamma(x_hat) ∩ x_L` 只限制终点；路径可能离开窗口又返回，因此不能直接用诱导子图内的可达集替代，也不能把本实现的UR成本宣称为纯窗口内搜索。[正确性验证记录](outputs/limited_lookahead_correctness/validation.json) 包含61例、1,000个已保存随机系统以及4例旧采用u与新匹配深度的差异；旧性能测量尚未重跑。
+本次实现以 `limited_choice` 构建局部分支，另以完整后继验证其可执行性。精确公式 `UR_gamma(x_hat) ∩ x_L` 只限制终点；路径可能离开窗口又返回，因此不能直接用诱导子图内的可达集替代，也不能把本实现的UR成本宣称为纯窗口内搜索。[正确性验证记录](outputs/limited_lookahead_correctness/validation.json) 包含本轮61例、1,000个已保存随机系统，以及新的每估计窗口更新与危险终点检测回归检查；性能测量已更新。
 
 ## 5. Offline基线与闭环导出
 
@@ -167,15 +191,15 @@ traditional_ur_nx保留为组合接口：先UR，再按每个允许的可观事�
 
 - 论文图小例子的q10→q6为o2，当前项目代码为o1；两版独立运行，不擅自改动原有项目模型。
 - 分量旧图q2→q0为o1，用户已将当前代码改为a；旧图分量完整offline为losing，当前分量为winning。
-- u=5与u=6的认证结果、当前/旧图分量、八副本历史运行和认证预算分别保存。
+- 新窗口定义下的u=4/5/6结果、当前/旧图分量及历史八副本运行分开保存。
 - 历史运行完成50次物理根查询，不作为部分观测完整supervisor的证明。
-- 当前八副本另有完整枚举验证的常量策略闭环，以及认证分量supervisor的精确组合式闭环；预算截断与可行性证明分开报告。
+- 历史八副本另有完整枚举验证的常量策略闭环，以及认证分量supervisor的精确组合式闭环；预算截断与可行性证明分开报告。
 
 继续组合式计算得到：可达物理状态为4^8=65,536，含控制器记忆的闭环为8^8=16,777,216个状态对、150,994,944条转移；控制器可能记忆配置为3^8=6,561。保存的是精确因子化描述，没有显式生成上千万行转移表。局部分量全部状态/转移的检查与独立字母表给出整体证明；1/2/3副本穷举和导出控制器100,000步运行是额外验证。
 
-从q0开始的单次固定窗口求解中，u=5保守地排除初始b，得到{a,o2}，完整6状态/7边闭环已认证无死锁；u=6恢复offline初始极大模式{a,b,o2}。安全保证针对认证策略，不能只凭u=5就任意选择控制。
+历史固定初始窗口版本曾记录：从q0开始的单次求解中，u=5保守地排除初始b，得到{a,o2}，完整6状态/7边闭环已认证无死锁；u=6恢复offline初始极大模式{a,b,o2}。安全保证针对认证策略，不能只凭u=5就任意选择控制。
 
-若假设初始允许b，第一次o1后的完整估计是{q6,q8,q11}，并不能确定实际在q8。更新控制模式为允许a、禁用b/o2后，UR为{q6,q7,q8,q9,q10,q11}；围绕这个新估计重新建u=5窗口已经包含q10，实测结果winning。solve_limited_lookahead同次调用只建立一次窗口，而观察后再次调用会重新建窗；因此不能把“初始固定窗口需u=6匹配offline”说成“滚动重规划必须u=6”。
+若假设初始允许b，第一次o1后的完整估计是{q6,q8,q11}，并不能确定实际在q8。更新控制模式为允许a、禁用b/o2后，UR为{q6,q7,q8,q9,q10,q11}；围绕这个新估计重新建u=5窗口已经包含q10，实测结果winning。新实现对每个完整决策估计更新窗口，且在执行初始模式前检查所有保留后继的安全延续。
 
 [sync_paper_example_results.py](sync_paper_example_results.py) 先备份，再同步活动主文case study和新图。main_original.tex与__paper归档保持不变。
 
@@ -222,4 +246,4 @@ python -X utf8 rerun_paper_examples.py
 - 随机分布、种子、重复次数、未完成例子和负节约是否完整报告？
 - 组合式证明是否依赖独立索引字母表？是否误称为全局显式BTS综合？
 
-当前源码审阅快照：[code_review_bundle.zip](outputs/code_review/code_review_bundle.zip)。压缩包中的CODE_MANIFEST.json给出每个文件的SHA256和行数，便于对照审阅版本。
+当前源码审阅快照：[code_review_bundle.zip](outputs/case_studies/warehouse_2018/source_review_bundle.zip)。压缩包中的CODE_MANIFEST.json给出每个文件的SHA256和行数，便于对照审阅版本。

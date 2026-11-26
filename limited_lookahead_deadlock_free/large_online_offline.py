@@ -195,7 +195,7 @@ def product_pre(component, copies, product):
     dead = frozenset((tuple('q_5' for _ in range(copies)),))
     failure = frozenset(tuple('q_4' if j == i else 'q_5' for j in range(copies)) for i in range(copies))
 
-    return Preprocessing(product, dead, failure, frozenset(), frozenset(), copies-1, copies-1, 0, 0.)
+    return Preprocessing(product, dead, failure, frozenset(), frozenset(), copies, copies, 0, 0.)
 
 
 def verify_product_certificates():

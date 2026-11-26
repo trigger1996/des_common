@@ -1,5 +1,261 @@
 # DES limited-lookahead control
 
+## 同一组例子上的 Cai-2018 / LLP-1992 / 本文方法对比
+
+```powershell
+python -X utf8 three_method_comparison.py --repetitions 5
+```
+
+PyCharm 配置：`Three_Method_Common_Examples`。
+这组三方法明确指 **蔡老师2018方法、Chung等1992方法、本文LL-BTS**，不把Full BTS算作其中一个。
+5个共同全观测例子 × 3个前视长度（3、8、16）× 3种方法，共45组结果；
+输入哈希一致，每组独立进程测量5次root时间，另测Python峰值和CPU/RAM，并穷举检查闭环。
+还保存真正逐事件重新计算的50事件上限轨迹。原始部分观测数据不变。
+
+先看 `outputs/case_studies/three_method_comparison/共同例子三方法对比.md`。
+方法、输入、计数差异和失败结果的解释见
+[examples/three_method_common/README.md](examples/three_method_common/README.md)。
+详细结果已加入 `Response/supplementary_material.R1.tex` 第6节。
+
+CPU/RAM另有45组独立长批次，每组至少2秒，避免短计时造成CPU零值或比例失真：
+
+```powershell
+python -X utf8 three_method_resource_batches.py --minimum-seconds 2
+```
+
+PyCharm 配置：`Three_Method_Resource_Batches`。结果在
+`outputs/case_studies/three_method_comparison/resource_batches/CPU_RAM长批次结果.md`，
+包含每次求解CPU时间、单核/全机归一CPU比例、峰值工作集和提交内存。
+原五次wall时间、Python峰值、逐事件/累计时间和失败路径保持独立口径。
+探索/剪枝及模式检查计数另用不计时重放获得：
+`python -X utf8 three_method_construction_counts.py`，数据在同目录 `construction_counts/`。
+
+## 仓储 2018 复现、审稿核对与输出清理
+
+```powershell
+python -X utf8 warehouse_2018_case_study.py --part all
+```
+
+PyCharm 配置：`Warehouse_2018_Case_Study`。输入规则及原始模型见
+[examples/warehouse_2018](examples/warehouse_2018/README.md)，本轮结果在
+`outputs/case_studies/warehouse_2018/运行结果.md`。
+这是独立复现，不是作者源代码。两处控制动作和第二处 68 状态匹配；第一处为 101，
+原文为 108，该差异尚未消除。公式解释与组件边界解释分开保存。
+这份旧参考实验比较Full BTS、本文LL-BTS与仓储复现；上述新实验才是Cai/LLP-1992/本文三方法直接对比。
+两组都使用新增的完全观测副本，原始61/1000输入不变；重规划失败与死锁分别记录。
+
+审稿意见核对清单在论文目录 `Response/reviewer_gap_audit.md`。仍需处理的问题包括
+Problem 1 的全局最大允许性主张、good 观测状态的固定模式活性，以及观测一致性的正式证明；
+带有作者保护标记的公式未擅改。
+
+`N_raw` 是剪枝前决策/观测状态总数的理论上界。`O(N_raw)` 是状态计数的空间阶，
+不是实测 RAM；实际集合与状态转移的编码开销另计。
+
+旧中间输出已清理，仅保留当前 case study、原始输入与修改意见、资源数据和绘图记录。
+清单见 `outputs/revision_materials/pair_states_final_20261123/cleanup_manifest.json`。
+以后可先用 `python -X utf8 clean_non_case_outputs.py` 检查，确认清单后用 `--apply` 清理。
+后文历史脚本的旧输出可能已删除，命令仍可用于重新生成。
+
+## 成对决策状态修正及全部重跑结果
+
+Full BTS 和 LL-BTS 都实际存储 `(q_hat, x_hat)` 决策状态；不同 `q_hat` 不合并。
+同一估计共用控制模式和不可变 UR/NX 计算结果，以保持部分观测控制的一致性。
+构建图先记录全部候选模式（包括不安全模式），再记录剪枝；每个 LL 作图目录包含
+`construction_steps.jsonl`、逐步 JSON/PNG、`ll_bts_construction.gif` 和最终合并结果。
+旧实现确有状态合并问题，因此本轮已重新运行全部当前实验，不是只修改显示标签。
+
+权威数据目录：`outputs/revision_materials/pair_states_final_20261123/`。
+其中 `corpus/` 是独立论文比较，`cpu/` 是独立资源批次，`large/` 是八个大系统，
+`trajectories/` 是逐观测累计运行，`fig1/` 是论文图。各阶段退出状态在 `stage_profiles/`。
+
+```powershell
+python -X utf8 rerun_all_pair_states.py
+python -X utf8 print_paper_figure_reference.py --u 5
+python -X utf8 print_paper_figure_reference.py --full
+```
+
+总入口默认检查并跳过已有成功阶段。需要独立复现时使用新目录，例如
+`python -X utf8 rerun_all_pair_states.py --output outputs/pair_states_independent`。
+PyCharm 运行同名脚本，Working directory 为本项目目录，Parameters 为上述参数。
+
+当前共 112 项正确性测试通过。1,061 个初次综合的可解性与 Full 完全一致，但根极大模式仅
+1,054 例一致，不混淆这两个指标。初次平均时间 Full/LL 为 0.638/0.145 ms；独立的
+逐观测累计实验为 0.937/1.266 ms，后者 LL 更慢，负结果保留。
+理论证明、资源口径和五组详细实验统一在论文目录的 `Response/supplementary_material.R1.tex`，
+由 `Response/LCSS_26-1509_Response_Template.tex` 在回复信后通过 `\input` 引入。
+
+## 当前实现：危险终点检测与观察后重新建窗
+
+`Q_f` 仍不包含 `Q_d`；ReverseDFS 的危险终点改为 `Q_f ∪ Q_d`。代码通过
+`pre.lookahead_lower_bound` 获取论文的 `bar_u`，`pre.u_f` 为兼容字段，
+`pre.horizon` 也返回该阈值；`pre.u` 只保存含 `Q_e` 的可选扩展对照值。
+每个完整决策估计重新计算 `x_L = Post_<=u(x_hat)`。执行前检查完整 UR/NX、
+逐状态活性和所有可能观测的保留延续，不能把未知边界当作安全延续。
+检测阈值本身不保证固定 u 下必然成功，初始求解仍可返回 inconclusive 并增大 u。
+
+本轮原始15状态论文模型得到 `bar_u=4`，并在 `u=4` 返回 winning；
+当前 Fig.1 按参考 PDF 第9页，只增加 `q14--a-->q15--b-->q16`，共17状态，
+`Q_f={q14,q15}`、`bar_u=4`；u=4可解，u=5匹配 Full 根极大模式。
+此前19状态的长链版本保留存档。输入见 `examples/paper_fig1_r1/plant.json`，
+用 `python -X utf8 rebuild_fig1_r1.py` 复现，输出见 `outputs/revision_materials/fig1_r1_20261123/`。
+
+61个审阅模型与1,000个保存的随机模型均已重跑并检查策略。权威新数据在
+`outputs/revision_materials/pair_states_final_20261123/`；
+逐例 LL-BTS、offline BTS、监督器及闭环已同步到 `outputs/expanded_yin_benchmark/`。
+手写修改意见和原始 plant 输入保持原样。
+
+## 当前大规模例子：非零前视阈值与零阈值对照
+
+正文 E/H/P/C 的当前生成与测量入口为 `nonzero_lookahead_cases.py`。
+它在原生成器之后重标记死锁链末端事件，事件属性集合不变；E/P/C 的末端两条
+`a` 转移改为 `u`，H 的末端一条改为 `u`。因此不可观测路径可以进入
+`Q_f ∪ Q_d`。仍可禁用可控的分支入口事件 `b`，得到无死锁监督器。
+补充材料另列完全不改的 `E4_zero`，说明 `bar_u=0` 时仍从 `u=1` 求解。
+
+```powershell
+python -X utf8 nonzero_lookahead_cases.py --run
+python -X utf8 nonzero_lookahead_cases.py --run --cases E4 E4_zero --repetitions 3
+```
+
+本次成对状态修正后的权威结果汇总在
+`outputs/revision_materials/pair_states_final_20261123/large/combined.json`。
+同目录保存八例的 Full/LL 构建、阈值、模式检查和 CPU/RAM 数据；所有运行均已完成。
+今后默认输出到 `outputs/revision_materials/nonzero_lookahead_runs/` 下的新时间戳目录，避免覆盖存档。
+原始输入保存在 [examples/large_scale](examples/large_scale/README.md)，运行脚本直接读取
+其中的基底 JSON 和各系统 `model.json`，不以 `outputs` 中的导出副本作为输入。
+其中 `combined.json` 是最新总表，`*_base.json` 保存 E/H/P 基底的全部转移，
+`C_model.json` 保存百万状态 C 的精确生成参数，`*_closed_loop.json` 保存闭环。
+所有乘积均显式构建全局 DFA 后计算状态子集、阈值和全局 BTS/LL-BTS；
+不套用旧生成器的状态数、阈值或内存预测公式。
+Full/LL 均用新进程测量并计入输入建立；LL 还计入结构分析和全部初始前视尝试。
+策略检查与文件导出不计入计时。当前正文各项均为一次完整测量；
+默认运行 E5/H3/P5/C/零阈值对照各一次，可用 `--repetitions 3` 增加产品重复次数。
+可在 PyCharm 中运行 `nonzero_lookahead_cases.py`，Parameters 填 `--run`，
+Working directory 设为本项目目录。
+
+| 系统 | DFA 状态数 | bar_u / 采用 u | Full 状态数 | LL 状态数 | Full/s | LL/s |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| E5 | 100,000 | 10 / 10 | 730,049 | 321,505 | 73.035 | 70.659 |
+| H3 | 1,000,000 | 3 / 3 | 8,589,412 | 8,300,166 | 179.448 | 283.543 |
+| P5 | 100,000 | 10 / 10 | 1,397,964 | 842,129 | 169.459 | 287.450 |
+| C | 1,000,000 | 2 / 2 | 3,000,120 | 509 | 42.587 | 13.856 |
+| E4_zero | 10,000 | 0 / 1 | 118,896 | 71,279 | 5.005 | 2.536 |
+
+更大一档的尝试使用独立输出目录，避免覆盖以上数据：
+
+```powershell
+python -X utf8 nonzero_lookahead_cases.py --run --cases E5 P5 H3 --repetitions 1 --max-memory-gib 20
+```
+
+Full/LL 五例可解性和初始包含极大模式均一致，均可综合无死锁监督器。
+这里状态数为剪枝前构建数量；E5/H3/P5 的 LL 时间均更长，保留该结果。
+P5 完整进程峰值为 Full 8.02 GiB、LL 9.08 GiB，包含后续验证及闭环导出，
+不能把其构建状态减少率当作峰值内存节约率。详细口径见当前汇总目录的 `运行结果.md`。
+
+## 先前零阈值模型的测量存档
+
+以下数据对应修改前的 E/H/P/C，并非当前正文中的非零阈值模型。
+`rerun_large_recentered.py`、`early_stop_products.py`、`large_scale_overall.py`
+仍保留该旧模型用于复现历史结果，其中的乘积计数和资源公式不能套用到新模型。
+
+| 系统 | 全局 DFA 状态数 | Full 状态数 | LL 状态数 | Full/s | LL/s |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| E_4 | 10,000 | 114,438 | 71,279 | 3.981 | 3.027 |
+| H_2 | 10,000 | 49,200 | 47,451 | 0.843 | 1.434 |
+| P_4 | 10,000 | 170,000 | 114,052 | 4.797 | 5.926 |
+| C | 1,000,000 | 3,000,000 | 383 | 43.275 | 12.334 |
+
+所有表中状态数均为剪枝前构建数量。E/H 是五次平均时间；P/C 是 overall
+脚本的单次完整运行，含两侧的进度跟踪和输入建立，LL 另含结构分析及全部前视重试。
+不把这些不同测量口径混成同一个重复实验平均值。所有已完成策略均经过完整检查。
+
+E7/E8/H4/P6/P7/P8 的重新建窗 LL-BTS 必需存储下界分别约为
+589.4/10480.0/2254.1/69.7/1414.0/28326.3 GiB（含必需NX项），因此资源检查后未将其当作完成的运行。
+这不是 losing 判定。旧的143、273、3639或1007718状态数据只对应旧固定窗口，已从正文比较表移除。
+
+```powershell
+python -X utf8 compare_deadlock_target_bound.py
+python -X utf8 manuscript_case_studies.py --part small --output outputs/recentered_paper
+python -X utf8 manuscript_case_studies.py --part corpus --output outputs/recentered_corpus
+python -X utf8 refresh_recentered_benchmarks.py
+python -X utf8 compare_online_offline.py --repetitions 11
+python -X utf8 randomized_online_offline.py --samples 1000 --repetitions 5 --seed 20261121
+python -X utf8 early_stop_products.py --case E --copies 4 --max-memory-gib 4
+python -X utf8 early_stop_products.py --case H --copies 2 --max-memory-gib 4
+python -X utf8 large_scale_overall.py --run --cases products --copies 4 --methods full ll --max-memory-gib 4
+python -X utf8 large_scale_overall.py --run --cases chain --methods full ll --max-memory-gib 8
+```
+
+完整大系统复现入口为 `python -X utf8 rerun_large_recentered.py`。
+
+Full 时间外推仍可用 `estimate_full_runtime.py`，但当前正文表格只保留新版本实际完成的测量。
+历史外推和固定窗口测量保存在原目录，不能替代新实现的 LL 结果。
+
+## PyCharm 启动方式
+
+项目已增加以下运行配置，打开本项目后可从右上角运行配置列表或 **Run → Edit Configurations** 中选择并运行：
+
+| 配置名 | 执行内容 |
+| --- | --- |
+| `E_self_products_1e7_1e8` | E 的七重、八重自乘积 |
+| `H_self_product_1e8` | H 的四重自乘积 |
+| `LL_P7_P8` | 原 P7/P8 的 LL 资源检查及条件运行 |
+
+配置文件在 `.idea/runConfigurations/`，使用项目模块的 Python SDK，工作目录为项目根目录。E/H 的启动文件也可直接在 PyCharm 中右键 **Run**；若打开的是上一级 `des_common` 项目，可直接右键这些启动文件，无需改动现有项目。启动文件会定位到本目录，避免相对路径错误。
+
+P7/P8 配置等价于下面的命令，`ll` 是两个小写字母 L，不是数字 `11`：
+
+```powershell
+python -X utf8 large_scale_overall.py --run --cases products --copies 7 8 --methods ll --max-memory-gib 10
+# 也可右键运行下列启动文件
+python -X utf8 run_P7_P8_LL.py
+```
+
+该配置会分别检查 Full/LL 中所选方法的资源需求；当前仅请求 LL。本机无法容纳 P7/P8 的 LL 必需存储，因此会正常提示跳过，而非绕过内存检查。E/H 是新设计的、更早进入安全延续的自乘积，不等同于原 P7/P8。
+
+## 大规模总体运行（无固定时间预算）
+
+在 Windows 项目目录运行 [large_scale_overall.py](large_scale_overall.py)。默认只估算 Full 和 LL 的节点、时间与内存；`--run` 才执行综合。该入口没有默认的时间、模式数或窗口状态上限，与 `hard_product_case_studies.py` 的短预算测试分开。
+
+```powershell
+python -X utf8 large_scale_overall.py --estimate-only
+python -X utf8 large_scale_overall.py --run --cases products --copies 6 --methods ll --max-memory-gib 10
+```
+
+第二条命令从正整数前视开始扫描，直到得到明确结果，并验证保留策略。`--max-memory-gib 10` 只限制子进程工作集内存，不限制运行时间。默认输出目录带时间戳，位于 `outputs/revision_materials/large_scale_overall_*/`；结果 JSON 每约五秒保存一次进度摘要。摘要不是可恢复的搜索快照，Ctrl+C 停止后重跑会重新计算。
+
+```powershell
+# 同时检查 Full 与 LL；逐方法跳过内存无法容纳的构建，另一方法仍可执行。
+python -X utf8 large_scale_overall.py --run --cases products --copies 6 --methods full ll
+
+# 单独重跑百万状态链式系统，不设置固定时间上限。
+python -X utf8 large_scale_overall.py --run --cases chain --methods full ll --max-memory-gib 10
+```
+
+要在自己的机器上标定 LL 时间与内存，可先跑一个小乘积，再传入标定结果：
+
+```powershell
+python -X utf8 large_scale_overall.py --run --cases products --copies 5 --methods ll --final-window-only --output outputs/my_product5
+python -X utf8 large_scale_overall.py --estimate-only --calibration outputs/my_product5/products_5_ll.json
+```
+
+`--final-window-only` 用于乘积的已知最小成功前视 `u = k+1`，不计初始逐深度扫描；使用它得到的时间不能冒充完整前视搜索时间。`--export-closed-loop` 可在策略验证后额外枚举闭环。Full 的 UR/NX 抽样外推只估计这一阶段，不是完整综合总耗时；LL 的时间和峰值外推使用已完成的小乘积标定，并明确记录外推口径。
+
+当前机器约31.76 GiB RAM；新的乘积存储下界及资源检查见上表与补充材料。不要使用旧固定窗口的P6/P7/P8存储值推断新实现能否完成。历史运行保留在原目录。
+
+### 前视阈值、观察后重新建窗与无死锁保证
+
+当前实现从Q_f并Q_d执行反向DFS求检测阈值，并在每个完整决策估计处重新建窗。Q_f仍只包含非死锁的单后继链状态，不将Q_d混入Q_f。
+
+原始15状态系统的Q_f为空，但Q_d非空，新阈值bar_u=4；u=4返回winning。初始选择允许{a,o2}、禁用b，UR={q0,q1,q2,q3}，观察o1后NX={q6}，随后从{q6}重新建窗，保留q6-a-q7-u-q6的安全循环。
+
+历史四状态长链的19状态版本得到bar_u=6：q6-a-q7-b-q15-u-q16-u-q17-u-q18-u-q12共六步。该版本u=4已可得到安全但较保守的初始模式{a,o2}，u=5恢复offline初始极大模式{a,b,o2}；默认从bar_u开始时采用u=6。
+
+旧实现所有内部后继共用初始窗口，因此曾记录u=5/6的差异；这些旧数值不能继续描述重新建窗后的实现。当前每个保留模式都通过完整UR/NX、逐状态活性及后继一致性检查，不是先执行模式、再假定下一次重新求解必然成功。
+
+bar_u是危险状态检测的充分阈值，不单独等于最小成功前视，也不单独证明综合可解。即使覆盖Q_f并Q_d，安全不可观测环的完整UR仍可能需要更大的窗口；程序在尚不能建立完整延续时返回inconclusive并增大实际u。
+
+
 ## 代码模块与审阅入口
 
 先阅读 [CODE_REVIEW_GUIDE.md](CODE_REVIEW_GUIDE.md)，再按“模型→预处理→LL-BTS→传统BTS对照→闭环→实验统计”的顺序检查。
@@ -14,6 +270,10 @@
 | [des_core/offline_bts.py](des_core/offline_bts.py) | 独立传统BTS；traditional_ur走零步或多步不可观事件，traditional_nx针对一个可观事件走一步；traditional_ur_nx保留批量单事件NX的组合接口 |
 | [des_core/closed_loop.py](des_core/closed_loop.py) | 恢复保留策略，提取观测反馈supervisor，构建实际状态×控制器记忆的可达闭环 |
 | [des_core/asynchronous_product.py](des_core/asynchronous_product.py) | 隐式异步乘积；事件带副本下标，继承各分量的控制/观测属性 |
+| [large_scale_overall.py](large_scale_overall.py) | Full/LL资源估算和无固定时间预算的总体运行；进度日志、可选内存保护、完整策略验证 |
+| [nonzero_lookahead_cases.py](nonzero_lookahead_cases.py) | 当前正文非零阈值 E/H/P/C 与补充材料零阈值对照；显式全局结构分析、独立 Full/LL 测量、闭环与原始数据导出 |
+| [rebuild_fig1_r1.py](rebuild_fig1_r1.py) | 按参考 PDF 第9页重建17状态 Fig.1，重新生成LL-BTS并逐模式核对第10页 |
+| [early_stop_products.py](early_stop_products.py) | 当前 E/H 基底、自乘积、精确全局子集与实际全局 LL-BTS；小乘积对照、五次计时及图结构导出 |
 | [expanded_yin_benchmark.py](expanded_yin_benchmark.py)、[structural_benchmark.py](structural_benchmark.py) | 构建当前61例，扫描u并导出LL-BTS/BTS及模型数据 |
 | [compare_online_offline.py](compare_online_offline.py) | 11次交替新鲜测量、独立内存峰值、根模式与可解性对照；--refresh-report只刷新已有数据 |
 | [randomized_online_offline.py](randomized_online_offline.py) | 固定种子的随机实验；online只依自身判定加深，不用offline结果选择u |
@@ -28,15 +288,15 @@
 
 历史实现 `des_core/ll_bts.py`、`ll_bts_synthesis.py`、`factored_synthesis.py`、`implicit_product.py` 以及 `case1_product_benchmark.py` 用于复现旧图和物理根查询。其轨迹完成次数不能直接作为当前部分观测认证supervisor的证明。
 
-当前局部算子为 `x = UR_gamma(x_hat) ∩ x_L`、`x_hat_next = NX_sigma(x) ∩ x_L`；局部结果与完整物理后继不一致时，作为未认证边界处理。这里的交集限制终点，不限制路径中间状态，因此精确UR仍可能访问窗口外状态，不能声称UR计算成本完全局限在窗口内。[本次正确性验证](outputs/limited_lookahead_correctness/validation.json) 覆盖61例与固定种子20261121的1,000个已保存随机系统。旧性能表尚未按这一版本重测；其中4例恢复offline根极大模式所需的u需增大，具体差异见验证记录。
+当前局部算子为 `x = UR_gamma(x_hat) ∩ x_L`、`x_hat_next = NX_sigma(x) ∩ x_L`；局部结果与完整物理后继不一致时，作为未认证边界处理。这里的交集限制终点，不限制路径中间状态，因此精确UR仍可能访问窗口外状态，不能声称UR计算成本完全局限在窗口内。[本次正确性验证](outputs/limited_lookahead_correctness/validation.json) 覆盖61例与固定种子20261121的1,000个已保存随机系统。当前61例和1,000个随机例子均已按观察后重新建窗的实现重测，具体数据以本轮目录为准。
 
-论文例子重跑报告：[PAPER_EXAMPLES_RERUN.md](outputs/paper_examples_rerun/PAPER_EXAMPLES_RERUN.md)。论文图的小例子在从q0开始的一次固定窗口求解中，u=5的认证策略已无死锁，u=6进一步恢复offline初始极大模式；这不表示观测后重新定中心的滚动窗口也必须u=6。八副本显式模式枚举预算截断与组合式可行supervisor分别报告。后者得到65,536个可达物理状态、16,777,216个含记忆闭环状态对的精确因子化闭环，没有显式构建完整全局BTS，也不声称全局最大宽松。
+当前论文图和结果见 `outputs/revision_materials/pair_states_final_20261123/`。旧 `outputs/paper_examples_rerun/` 中的固定窗口性能是历史记录；组合式可行监督器仍须与全局显式BTS综合区分。
 
 2026-11-21 用户审阅修订：活动基准为 **58个论文改编模型＋3个结构测试，共61例，36例winning、25例losing**。
 原始设计快照保存在各例 `plant_original.json/png`；按表修改与去重记录见 `review_modifications.json`。
 `16WODESmax_fig_3a_Gprime` 已给6、6′添加c2自环；`20CDC2_fig_2b` 已按最新意见给2添加b自环、给6添加c自环，当前没有暂缓冲突。
 `outputs/expanded_yin_benchmark/运行结果.md` 的最上方总表包含状态数、可观/可控事件、最小u及online/offline数值对比。
-总表另含BTS/LL-BTS的D/O、构建节点总数及节点节约率；61例为3346→665，减少80.13%。
+总表另含BTS/LL-BTS的D/O、构建节点总数及节点节约率；61例为3346→830，减少75.19%。
 `COMPLEXITY_AND_MEMORY_CALCULATION.md` 给出时间/空间理论式、逐例参数代入和tracemalloc峰值口径，理论代理值不冒充实测时间或内存。
 `python -X utf8 randomized_online_offline.py --samples 1000 --repetitions 5 --seed 20261121` 在 `randomized_comparison/` 保存全部随机输入与原始测量。
 这批分层随机分布中平均时间0.523862→0.072462ms（节约86.17%），可解性1000/1000一致、根极大模式991/1000一致；不使用offline结果选择online的u。
