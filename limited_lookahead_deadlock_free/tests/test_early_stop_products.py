@@ -1,6 +1,6 @@
 import unittest
 
-from early_stop_products import analyze, full_counts
+from examples.large_scale.early_stop_products import analyze, full_counts
 from des_core.automata import DFA
 from des_core.certified_lookahead import preprocess, solve_minimum_lookahead, validate_policy
 from des_core.offline_bts import construct_offline_bts

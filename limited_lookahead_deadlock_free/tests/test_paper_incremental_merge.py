@@ -4,7 +4,7 @@ import unittest
 from des_core.certified_lookahead import Choice, preprocess, solve_limited_lookahead, validate_policy
 from des_core.closed_loop import build_closed_loop
 from examples.paper_fig1_r1.incremental_merge import Fragment, merge_at_insertion, solve_example
-from paper_example_models import paper_small_figure_r1
+from examples.paper.paper_example_models import paper_small_figure_r1
 
 
 class PaperIncrementalMergeTests(unittest.TestCase):

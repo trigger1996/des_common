@@ -1,6 +1,6 @@
 import unittest
 
-from comparison_averages import decision_metrics, comparison_averages
+from des_core.comparison_averages import decision_metrics, comparison_averages
 
 
 class ComparisonAverageTests(unittest.TestCase):

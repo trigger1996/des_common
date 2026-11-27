@@ -10,7 +10,7 @@ from des_core.closed_loop import build_closed_loop, restore_certified_result
 
 class ClosedLoopTests(unittest.TestCase):
     def test_saved_ll_bts_roundtrip_and_missing_observation_rejected(self):
-        from certified_benchmark import export_bts
+        from examples.benchmarks.certified_benchmark import export_bts
 
         plant = DFA(frozenset('012'), '0', frozenset(('a', 'b', 'o')), frozenset(('b',)),
                   frozenset(('a', 'b', 'o')), {('0', 'o'):'1', ('1', 'a'):'1', ('1', 'b'):'2'})

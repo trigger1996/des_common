@@ -3,7 +3,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from des_dfa_on_the_fly import (
+from examples.basic.des_dfa_on_the_fly import (
     _clean_legacy_render_outputs,
     _read_branch_memory,
     _write_branch_memory,

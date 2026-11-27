@@ -18,14 +18,14 @@ DOI：https://doi.org/10.1016/j.conengprac.2018.09.003
 在项目根目录运行：
 
 ```powershell
-python -X utf8 warehouse_2018_case_study.py --part all
-python -X utf8 warehouse_2018_case_study.py --part paper
-python -X utf8 warehouse_2018_case_study.py --part comparison --repetitions 5
-python -X utf8 warehouse_2018_case_study.py --part horizons
+python -X utf8 examples/warehouse_2018/warehouse_2018_case_study.py --part all
+python -X utf8 examples/warehouse_2018/warehouse_2018_case_study.py --part paper
+python -X utf8 examples/warehouse_2018/warehouse_2018_case_study.py --part comparison --repetitions 5
+python -X utf8 examples/warehouse_2018/warehouse_2018_case_study.py --part horizons
 ```
 
 PyCharm 配置：`Warehouse_2018_Case_Study`。
-或手动运行 `warehouse_2018_case_study.py`，Parameters 填 `--part all`，
+或手动运行 `examples/warehouse_2018/warehouse_2018_case_study.py`，Parameters 填 `--part all`，
 Working directory 设为项目根目录。
 
 输出：`outputs/case_studies/warehouse_2018/`。

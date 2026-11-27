@@ -1,6 +1,6 @@
 import unittest
 
-from des_dfa_on_the_fly import (
+from examples.basic.des_dfa_on_the_fly import (
     _initial_physical_successor_candidates,
     _ll_bts_node_tag,
     _physical_ll_bts_snapshots,

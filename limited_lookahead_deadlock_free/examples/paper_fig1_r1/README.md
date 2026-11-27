@@ -70,7 +70,7 @@ a、b 本身也是不可观测事件，不会各自触发新的观测更新。
 ## 复现与结果位置
 
 ```powershell
-python -X utf8 rebuild_fig1_r1.py
+python -X utf8 examples/paper/rebuild_fig1_r1.py
 ```
 
 输出：`outputs/revision_materials/fig1_r1_20261123/`。

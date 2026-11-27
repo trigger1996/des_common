@@ -6,7 +6,7 @@
 `C_model.json` 用精确转移规则表示百万状态模型，避免存储一份巨大的展开文件。
 
 各系统文件夹中的 `model.json` 指定基底文件、自乘次数、全局状态数及事件索引规则。
-`nonzero_lookahead_cases.py` 直接读取这些文件，再建立全局 DFA，计算状态子集和阈值。
+`examples/large_scale/nonzero_lookahead_cases.py` 直接读取这些文件，再建立全局 DFA，计算状态子集和阈值。
 其中 `expected_bar_u` 仅用于复核，不作为求解器的输入前视长度。
 
 | 系统目录 | 基底状态数 | 自乘次数 | 全局 DFA 状态数 | 预期 bar_u |
@@ -30,8 +30,8 @@ E/P 的末端危险路径为 `q7 --u--> q8 --u--> q9`；H 为 `q98 --u--> q99`�
 从项目根目录运行：
 
 ```powershell
-python -X utf8 nonzero_lookahead_cases.py --run
-python -X utf8 nonzero_lookahead_cases.py --run --cases E5 P5 H3 --repetitions 1 --max-memory-gib 20
+python -X utf8 examples/large_scale/nonzero_lookahead_cases.py --run
+python -X utf8 examples/large_scale/nonzero_lookahead_cases.py --run --cases E5 P5 H3 --repetitions 1 --max-memory-gib 20
 ```
 
 状态数量和内存检查失败的运行记录分别保存，内存保护停止不表示系统不可解。

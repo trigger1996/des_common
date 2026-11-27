@@ -5,7 +5,7 @@ from des_core.asynchronous_product import ImplicitProductDFA
 from des_core.automata import DFA
 from des_core.certified_lookahead import preprocess, solve_minimum_lookahead, validate_policy
 from des_core.offline_bts import construct_offline_bts
-from nonzero_lookahead_cases import CASES, INPUTS, base_model, model_record, reachable_count
+from examples.large_scale.nonzero_lookahead_cases import CASES, INPUTS, base_model, model_record, reachable_count
 
 
 class NonzeroLookaheadCasesTest(unittest.TestCase):

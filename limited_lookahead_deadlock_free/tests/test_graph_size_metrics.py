@@ -1,6 +1,6 @@
 import unittest
 
-from graph_size_metrics import graph_size_metrics, aggregate_graph_sizes
+from des_core.graph_size_metrics import graph_size_metrics, aggregate_graph_sizes
 
 
 def storage(d, o, rd=0, ro=0):

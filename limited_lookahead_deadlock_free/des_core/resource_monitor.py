@@ -75,7 +75,7 @@ def environment_record():
 
     if sys.platform == 'win32':
         import winreg
-        from large_scale_overall import memory_status
+        from examples.large_scale.large_scale_overall import memory_status
 
         with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, r'HARDWARE\DESCRIPTION\System\CentralProcessor\0') as key:
             cpu_name = winreg.QueryValueEx(key, 'ProcessorNameString')[0].strip()

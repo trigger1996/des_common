@@ -3,7 +3,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 
-from certified_benchmark import export_bts
+from examples.benchmarks.certified_benchmark import export_bts
 from des_core.automata import DFA
 from des_core.certified_lookahead import Limited_Lookahead_Controller, preprocess, solve_limited_lookahead, validate_policy
 from des_core.offline_bts import construct_offline_bts
@@ -77,7 +77,7 @@ class PairBipartiteTests(unittest.TestCase):
             restore_certified_result(pre, record)
 
     def test_previous_continuation_reuses_the_updated_pair_initial_state(self):
-        from paper_example_models import paper_small_figure
+        from examples.paper.paper_example_models import paper_small_figure
 
         pre = preprocess(paper_small_figure().dfa)
         controller = Limited_Lookahead_Controller(pre, horizon=5)

@@ -1,7 +1,7 @@
 import unittest
 
 from examples.non_deadlock import build_small_cycle_example, build_nested_cycle_deadlock_example
-from paper_example_models import (paper_small_figure, paper_small_figure_original,
+from examples.paper.paper_example_models import (paper_small_figure, paper_small_figure_original,
                                  paper_small_figure_hidden_chain_archive, archived_component_figure)
 from des_core.certified_lookahead import preprocess, solve_limited_lookahead, solve_offline, validate_policy, complete_choice
 from des_core.closed_loop import build_closed_loop

@@ -62,7 +62,7 @@ class WarehouseReplicationTests(unittest.TestCase):
         self.assertFalse(product.transitions)
 
     def test_failed_replanning_does_not_execute_an_invented_fallback(self):
-        from warehouse_2018_case_study import validate_warehouse_execution
+        from examples.warehouse_2018.warehouse_2018_case_study import validate_warehouse_execution
 
         plant = DFA(frozenset('012'), '0', frozenset({'b', 'u'}), frozenset({'b'}),
                     frozenset({'b', 'u'}), {('0', 'b'): '1', ('1', 'u'): '2'})
@@ -75,7 +75,7 @@ class WarehouseReplicationTests(unittest.TestCase):
         self.assertFalse(result['deadlocks'])
 
     def test_control_induced_deadlock_is_distinct_from_replanning_failure(self):
-        from warehouse_2018_case_study import validate_warehouse_execution
+        from examples.warehouse_2018.warehouse_2018_case_study import validate_warehouse_execution
 
         plant = DFA(frozenset('01'), '0', frozenset({'a'}), frozenset({'a'}),
                     frozenset({'a'}), {('0', 'a'): '1'})

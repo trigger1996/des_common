@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from benchmark_review_results import enrich_review, root_rejections
+from scripts.reporting.benchmark_review_results import enrich_review, root_rejections
 
 
 class ReviewResultsTests(unittest.TestCase):
@@ -13,9 +13,9 @@ class ReviewResultsTests(unittest.TestCase):
         notes = {'demo':'我的修改：保持这段文字。'}
         models = [({'name':'demo'}, {}, {}, {})]
 
-        with patch('benchmark_review_results.overview', return_value='总览分析'),\
-             patch('benchmark_review_results.model_analysis', return_value='逐例分析'),\
-             patch('benchmark_review_results.large_analyses', return_value=''):
+        with patch('scripts.reporting.benchmark_review_results.overview', return_value='总览分析'),\
+             patch('scripts.reporting.benchmark_review_results.model_analysis', return_value='逐例分析'),\
+             patch('scripts.reporting.benchmark_review_results.large_analyses', return_value=''):
             once = enrich_review(original, Path('.'), models, notes)
             twice = enrich_review(once, Path('.'), models, notes)
 

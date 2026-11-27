@@ -1,6 +1,6 @@
 import unittest
 
-from three_method_comparison import (METHODS, components_for, input_hash, calculate,
+from examples.comparisons.three_method_comparison import (METHODS, components_for, input_hash, calculate,
                                      validate_execution, sample_trajectory)
 
 

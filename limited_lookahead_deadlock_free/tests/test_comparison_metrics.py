@@ -1,6 +1,6 @@
 import unittest
 
-from compare_online_offline import absolute_metrics, savings
+from examples.comparisons.compare_online_offline import absolute_metrics, savings
 from des_core.automata import DFA
 from des_core.certified_lookahead import preprocess, solve_limited_lookahead
 
@@ -30,7 +30,7 @@ class ComparisonMetricsTests(unittest.TestCase):
         self.assertEqual((result.decision_count, result.observation_count), (1, 0))
 
     def test_literature_product_certificate_keeps_original_partitions(self):
-        from literature_product_forecast import compositional_context, verify_composition_small
+        from examples.large_scale.literature_product_forecast import compositional_context, verify_composition_small
         from examples.yin_extended import build_yin_extended_examples
         from des_core.asynchronous_product import ImplicitProductDFA
 
@@ -50,11 +50,11 @@ class ComparisonMetricsTests(unittest.TestCase):
         import json
         from pathlib import Path
         from tempfile import TemporaryDirectory
-        from literature_product_forecast import compositional_context
+        from examples.large_scale.literature_product_forecast import compositional_context
         from examples.yin_extended import build_yin_extended_examples
         from des_core.asynchronous_product import ImplicitProductDFA
         from des_core.closed_loop import restore_certified_result
-        from certified_benchmark import export_bts
+        from examples.benchmarks.certified_benchmark import export_bts
 
         component = next(e.dfa for e in build_yin_extended_examples() if e.name == '21AutomaticaOptimal_fig_2')
         product = ImplicitProductDFA(component, 2);pre = compositional_context(component, product)

@@ -3,7 +3,7 @@
 这组比较的三种方法是 **Cai-2018、LLP-1992、本文 LL-BTS**。Full BTS 不占这三行。
 
 ```powershell
-python -X utf8 three_method_comparison.py --repetitions 5
+python -X utf8 examples/comparisons/three_method_comparison.py --repetitions 5
 ```
 
 PyCharm 配置：`Three_Method_Common_Examples`。
@@ -61,7 +61,7 @@ replanning_failure 仅表示可达状态上的局部求解失败，不是原系�
 ## CPU/RAM长批次补测
 
 ```powershell
-python -X utf8 three_method_resource_batches.py --minimum-seconds 2
+python -X utf8 examples/comparisons/three_method_resource_batches.py --minimum-seconds 2
 ```
 
 PyCharm：`Three_Method_Resource_Batches`。
@@ -82,7 +82,7 @@ PyCharm：`Three_Method_Resource_Batches`。
 ## 探索、剪枝和模式检查数
 
 ```powershell
-python -X utf8 three_method_construction_counts.py
+python -X utf8 examples/comparisons/three_method_construction_counts.py
 ```
 
 这是45次不计时构建重放，不改原求解器及已保存性能数据。结果在 `construction_counts/summary.json`。

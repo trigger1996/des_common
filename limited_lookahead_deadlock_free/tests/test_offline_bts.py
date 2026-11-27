@@ -37,7 +37,7 @@ class OfflineBTSTests(unittest.TestCase):
         with self.assertRaises(ValueError):traditional_nx(plant, frozenset('0'), 'h')
 
     def test_large_indexed_bts_matches_general_traditional_solver(self):
-        from large_online_offline import known_input, indexed_offline_bts, indexed_online
+        from examples.large_scale.large_online_offline import known_input, indexed_offline_bts, indexed_online
 
         for n in (3, 7, 15):
             for terminal in (False, True):
@@ -54,7 +54,7 @@ class OfflineBTSTests(unittest.TestCase):
                 self.assertEqual(online['status'], general.status)
 
     def test_exact_product_certificates_and_lazy_state_space(self):
-        from large_online_offline import verify_product_certificates
+        from examples.large_scale.large_online_offline import verify_product_certificates
         from examples.non_deadlock import build_small_cycle_example
         from des_core.asynchronous_product import ImplicitProductDFA
 
