@@ -1,6 +1,6 @@
 """Exact maximal representatives for control choices in a fixed local window.
 
-See OPTIMIZATION_AND_CONSISTENCY_NOTES.md for the dominance argument. This
+See docs/local/OPTIMIZATION_AND_CONSISTENCY_NOTES.md (local notes) for the dominance argument. This
 reduces the represented graph, not the plant or its event partitions.
 """
 

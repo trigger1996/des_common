@@ -1,5 +1,37 @@
 # DES limited-lookahead control
 
+## 目录与快速试运行
+
+| 位置 | 用途 |
+| --- | --- |
+| `des_core/` | DFA、预处理、LL-BTS、传统 BTS、闭环验证等核心实现 |
+| `examples/` | 示例模型及输入数据 |
+| `tests/` | 正确性与回归测试 |
+| 根目录 `*.py` | 实验入口及共享统计模块；保留路径以兼容现有导入和 PyCharm 配置 |
+| `scripts/` | 维护脚本 |
+| `__ref/local/` | 从根目录归档的三份参考 PDF |
+| `docs/local/` | 本地会话记忆、审查指南及历史算法备忘；Git 忽略 |
+| `outputs/`、`output/` | 运行生成的图、报告和测量结果 |
+| `tmp/` | 临时文件和整理归档 |
+
+在本项目目录执行：
+
+```powershell
+python -m pip install -r requirements.txt
+python -X utf8 -m unittest discover -s tests -v
+python -X utf8 print_paper_figure_reference.py --u 5
+```
+
+最后一条运行论文小模型，验证策略并打印 LL-BTS，结果写入
+`outputs/revision_materials/fig1_r1_20261123/figure_state_transition_u5.txt`。
+这是小规模试运行；大规模实验请按下方对应入口单独执行。
+
+本地辅助文档：`CODEX_MEMORY.md` 记录历史会话上下文；`CODE_REVIEW_GUIDE.md`
+列出运行和审查步骤；`ON_THE_FLY_NONDEADLOCK_MODIFICATION_MEMO.md` 和
+`OPTIMIZATION_AND_CONSISTENCY_NOTES.md` 保存历史修改思路与优化论证。
+它们已归入 `docs/local/`，不会随 Git 分发；新克隆可从本 README 开始。
+历史备忘可能早于当前实现，应结合代码和测试阅读。
+
 ## 同一组例子上的 Cai-2018 / LLP-1992 / 本文方法对比
 
 ```powershell
@@ -258,7 +290,7 @@ bar_u是危险状态检测的充分阈值，不单独等于最小成功前视，
 
 ## 代码模块与审阅入口
 
-先阅读 [CODE_REVIEW_GUIDE.md](CODE_REVIEW_GUIDE.md)，再按“模型→预处理→LL-BTS→传统BTS对照→闭环→实验统计”的顺序检查。
+先阅读 [CODE_REVIEW_GUIDE.md](docs/local/CODE_REVIEW_GUIDE.md)，再按“模型→预处理→LL-BTS→传统BTS对照→闭环→实验统计”的顺序检查。
 [代码审阅快照](outputs/code_review/code_review_bundle.zip) 包含当前源码、测试、依赖清单和文件哈希；不包含虚拟环境、论文PDF及运行输出数据。
 
 | 模块 | 职责与关键入口 |
@@ -460,4 +492,4 @@ python -m unittest discover -s tests -v
 ```
 
 优化依据、等价性论证和论文草稿中需作者核对的公式差异，见
-[OPTIMIZATION_AND_CONSISTENCY_NOTES.md](OPTIMIZATION_AND_CONSISTENCY_NOTES.md)。
+[OPTIMIZATION_AND_CONSISTENCY_NOTES.md](docs/local/OPTIMIZATION_AND_CONSISTENCY_NOTES.md)。
